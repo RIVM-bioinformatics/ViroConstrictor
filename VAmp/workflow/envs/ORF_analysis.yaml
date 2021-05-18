@@ -1,0 +1,7 @@
+name: ORF_analysis
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - prodigal==2.6.3
