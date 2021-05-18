@@ -1,0 +1,11 @@
+name: Reference_alignment
+channels:
+  - bioconda
+  - conda-forge
+  - intel
+  - anaconda
+  - defaults
+dependencies:
+  - minimap2==2.17
+  - samtools==1.10
+  - seqkit==0.14.0
