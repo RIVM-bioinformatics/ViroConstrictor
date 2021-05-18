@@ -1,0 +1,9 @@
+name: Mutations
+channels:
+  - bioconda
+  - conda-forge
+  - intel
+  - anaconda
+  - defaults
+dependencies:
+  - bcftools==1.12
