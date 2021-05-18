@@ -26,7 +26,6 @@ setup(
         'VAmp/workflow/directories.py'],
     package_data={'VAmp': ['workflow/envs/*', 'workflow/scripts/*', 'workflow/files/*']},
     install_requires=[
-        'gnureadline>=8.0.0',
         'biopython>=1.78',
         'snakemake>=6.0.5'
     ],
