@@ -664,7 +664,7 @@ rule concat_boc:
     threads: 1
     shell:
         """
-        echo -e "Sample_name\tWidth_at_mincov_1\tWidth_at_mincov_5\tWidth_at_mincov_10\tWidth_at_mincov_50\tBoC_at_coverage_threshold_100" > {output}
+        echo -e "Sample_name\tWidth_at_mincov_1\tWidth_at_mincov_5\tWidth_at_mincov_10\tWidth_at_mincov_50\tWidth_at_mincov_100" > {output}
         cat {input} >> {output}
         """
 
