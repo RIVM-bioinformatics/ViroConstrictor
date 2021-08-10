@@ -36,7 +36,8 @@ rule all:
         expand("{p}concat_mutations_cov_ge_{cov}.tsv",
             p = res + muts,
             cov = mincoverages),
-        f"{res}Width_of_coverage.tsv"
+        f"{res}Width_of_coverage.tsv",
+        f"{res}Amplicon_coverage.csv"
 
 rule Prepare_ref_and_primers:
     input:
@@ -350,7 +351,9 @@ if config["primer_file"] != "NONE":
             fq = rules.QC_filter.output.fq,
             pr = rules.Prepare_ref_and_primers.output.prm,
             ref = rules.Prepare_ref_and_primers.output.ref
-        output: f"{datadir + cln + prdir}" + "{sample}.fastq"
+        output: 
+            fq = f"{datadir + cln + prdir}" + "{sample}.fastq",
+            ep = f"{datadir + prim}" + "{sample}_removedprimers.csv"
         conda: 
             f"{conda_envs}Clean.yaml"
         log:
@@ -364,20 +367,23 @@ if config["primer_file"] != "NONE":
             """
             AmpliGone -i {input.fq} \
             -ref {input.ref} -pr {input.pr} \
-            -o {output} -at {params.amplicontype} \
+            -o {output.fq} \
+            -at {params.amplicontype} \
+            --export-primers {output.ep} \
             -t {threads}
             """
 if config["primer_file"] == "NONE":
     rule RemovePrimers:
         input: rules.QC_filter.output.fq
-        output: f"{datadir + cln + prdir}" + "{sample}.fastq"
+        output: 
+            fq = f"{datadir + cln + prdir}" + "{sample}.fastq"
         shell:
             """
             cp {input} {output}
             """
 
 rule QC_clean:
-    input: rules.RemovePrimers.output
+    input: rules.RemovePrimers.output.fq
     output: 
         html    =   f"{datadir + qc_post}" + "{sample}_fastqc.html",
         zip     =   f"{datadir + qc_post}" + "{sample}_fastqc.zip"
@@ -405,7 +411,7 @@ rule QC_clean:
 if config["platform"] == "illumina":
     rule Alignment:
         input:
-            fq = rules.RemovePrimers.output,
+            fq = rules.RemovePrimers.output.fq,
             ref = rules.Prepare_ref_and_primers.output.ref
         output:
             bam = f"{datadir + aln + bf}" + "{sample}.bam",
@@ -431,7 +437,7 @@ if config["platform"] == "illumina":
 if config["platform"] == "nanopore":
     rule Alignment:
         input:
-            fq = rules.RemovePrimers.output,
+            fq = rules.RemovePrimers.output.fq,
             ref = rules.Prepare_ref_and_primers.output.ref
         output:
             bam = f"{datadir + aln + bf}" + "{sample}.bam",
@@ -457,7 +463,7 @@ if config["platform"] == "nanopore":
 if config["platform"] == "iontorrent":
     rule Alignment:
         input:
-            fq = rules.RemovePrimers.output,
+            fq = rules.RemovePrimers.output.fq,
             ref = rules.Prepare_ref_and_primers.output.ref
         output:
             bam = f"{datadir + aln + bf}" + "{sample}.bam",
@@ -492,16 +498,21 @@ rule Consensus:
         cons_50 = f"{datadir + cons + seqs}" + "{sample}_cov_ge_50.fa",
         cons_100 = f"{datadir + cons + seqs}" + "{sample}_cov_ge_100.fa",
         cov = f"{datadir + cons + covs}" + "{sample}_coverage.tsv",
-        gff = f"{datadir + cons + features}" + "{sample}.gff",
         vcf_1 = f"{datadir + aln + vf}" + "{sample}_cov_ge_1.vcf",
         vcf_5 = f"{datadir + aln + vf}" + "{sample}_cov_ge_5.vcf",
         vcf_10 = f"{datadir + aln + vf}" + "{sample}_cov_ge_10.vcf",
         vcf_50 = f"{datadir + aln + vf}" + "{sample}_cov_ge_50.vcf",
         vcf_100 = f"{datadir + aln + vf}" + "{sample}_cov_ge_100.vcf",
+        gff_1 = f"{datadir + cons + features}" + "{sample}_cov_ge_1.gff",
+        gff_5 = f"{datadir + cons + features}" + "{sample}_cov_ge_5.gff",
+        gff_10 = f"{datadir + cons + features}" + "{sample}_cov_ge_10.gff",
+        gff_50 = f"{datadir + cons + features}" + "{sample}_cov_ge_50.gff",
+        gff_100 = f"{datadir + cons + features}" + "{sample}_cov_ge_100.gff"
     params:
         mincov = "1 5 10 50 100",
         outdir = f"{datadir + cons + seqs}",
-        vcfdir = f"{datadir + aln + vf}"
+        vcfdir = f"{datadir + aln + vf}",
+        gffdir = f"{datadir + cons + features}"
     conda: 
         f"{conda_envs}Consensus.yaml"
     log:
@@ -517,9 +528,9 @@ rule Consensus:
         --samplename {wildcards.sample} \
         --output {params.outdir} \
         --variants {params.vcfdir} \
-        --output-gff {output.gff} \
+        --output-gff {params.gffdir} \
         --depth-of-coverage {output.cov} \
-        --noambiguity --threads {threads}
+        --threads {threads}
         """
 
 rule Concat_Seqs:
@@ -655,6 +666,39 @@ rule concat_boc:
         """
         echo -e "Sample_name\tWidth_at_mincov_1\tWidth_at_mincov_5\tWidth_at_mincov_10\tWidth_at_mincov_50\tBoC_at_coverage_threshold_100" > {output}
         cat {input} >> {output}
+        """
+
+rule calculate_amplicon_cov:
+    input: 
+        pr = rules.RemovePrimers.output.ep,
+        cov = rules.Consensus.output.cov
+    output: 
+        ampcov = f"{datadir + prim}" + "{sample}_ampliconcoverage.csv"
+    threads: 1
+    conda:
+        f"{conda_envs}Clean.yaml"
+    params:
+        script = srcdir("scripts/amplicon_covs.py")
+    shell:
+        """
+        python {params.script} \
+        --primers {input.pr} \
+        --coverages {input.cov} \
+        --key {wildcards.sample} \
+        --output {output.ampcov}
+        """
+
+rule concat_amplicon_cov:
+    input: expand(f"{datadir + prim}" + "{sample}_ampliconcoverage.csv", sample = SAMPLES)
+    output: f"{res}Amplicon_coverage.csv"
+    threads: 1
+    conda:
+        f"{conda_envs}Clean.yaml"
+    params:
+        script = srcdir("scripts/concat_amplicon_covs.py")
+    shell:
+        """
+        python {params.script} --output {output} --input {input}
         """
 
 if config['platform'] == "illumina":
