@@ -23,5 +23,4 @@ dependencies:
   - multiqc==1.9
   - pip
   - pip:
-    - git+https://github.com/RIVM-bioinformatics/AmpliGone.git
-
+    - git+https://github.com/RIVM-bioinformatics/AmpliGone.git@dev

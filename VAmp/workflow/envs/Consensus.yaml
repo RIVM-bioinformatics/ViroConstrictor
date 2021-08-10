@@ -16,4 +16,4 @@ dependencies:
   - pip
   - pip:
     - gffpandas>=1.2
-    - git+https://github.com/RIVM-bioinformatics/TrueConsense.git
+    - git+https://github.com/RIVM-bioinformatics/TrueConsense.git@dev
