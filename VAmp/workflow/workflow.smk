@@ -379,7 +379,7 @@ if config["primer_file"] == "NONE":
             fq = f"{datadir + cln + prdir}" + "{sample}.fastq"
         shell:
             """
-            cp {input} {output}
+            cp {input} {output.fq}
             """
 
 rule QC_clean:
