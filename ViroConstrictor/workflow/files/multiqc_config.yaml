@@ -2,7 +2,7 @@
 # Date: 20181026
 
 # Title to use for the report.
-title: VAmp quality control metrics
+title: ViroConstrictor quality control metrics
 
 # How to plot graphs. Different templates can override these settings, but
 # the default template can use interactive plots (Javascript using HighCharts)
