@@ -7,7 +7,7 @@ if sys.version_info.major != 3 or sys.version_info.minor < 7:
     
 from setuptools import setup, find_packages
 
-from ViroConstrictor import __version__
+from ViroConstrictor.version import __version__
 
 with open("README.md", "rb") as readme:
     DESCR = readme.read().decode()
