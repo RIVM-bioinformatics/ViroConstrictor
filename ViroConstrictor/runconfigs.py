@@ -19,7 +19,7 @@ def SnakemakeConfig(conf, cores, dryrun):
             "latency-wait": 60,
             "use-conda": True,
             "dryrun": dryrun,
-            "jobname": "VAmp_{name}.jobid{jobid}",
+            "jobname": "ViroConstrictor_{name}.jobid{jobid}",
         }
 
     if compmode == "grid":
@@ -30,7 +30,7 @@ def SnakemakeConfig(conf, cores, dryrun):
             "latency-wait": 60,
             "use-conda": True,
             "dryrun": dryrun,
-            "jobname": "VAmp_{name}.jobid{jobid}",
+            "jobname": "ViroConstrictor_{name}.jobid{jobid}",
             "drmaa": f' -q {queuename} -n {threads} -R "span[hosts=1]"',
             "drmaa-log-dir": "logs/drmaa",
         }
