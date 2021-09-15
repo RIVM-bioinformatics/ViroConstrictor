@@ -53,9 +53,9 @@ def get_args(givenargs):
         return os.getcwd()
 
     arg = argparse.ArgumentParser(
-        prog="VAmp",
+        prog="ViroConstrictor",
         usage="%(prog)s [required options] [optional arguments]",
-        description="VAmp: a pipeline for analysing Viral targeted (amplicon) sequencing data in order to generate a biologically valid consensus sequence.",
+        description="ViroConstrictor: a pipeline for analysing Viral targeted (amplicon) sequencing data in order to generate a biologically valid consensus sequence.",
         formatter_class=MyHelpFormatter,
         add_help=False,
     )
@@ -141,7 +141,7 @@ def get_args(givenargs):
         "-v",
         version=__version__,
         action="version",
-        help="Show the VAmp version and exit",
+        help="Show the ViroConstrictor version and exit",
     )
 
     arg.add_argument(
@@ -185,7 +185,7 @@ def CheckInputFiles(indir):
 
 def main():
     """
-    VAmp starting point
+    ViroConstrictor starting point
     --> Fetch and parse arguments
     --> check validity
     --> Read (or write, if necessary) the user-config files
@@ -215,7 +215,7 @@ def main():
     Snakefile = os.path.join(here, "workflow", "workflow.smk")
 
     ##> Check the default userprofile, make it if it doesn't exist
-    conf = ReadConfig(os.path.expanduser("~/.VAmp_defaultprofile.ini"))
+    conf = ReadConfig(os.path.expanduser("~/.ViroConstrictor_defaultprofile.ini"))
 
     ##@ check if the input directory contains valid files
     if CheckInputFiles(inpath) is False:

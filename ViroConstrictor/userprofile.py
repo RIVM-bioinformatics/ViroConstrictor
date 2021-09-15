@@ -1,7 +1,7 @@
 # pylint: disable=C0103
 
 """
-Read or write the configuration file for VAmp.
+Read or write the configuration file for ViroConstrictor.
 This is so a user doesn't have to give this information manually on every run
 """
 import configparser
@@ -66,11 +66,11 @@ def BuildConfig(file):
     conf_object["COMPUTING"] = {
         "compmode": AskPrompts(
             f"""
-VAmp can run in two computing-modes.
+ViroConstrictor can run in two computing-modes.
 {color.YELLOW + color.UNDERLINE}local{color.END} or {color.YELLOW + color.UNDERLINE}HPC/Grid{color.END}
-Please specify the computing-mode that you wish to use for VAmp.
+Please specify the computing-mode that you wish to use for ViroConstrictor.
             """,
-            f"""Do you wish to run VAmp in {color.YELLOW}local{color.END} or {color.YELLOW}grid{color.END} mode? [local/grid] """,
+            f"""Do you wish to run ViroConstrictor in {color.YELLOW}local{color.END} or {color.YELLOW}grid{color.END} mode? [local/grid] """,
             ["local", "grid"],
             fixedchoices=True,
         )
@@ -78,7 +78,7 @@ Please specify the computing-mode that you wish to use for VAmp.
 
     if conf_object["COMPUTING"]["compmode"] == "grid":
         conf_object["COMPUTING"]["queuename"] = AskPrompts(
-            f"""Grid mode has been chosen. Please enter the name of computing-queue that you wish to use on your grid/HPC cluster.\nThis is necessary so VAmp will send all the various tasks to the correct (remote) computers.\n\n{color.BOLD + color.UNDERLINE + color.YELLOW}Please note that this is case-sensitive{color.END}\n""",
+            f"""Grid mode has been chosen. Please enter the name of computing-queue that you wish to use on your grid/HPC cluster.\nThis is necessary so ViroConstrictor will send all the various tasks to the correct (remote) computers.\n\n{color.BOLD + color.UNDERLINE + color.YELLOW}Please note that this is case-sensitive{color.END}\n""",
             "Please specify the name of the Queue on your grid/HPC cluster that you wish to use. [free text] ",
             [],
             fixedchoices=False,
