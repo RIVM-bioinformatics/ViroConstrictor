@@ -1,7 +1,7 @@
 # pylint: disable=C0103.C0301
 
 """
-Basic functions for various uses throughout VAmp
+Basic functions for various uses throughout ViroConstrictor
 """
 
 import argparse
