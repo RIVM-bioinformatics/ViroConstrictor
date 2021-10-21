@@ -1,13 +1,45 @@
 import sys
 
+from packaging import version as vv
+from setuptools import find_packages, setup
+
+from ViroConstrictor.version import __version__
 
 if sys.version_info.major != 3 or sys.version_info.minor < 7:
     print("Error: you must execute setup.py using Python 3.7 or later")
     sys.exit(1)
-    
-from setuptools import setup, find_packages
 
-from ViroConstrictor.version import __version__
+try:
+    import conda
+except SystemError:
+    sys.exit(
+        """
+Error: conda could not be accessed.
+Please make sure conda is installed and functioning properly before installing ViroConstrictor
+"""
+    )
+
+try:
+    import snakemake
+except SystemError:
+    sys.exit(
+        """
+Error: SnakeMake could not be accessed.
+Please make sure SnakeMake is installed properly before installing ViroConstrictor
+"""
+    )
+
+if vv.parse(snakemake.__version__) < vv.parse("6.0"):
+    sys.exit(
+        f"""
+The installed SnakeMake version is older than the minimally required version:
+
+Installed SnakeMake version: {snakemake.__version__}
+Required SnakeMake version: 6.0 or later
+
+Please update SnakeMake to a supported version and try again
+"""
+    )
 
 with open("README.md", "rb") as readme:
     DESCR = readme.read().decode()
@@ -16,23 +48,26 @@ with open("README.md", "rb") as readme:
 setup(
     name="ViroConstrictor",
     description="Analysis of Viral Amplicon NGS data",
-    author='Florian Zwagemaker, Dennis Schmitz',
-    author_email='rivm-bioinformatics@rivm.nl',
-    license='AGPLv3',
+    author="Florian Zwagemaker, Dennis Schmitz, Karim Hajji, Annelies kroneman",
+    author_email="ids-bioinformatics@rivm.nl",
+    license="AGPLv3",
     version=__version__,
     packages=find_packages(),
     scripts=[
-        'ViroConstrictor/workflow/workflow.smk',
-        'ViroConstrictor/workflow/directories.py'],
-    package_data={'ViroConstrictor': ['workflow/envs/*', 'workflow/scripts/*', 'workflow/files/*']},
-    install_requires=[
-        'biopython>=1.78',
-        'snakemake>=6.0.5'
+        "ViroConstrictor/workflow/workflow.smk",
+        "ViroConstrictor/workflow/directories.py",
     ],
-    entry_points={"console_scripts": [
-        'ViroConstrictor = ViroConstrictor.ViroConstrictor:main',
-        'viroconstrictor = ViroConstrictor.ViroConstrictor:main']},
+    package_data={
+        "ViroConstrictor": ["workflow/envs/*", "workflow/scripts/*", "workflow/files/*"]
+    },
+    install_requires=["biopython>=1.78", "snakemake>=6.0.5", "pyyaml<=6.0"],
+    entry_points={
+        "console_scripts": [
+            "ViroConstrictor = ViroConstrictor.ViroConstrictor:main",
+            "viroconstrictor = ViroConstrictor.ViroConstrictor:main",
+        ]
+    },
     keywords=[],
     include_package_data=True,
-    zip_safe=False
+    zip_safe=False,
 )
