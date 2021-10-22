@@ -7,6 +7,7 @@ channels:
   - defaults
 dependencies:
   - python=3.7
+  - libffi==3.3
   - pandas>=1.2.3
   - pysamstats>=1.1
   - pysam<0.16
