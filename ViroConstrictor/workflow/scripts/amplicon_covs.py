@@ -1,4 +1,5 @@
 import argparse
+import sys
 
 import pandas as pd
 
@@ -210,7 +211,18 @@ if __name__ == "__main__":
     covs = pd.read_csv(
         flags.coverages, sep="\t", names=["position", "cov"], index_col="position"
     )
-    prims = pd.read_csv(flags.primers)
+
+    try:
+        prims = pd.read_csv(flags.primers)
+    except Exception:
+        print("Error reading primers file")
+        with open(flags.output, "w") as f:
+            f.write(
+                f"""name,
+{flags.key},
+"""
+            )
+        sys.exit()
 
     lf, rf = split_frames(prims)
 
