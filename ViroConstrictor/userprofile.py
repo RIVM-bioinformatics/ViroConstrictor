@@ -6,9 +6,8 @@ This is so a user doesn't have to give this information manually on every run
 """
 import configparser
 import os
-import sys
-
 import readline
+import sys
 
 from .functions import color, tabCompleter
 
