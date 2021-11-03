@@ -26,36 +26,68 @@ features_file = config["features_file"]
 
 mincoverages = [1,5,10,50,100]
 
+if config["primer_file"] == "NONE":
+    rule all:
+        input:
+            f"{res}multiqc.html",
+            expand("{p}concat_cov_ge_{cov}.fasta",
+                p = res + seqs,
+                cov = mincoverages),
+            expand("{p}concat_mutations_cov_ge_{cov}.tsv",
+                p = res + muts,
+                cov = mincoverages),
+            f"{res}Width_of_coverage.tsv",
+else:
+    rule all:
+        input:
+            f"{res}multiqc.html",
+            expand("{p}concat_cov_ge_{cov}.fasta",
+                p = res + seqs,
+                cov = mincoverages),
+            expand("{p}concat_mutations_cov_ge_{cov}.tsv",
+                p = res + muts,
+                cov = mincoverages),
+            f"{res}Width_of_coverage.tsv",
+            f"{res}Amplicon_coverage.csv"
 
-rule all:
-    input:
-        f"{res}multiqc.html",
-        expand("{p}concat_cov_ge_{cov}.fasta",
-            p = res + seqs,
-            cov = mincoverages),
-        expand("{p}concat_mutations_cov_ge_{cov}.tsv",
-            p = res + muts,
-            cov = mincoverages),
-        f"{res}Width_of_coverage.tsv",
-        f"{res}Amplicon_coverage.csv"
 
-rule Prepare_ref_and_primers:
-    input:
-        ref = reffile,
-        prm = primerfile
-    output: 
-        ref = f"{datadir + refdir + ref_basename}.fasta",
-        prm = f"{datadir + prim}" + "primers.fasta",
-        refindex = f"{datadir + refdir + ref_basename}.fasta.fai"
-    conda:
-        f"{conda_envs}Alignment.yaml"
-    threads: config['threads']['Index']
-    shell:
-        """
-        cat {input.ref} | seqkit replace -p "\-" -s -r "N" > {output.ref}
-        cat {input.prm} | seqkit replace -p "\-" -s -r "N" > {output.prm}
-        samtools faidx {output.ref} -o {output.refindex}
-        """
+#TODO: Check if this can be done more elegantly than by wrapping everything in an if/else statement
+if config["primer_file"] != "NONE":
+    rule Prepare_ref_and_primers:
+        input:
+            ref = reffile,
+            prm = primerfile
+        output: 
+            ref = f"{datadir + refdir + ref_basename}.fasta",
+            prm = f"{datadir + prim}" + "primers.fasta",
+            refindex = f"{datadir + refdir + ref_basename}.fasta.fai"
+        conda:
+            f"{conda_envs}Alignment.yaml"
+        threads: config['threads']['Index']
+        shell:
+            """
+            cat {input.ref} | seqkit replace -p "\-" -s -r "N" > {output.ref}
+            cat {input.prm} | seqkit replace -p "\-" -s -r "N" > {output.prm}
+            samtools faidx {output.ref} -o {output.refindex}
+            """
+else:
+    rule Prepare_ref_and_primers:
+        input:
+            ref = reffile,
+            prm = primerfile
+        output: 
+            ref = f"{datadir + refdir + ref_basename}.fasta",
+            prm = temp(f"{datadir + prim}" + "primers.fasta"),
+            refindex = f"{datadir + refdir + ref_basename}.fasta.fai"
+        conda:
+            f"{conda_envs}Alignment.yaml"
+        threads: config['threads']['Index']
+        shell:
+            """
+            cat {input.ref} | seqkit replace -p "\-" -s -r "N" > {output.ref}
+            cat {input.prm} | seqkit replace -p "\-" -s -r "N" > {output.prm}
+            samtools faidx {output.ref} -o {output.refindex}
+            """
 
 if config["features_file"] != "NONE":
     rule Prepare_features_file:
@@ -219,7 +251,7 @@ if config["platform"] == "nanopore":
             filters = config["runparams"]["alignmentfilters"]
         shell: 
             """
-            minimap2 -ax sr -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
+            minimap2 -ax map-ont -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
             samtools view -@ {threads} {params.filters} -uS 2>> {log} |\
             samtools sort -o {output.bam} >> {log} 2>&1
             samtools index {output.bam} >> {log} 2>&1
@@ -370,6 +402,7 @@ if config["primer_file"] != "NONE":
             -o {output.fq} \
             -at {params.amplicontype} \
             --export-primers {output.ep} \
+            -to \
             -t {threads}
             """
 if config["primer_file"] == "NONE":
@@ -667,40 +700,40 @@ rule concat_boc:
         echo -e "Sample_name\tWidth_at_mincov_1\tWidth_at_mincov_5\tWidth_at_mincov_10\tWidth_at_mincov_50\tWidth_at_mincov_100" > {output}
         cat {input} >> {output}
         """
-
-rule calculate_amplicon_cov:
-    input: 
-        pr = rules.RemovePrimers.output.ep,
-        cov = rules.Consensus.output.cov
-    output: 
-        ampcov = f"{datadir + prim}" + "{sample}_ampliconcoverage.csv"
-    threads: 1
-    conda:
-        f"{conda_envs}Clean.yaml"
-    params:
-        script = srcdir("scripts/amplicon_covs.py")
-    shell:
-        """
-        python {params.script} \
-        --primers {input.pr} \
-        --coverages {input.cov} \
-        --key {wildcards.sample} \
-        --output {output.ampcov}
-        """
-
-rule concat_amplicon_cov:
-    input: expand(f"{datadir + prim}" + "{sample}_ampliconcoverage.csv", sample = SAMPLES)
-    output: f"{res}Amplicon_coverage.csv"
-    threads: 1
-    conda:
-        f"{conda_envs}Clean.yaml"
-    params:
-        script = srcdir("scripts/concat_amplicon_covs.py")
-    shell:
-        """
-        python {params.script} --output {output} --input {input}
-        """
-
+if config["primer_file"] != "NONE":
+    rule calculate_amplicon_cov:
+        input: 
+            pr = rules.RemovePrimers.output.ep,
+            cov = rules.Consensus.output.cov
+        output: 
+            ampcov = f"{datadir + prim}" + "{sample}_ampliconcoverage.csv"
+        threads: 1
+        conda:
+            f"{conda_envs}Clean.yaml"
+        params:
+            script = srcdir("scripts/amplicon_covs.py")
+        shell:
+            """
+            python {params.script} \
+            --primers {input.pr} \
+            --coverages {input.cov} \
+            --key {wildcards.sample} \
+            --output {output.ampcov}
+            """
+    
+    rule concat_amplicon_cov:
+        input: expand(f"{datadir + prim}" + "{sample}_ampliconcoverage.csv", sample = SAMPLES)
+        output: f"{res}Amplicon_coverage.csv"
+        threads: 1
+        conda:
+            f"{conda_envs}Clean.yaml"
+        params:
+            script = srcdir("scripts/concat_amplicon_covs.py")
+        shell:
+            """
+            python {params.script} --output {output} --input {input}
+            """
+    
 if config['platform'] == "illumina":
     rule MultiQC_report:
         input: 

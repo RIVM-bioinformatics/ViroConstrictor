@@ -79,7 +79,9 @@ def SnakemakeParams(conf, cores, ref, prim, feats, platform, samplesheet, amplic
     return params
 
 
-def WriteConfigs(conf, cores, cwd, platform, ref, prims, feats, samplesheet, amplicon_type, dryrun):
+def WriteConfigs(
+    conf, cores, cwd, platform, ref, prims, feats, samplesheet, amplicon_type, dryrun
+):
     if not os.path.exists(cwd + "/config"):
         os.makedirs(cwd + "/config")
 
@@ -93,7 +95,9 @@ def WriteConfigs(conf, cores, cwd, platform, ref, prims, feats, samplesheet, amp
 
     with open("params.yaml", "w") as ParamsOut:
         yaml.dump(
-            SnakemakeParams(conf, cores, ref, prims, feats, platform, samplesheet, amplicon_type),
+            SnakemakeParams(
+                conf, cores, ref, prims, feats, platform, samplesheet, amplicon_type
+            ),
             ParamsOut,
             default_flow_style=False,
         )
