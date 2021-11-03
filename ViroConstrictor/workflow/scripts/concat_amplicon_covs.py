@@ -14,11 +14,7 @@ args.add_argument(
 )
 
 args.add_argument(
-    "--output",
-    type=str,
-    metavar="File",
-    help="Output file name",
-    required=True,
+    "--output", type=str, metavar="File", help="Output file name", required=True,
 )
 
 flags = args.parse_args()
