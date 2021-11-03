@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.2.3](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v0.2.2...v0.2.3) (2021-11-03)
+
+
+### Documentation
+
+* add explanatory comments to docs config ([f3e05ec](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/f3e05ecbc47e7f68edefa8829ce95876b147241e))
+
 ### [0.2.2](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v0.2.1...v0.2.2) (2021-11-03)
 
 
