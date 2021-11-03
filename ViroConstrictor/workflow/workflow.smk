@@ -219,7 +219,7 @@ if config["platform"] == "nanopore":
             filters = config["runparams"]["alignmentfilters"]
         shell: 
             """
-            minimap2 -ax sr -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
+            minimap2 -ax map-ont -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
             samtools view -@ {threads} {params.filters} -uS 2>> {log} |\
             samtools sort -o {output.bam} >> {log} 2>&1
             samtools index {output.bam} >> {log} 2>&1
@@ -370,6 +370,7 @@ if config["primer_file"] != "NONE":
             -o {output.fq} \
             -at {params.amplicontype} \
             --export-primers {output.ep} \
+            -to \
             -t {threads}
             """
 if config["primer_file"] == "NONE":
