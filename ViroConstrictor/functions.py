@@ -7,9 +7,8 @@ Basic functions for various uses throughout ViroConstrictor
 import argparse
 import glob
 import os
-import shutil
-
 import readline
+import shutil
 
 
 class MyHelpFormatter(argparse.RawTextHelpFormatter):
