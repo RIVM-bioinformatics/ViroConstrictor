@@ -78,14 +78,14 @@ def get_args(givenargs):
         help="Output directory",
         required=True,
     )
-    
+
     arg.add_argument(
         "--reference",
         "-ref",
         type=lambda s: check_input((".fasta", ".fa"), s),
         metavar="File",
         help="Input Reference sequence genome in FASTA format",
-        required=True
+        required=True,
     )
 
     arg.add_argument(
@@ -117,14 +117,14 @@ def get_args(givenargs):
         help="Define the amplicon-type, either being 'end-to-end' or 'end-to-mid', see the docs for more info",
         required=True,
     )
-    
+
     arg.add_argument(
         "--features",
         "-gff",
         type=lambda s: check_input((".gff"), s),
         metavar="File",
         help="GFF file containing the Open Reading Frame (ORF) information of the reference",
-        required=True
+        required=True,
     )
 
     arg.add_argument(
@@ -196,17 +196,16 @@ def main():
 
     inpath = os.path.abspath(flags.input)
     refpath = os.path.abspath(flags.reference)
-    
+
     if flags.primers != "NONE":
         primpath = os.path.abspath(flags.primers)
     else:
         primpath = "NONE"
-        
+
     if flags.features != "NONE":
         featspath = os.path.abspath(flags.features)
     else:
         featspath = "NONE"
-        
 
     outpath = os.path.abspath(flags.output)
 
@@ -243,7 +242,7 @@ Please check the primer fasta and try again. Exiting...
             """
         )
         sys.exit(1)
-        
+
     if IsValidFasta(refpath) is False:
         print(
             f"""
