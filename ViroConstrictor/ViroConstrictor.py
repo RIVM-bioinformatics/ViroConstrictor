@@ -294,6 +294,7 @@ Please check the reference fasta and try again. Exiting...
             latency_wait=parsedconfig["latency-wait"],
             dryrun=parsedconfig["dryrun"],
             configfiles=[snakeparams],
+            restart_times=3,
         )
     if conf["COMPUTING"]["compmode"] == "grid":
         snakemake.snakemake(
@@ -309,6 +310,7 @@ Please check the reference fasta and try again. Exiting...
             drmaa_log_dir=parsedconfig["drmaa-log-dir"],
             dryrun=parsedconfig["dryrun"],
             configfiles=[snakeparams],
+            restart_times=3,
         )
 
     if parsedconfig["dryrun"] is False:
@@ -317,4 +319,5 @@ Please check the reference fasta and try again. Exiting...
             workdir=workdir,
             report="results/snakemake_report.html",
             configfiles=[snakeparams],
+            quiet=True,
         )
