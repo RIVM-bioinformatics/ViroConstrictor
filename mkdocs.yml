@@ -4,13 +4,20 @@ repo_url: https://github.com/RIVM-bioinformatics/ViroConstrictor
 copyright: Copyright © 2021 RIVM
 edit_uri: ""
 
+# Navigation menu
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - User guide: user-guide.md
+
+# Basic config theming config settings
 theme:
   name: material
   language: en
   icon:
     logo: material/dna
 
-# standard config settings
+# Config settings directly related to the theme itself
   features:
       - navigation.tabs
       - navigation.tabs.sticky
@@ -39,12 +46,7 @@ theme:
       - search
       - awesome-pages
 
-nav:
-  - Home: index.md
-  - Installation: installation.md
-  - User guide: user-guide.md
-
-# extensions
+# Markdown extensions used by the material-theme
 markdown_extensions:
     - meta
     - markdown.extensions.admonition
@@ -84,6 +86,8 @@ markdown_extensions:
         custom_checkbox: true
     - pymdownx.tilde
 
+
+# version provider integrated with Material theme
 extra:
   version:
     provider: mike
