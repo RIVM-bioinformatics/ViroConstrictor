@@ -60,7 +60,7 @@ def SnakemakeParams(conf, cores, ref, prim, feats, platform, samplesheet, amplic
             "QC": threads_midcpu,
             "AdapterRemoval": threads_lowcpu,
             "PrimerRemoval": threads_highcpu,
-            "Consensus": threads_lowcpu,
+            "Consensus": threads_midcpu,
             "Index": threads_lowcpu,
             "Typing": threads_lowcpu,
         },
