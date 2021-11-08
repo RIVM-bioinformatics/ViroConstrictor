@@ -17,6 +17,7 @@ import yaml
 from .functions import MyHelpFormatter, color
 from .runconfigs import WriteConfigs
 from .samplesheet import WriteSampleSheet
+from .update import update
 from .userprofile import ReadConfig
 from .validatefasta import IsValidFasta
 from .version import __version__
@@ -192,6 +193,12 @@ def main():
     --> Change working directories and make necessary local files for snakemake
     --> Run snakemake with appropriate settings
     """
+
+    ##> Check the default userprofile, make it if it doesn't exist
+    conf = ReadConfig(os.path.expanduser("~/.ViroConstrictor_defaultprofile.ini"))
+
+    update(sys.argv, conf)
+
     flags = get_args(sys.argv[1:])
 
     inpath = os.path.abspath(flags.input)
@@ -212,9 +219,6 @@ def main():
     here = os.path.abspath(os.path.dirname(__file__))
 
     Snakefile = os.path.join(here, "workflow", "workflow.smk")
-
-    ##> Check the default userprofile, make it if it doesn't exist
-    conf = ReadConfig(os.path.expanduser("~/.ViroConstrictor_defaultprofile.ini"))
 
     ##@ check if the input directory contains valid files
     if CheckInputFiles(inpath) is False:
