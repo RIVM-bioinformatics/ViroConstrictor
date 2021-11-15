@@ -51,6 +51,21 @@ else:
             f"{res}Amplicon_coverage.csv"
 
 
+def low_memory_job(wildcards, threads, attempt):
+    if config['computing_execution'] == 'local':
+        return min(attempt * threads * 1 * 1000, config['max_local_mem'])
+    return attempt * threads * 1 * 1000
+
+def medium_memory_job(wildcards, threads, attempt):
+    if config['computing_execution'] == 'local':
+        return min(attempt * threads * 2 * 1000, config['max_local_mem'])
+    return attempt * threads * 2 * 1000
+
+def high_memory_job(wildcards, threads, attempt):
+    if config['computing_execution'] == 'local':
+        return min(attempt * threads * 4 * 1000, config['max_local_mem'])
+    return attempt * threads * 4 * 1000
+
 #TODO: Check if this can be done more elegantly than by wrapping everything in an if/else statement
 if config["primer_file"] != "NONE":
     rule Prepare_ref_and_primers:
@@ -64,6 +79,8 @@ if config["primer_file"] != "NONE":
         conda:
             f"{conda_envs}Alignment.yaml"
         threads: config['threads']['Index']
+        resources:
+            mem_mb = low_memory_job
         shell:
             """
             cat {input.ref} | seqkit replace -p "\-" -s -r "N" > {output.ref}
@@ -82,6 +99,8 @@ else:
         conda:
             f"{conda_envs}Alignment.yaml"
         threads: config['threads']['Index']
+        resources:
+            mem_mb = low_memory_job
         shell:
             """
             cat {input.ref} | seqkit replace -p "\-" -s -r "N" > {output.ref}
@@ -95,6 +114,8 @@ if config["features_file"] != "NONE":
         output: 
             gff = temp(f"{datadir + features}reference_features.gff")
         threads: config['threads']['Index']
+        resources:
+            mem_mb = low_memory_job
         shell:
             """
             cat {input} >> {output}
@@ -109,6 +130,8 @@ else:
         conda:
             f"{conda_envs}ORF_analysis.yaml"
         threads: config['threads']['Index']
+        resources:
+            mem_mb = medium_memory_job
         log:
             f"{logdir}ORF_Analysis.log"
         params:
@@ -139,6 +162,8 @@ if config["platform"] == "illumina":
         benchmark:
             f"{logdir + bench}" + "QC_raw_data_{sample}_{read}.txt"
         threads: config['threads']['QC']
+        resources:
+            mem_mb = low_memory_job
         params:
             output_dir  =   f"{datadir + qc_pre}",
             script = srcdir("scripts/fastqc_wrapper.sh")
@@ -163,6 +188,8 @@ if config["platform"] == "illumina":
         benchmark:
             f"{logdir + bench}"+ "RemoveAdapters_p1_{sample}.txt"
         threads: config['threads']['Alignments']
+        resources:
+            mem_mb = medium_memory_job
         params:
             mapthreads = config['threads']['Alignments'] - 1,
             filters = config["runparams"]["alignmentfilters"]
@@ -180,6 +207,8 @@ if config["platform"] == "illumina":
         conda:
             f"{conda_envs}Clean.yaml"
         threads: config['threads']['AdapterRemoval']
+        resources:
+            mem_mb = low_memory_job
         params:
             script = srcdir('scripts/clipper.py')
         shell: 
@@ -200,6 +229,8 @@ if config["platform"] == "illumina":
         benchmark:
             f"{logdir + bench}" + "Cleanup_{sample}.txt"
         threads: config['threads']['QC']
+        resources:
+            mem_mb = low_memory_job
         params:
             score = config['runparams']['qc_filter_illumina'],
             size = config['runparams']['qc_window_illumina'],
@@ -224,6 +255,8 @@ if config["platform"] == "nanopore":
         benchmark:
             f"{logdir + bench}" + "QC_raw_data_{sample}.txt"
         threads: config['threads']['QC']
+        resources:
+            mem_mb = low_memory_job
         params:
             output_dir  =   f"{datadir + qc_pre}",
             script = srcdir("scripts/fastqc_wrapper.sh")
@@ -246,6 +279,8 @@ if config["platform"] == "nanopore":
         benchmark:
             f"{logdir + bench}"+ "RemoveAdapters_p1_{sample}.txt"
         threads: config['threads']['Alignments']
+        resources:
+            mem_mb = medium_memory_job
         params:
             mapthreads = config['threads']['Alignments'] - 1,
             filters = config["runparams"]["alignmentfilters"]
@@ -263,6 +298,8 @@ if config["platform"] == "nanopore":
         conda:
             f"{conda_envs}Clean.yaml"
         threads: config['threads']['AdapterRemoval']
+        resources:
+            mem_mb = low_memory_job
         params:
             script = srcdir('scripts/clipper.py')
         shell: 
@@ -283,6 +320,8 @@ if config["platform"] == "nanopore":
         benchmark:
             f"{logdir + bench}" + "Cleanup_{sample}.txt"
         threads: config['threads']['QC']
+        resources:
+            mem_mb = low_memory_job
         params:
             score = config['runparams']['qc_filter_nanopore'],
             size = config['runparams']['qc_window_nanopore'],
@@ -307,6 +346,8 @@ if config["platform"] == "iontorrent":
         benchmark:
             f"{logdir + bench}" + "QC_raw_data_{sample}.txt"
         threads: config['threads']['QC']
+        resources:
+            mem_mb = low_memory_job
         params:
             output_dir  =   f"{datadir + qc_pre}",
             script = srcdir("scripts/fastqc_wrapper.sh")
@@ -329,6 +370,8 @@ if config["platform"] == "iontorrent":
         benchmark:
             f"{logdir + bench}"+ "RemoveAdapters_p1_{sample}.txt"
         threads: config['threads']['Alignments']
+        resources:
+            mem_mb = medium_memory_job
         params:
             mapthreads = config['threads']['Alignments'] - 1,
             filters = config["runparams"]["alignmentfilters"]
@@ -346,6 +389,8 @@ if config["platform"] == "iontorrent":
         conda:
             f"{conda_envs}Clean.yaml"
         threads: config['threads']['AdapterRemoval']
+        resources:
+            mem_mb = low_memory_job
         params:
             script = srcdir('scripts/clipper.py')
         shell: 
@@ -366,6 +411,8 @@ if config["platform"] == "iontorrent":
         benchmark:
             f"{logdir + bench}" + "Cleanup_{sample}.txt"
         threads: config['threads']['QC']
+        resources:
+            mem_mb = low_memory_job
         params:
             score = config['runparams']['qc_filter_iontorrent'],
             size = config['runparams']['qc_window_iontorrent'],
@@ -393,6 +440,8 @@ if config["primer_file"] != "NONE":
         benchmark:
             f"{logdir + bench}" + "RemovePrimers_{sample}.txt"
         threads: config['threads']['PrimerRemoval']
+        resources:
+            mem_mb = high_memory_job
         params:
             amplicontype = config["amplicon_type"]
         shell:
@@ -408,6 +457,8 @@ if config["primer_file"] != "NONE":
 if config["primer_file"] == "NONE":
     rule RemovePrimers:
         input: rules.QC_filter.output.fq
+        resources:
+            mem_mb = 1
         output: 
             fq = f"{datadir + cln + prdir}" + "{sample}.fastq"
         shell:
@@ -427,6 +478,8 @@ rule QC_clean:
     benchmark:
         f"{logdir + bench}" + "QC_clean_data_{sample}.txt"
     threads: config['threads']['QC']
+    resources:
+        mem_mb = low_memory_job
     params:
         outdir = f"{datadir + qc_post}"
     shell:
@@ -456,6 +509,8 @@ if config["platform"] == "illumina":
         benchmark:
             f"{logdir + bench}" + "Alignment_{sample}.txt"
         threads: config['threads']['Alignments']
+        resources:
+            mem_mb = medium_memory_job
         params:
             mapthreads = config['threads']['Alignments'] - 1,
             filters = config["runparams"]["alignmentfilters"]
@@ -482,6 +537,8 @@ if config["platform"] == "nanopore":
         benchmark:
             f"{logdir + bench}" + "Alignment_{sample}.txt"
         threads: config['threads']['Alignments']
+        resources:
+            mem_mb = medium_memory_job
         params:
             mapthreads = config['threads']['Alignments'] - 1,
             filters = config["runparams"]["alignmentfilters"]
@@ -508,6 +565,8 @@ if config["platform"] == "iontorrent":
         benchmark:
             f"{logdir + bench}" + "Alignment_{sample}.txt"
         threads: config['threads']['Alignments']
+        resources:
+            mem_mb = medium_memory_job
         params:
             mapthreads = config['threads']['Alignments'] - 1,
             filters = config["runparams"]["alignmentfilters"]
@@ -553,6 +612,8 @@ rule Consensus:
     benchmark:
         f"{logdir + bench}" + "Consensus_{sample}.txt"
     threads: config['threads']['Consensus']
+    resources:
+        mem_mb = medium_memory_job
     shell:
         """
         TrueConsense --input {input.bam} \
@@ -589,6 +650,9 @@ rule Concat_Seqs:
         cov10 = f"{res + seqs}" + "concat_cov_ge_10.fasta",
         cov50 = f"{res + seqs}" + "concat_cov_ge_50.fasta",
         cov100 = f"{res + seqs}" + "concat_cov_ge_100.fasta",
+    threads: 1
+    resources:
+        mem_mb = low_memory_job
     shell:
         """
         cat {input.cov1} >> {output.cov1}
@@ -613,6 +677,9 @@ rule VCF_to_TSV:
         cov50 = temp(f"{datadir + aln + vf}" + "{sample}_cov_ge_50.tsv"),
         cov100 = temp(f"{datadir + aln + vf}" + "{sample}_cov_ge_100.tsv"),
     conda: f"{conda_envs}Mutations.yaml"
+    threads: config['threads']['Index']
+    resources:
+        mem_mb = low_memory_job
     log:
         f"{logdir}" + "vcf_to_tsv_{sample}.log"
     shell:
@@ -659,6 +726,9 @@ rule Concat_TSV_coverages:
         cov100 = f"{res + muts}concat_mutations_cov_ge_100.tsv",
     log:
         f"{logdir}concat_tsv.log"
+    threads: 1
+    resources:
+        mem_mb = low_memory_job
     run:
         shell("echo -e 'Sample\tReference_Chromosome\tPosition\tReference\tAlternative\tDepth' > {output.cov1} 2> {log}")
         shell("echo -e 'Sample\tReference_Chromosome\tPosition\tReference\tAlternative\tDepth' > {output.cov5} 2> {log}")
@@ -681,6 +751,8 @@ rule Get_Breadth_of_coverage:
     conda:
         f"{conda_envs}Consensus.yaml"
     threads: 1
+    resources:
+        mem_mb = low_memory_job
     params:
         script = srcdir("scripts/boc.py")
     shell:
@@ -695,6 +767,8 @@ rule concat_boc:
                     sample = SAMPLES)
     output: f"{res}Width_of_coverage.tsv"
     threads: 1
+    resources:
+        mem_mb = low_memory_job
     shell:
         """
         echo -e "Sample_name\tWidth_at_mincov_1\tWidth_at_mincov_5\tWidth_at_mincov_10\tWidth_at_mincov_50\tWidth_at_mincov_100" > {output}
@@ -708,6 +782,8 @@ if config["primer_file"] != "NONE":
         output: 
             ampcov = f"{datadir + prim}" + "{sample}_ampliconcoverage.csv"
         threads: 1
+        resources:
+            mem_mb = low_memory_job
         conda:
             f"{conda_envs}Clean.yaml"
         params:
@@ -725,6 +801,8 @@ if config["primer_file"] != "NONE":
         input: expand(f"{datadir + prim}" + "{sample}_ampliconcoverage.csv", sample = SAMPLES)
         output: f"{res}Amplicon_coverage.csv"
         threads: 1
+        resources:
+            mem_mb = low_memory_job
         conda:
             f"{conda_envs}Clean.yaml"
         params:
@@ -758,6 +836,8 @@ if config['platform'] == "illumina":
         benchmark:
             f"{logdir + bench}" + "MultiQC_report.txt"
         threads: 1
+        resources:
+            mem_mb = medium_memory_job
         params:
             conffile = srcdir('files/multiqc_config.yaml'),
             outdir = f"{res}"
@@ -789,6 +869,8 @@ if config['platform'] == "nanopore" or config['platform'] == "iontorrent":
         benchmark:
             f"{logdir + bench}" + "MultiQC_report.txt"
         threads: 1
+        resources:
+            mem_mb = medium_memory_job
         params:
             conffile = srcdir('files/multiqc_config.yaml'),
             outdir = f"{res}"
