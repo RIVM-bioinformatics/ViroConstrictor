@@ -1,9 +1,12 @@
+"""
+Starting point of the ViroConstrictor pipeline and wrapper
+
+Copyright © 2021 RIVM
+
+https://github.com/RIVM-bioinformatics/ViroConstrictor
+"""
+
 # pylint: disable=C0103
-
-
-"""
-#placeholder block
-"""
 
 import argparse
 import multiprocessing
