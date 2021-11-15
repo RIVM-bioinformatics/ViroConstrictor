@@ -9,6 +9,11 @@ import os
 import yaml
 
 
+def get_max_local_mem():
+    avl_mem_bytes = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
+    return int(round(avl_mem_bytes / (1024.0 ** 2) - 2000, -3))
+
+
 def SnakemakeConfig(conf, cores, dryrun):
     cores = cores - 2
     compmode = conf["COMPUTING"]["compmode"]
@@ -25,13 +30,14 @@ def SnakemakeConfig(conf, cores, dryrun):
     if compmode == "grid":
         queuename = conf["COMPUTING"]["queuename"]
         threads = "{threads}"
+        mem = "{resources.mem_mb}"
         config = {
             "cores": 300,
             "latency-wait": 60,
             "use-conda": True,
             "dryrun": dryrun,
             "jobname": "ViroConstrictor_{name}.jobid{jobid}",
-            "drmaa": f' -q {queuename} -n {threads} -R "span[hosts=1]"',
+            "drmaa": f' -q {queuename} -n {threads} -R "span[hosts=1]" -M {mem}',
             "drmaa-log-dir": "logs/drmaa",
         }
 
@@ -50,6 +56,8 @@ def SnakemakeParams(conf, cores, ref, prim, feats, platform, samplesheet, amplic
 
     params = {
         "sample_sheet": samplesheet,
+        "computing_execution": conf["COMPUTING"]["compmode"],
+        "max_local_mem": get_max_local_mem(),
         "reference_file": ref,
         "primer_file": prim,
         "features_file": feats,
@@ -60,7 +68,7 @@ def SnakemakeParams(conf, cores, ref, prim, feats, platform, samplesheet, amplic
             "QC": threads_midcpu,
             "AdapterRemoval": threads_lowcpu,
             "PrimerRemoval": threads_highcpu,
-            "Consensus": threads_lowcpu,
+            "Consensus": threads_midcpu,
             "Index": threads_lowcpu,
             "Typing": threads_lowcpu,
         },
