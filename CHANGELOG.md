@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.0](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v0.2.3...v0.3.0) (2021-11-15)
+
+
+### Features
+
+* allow ViroConstrictor to update itself to latest release ([11ad616](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/11ad6160f7748556598e7447b35975b9dfb378fd))
+* flexible memory requirements per workflow job ([7c189cd](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/7c189cdac758f49fcc578ec228abb21c2f5af1ad))
+
+
+### Bug Fixes
+
+* change consensus calling to a 'mid' cpu-task ([3094b78](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/3094b78bbce88f9df5b71e8de8ac2c5ce737374a))
+
 ### [0.2.3](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v0.2.2...v0.2.3) (2021-11-03)
 
 
