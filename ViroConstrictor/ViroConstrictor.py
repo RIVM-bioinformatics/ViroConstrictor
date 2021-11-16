@@ -210,7 +210,7 @@ def main():
     flags = get_args(sys.argv[1:])
 
     if not flags.skip_updates:
-        update(sys.argv, conf, flags)
+        update(sys.argv, conf)
 
     inpath = os.path.abspath(flags.input)
     refpath = os.path.abspath(flags.reference)
