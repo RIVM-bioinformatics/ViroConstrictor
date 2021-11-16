@@ -7,6 +7,7 @@ This is so a user doesn't have to give this information manually on every run
 import configparser
 import os
 import readline
+import subprocess
 import sys
 
 from .functions import color, tabCompleter
@@ -33,7 +34,7 @@ def AskPrompts(intro, prompt, options, fixedchoices=False):
         readline.parse_and_bind("tab: complete")
         readline.set_completer(completer.listCompleter)
 
-    os.system("clear")
+    subprocess.call("/bin/clear", shell=False)
     print(intro)
     while "the answer is invalid":
         if fixedchoices is True:
