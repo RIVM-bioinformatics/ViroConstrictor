@@ -9,7 +9,7 @@ from .userprofile import AskPrompts
 from .version import __version__
 
 
-def update(args, conf):
+def update(sysargs, conf):
 
     autocontinue = False
     ask_prompt = False
@@ -58,7 +58,7 @@ def update(args, conf):
                 f"ViroConstrictor updated to {color.YELLOW + color.BOLD}{latest_release_tag}{color.END}"
             )
 
-            subprocess.run(args)
+            subprocess.run(sysargs)
             sys.exit(0)
         return
 
@@ -115,7 +115,7 @@ Latest version: {color.GREEN + color.BOLD}{latest_release_tag}{color.END}\n""",
                     f"ViroConstrictor updated to {color.YELLOW + color.BOLD}{latest_release_tag}{color.END}"
                 )
 
-                subprocess.run(args)
+                subprocess.run(sysargs)
                 sys.exit(0)
             print(f"Skipping update to version {latest_release_tag}")
             print(f"Continuing...")

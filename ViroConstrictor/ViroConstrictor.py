@@ -66,7 +66,7 @@ def get_args(givenargs):
 
     required_args = arg.add_argument_group("Required arguments")
     optional_args = arg.add_argument_group("Optional arguments")
-    
+
     required_args.add_argument(
         "--input",
         "-i",
@@ -165,6 +165,10 @@ def get_args(givenargs):
         help="Run the workflow without actually doing anything",
     )
 
+    optional_args.add_argument(
+        "--skip-updates", action="store_true", help="Skip the update check",
+    )
+
     if len(givenargs) < 1:
         print(
             f"{arg.prog} was called but no arguments were given, please try again\n\tUse '{arg.prog} -h' to see the help document"
@@ -203,9 +207,10 @@ def main():
     ##> Check the default userprofile, make it if it doesn't exist
     conf = ReadConfig(os.path.expanduser("~/.ViroConstrictor_defaultprofile.ini"))
 
-    update(sys.argv, conf)
-
     flags = get_args(sys.argv[1:])
+
+    if not flags.skip_updates:
+        update(sys.argv, conf, flags)
 
     inpath = os.path.abspath(flags.input)
     refpath = os.path.abspath(flags.reference)
