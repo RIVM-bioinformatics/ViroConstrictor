@@ -60,7 +60,13 @@ setup(
     package_data={
         "ViroConstrictor": ["workflow/envs/*", "workflow/scripts/*", "workflow/files/*"]
     },
-    install_requires=["biopython>=1.78", "snakemake>=6.0.5", "pyyaml<=6.0"],
+    install_requires=[
+        "urllib3>=1.26",
+        "biopython==1.78",
+        "drmaa==0.7.9",
+        "fpdf==1.7.2",
+        "pyyaml==6.0",
+    ],
     entry_points={
         "console_scripts": [
             "ViroConstrictor = ViroConstrictor.ViroConstrictor:main",
