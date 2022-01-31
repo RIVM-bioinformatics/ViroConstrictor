@@ -62,7 +62,7 @@ setup(
     },
     install_requires=[
         "urllib3>=1.26",
-        "biopython==1.78",
+        "biopython==1.79",
         "drmaa==0.7.9",
         "fpdf==1.7.2",
         "pyyaml==6.0",
