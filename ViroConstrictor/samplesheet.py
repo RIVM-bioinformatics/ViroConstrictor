@@ -39,12 +39,12 @@ def nanopore_sheet(inputdir, sheet):
 
 
 def iontorrent_sheet(inputdir, sheet):
-    nanoporepattern = re.compile(r"(.*)\.f(ast)?q(\.gz)?")
+    iontorrentpattern = re.compile(r"(.*)\.f(ast)?q(\.gz)?")
     samples = {}
     for dirname, subdir, filename in os.walk(inputdir):
         for files in filename:
             fullpath = os.path.join(dirname, files)
-            match = nanoporepattern.fullmatch(files)
+            match = iontorrentpattern.fullmatch(files)
             if match:
                 samples.setdefault(match.group(1), fullpath)
     with open(sheet, "w") as samplesheet:
