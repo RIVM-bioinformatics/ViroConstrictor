@@ -298,7 +298,7 @@ Please check the reference fasta and try again. Exiting...
     parsedconfig = yaml.safe_load(openedconfig)
 
     if conf["COMPUTING"]["compmode"] == "local":
-        snakemake.snakemake(
+        status = snakemake.snakemake(
             Snakefile,
             workdir=workdir,
             cores=parsedconfig["cores"],
@@ -311,7 +311,7 @@ Please check the reference fasta and try again. Exiting...
             restart_times=3,
         )
     if conf["COMPUTING"]["compmode"] == "grid":
-        snakemake.snakemake(
+        status = snakemake.snakemake(
             Snakefile,
             workdir=workdir,
             cores=parsedconfig["cores"],
@@ -327,7 +327,7 @@ Please check the reference fasta and try again. Exiting...
             restart_times=3,
         )
 
-    if parsedconfig["dryrun"] is False:
+    if parsedconfig["dryrun"] is False and status is True:
         snakemake.snakemake(
             Snakefile,
             workdir=workdir,
@@ -335,3 +335,8 @@ Please check the reference fasta and try again. Exiting...
             configfiles=[snakeparams],
             quiet=True,
         )
+        
+    if status is True:
+        exit(0)
+    else:
+        exit(1)
