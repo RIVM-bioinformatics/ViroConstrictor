@@ -4,9 +4,20 @@
 Construct and write configuration files for SnakeMake
 """
 
+import multiprocessing
 import os
 
 import yaml
+
+
+def set_cores(cores):
+    available = multiprocessing.cpu_count()
+    if cores == available:
+        return cores - 2
+    if cores > available:
+        return available - 2
+    return cores
+
 
 
 def get_max_local_mem():
@@ -15,7 +26,7 @@ def get_max_local_mem():
 
 
 def SnakemakeConfig(conf, cores, dryrun):
-    cores = cores - 2
+    cores = set_cores(cores)
     compmode = conf["COMPUTING"]["compmode"]
 
     if compmode == "local":
