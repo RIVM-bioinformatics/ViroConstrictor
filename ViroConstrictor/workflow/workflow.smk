@@ -238,8 +238,11 @@ if config["platform"] == "illumina":
         shell:
             """
             fastp --thread {threads} -i {input} \
-            --cut_right -M {params.score} -W {params.size} -l {params.length} \
-            -o {output.fq} -h {output.html} -j {output.json} > {log} 2>&1
+            -A -Q --cut_right \
+            --cut_right_mean_quality {params.score} \
+            --cut_right_window_size {params.size} \
+            -l {params.length} -o {output.fq} \
+            -h {output.html} -j {output.json} > {log} 2>&1
             """
 
 if config["platform"] == "nanopore":
@@ -329,8 +332,11 @@ if config["platform"] == "nanopore":
         shell:
             """
             fastp --thread {threads} -i {input} \
-            --cut_right -M {params.score} -W {params.size} -l {params.length} \
-            -o {output.fq} -h {output.html} -j {output.json} > {log} 2>&1
+            -A -Q --cut_right \
+            --cut_right_mean_quality {params.score} \
+            --cut_right_window_size {params.size} \
+            -l {params.length} -o {output.fq} \
+            -h {output.html} -j {output.json} > {log} 2>&1
             """
 
 if config["platform"] == "iontorrent":
@@ -420,8 +426,11 @@ if config["platform"] == "iontorrent":
         shell:
             """
             fastp --thread {threads} -i {input} \
-            --cut_right -M {params.score} -W {params.size} -l {params.length} \
-            -o {output.fq} -h {output.html} -j {output.json} > {log} 2>&1
+            -A -Q --cut_right \
+            --cut_right_mean_quality {params.score} \
+            --cut_right_window_size {params.size} \
+            -l {params.length} -o {output.fq} \
+            -h {output.html} -j {output.json} > {log} 2>&1
             """
 
 if config["primer_file"] != "NONE":
