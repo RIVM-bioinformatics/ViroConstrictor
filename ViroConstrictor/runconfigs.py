@@ -125,3 +125,8 @@ def WriteConfigs(
     parameters = os.getcwd() + "/params.yaml"
     snakeconfig = os.getcwd() + "/config.yaml"
     return parameters, snakeconfig
+
+def LoadConf(configfile):
+    with open(configfile, "r") as ConfIn:
+        conf = yaml.load(ConfIn, Loader=yaml.FullLoader)
+    return conf
