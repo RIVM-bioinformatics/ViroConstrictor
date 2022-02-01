@@ -12,7 +12,7 @@ shell.executable("/bin/bash")
 
 SAMPLES = {}
 with open(config["sample_sheet"]) as sample_sheet_file:
-    SAMPLES = yaml.load(sample_sheet_file)
+    SAMPLES = yaml.safe_load(sample_sheet_file)
 
 primerfile = config["primer_file"]
 
