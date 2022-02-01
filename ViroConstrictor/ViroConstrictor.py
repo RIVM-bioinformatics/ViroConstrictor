@@ -18,7 +18,7 @@ import snakemake
 import yaml
 
 from .functions import MyHelpFormatter, color
-from .runconfigs import WriteConfigs
+from .runconfigs import LoadConf, WriteConfigs
 from .samplesheet import WriteSampleSheet
 from .update import update
 from .userprofile import ReadConfig
@@ -294,8 +294,7 @@ Please check the reference fasta and try again. Exiting...
         flags.dryrun,
     )
 
-    openedconfig = open(snakeconfig)
-    parsedconfig = yaml.safe_load(openedconfig)
+    parsedconfig = LoadConf(snakeconfig)
 
     if conf["COMPUTING"]["compmode"] == "local":
         status = snakemake.snakemake(
