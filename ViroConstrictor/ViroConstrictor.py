@@ -24,6 +24,7 @@ from .update import update
 from .userprofile import ReadConfig
 from .validatefasta import IsValidFasta
 from .version import __version__
+from .runreport import WriteReport
 
 yaml.warnings({"YAMLLoadWarning": False})
 
@@ -213,6 +214,7 @@ def main():
         update(sys.argv, conf)
 
     inpath = os.path.abspath(flags.input)
+    start_path = os.getcwd()
     refpath = os.path.abspath(flags.reference)
 
     if flags.primers != "NONE":
@@ -227,9 +229,9 @@ def main():
 
     outpath = os.path.abspath(flags.output)
 
-    here = os.path.abspath(os.path.dirname(__file__))
+    exec_folder = os.path.abspath(os.path.dirname(__file__))
 
-    Snakefile = os.path.join(here, "workflow", "workflow.smk")
+    Snakefile = os.path.join(exec_folder, "workflow", "workflow.smk")
 
     ##@ check if the input directory contains valid files
     if CheckInputFiles(inpath) is False:
@@ -334,7 +336,14 @@ Please check the reference fasta and try again. Exiting...
             configfiles=[snakeparams],
             quiet=True,
         )
-        
+
+    if status is False:
+        workflow_state = "Failed"
+    else:
+        workflow_state = "Success"
+
+    WriteReport(workdir, inpath, start_path, conf, LoadConf(snakeparams), LoadConf(snakeconfig), workflow_state)
+
     if status is True:
         exit(0)
     else:
