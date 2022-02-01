@@ -541,10 +541,11 @@ if config["platform"] == "nanopore":
             mem_mb = medium_memory_job
         params:
             mapthreads = config['threads']['Alignments'] - 1,
-            filters = config["runparams"]["alignmentfilters"]
+            filters = config["runparams"]["alignmentfilters"],
+            align_flags = '-ax map-ont -E2,0 -O8,24 -A4 -B4'
         shell: 
             """
-            minimap2 -ax map-ont -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
+            minimap2 {params.align_flags} -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
             samtools view -@ {threads} {params.filters} -uS 2>> {log} |\
             samtools sort -o {output.bam} >> {log} 2>&1
             samtools index {output.bam} >> {log} 2>&1
