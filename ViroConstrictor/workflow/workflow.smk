@@ -888,3 +888,18 @@ if config['platform'] == "nanopore" or config['platform'] == "iontorrent":
             """
             multiqc -d --force --config {params.conffile} -o {params.outdir} -n multiqc.html {input} > {log} 2>&1
             """
+
+onsuccess:
+    print("""
+    ViroConstrictor is finished with processing all the files in the given input directory.
+
+    Generating reports and shutting down...
+    """)
+    return True
+
+onerror:
+    print("""
+    An error occurred and ViroConstrictor had to shut down.
+    Please check the input and lugfiles for any abnormalities and try again.
+    """)
+    return False
