@@ -19,7 +19,6 @@ def set_cores(cores):
     return cores
 
 
-
 def get_max_local_mem():
     avl_mem_bytes = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
     return int(round(avl_mem_bytes / (1024.0 ** 2) - 2000, -3))
@@ -125,6 +124,7 @@ def WriteConfigs(
     parameters = os.getcwd() + "/params.yaml"
     snakeconfig = os.getcwd() + "/config.yaml"
     return parameters, snakeconfig
+
 
 def LoadConf(configfile):
     with open(configfile, "r") as ConfIn:

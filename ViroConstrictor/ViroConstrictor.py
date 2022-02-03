@@ -19,12 +19,12 @@ import yaml
 
 from .functions import MyHelpFormatter, color
 from .runconfigs import LoadConf, WriteConfigs
+from .runreport import WriteReport
 from .samplesheet import WriteSampleSheet
 from .update import update
 from .userprofile import ReadConfig
 from .validatefasta import IsValidFasta
 from .version import __version__
-from .runreport import WriteReport
 
 yaml.warnings({"YAMLLoadWarning": False})
 
@@ -342,7 +342,15 @@ Please check the reference fasta and try again. Exiting...
     else:
         workflow_state = "Success"
 
-    WriteReport(workdir, inpath, start_path, conf, LoadConf(snakeparams), LoadConf(snakeconfig), workflow_state)
+    WriteReport(
+        workdir,
+        inpath,
+        start_path,
+        conf,
+        LoadConf(snakeparams),
+        LoadConf(snakeconfig),
+        workflow_state,
+    )
 
     if status is True:
         exit(0)
