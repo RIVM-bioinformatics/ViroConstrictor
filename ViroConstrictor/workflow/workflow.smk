@@ -452,13 +452,15 @@ if config["primer_file"] != "NONE":
         resources:
             mem_mb = high_memory_job
         params:
-            amplicontype = config["amplicon_type"]
+            amplicontype = config["amplicon_type"],
+            pr_mm_rate = config["primer_mismatch_rate"]
         shell:
             """
             AmpliGone -i {input.fq} \
             -ref {input.ref} -pr {input.pr} \
             -o {output.fq} \
             -at {params.amplicontype} \
+            --error-rate {params.pr_mm_rate} \
             --export-primers {output.ep} \
             -to \
             -t {threads}

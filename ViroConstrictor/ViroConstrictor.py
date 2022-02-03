@@ -134,6 +134,15 @@ def get_args(givenargs):
         help="GFF file containing the Open Reading Frame (ORF) information of the reference",
         required=True,
     )
+    
+    optional_args.add_argument(
+        "--primer-mismatch-rate",
+        "-pmr",
+        type=int,
+        default=3,
+        metavar="N",
+        help="Maximum number of mismatches allowed in the primer sequences during primer coordinate search. Use 0 for exact primer matches\nDefault is 3.",
+    )
 
     optional_args.add_argument(
         "--threads",
@@ -293,6 +302,7 @@ Please check the reference fasta and try again. Exiting...
         featspath,
         samplesheet,
         flags.amplicon_type,
+        flags.primer_mismatch_rate,
         flags.dryrun,
     )
 
