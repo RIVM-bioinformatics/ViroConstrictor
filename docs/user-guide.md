@@ -93,8 +93,8 @@ Please also see the command-line help document for a quick explanation of every 
         --threads {threads}
     ```
 
-Here, `threads` refers to the amount of threads that ViroConstrictor may use on your LOCAL machine. If you're using ViroConstrictor on a HPC/cluster then these threads will only be used durin the pre-processing steps.  
-If you're using ViroConstricctor on your local machine then the given amount of threads will act as a 'ceiling' of usable threads during analysis.
+Here, `threads` refers to the amount of threads that ViroConstrictor may use on your LOCAL machine. If you're using ViroConstrictor on a HPC/cluster then these threads will only be used during the pre-processing steps.  
+If you're using ViroConstrictor on your local machine then the given amount of threads will act as a 'ceiling' of usable threads during analysis.
 
 
 If your sequencing protocol does not use primers then set "NONE" for the primers flag with `--primers NONE`.
@@ -109,6 +109,7 @@ Below, you can find a brief summary if all available command line options and th
 | `--primers` /<br>`-pr` | [primer fasta] / `NONE` | Used primer sequences in FASTA format.<br>Use `NONE` if your sequencing protocol does not use primers|
 | `--platform` | `nanopore` / `illumina` / `iontorrent` | The sequencing platform that was used to generate the dataset. Either being 'nanopore', 'illumina' or 'iontorrent'.<br>Default is `nanopore` |
 | `--amplicon-type` /<br>`-at` | `end-to-end` / `end-to-mid` | The amplicon type that matches your sequencing experiment/protocol.<br>Either being `end-to-end` or `end-to-mid` |
+| `--primer-mismatch-rate`/<br>`-pmr` | number of maximum mismatches | The maximum amount of mismatches that are tolerated during the primer search. Mismatches are counted in substitutions between primer and reference. Insertions and/or deletions are not taken into account.<br>Default maximum amount of mismatches is **3** |
 | `--features` /<br>`-gff` | [GFF file] / `NONE` | A GFF3 file that contains the Open Reading Frame information of the given reference.<br>Use `NONE` if you don't have access to a GFF3 file with this information |
 | `--threads` /<br>`-t` | Amount of threads | Number of local threads that are available to use.<br>Default is the number of available threads in your system |
 | `--dryrun` | N/A | Run the ViroConstrictor workflow without actually doing anything.<br>(default: False) |
