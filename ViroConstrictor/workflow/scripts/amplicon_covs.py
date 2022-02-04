@@ -224,6 +224,16 @@ if __name__ == "__main__":
             )
         sys.exit()
 
+    if len(prims) <= 0:
+        print("Primers file is empty, writing output and exiting...")
+        with open(flags.output, "w") as f:
+            f.write(
+                f"""name,
+{flags.key},
+                """
+            )
+            sys.exit()
+
     lf, rf = split_frames(prims)
 
     lf["name"] = lf["name"].apply(remove_keyword)

@@ -6,4 +6,4 @@ channels:
   - anaconda
   - defaults
 dependencies:
-  - bcftools==1.12
+  - bcftools==1.14
