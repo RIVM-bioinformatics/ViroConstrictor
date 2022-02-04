@@ -134,7 +134,7 @@ def get_args(givenargs):
         help="GFF file containing the Open Reading Frame (ORF) information of the reference",
         required=True,
     )
-    
+
     optional_args.add_argument(
         "--primer-mismatch-rate",
         "-pmr",

@@ -86,7 +86,9 @@ def WriteReport(workingdir, inpath, startpath, conf, sparams, sconfig, status):
     pdf = analysis_details(pdf, "Sequencing platform:", sconfig["platform"])
     pdf = analysis_details(pdf, "Selected amplicon type:", sconfig["amplicon_type"])
     if sconfig["primer_file"] != "None":
-        pdf = analysis_details(pdf, "Primer mismatch rate:", str(sconfig["primer_mismatch_rate"]))
+        pdf = analysis_details(
+            pdf, "Primer mismatch rate:", str(sconfig["primer_mismatch_rate"])
+        )
 
     pdf.ln(5)
 

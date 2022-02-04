@@ -54,7 +54,9 @@ def SnakemakeConfig(conf, cores, dryrun):
     return config
 
 
-def SnakemakeParams(conf, cores, ref, prim, feats, platform, samplesheet, amplicon, pr_mm_rate):
+def SnakemakeParams(
+    conf, cores, ref, prim, feats, platform, samplesheet, amplicon, pr_mm_rate
+):
     if conf["COMPUTING"]["compmode"] == "local":
         threads_highcpu = int(cores - 2)
         threads_midcpu = int(cores / 2)
@@ -99,7 +101,17 @@ def SnakemakeParams(conf, cores, ref, prim, feats, platform, samplesheet, amplic
 
 
 def WriteConfigs(
-    conf, cores, cwd, platform, ref, prims, feats, samplesheet, amplicon_type, pr_mm_rate, dryrun
+    conf,
+    cores,
+    cwd,
+    platform,
+    ref,
+    prims,
+    feats,
+    samplesheet,
+    amplicon_type,
+    pr_mm_rate,
+    dryrun,
 ):
     if not os.path.exists(cwd + "/config"):
         os.makedirs(cwd + "/config")
@@ -115,7 +127,15 @@ def WriteConfigs(
     with open("params.yaml", "w") as ParamsOut:
         yaml.dump(
             SnakemakeParams(
-                conf, cores, ref, prims, feats, platform, samplesheet, amplicon_type, pr_mm_rate
+                conf,
+                cores,
+                ref,
+                prims,
+                feats,
+                platform,
+                samplesheet,
+                amplicon_type,
+                pr_mm_rate,
             ),
             ParamsOut,
             default_flow_style=False,
