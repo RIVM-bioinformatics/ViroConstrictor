@@ -16,6 +16,8 @@ In order to get optimal results, please make sure the fasta headers in your fast
 
 `>{primer-name}_{primer-number}_{orientation}`
 
+It's important that the primers which together form a single amplicon have the same primer-name and number.  
+
 Orientation keywords for forward primers are: *"LEFT"*/*"PLUS"*/*"POSITIVE"*/*"FORWARD"*  
 Orientation keywords for reverse primers are: *"RIGHT"*/*"MINUS"*/*"NEGATIVE"*/*"REVERSE"*
 
