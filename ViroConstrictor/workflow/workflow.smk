@@ -12,7 +12,7 @@ shell.executable("/bin/bash")
 
 SAMPLES = {}
 with open(config["sample_sheet"]) as sample_sheet_file:
-    SAMPLES = yaml.load(sample_sheet_file)
+    SAMPLES = yaml.safe_load(sample_sheet_file)
 
 primerfile = config["primer_file"]
 
@@ -238,8 +238,11 @@ if config["platform"] == "illumina":
         shell:
             """
             fastp --thread {threads} -i {input} \
-            --cut_right -M {params.score} -W {params.size} -l {params.length} \
-            -o {output.fq} -h {output.html} -j {output.json} > {log} 2>&1
+            -A -Q --cut_right \
+            --cut_right_mean_quality {params.score} \
+            --cut_right_window_size {params.size} \
+            -l {params.length} -o {output.fq} \
+            -h {output.html} -j {output.json} > {log} 2>&1
             """
 
 if config["platform"] == "nanopore":
@@ -329,8 +332,11 @@ if config["platform"] == "nanopore":
         shell:
             """
             fastp --thread {threads} -i {input} \
-            --cut_right -M {params.score} -W {params.size} -l {params.length} \
-            -o {output.fq} -h {output.html} -j {output.json} > {log} 2>&1
+            -A -Q --cut_right \
+            --cut_right_mean_quality {params.score} \
+            --cut_right_window_size {params.size} \
+            -l {params.length} -o {output.fq} \
+            -h {output.html} -j {output.json} > {log} 2>&1
             """
 
 if config["platform"] == "iontorrent":
@@ -420,8 +426,11 @@ if config["platform"] == "iontorrent":
         shell:
             """
             fastp --thread {threads} -i {input} \
-            --cut_right -M {params.score} -W {params.size} -l {params.length} \
-            -o {output.fq} -h {output.html} -j {output.json} > {log} 2>&1
+            -A -Q --cut_right \
+            --cut_right_mean_quality {params.score} \
+            --cut_right_window_size {params.size} \
+            -l {params.length} -o {output.fq} \
+            -h {output.html} -j {output.json} > {log} 2>&1
             """
 
 if config["primer_file"] != "NONE":
@@ -443,13 +452,15 @@ if config["primer_file"] != "NONE":
         resources:
             mem_mb = high_memory_job
         params:
-            amplicontype = config["amplicon_type"]
+            amplicontype = config["amplicon_type"],
+            pr_mm_rate = config["primer_mismatch_rate"]
         shell:
             """
             AmpliGone -i {input.fq} \
             -ref {input.ref} -pr {input.pr} \
             -o {output.fq} \
             -at {params.amplicontype} \
+            --error-rate {params.pr_mm_rate} \
             --export-primers {output.ep} \
             -to \
             -t {threads}
@@ -541,10 +552,11 @@ if config["platform"] == "nanopore":
             mem_mb = medium_memory_job
         params:
             mapthreads = config['threads']['Alignments'] - 1,
-            filters = config["runparams"]["alignmentfilters"]
+            filters = config["runparams"]["alignmentfilters"],
+            align_flags = '-ax map-ont -E2,0 -O8,24 -A4 -B4'
         shell: 
             """
-            minimap2 -ax map-ont -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
+            minimap2 {params.align_flags} -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
             samtools view -@ {threads} {params.filters} -uS 2>> {log} |\
             samtools sort -o {output.bam} >> {log} 2>&1
             samtools index {output.bam} >> {log} 2>&1
@@ -878,3 +890,18 @@ if config['platform'] == "nanopore" or config['platform'] == "iontorrent":
             """
             multiqc -d --force --config {params.conffile} -o {params.outdir} -n multiqc.html {input} > {log} 2>&1
             """
+
+onsuccess:
+    print("""
+    ViroConstrictor is finished with processing all the files in the given input directory.
+
+    Generating reports and shutting down...
+    """)
+    return True
+
+onerror:
+    print("""
+    An error occurred and ViroConstrictor had to shut down.
+    Please check the input and lugfiles for any abnormalities and try again.
+    """)
+    return False

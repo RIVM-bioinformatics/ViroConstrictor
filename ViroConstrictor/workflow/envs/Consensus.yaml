@@ -8,13 +8,13 @@ channels:
 dependencies:
   - python=3.7
   - libffi==3.3
-  - pandas>=1.2.3
-  - pysamstats>=1.1
-  - pysam<0.16
-  - biopython>=1.78
-  - parmap==1.5.2
-  - tqdm==4.59.0
+  - pandas==1.3.5
+  - pysam=0.15
+  - pysamstats==1.1.2
+  - biopython==1.79
+  - parmap==1.5.3
+  - tqdm=4.62
   - pip
   - pip:
     - gffpandas>=1.2
-    - git+https://github.com/RIVM-bioinformatics/TrueConsense.git
+    - git+https://github.com/RIVM-bioinformatics/TrueConsense.git@v0.3.0

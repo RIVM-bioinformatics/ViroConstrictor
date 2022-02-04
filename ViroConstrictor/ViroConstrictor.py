@@ -18,7 +18,8 @@ import snakemake
 import yaml
 
 from .functions import MyHelpFormatter, color
-from .runconfigs import WriteConfigs
+from .runconfigs import LoadConf, WriteConfigs
+from .runreport import WriteReport
 from .samplesheet import WriteSampleSheet
 from .update import update
 from .userprofile import ReadConfig
@@ -64,7 +65,10 @@ def get_args(givenargs):
         add_help=False,
     )
 
-    arg.add_argument(
+    required_args = arg.add_argument_group("Required arguments")
+    optional_args = arg.add_argument_group("Optional arguments")
+
+    required_args.add_argument(
         "--input",
         "-i",
         type=dir_path,
@@ -73,7 +77,7 @@ def get_args(givenargs):
         required=True,
     )
 
-    arg.add_argument(
+    required_args.add_argument(
         "--output",
         "-o",
         metavar="DIR",
@@ -83,7 +87,7 @@ def get_args(givenargs):
         required=True,
     )
 
-    arg.add_argument(
+    required_args.add_argument(
         "--reference",
         "-ref",
         type=lambda s: check_input((".fasta", ".fa"), s),
@@ -92,7 +96,7 @@ def get_args(givenargs):
         required=True,
     )
 
-    arg.add_argument(
+    required_args.add_argument(
         "--primers",
         "-pr",
         type=lambda s: check_input((".fasta", ".fa"), s),
@@ -101,7 +105,7 @@ def get_args(givenargs):
         required=True,
     )
 
-    arg.add_argument(
+    required_args.add_argument(
         "--platform",
         default="nanopore",
         const="nanopore",
@@ -111,7 +115,7 @@ def get_args(givenargs):
         required=True,
     )
 
-    arg.add_argument(
+    required_args.add_argument(
         "--amplicon-type",
         "-at",
         default="end-to-end",
@@ -122,7 +126,7 @@ def get_args(givenargs):
         required=True,
     )
 
-    arg.add_argument(
+    required_args.add_argument(
         "--features",
         "-gff",
         type=lambda s: check_input((".gff"), s),
@@ -131,7 +135,16 @@ def get_args(givenargs):
         required=True,
     )
 
-    arg.add_argument(
+    optional_args.add_argument(
+        "--primer-mismatch-rate",
+        "-pmr",
+        type=int,
+        default=3,
+        metavar="N",
+        help="Maximum number of mismatches allowed in the primer sequences during primer coordinate search. Use 0 for exact primer matches\nDefault is 3.",
+    )
+
+    optional_args.add_argument(
         "--threads",
         "-t",
         default=min(multiprocessing.cpu_count(), 128),
@@ -140,7 +153,7 @@ def get_args(givenargs):
         help=f"Number of local threads that are available to use.\nDefault is the number of available threads in your system ({min(multiprocessing.cpu_count(), 128)})",
     )
 
-    arg.add_argument(
+    optional_args.add_argument(
         "--version",
         "-v",
         version=__version__,
@@ -148,7 +161,7 @@ def get_args(givenargs):
         help="Show the ViroConstrictor version and exit",
     )
 
-    arg.add_argument(
+    optional_args.add_argument(
         "--help",
         "-h",
         action="help",
@@ -156,10 +169,14 @@ def get_args(givenargs):
         help="Show this help message and exit",
     )
 
-    arg.add_argument(
+    optional_args.add_argument(
         "--dryrun",
         action="store_true",
         help="Run the workflow without actually doing anything",
+    )
+
+    optional_args.add_argument(
+        "--skip-updates", action="store_true", help="Skip the update check",
     )
 
     if len(givenargs) < 1:
@@ -200,11 +217,13 @@ def main():
     ##> Check the default userprofile, make it if it doesn't exist
     conf = ReadConfig(os.path.expanduser("~/.ViroConstrictor_defaultprofile.ini"))
 
-    update(sys.argv, conf)
-
     flags = get_args(sys.argv[1:])
 
+    if not flags.skip_updates:
+        update(sys.argv, conf)
+
     inpath = os.path.abspath(flags.input)
+    start_path = os.getcwd()
     refpath = os.path.abspath(flags.reference)
 
     if flags.primers != "NONE":
@@ -219,9 +238,9 @@ def main():
 
     outpath = os.path.abspath(flags.output)
 
-    here = os.path.abspath(os.path.dirname(__file__))
+    exec_folder = os.path.abspath(os.path.dirname(__file__))
 
-    Snakefile = os.path.join(here, "workflow", "workflow.smk")
+    Snakefile = os.path.join(exec_folder, "workflow", "workflow.smk")
 
     ##@ check if the input directory contains valid files
     if CheckInputFiles(inpath) is False:
@@ -283,14 +302,14 @@ Please check the reference fasta and try again. Exiting...
         featspath,
         samplesheet,
         flags.amplicon_type,
+        flags.primer_mismatch_rate,
         flags.dryrun,
     )
 
-    openedconfig = open(snakeconfig)
-    parsedconfig = yaml.safe_load(openedconfig)
+    parsedconfig = LoadConf(snakeconfig)
 
     if conf["COMPUTING"]["compmode"] == "local":
-        snakemake.snakemake(
+        status = snakemake.snakemake(
             Snakefile,
             workdir=workdir,
             cores=parsedconfig["cores"],
@@ -303,7 +322,7 @@ Please check the reference fasta and try again. Exiting...
             restart_times=3,
         )
     if conf["COMPUTING"]["compmode"] == "grid":
-        snakemake.snakemake(
+        status = snakemake.snakemake(
             Snakefile,
             workdir=workdir,
             cores=parsedconfig["cores"],
@@ -319,7 +338,7 @@ Please check the reference fasta and try again. Exiting...
             restart_times=3,
         )
 
-    if parsedconfig["dryrun"] is False:
+    if parsedconfig["dryrun"] is False and status is True:
         snakemake.snakemake(
             Snakefile,
             workdir=workdir,
@@ -327,3 +346,23 @@ Please check the reference fasta and try again. Exiting...
             configfiles=[snakeparams],
             quiet=True,
         )
+
+    if status is False:
+        workflow_state = "Failed"
+    else:
+        workflow_state = "Success"
+
+    WriteReport(
+        workdir,
+        inpath,
+        start_path,
+        conf,
+        LoadConf(snakeparams),
+        LoadConf(snakeconfig),
+        workflow_state,
+    )
+
+    if status is True:
+        exit(0)
+    else:
+        exit(1)
