@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.4.1](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v0.4.0...v0.4.1) (2022-03-08)
+
+
+### Bug Fixes
+
+* correct the memory assignment and threads for RemovePrimers job when no primers are given ([a9ebe02](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/a9ebe02cdc7995219d1a3c06fa9be6020881e43a))
+
 ## [0.4.0](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v0.3.0...v0.4.0) (2022-02-04)
 
 
