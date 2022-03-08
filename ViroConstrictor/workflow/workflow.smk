@@ -468,8 +468,9 @@ if config["primer_file"] != "NONE":
 if config["primer_file"] == "NONE":
     rule RemovePrimers:
         input: rules.QC_filter.output.fq
+        threads: 1
         resources:
-            mem_mb = 1
+            mem_mb = low_memory_job
         output: 
             fq = f"{datadir + cln + prdir}" + "{sample}.fastq"
         shell:
