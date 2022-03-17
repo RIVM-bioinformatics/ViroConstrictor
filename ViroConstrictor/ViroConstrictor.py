@@ -17,14 +17,16 @@ import sys
 import snakemake
 import yaml
 
-from .functions import MyHelpFormatter, color
-from .runconfigs import LoadConf, WriteConfigs
-from .runreport import WriteReport
-from .samplesheet import WriteSampleSheet
-from .update import update
-from .userprofile import ReadConfig
-from .validatefasta import IsValidFasta
-from .version import __version__
+from ViroConstrictor import __version__
+from ViroConstrictor.parser import ValidArgs
+
+from ViroConstrictor.functions import MyHelpFormatter, color
+from ViroConstrictor.runconfigs import LoadConf, WriteConfigs
+from ViroConstrictor.runreport import WriteReport
+from ViroConstrictor.samplesheet import WriteSampleSheet
+from ViroConstrictor.update import update
+from ViroConstrictor.userprofile import ReadConfig
+from ViroConstrictor.validatefasta import IsValidFasta
 
 yaml.warnings({"YAMLLoadWarning": False})
 
