@@ -4,7 +4,7 @@ from datetime import datetime
 
 from fpdf import FPDF
 
-from .version import __version__
+from ViroConstrictor import __version__
 
 
 class PDF(FPDF):
