@@ -18,7 +18,6 @@ import snakemake
 import yaml
 
 from ViroConstrictor import __version__
-from ViroConstrictor.parser import ValidArgs
 
 from ViroConstrictor.functions import MyHelpFormatter, color
 from ViroConstrictor.runconfigs import LoadConf, WriteConfigs
