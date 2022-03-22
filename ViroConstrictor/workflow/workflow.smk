@@ -18,6 +18,7 @@ primerfile = config["primer_file"]
 
 if primerfile == "NONE":
     primerfile = srcdir("files/empty.primers")
+primers_extension = primerfile.split('.')[-1]
 
 reffile = config["reference_file"]
 ref_basename = os.path.splitext(os.path.basename(reffile))[0]
@@ -36,6 +37,7 @@ if config["primer_file"] == "NONE":
 else:
     rule all:
         input:
+            f"{datadir + prim}primers.bed",
             f"{res}multiqc.html",
             f"{res}consensus.fasta",
             f"{res}mutations.tsv",
@@ -59,46 +61,28 @@ def high_memory_job(wildcards, threads, attempt):
     return attempt * threads * 4 * 1000
 
 #TODO: Check if this can be done more elegantly than by wrapping everything in an if/else statement
-if config["primer_file"] != "NONE":
-    rule Prepare_ref_and_primers:
-        input:
-            ref = reffile,
-            prm = primerfile
-        output:
-            ref = f"{datadir + refdir + ref_basename}.fasta",
-            prm = f"{datadir + prim}" + "primers.fasta",
-            refindex = f"{datadir + refdir + ref_basename}.fasta.fai"
-        conda:
-            f"{conda_envs}Alignment.yaml"
-        threads: config['threads']['Index']
-        resources:
-            mem_mb = low_memory_job
-        shell:
+rule Prepare_ref:
+    input:
+        ref = reffile,
+    output:
+        ref = f"{datadir + refdir + ref_basename}.fasta",
+        refindex = f"{datadir + refdir + ref_basename}.fasta.fai"
+    conda:
+        f"{conda_envs}Alignment.yaml"
+    threads: config['threads']['Index']
+    resources: mem_mb = low_memory_job
+    shell:
+        """
+        cat {input.ref} | seqkit replace -p "\-" -s -r "N" > {output.ref}
+        samtools faidx {output.ref} -o {output.refindex}
             """
-            cat {input.ref} | seqkit replace -p "\-" -s -r "N" > {output.ref}
-            cat {input.prm} | seqkit replace -p "\-" -s -r "N" > {output.prm}
-            samtools faidx {output.ref} -o {output.refindex}
-            """
-else:
-    rule Prepare_ref_and_primers:
-        input:
-            ref = reffile,
-            prm = primerfile
-        output:
-            ref = f"{datadir + refdir + ref_basename}.fasta",
-            prm = temp(f"{datadir + prim}" + "primers.fasta"),
-            refindex = f"{datadir + refdir + ref_basename}.fasta.fai"
-        conda:
-            f"{conda_envs}Alignment.yaml"
-        threads: config['threads']['Index']
-        resources:
-            mem_mb = low_memory_job
-        shell:
-            """
-            cat {input.ref} | seqkit replace -p "\-" -s -r "N" > {output.ref}
-            cat {input.prm} | seqkit replace -p "\-" -s -r "N" > {output.prm}
-            samtools faidx {output.ref} -o {output.refindex}
-            """
+
+rule CopyPrimersToData:
+    input: primerfile
+    output: f"{datadir + prim}primers.{primers_extension}"
+    threads: 1
+    resources: mem_mb = low_memory_job
+    shell: "cp {input} {output}"
 
 if config["features_file"] != "NONE":
     rule Prepare_features_file:
@@ -114,7 +98,7 @@ if config["features_file"] != "NONE":
             """
 else:
     rule Prepare_features_file:
-        input: rules.Prepare_ref_and_primers.output.ref
+        input: rules.Prepare_ref.output.ref
         output:
             AA  =   temp(f"{datadir + refdir + ref_basename}_ORF_AA.fa"),
             NT  =   temp(f"{datadir + refdir + ref_basename}_ORF_NT.fa"),
@@ -166,7 +150,7 @@ if config["platform"] == "illumina":
 
     rule RemoveAdapters_p1:
         input:
-            ref = rules.Prepare_ref_and_primers.output.ref,
+            ref = rules.Prepare_ref.output.ref,
             fq  = lambda wildcards: (SAMPLES[wildcards.sample][i]
                                 for i in ("R1", "R2")
                                 )
@@ -262,7 +246,7 @@ if config["platform"] == "nanopore":
 
     rule RemoveAdapters_p1:
         input:
-            ref = rules.Prepare_ref_and_primers.output.ref,
+            ref = rules.Prepare_ref.output.ref,
             fq  = lambda wildcards: SAMPLES[wildcards.sample]
         output:
             bam     = f"{datadir + cln + raln}" + "{sample}.bam",
@@ -356,7 +340,7 @@ if config["platform"] == "iontorrent":
 
     rule RemoveAdapters_p1:
         input:
-            ref = rules.Prepare_ref_and_primers.output.ref,
+            ref = rules.Prepare_ref.output.ref,
             fq  = lambda wildcards: SAMPLES[wildcards.sample]
         output:
             bam     = f"{datadir + cln + raln}" + "{sample}.bam",
@@ -426,11 +410,28 @@ if config["platform"] == "iontorrent":
             """
 
 if config["primer_file"] != "NONE":
+    rule PrimersToBED:
+        input:
+            prm = rules.CopyPrimersToData.output,
+            ref = rules.Prepare_ref.output.ref
+        output: primer_bed = f"{datadir + prim}" + "primers.bed"
+        conda: f"{conda_envs}Clean.yaml"
+        params: pr_mm_rate = config["primer_mismatch_rate"]
+        log: f"{logdir}PrimersToBED.log"
+        threads: 1
+        shell:
+            """
+            python -m AmpliGone.fasta2bed \
+                --primers {input.prm} \
+                --reference {input.ref} \
+                --output {output.primer_bed} \
+                --primer-mismatch-rate {params.pr_mm_rate} > {log}
+            """
     rule RemovePrimers:
         input:
             fq = rules.QC_filter.output.fq,
-            pr = rules.Prepare_ref_and_primers.output.prm,
-            ref = rules.Prepare_ref_and_primers.output.ref
+            pr = f"{datadir + prim}" + "primers.bed",
+            ref = rules.Prepare_ref.output.ref
         output:
             fq = f"{datadir + cln + prdir}" + "{sample}.fastq",
             ep = f"{datadir + prim}" + "{sample}_removedprimers.bed"
@@ -448,6 +449,7 @@ if config["primer_file"] != "NONE":
             pr_mm_rate = config["primer_mismatch_rate"]
         shell:
             """
+            echo {input.pr} > {log}
             AmpliGone -i {input.fq} \
             -ref {input.ref} -pr {input.pr} \
             -o {output.fq} \
@@ -455,7 +457,7 @@ if config["primer_file"] != "NONE":
             --error-rate {params.pr_mm_rate} \
             --export-primers {output.ep} \
             -to \
-            -t {threads} > {log} 2>&1
+            -t {threads} >> {log} 2>&1
             """
 if config["primer_file"] == "NONE":
     rule RemovePrimers:
@@ -502,7 +504,7 @@ if config["platform"] == "illumina":
     rule Alignment:
         input:
             fq = rules.RemovePrimers.output.fq,
-            ref = rules.Prepare_ref_and_primers.output.ref
+            ref = rules.Prepare_ref.output.ref
         output:
             bam = f"{datadir + aln + bf}" + "{sample}.bam",
             index = f"{datadir + aln + bf}" + "{sample}.bam.bai"
@@ -530,7 +532,7 @@ if config["platform"] == "nanopore":
     rule Alignment:
         input:
             fq = rules.RemovePrimers.output.fq,
-            ref = rules.Prepare_ref_and_primers.output.ref
+            ref = rules.Prepare_ref.output.ref
         output:
             bam = f"{datadir + aln + bf}" + "{sample}.bam",
             index = f"{datadir + aln + bf}" + "{sample}.bam.bai"
@@ -559,7 +561,7 @@ if config["platform"] == "iontorrent":
     rule Alignment:
         input:
             fq = rules.RemovePrimers.output.fq,
-            ref = rules.Prepare_ref_and_primers.output.ref
+            ref = rules.Prepare_ref.output.ref
         output:
             bam = f"{datadir + aln + bf}" + "{sample}.bam",
             index = f"{datadir + aln + bf}" + "{sample}.bam.bai"
@@ -587,7 +589,7 @@ rule Consensus:
     input:
         bam = rules.Alignment.output.bam,
         gff = rules.Prepare_features_file.output.gff,
-        ref = rules.Prepare_ref_and_primers.output.ref
+        ref = rules.Prepare_ref.output.ref
     output:
         cons = f"{datadir + cons + seqs}" + "{sample}" + f"_cov_ge_{mincov}.fa",
         cov = f"{datadir + cons + covs}" + "{sample}_coverage.tsv",
@@ -671,7 +673,7 @@ rule Concat_TSV_coverages:
 
 rule Get_Breadth_of_coverage:
     input:
-        reference = rules.Prepare_ref_and_primers.output.ref,
+        reference = rules.Prepare_ref.output.ref,
         coverage = rules.Consensus.output.cov,
     output:
         temp(f"{datadir + boc}" + "{sample}.tsv")
@@ -817,6 +819,6 @@ onsuccess:
 onerror:
     print("""
     An error occurred and ViroConstrictor had to shut down.
-    Please check the input and lugfiles for any abnormalities and try again.
+    Please check the input and logfiles for any abnormalities and try again.
     """)
     return False
