@@ -56,10 +56,9 @@ def GetSamples(inputdir, platform):
     return samples
 
 
-def WriteSampleSheet(inputdir, platform):
-    samples = GetSamples(inputdir, platform)
+def WriteSampleSheet(sampledict, platform):
     with open("samplesheet.yaml", "w") as samplesheet:
-        yaml.dump(samples, samplesheet, default_flow_style=False)
+        yaml.dump(sampledict, samplesheet, default_flow_style=False)
 
     samplesheet = f"{os.getcwd()}/samplesheet.yaml"
     return samplesheet
