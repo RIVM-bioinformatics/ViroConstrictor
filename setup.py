@@ -65,6 +65,8 @@ setup(
         "biopython==1.79",
         "drmaa==0.7.9",
         "fpdf==1.7.2",
+        "pandas==1.3.5",
+        "openpyxl==3.0.9",
         "pyyaml==6.0",
     ],
     entry_points={
