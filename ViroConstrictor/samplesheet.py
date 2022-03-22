@@ -20,9 +20,6 @@ def illumina_sheet(inputdir):
                 sample = samples.setdefault(match.group(1), {})
                 sample["R{}".format(match.group(3))] = str(fullpath)
     return samples
-    with open(sheet, "w") as samplesheet:
-        yaml.dump(samples, samplesheet, default_flow_style=False)
-    samplesheet.close()
 
 
 def nanopore_sheet(inputdir):
@@ -35,9 +32,6 @@ def nanopore_sheet(inputdir):
             if match:
                 samples.setdefault(match.group(1), fullpath)
     return samples
-    with open(sheet, "w") as samplesheet:
-        yaml.dump(samples, samplesheet, default_flow_style=False)
-    samplesheet.close()
 
 
 def iontorrent_sheet(inputdir):
@@ -50,9 +44,6 @@ def iontorrent_sheet(inputdir):
             if match:
                 samples.setdefault(match.group(1), fullpath)
     return samples
-    with open(sheet, "w") as samplesheet:
-        yaml.dump(samples, samplesheet, default_flow_style=False)
-    samplesheet.close()
 
 def GetSamples(inputdir, platform):
     if platform == "illumina":
