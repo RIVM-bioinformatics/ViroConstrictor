@@ -211,6 +211,7 @@ if __name__ == "__main__":
         prims = pd.read_csv(
             flags.primers, sep="\t", usecols=[1, 2, 3], names=["start", "end", "name"]
         )[["name", "start", "end"]]
+        prims = prims.sort_values(by="start").reindex()
 
     except Exception:
         print("Error reading primers file")

@@ -100,7 +100,7 @@ def get_args(givenargs):
     required_args.add_argument(
         "--primers",
         "-pr",
-        type=lambda s: check_input((".fasta", ".fa"), s),
+        type=lambda s: check_input((".fasta", ".fa", ".bed"), s),
         metavar="File",
         help="Used primer sequences in FASTA format",
         required=True,
@@ -177,7 +177,9 @@ def get_args(givenargs):
     )
 
     optional_args.add_argument(
-        "--skip-updates", action="store_true", help="Skip the update check",
+        "--skip-updates",
+        action="store_true",
+        help="Skip the update check",
     )
 
     if len(givenargs) < 1:

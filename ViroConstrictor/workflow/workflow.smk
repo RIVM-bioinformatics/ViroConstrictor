@@ -433,7 +433,7 @@ if config["primer_file"] != "NONE":
             ref = rules.Prepare_ref_and_primers.output.ref
         output:
             fq = f"{datadir + cln + prdir}" + "{sample}.fastq",
-            ep = f"{datadir + prim}" + "{sample}_removedprimers.csv"
+            ep = f"{datadir + prim}" + "{sample}_removedprimers.bed"
         conda:
             f"{conda_envs}Clean.yaml"
         log:
@@ -455,7 +455,7 @@ if config["primer_file"] != "NONE":
             --error-rate {params.pr_mm_rate} \
             --export-primers {output.ep} \
             -to \
-            -t {threads}
+            -t {threads} > {log} 2>&1
             """
 if config["primer_file"] == "NONE":
     rule RemovePrimers:
