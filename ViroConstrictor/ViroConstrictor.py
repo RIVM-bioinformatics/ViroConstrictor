@@ -8,10 +8,7 @@ https://github.com/RIVM-bioinformatics/ViroConstrictor
 
 # pylint: disable=C0103
 
-import argparse
-import multiprocessing
 import os
-import pathlib
 import sys
 
 import snakemake
@@ -30,181 +27,6 @@ from ViroConstrictor.validatefasta import IsValidFasta
 yaml.warnings({"YAMLLoadWarning": False})
 
 
-def get_args(givenargs):
-    """
-    Parse the commandline args
-    """
-    # pylint: disable=C0301
-
-    def check_input(choices, fname):
-        if fname == "NONE":
-            return fname
-        if os.path.isfile(fname):
-            ext = "".join(pathlib.Path(fname).suffixes)
-            if ext not in choices:
-                raise argparse.ArgumentTypeError(
-                    f"Input file doesn't end with one of {choices}"
-                )
-            return fname
-        print(f'"{fname}" is not a file. Exiting...')
-        sys.exit(-1)
-
-    def dir_path(arginput):
-        if os.path.isdir(arginput):
-            return arginput
-        print(f'"{arginput}" is not a directory. Exiting...')
-        sys.exit(1)
-
-    def currentpath():
-        return os.getcwd()
-
-    arg = argparse.ArgumentParser(
-        prog="ViroConstrictor",
-        usage="%(prog)s [required options] [optional arguments]",
-        description="ViroConstrictor: a pipeline for analysing Viral targeted (amplicon) sequencing data in order to generate a biologically valid consensus sequence.",
-        formatter_class=MyHelpFormatter,
-        add_help=False,
-    )
-
-    required_args = arg.add_argument_group("Required arguments")
-    optional_args = arg.add_argument_group("Optional arguments")
-
-    required_args.add_argument(
-        "--input",
-        "-i",
-        type=dir_path,
-        metavar="DIR",
-        help="The input directory with raw fastq(.gz) files",
-        required=True,
-    )
-
-    required_args.add_argument(
-        "--output",
-        "-o",
-        metavar="DIR",
-        type=str,
-        default=currentpath(),
-        help="Output directory",
-        required=True,
-    )
-
-    required_args.add_argument(
-        "--reference",
-        "-ref",
-        type=lambda s: check_input((".fasta", ".fa"), s),
-        metavar="File",
-        help="Input Reference sequence genome in FASTA format",
-        required=True,
-    )
-
-    required_args.add_argument(
-        "--primers",
-        "-pr",
-        type=lambda s: check_input((".fasta", ".fa"), s),
-        metavar="File",
-        help="Used primer sequences in FASTA format",
-        required=True,
-    )
-
-    required_args.add_argument(
-        "--platform",
-        default="nanopore",
-        const="nanopore",
-        nargs="?",
-        choices=("nanopore", "illumina", "iontorrent"),
-        help="Define the sequencing platform that was used to generate the dataset, either being 'nanopore', 'illumina' or 'iontorrent', see the docs for more info",
-        required=True,
-    )
-
-    required_args.add_argument(
-        "--amplicon-type",
-        "-at",
-        default="end-to-end",
-        const="end-to-end",
-        nargs="?",
-        choices=("end-to-end", "end-to-mid"),
-        help="Define the amplicon-type, either being 'end-to-end' or 'end-to-mid', see the docs for more info",
-        required=True,
-    )
-
-    required_args.add_argument(
-        "--features",
-        "-gff",
-        type=lambda s: check_input((".gff"), s),
-        metavar="File",
-        help="GFF file containing the Open Reading Frame (ORF) information of the reference",
-        required=True,
-    )
-
-    optional_args.add_argument(
-        "--primer-mismatch-rate",
-        "-pmr",
-        type=int,
-        default=3,
-        metavar="N",
-        help="Maximum number of mismatches allowed in the primer sequences during primer coordinate search. Use 0 for exact primer matches\nDefault is 3.",
-    )
-
-    optional_args.add_argument(
-        "--threads",
-        "-t",
-        default=min(multiprocessing.cpu_count(), 128),
-        metavar="N",
-        type=int,
-        help=f"Number of local threads that are available to use.\nDefault is the number of available threads in your system ({min(multiprocessing.cpu_count(), 128)})",
-    )
-
-    optional_args.add_argument(
-        "--version",
-        "-v",
-        version=__version__,
-        action="version",
-        help="Show the ViroConstrictor version and exit",
-    )
-
-    optional_args.add_argument(
-        "--help",
-        "-h",
-        action="help",
-        default=argparse.SUPPRESS,
-        help="Show this help message and exit",
-    )
-
-    optional_args.add_argument(
-        "--dryrun",
-        action="store_true",
-        help="Run the workflow without actually doing anything",
-    )
-
-    optional_args.add_argument(
-        "--skip-updates", action="store_true", help="Skip the update check",
-    )
-
-    if len(givenargs) < 1:
-        print(
-            f"{arg.prog} was called but no arguments were given, please try again\n\tUse '{arg.prog} -h' to see the help document"
-        )
-        sys.exit(1)
-    else:
-        flags = arg.parse_args(givenargs)
-
-    return flags
-
-
-def CheckInputFiles(indir):
-    """
-    Check if the input files are valid fastq files
-    """
-    allowedextensions = [".fastq", ".fq", ".fastq.gz", ".fq.gz"]
-    foundfiles = []
-
-    for filenames in os.listdir(indir):
-        extensions = "".join(pathlib.Path(filenames).suffixes)
-        foundfiles.append(extensions)
-
-    return bool(any(i in allowedextensions for i in foundfiles))
-
-
 def main():
     """
     ViroConstrictor starting point
@@ -218,7 +40,7 @@ def main():
     ##> Check the default userprofile, make it if it doesn't exist
     conf = ReadConfig(os.path.expanduser("~/.ViroConstrictor_defaultprofile.ini"))
 
-    flags = get_args(sys.argv[1:])
+    flags, sampleinfo = ValidArgs(sys.argv[1:])
 
     if not flags.skip_updates:
         update(sys.argv, conf)
