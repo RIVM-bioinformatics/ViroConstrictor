@@ -37,7 +37,6 @@ if config["primer_file"] == "NONE":
 else:
     rule all:
         input:
-            f"{datadir + prim}primers.bed",
             f"{res}multiqc.html",
             f"{res}consensus.fasta",
             f"{res}mutations.tsv",
@@ -62,13 +61,11 @@ def high_memory_job(wildcards, threads, attempt):
 
 #TODO: Check if this can be done more elegantly than by wrapping everything in an if/else statement
 rule Prepare_ref:
-    input:
-        ref = reffile,
+    input: ref = reffile,
     output:
         ref = f"{datadir + refdir + ref_basename}.fasta",
         refindex = f"{datadir + refdir + ref_basename}.fasta.fai"
-    conda:
-        f"{conda_envs}Alignment.yaml"
+    conda: f"{conda_envs}Alignment.yaml"
     threads: config['threads']['Index']
     resources: mem_mb = low_memory_job
     shell:
@@ -83,6 +80,24 @@ rule CopyPrimersToData:
     threads: 1
     resources: mem_mb = low_memory_job
     shell: "cp {input} {output}"
+
+rule PrimersToBED:
+    input:
+        prm = rules.CopyPrimersToData.output,
+        ref = rules.Prepare_ref.output.ref
+    output: primer_bed = f"{datadir + prim}" + "primers.bed"
+    conda: f"{conda_envs}Clean.yaml"
+    params: pr_mm_rate = config["primer_mismatch_rate"]
+    log: f"{logdir}PrimersToBED.log"
+    threads: 1
+    shell:
+        """
+        python -m AmpliGone.fasta2bed \
+            --primers {input.prm} \
+            --reference {input.ref} \
+            --output {output.primer_bed} \
+            --primer-mismatch-rate {params.pr_mm_rate} > {log}
+        """
 
 if config["features_file"] != "NONE":
     rule Prepare_features_file:
@@ -410,23 +425,6 @@ if config["platform"] == "iontorrent":
             """
 
 if config["primer_file"] != "NONE":
-    rule PrimersToBED:
-        input:
-            prm = rules.CopyPrimersToData.output,
-            ref = rules.Prepare_ref.output.ref
-        output: primer_bed = f"{datadir + prim}" + "primers.bed"
-        conda: f"{conda_envs}Clean.yaml"
-        params: pr_mm_rate = config["primer_mismatch_rate"]
-        log: f"{logdir}PrimersToBED.log"
-        threads: 1
-        shell:
-            """
-            python -m AmpliGone.fasta2bed \
-                --primers {input.prm} \
-                --reference {input.ref} \
-                --output {output.primer_bed} \
-                --primer-mismatch-rate {params.pr_mm_rate} > {log}
-            """
     rule RemovePrimers:
         input:
             fq = rules.QC_filter.output.fq,
