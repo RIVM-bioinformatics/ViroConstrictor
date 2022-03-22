@@ -113,10 +113,10 @@ def WriteConfigs(
     pr_mm_rate,
     dryrun,
 ):
-    if not os.path.exists(cwd + "/config"):
-        os.makedirs(cwd + "/config")
+    if not os.path.exists(f'{cwd}/config'):
+        os.makedirs(f'{cwd}/config')
 
-    os.chdir(cwd + "/config")
+    os.chdir(f'{cwd}/config')
 
     with open("config.yaml", "w") as ConfigOut:
         yaml.dump(
@@ -142,8 +142,8 @@ def WriteConfigs(
         )
     ParamsOut.close()
 
-    parameters = os.getcwd() + "/params.yaml"
-    snakeconfig = os.getcwd() + "/config.yaml"
+    parameters = f'{os.getcwd()}/params.yaml'
+    snakeconfig = f'{os.getcwd()}/config.yaml'
     return parameters, snakeconfig
 
 
