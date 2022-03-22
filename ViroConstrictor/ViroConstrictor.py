@@ -139,7 +139,7 @@ def get_args(givenargs):
     optional_args.add_argument(
         "--primer-mismatch-rate",
         "-pmr",
-        type=int,
+        type=float,
         default=0.1,
         metavar="N",
         help="Fraction of mismatches allowed in the primer sequences during primer coordinate search. Use 0 for exact primer matches\nDefault is 0.1.",
