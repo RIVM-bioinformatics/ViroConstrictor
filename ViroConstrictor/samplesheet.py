@@ -45,6 +45,7 @@ def iontorrent_sheet(inputdir):
                 samples.setdefault(match.group(1), fullpath)
     return samples
 
+
 def GetSamples(inputdir, platform):
     if platform == "illumina":
         samples = illumina_sheet(inputdir)
@@ -54,10 +55,11 @@ def GetSamples(inputdir, platform):
         samples = iontorrent_sheet(inputdir)
     return samples
 
+
 def WriteSampleSheet(inputdir, platform):
     samples = GetSamples(inputdir, platform)
     with open("samplesheet.yaml", "w") as samplesheet:
         yaml.dump(samples, samplesheet, default_flow_style=False)
 
-    samplesheet = f'{os.getcwd()}/samplesheet.yaml'
+    samplesheet = f"{os.getcwd()}/samplesheet.yaml"
     return samplesheet

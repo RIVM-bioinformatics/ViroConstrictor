@@ -225,6 +225,7 @@ def dir_path(arginput):
 def currentpath():
     return os.getcwd()
 
+
 def CheckInputFiles(indir):
     """
     Check if the input files are valid fastq files
@@ -305,7 +306,7 @@ def get_args(givenargs, parser):
         nargs="?",
         choices=("end-to-end", "end-to-mid"),
         help="Define the amplicon-type, either being 'end-to-end' or 'end-to-mid', see the docs for more info",
-        required=True
+        required=True,
     )
 
     parser.add_argument(
@@ -314,24 +315,24 @@ def get_args(givenargs, parser):
         metavar="Str",
         help="Define the specific target for the pipeline, if the target matches a certain preset then pre-defined analysis settings will be used, see the docs for more info",
     )
-    
+
     parser.add_argument(
-        '--match-ref',
-        '-mr',
+        "--match-ref",
+        "-mr",
         default=False,
-        action='store_true',
-        help='Match your data to the best reference available in the given reference fasta file.'
+        action="store_true",
+        help="Match your data to the best reference available in the given reference fasta file.",
     )
-    
+
     parser.add_argument(
-        '--min-coverage',
-        '-mc',
+        "--min-coverage",
+        "-mc",
         default=30,
         type=int,
         metavar="N",
-        help='Minimum coverage for the consensus sequence.'
+        help="Minimum coverage for the consensus sequence.",
     )
-    
+
     parser.add_argument(
         "--features",
         "-gff",
@@ -394,15 +395,17 @@ def get_args(givenargs, parser):
 
     return flags
 
+
 def args_to_dict(args, df):
-    df['VIRUS'] = args.target
-    df['MATCH-REF'] = args.match_ref
-    df['PRIMERS'] = args.primers
-    df['REFERENCE'] = args.reference
-    df['FEATURES'] = args.features
-    df['MIN-COVERAGE'] = args.min_coverage
-    df['PRIMER-MISMATCH-RATE'] = args.primer_mismatch_rate
+    df["VIRUS"] = args.target
+    df["MATCH-REF"] = args.match_ref
+    df["PRIMERS"] = args.primers
+    df["REFERENCE"] = args.reference
+    df["FEATURES"] = args.features
+    df["MIN-COVERAGE"] = args.min_coverage
+    df["PRIMER-MISMATCH-RATE"] = args.primer_mismatch_rate
     return df
+
 
 def sampledir_to_df(sampledict, platform):
     """
@@ -413,7 +416,7 @@ def sampledir_to_df(sampledict, platform):
         frame.index.rename("SAMPLE", inplace=True)
         frame.rename(columns={"R1": "INPUTFILE_R1", "R2": "INPUTFILE_R2"}, inplace=True)
         return frame
-    if platform in ['nanopore', 'iontorrent']:
+    if platform in ["nanopore", "iontorrent"]:
         frame.index.rename("SAMPLE", inplace=True)
         frame.rename(columns={0: "INPUTFILE"}, inplace=True)
         return frame
@@ -422,25 +425,34 @@ def sampledir_to_df(sampledict, platform):
 
 def make_sampleinfo_dict(df, args, filedict):
     if not CheckInputFiles(args.input):
-        print(f"\n{color.RED + color.BOLD}'{args.input}' does not contain any valid FastQ files. Exiting...{color.END}\n")
+        print(
+            f"\n{color.RED + color.BOLD}'{args.input}' does not contain any valid FastQ files. Exiting...{color.END}\n"
+        )
         sys.exit(1)
-    print(f"\n{color.GREEN}Valid input files were found in the input directory.{color.END} ('{args.input}')\n")
+    print(
+        f"\n{color.GREEN}Valid input files were found in the input directory.{color.END} ('{args.input}')\n"
+    )
     indirFrame = sampledir_to_df(filedict, args.platform)
     if df is not None:
         df.set_index("SAMPLE", inplace=True)
         df = pd.merge(df, indirFrame, left_index=True, right_index=True)
         if df.empty:
-            print(f"\n{color.RED + color.BOLD}The files given in the samplesheet do not match the files given in the input-directory. Please check your samplesheet or input directory and try again.{color.END}\n")
+            print(
+                f"\n{color.RED + color.BOLD}The files given in the samplesheet do not match the files given in the input-directory. Please check your samplesheet or input directory and try again.{color.END}\n"
+            )
             sys.exit(1)
         if len(indirFrame) > len(df):
-            print(f"\n{color.RED + color.BOLD}Not all samples in the input directory are present in the given samplesheet. Please check your samplesheet or input directory and try again.{color.END}\n")
+            print(
+                f"\n{color.RED + color.BOLD}Not all samples in the input directory are present in the given samplesheet. Please check your samplesheet or input directory and try again.{color.END}\n"
+            )
             sys.exit(1)
         if len(indirFrame) < len(df):
-            print(f"\n{color.RED + color.BOLD}Not all sample in the samplesheet are present in the given input directory. Please check your samplesheet or input directory and try again.{color.END}\n")
+            print(
+                f"\n{color.RED + color.BOLD}Not all sample in the samplesheet are present in the given input directory. Please check your samplesheet or input directory and try again.{color.END}\n"
+            )
             sys.exit(1)
         return df.to_dict(orient="index")
     return args_to_dict(args, indirFrame).to_dict(orient="index")
-    
 
 
 def ValidArgs(sysargs):
@@ -452,27 +464,44 @@ def ValidArgs(sysargs):
         add_help=False,
     )
     args = get_args(sysargs, parser)
-    
+
     if args.samplesheet is not None:
         if args.primers is not None:
-            print(f"{color.YELLOW}Both a sample sheet and run-wide primer file was given, the given run-wide primer file will be ignored{color.END}")
+            print(
+                f"{color.YELLOW}Both a sample sheet and run-wide primer file was given, the given run-wide primer file will be ignored{color.END}"
+            )
             args.primers = None
         if args.reference is not None:
-            print(f"{color.YELLOW}Both a sample sheet and run-wide reference fasta was given, the given run-wide reference fasta will be ignored{color.END}")
+            print(
+                f"{color.YELLOW}Both a sample sheet and run-wide reference fasta was given, the given run-wide reference fasta will be ignored{color.END}"
+            )
             args.reference = None
         if args.features is not None:
-            print(f"{color.YELLOW}Both a sample sheet and run-wide GFF file was given, the given run-wide GFF file will be ignored{color.END}")
+            print(
+                f"{color.YELLOW}Both a sample sheet and run-wide GFF file was given, the given run-wide GFF file will be ignored{color.END}"
+            )
             args.features = None
 
         df = check_sample_sheet(args.samplesheet)
-        sampleinfo = make_sampleinfo_dict(df, args, GetSamples(args.input, args.platform))
+        sampleinfo = make_sampleinfo_dict(
+            df, args, GetSamples(args.input, args.platform)
+        )
     else:
-        if args.primers is None or args.reference is None or args.features is None or args.target is None:
-            print(f"{color.RED + color.BOLD}Run-wide analysis settings were not provided and no samplesheet was given either with per-sample run information.\nPlease either provide all required information (reference, primers, genomic features and viral-target) for a run-wide analysis or provide a samplesheet with per-sample run information{color.END}")
+        if (
+            args.primers is None
+            or args.reference is None
+            or args.features is None
+            or args.target is None
+        ):
+            print(
+                f"{color.RED + color.BOLD}Run-wide analysis settings were not provided and no samplesheet was given either with per-sample run information.\nPlease either provide all required information (reference, primers, genomic features and viral-target) for a run-wide analysis or provide a samplesheet with per-sample run information{color.END}"
+            )
             sys.exit(1)
-        sampleinfo = make_sampleinfo_dict(None, args, GetSamples(args.input, args.platform))
+        sampleinfo = make_sampleinfo_dict(
+            None, args, GetSamples(args.input, args.platform)
+        )
 
-    #print(sampleinfo)
+    # print(sampleinfo)
     if not sampleinfo:
         print("wut")
         sys.exit(1)
