@@ -170,11 +170,8 @@ Please check the reference fasta and try again. Exiting...
             quiet=True,
         )
 
-    if status is False:
-        workflow_state = "Failed"
-    else:
-        workflow_state = "Success"
-
+    workflow_state = "Failed" if status is False else "Success"
+    
     WriteReport(
         workdir,
         inpath,
