@@ -14,11 +14,7 @@ SAMPLES = {}
 with open(config["sample_sheet"]) as sample_sheet_file:
     SAMPLES = yaml.safe_load(sample_sheet_file)
 
-primerfile = config["primer_file"]
-
-if primerfile == "NONE":
-    primerfile = srcdir("files/empty.primers")
-primers_extension = primerfile.split('.')[-1]
+primers_extension = config["primer_file"].split('.')[-1]
 
 reffile = config["reference_file"]
 ref_basename = os.path.splitext(os.path.basename(reffile))[0]
@@ -34,7 +30,7 @@ def construct_all_rule(_wildcards):
     files.append(f"{res}mutations.tsv")
     files.append(f"{res}Width_of_coverage.tsv")
 
-    if config["primer_file"] == "NONE":
+    if config["primer_file"] != "NONE":
         files.append(f"{res}Amplicon_coverage.csv")
 
     return files
@@ -72,16 +68,17 @@ rule prepare_ref:
         samtools faidx {output.ref} -o {output.refindex}
             """
 
-rule copy_primers_to_data:
-    input: primerfile
-    output: f"{datadir}{prim}primers.{primers_extension}"
-    threads: 1
-    resources: mem_mb = low_memory_job
-    shell: "cp {input} {output}"
+if primers_extension in ["fasta", "fa", "bed"]:
+    rule copy_primers_to_data:
+        input: config['primer_file']
+        output: f"{datadir}{prim}primers.{'bed' if primers_extension == 'bed' else 'fa'}"
+        threads: 1
+        resources: mem_mb = low_memory_job
+        shell: "cp {input} {output}"
 
 rule primers_to_bed:
     input:
-        prm = rules.copy_primers_to_data.output,
+        prm = f"{datadir}{prim}primers.fa",
         ref = rules.prepare_ref.output.ref
     output: primer_bed = f"{datadir}{prim}""primers.bed"
     conda: f"{conda_envs}Clean.yaml"
@@ -166,7 +163,7 @@ if config["platform"] in ["nanopore", "iontorrent"]:
         resources: mem_mb = medium_memory_job
         params:
             mapthreads = config['threads']['Alignments'] - 1,
-            filters = config["runparams"]["alignmentfilters"]
+            filters = config["runparams"]["alignmentfilters"],
             mapping_settings = p1_mapping_settings
         shell:
             """
@@ -244,8 +241,8 @@ rule qc_filter:
     threads: config['threads']['QC']
     resources: mem_mb = low_memory_job
     params:
-        score = config['runparams'][f"qc_filter_{config['platform']}iontorrent"],
-        size = config['runparams'][f"qc_window_{config['platform']}iontorrent"],
+        score = config['runparams'][f"qc_filter_{config['platform']}"],
+        size = config['runparams'][f"qc_window_{config['platform']}"],
         length = config['runparams']['qc_min_readlength']
     shell:
         """
@@ -447,7 +444,7 @@ rule concat_boc:
 
 rule calculate_amplicon_cov:
     input:
-        pr = rules.AmpliGone.output.ep,
+        pr = rules.ampligone.output.ep,
         cov = rules.trueconsense.output.cov
     output: f"{datadir}{prim}""{sample}_ampliconcoverage.csv"
     threads: 1
