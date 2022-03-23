@@ -100,7 +100,7 @@ def get_args(givenargs):
     required_args.add_argument(
         "--primers",
         "-pr",
-        type=lambda s: check_input((".fasta", ".fa"), s),
+        type=lambda s: check_input((".fasta", ".fa", ".bed"), s),
         metavar="File",
         help="Used primer sequences in FASTA format",
         required=True,
@@ -139,10 +139,10 @@ def get_args(givenargs):
     optional_args.add_argument(
         "--primer-mismatch-rate",
         "-pmr",
-        type=int,
-        default=3,
+        type=float,
+        default=0.1,
         metavar="N",
-        help="Maximum number of mismatches allowed in the primer sequences during primer coordinate search. Use 0 for exact primer matches\nDefault is 3.",
+        help="Fraction of mismatches allowed in the primer sequences during primer coordinate search. Use 0 for exact primer matches\nDefault is 0.1.",
     )
 
     optional_args.add_argument(
@@ -177,7 +177,9 @@ def get_args(givenargs):
     )
 
     optional_args.add_argument(
-        "--skip-updates", action="store_true", help="Skip the update check",
+        "--skip-updates",
+        action="store_true",
+        help="Skip the update check",
     )
 
     if len(givenargs) < 1:
