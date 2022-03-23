@@ -371,27 +371,29 @@ if config["platform"] == "iontorrent":
             -h {output.html} -j {output.json} > {log} 2>&1
             """
 
-if config["primer_file"] != "NONE":
-    rule RemovePrimers:
-        input:
-            fq = rules.QC_filter.output.fq,
-            pr = f"{datadir}{prim}primers.bed",
-            ref = rules.Prepare_ref.output.ref
-        output:
-            fq = f"{datadir}{cln}{prdir}""{sample}.fastq",
-            ep = f"{datadir}{prim}""{sample}_removedprimers.bed"
-        conda: f"{conda_envs}Clean.yaml"
-        log: f"{logdir}""RemovePrimers_{sample}.log"
-        benchmark: f"{logdir}{bench}""RemovePrimers_{sample}.txt"
-        threads: config['threads']['PrimerRemoval']
-        resources: mem_mb = high_memory_job
-        params:
-            amplicontype = config["amplicon_type"],
-            pr_mm_rate = config["primer_mismatch_rate"]
-        shell:
-            """
-            echo {input.pr} > {log}
-            AmpliGone -i {input.fq} \
+ruleorder: AmpliGone > MoveFastq
+
+rule AmpliGone:
+    input:
+        fq = rules.QC_filter.output.fq,
+        pr = f"{datadir}{prim}primers.bed",
+        ref = rules.Prepare_ref.output.ref
+    output:
+        fq = f"{datadir}{cln}{prdir}""{sample}.fastq",
+        ep = f"{datadir}{prim}""{sample}_removedprimers.bed"
+    conda: f"{conda_envs}Clean.yaml"
+    log: f"{logdir}""AmpliGone_{sample}.log"
+    benchmark: f"{logdir}{bench}""AmpliGone_{sample}.txt"
+    threads: config['threads']['PrimerRemoval']
+    resources: mem_mb = high_memory_job
+    params:
+        amplicontype = config["amplicon_type"],
+        pr_mm_rate = config["primer_mismatch_rate"]
+    shell:
+        """
+        echo {input.pr} > {log}
+        AmpliGone \
+            -i {input.fq} \
             -ref {input.ref} -pr {input.pr} \
             -o {output.fq} \
             -at {params.amplicontype} \
@@ -399,21 +401,20 @@ if config["primer_file"] != "NONE":
             --export-primers {output.ep} \
             -to \
             -t {threads} >> {log} 2>&1
-            """
+        """
 
-if config["primer_file"] == "NONE":
-    rule RemovePrimers:
-        input: rules.QC_filter.output.fq
-        output: f"{datadir}{cln}{prdir}""{sample}.fastq"
-        threads: 1
-        resources: mem_mb = low_memory_job
-        shell:
-            """
-            cp {input} {output}
-            """
+rule MoveFastq:
+    input: rules.QC_filter.output.fq
+    output: f"{datadir}{cln}{prdir}""{sample}.fastq"
+    threads: 1
+    resources: mem_mb = low_memory_job
+    shell:
+        """
+        cp {input} {output}
+        """
 
 rule QC_clean:
-    input: rules.RemovePrimers.output.fq
+    input: f"{datadir}{cln}{prdir}""{sample}.fastq"
     output:
         html = f"{datadir}{qc_post}""{sample}_fastqc.html",
         zip = f"{datadir}{qc_post}""{sample}_fastqc.zip"
@@ -443,7 +444,7 @@ def get_alignment_flags(_wildcards):
 
 rule Alignment:
     input:
-        fq = rules.RemovePrimers.output.fq,
+        fq = f"{datadir}{cln}{prdir}""{sample}.fastq",
         ref = rules.Prepare_ref.output.ref
     output:
         bam = f"{datadir}{aln}{bf}""{sample}.bam",
@@ -559,7 +560,7 @@ rule concat_boc:
 
 rule calculate_amplicon_cov:
     input:
-        pr = rules.RemovePrimers.output.ep,
+        pr = rules.AmpliGone.output.ep,
         cov = rules.Consensus.output.cov
     output: f"{datadir}{prim}""{sample}_ampliconcoverage.csv"
     threads: 1
