@@ -9,7 +9,7 @@ import pandas as pd
 
 from ViroConstrictor import __prog__, __version__
 from ViroConstrictor.functions import MyHelpFormatter, color
-from ViroConstrictor.samplesheet import GetSamples, nanopore_sheet
+from ViroConstrictor.samplesheet import GetSamples
 
 
 def is_excel_file(ext):
