@@ -10,6 +10,14 @@ import os
 import yaml
 
 
+def WriteYaml(data, filepath):
+    if not os.path.exists(os.path.dirname(filepath)):
+        os.makedirs(os.path.dirname(filepath))
+    with open(filepath, "w") as file:
+        yaml.dump(data, file, default_flow_style=False)
+    return filepath
+
+
 def set_cores(cores):
     available = multiprocessing.cpu_count()
     if cores == available:
@@ -54,9 +62,7 @@ def SnakemakeConfig(conf, cores, dryrun):
     return config
 
 
-def SnakemakeParams(
-    conf, cores, ref, prim, feats, platform, samplesheet, amplicon, pr_mm_rate
-):
+def SnakemakeParams(conf, cores, sampleinfo, platform, samplesheet, amplicon_type):
     if conf["COMPUTING"]["compmode"] == "local":
         threads_highcpu = int(cores - 2)
         threads_midcpu = int(cores / 2)
@@ -66,16 +72,12 @@ def SnakemakeParams(
         threads_midcpu = 6
         threads_lowcpu = 2
 
-    params = {
+    return {
         "sample_sheet": samplesheet,
         "computing_execution": conf["COMPUTING"]["compmode"],
         "max_local_mem": get_max_local_mem(),
-        "reference_file": ref,
-        "primer_file": prim,
-        "features_file": feats,
         "platform": platform,
-        "amplicon_type": amplicon,
-        "primer_mismatch_rate": pr_mm_rate,
+        "amplicon_type": amplicon_type,
         "threads": {
             "Alignments": threads_highcpu,
             "QC": threads_midcpu,
@@ -97,26 +99,14 @@ def SnakemakeParams(
         },
     }
 
-    return params
-
 
 def WriteConfigs(
-    conf,
-    cores,
-    cwd,
-    platform,
-    ref,
-    prims,
-    feats,
-    samplesheet,
-    amplicon_type,
-    pr_mm_rate,
-    dryrun,
+    conf, cores, cwd, platform, sampleinfo, samplesheet, amplicon_type, dryrun,
 ):
-    if not os.path.exists(cwd + "/config"):
-        os.makedirs(cwd + "/config")
+    if not os.path.exists(f"{cwd}/config"):
+        os.makedirs(f"{cwd}/config")
 
-    os.chdir(cwd + "/config")
+    os.chdir(f"{cwd}/config")
 
     with open("config.yaml", "w") as ConfigOut:
         yaml.dump(
@@ -126,24 +116,14 @@ def WriteConfigs(
 
     with open("params.yaml", "w") as ParamsOut:
         yaml.dump(
-            SnakemakeParams(
-                conf,
-                cores,
-                ref,
-                prims,
-                feats,
-                platform,
-                samplesheet,
-                amplicon_type,
-                pr_mm_rate,
-            ),
+            SnakemakeParams(conf, cores, platform, samplesheet, amplicon_type),
             ParamsOut,
             default_flow_style=False,
         )
     ParamsOut.close()
 
-    parameters = os.getcwd() + "/params.yaml"
-    snakeconfig = os.getcwd() + "/config.yaml"
+    parameters = f"{os.getcwd()}/params.yaml"
+    snakeconfig = f"{os.getcwd()}/config.yaml"
     return parameters, snakeconfig
 
 
