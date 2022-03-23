@@ -54,11 +54,3 @@ def GetSamples(inputdir, platform):
     if platform == "iontorrent":
         samples = iontorrent_sheet(inputdir)
     return samples
-
-
-def WriteSampleSheet(sampledict, platform):
-    with open("samplesheet.yaml", "w") as samplesheet:
-        yaml.dump(sampledict, samplesheet, default_flow_style=False)
-
-    samplesheet = f"{os.getcwd()}/samplesheet.yaml"
-    return samplesheet
