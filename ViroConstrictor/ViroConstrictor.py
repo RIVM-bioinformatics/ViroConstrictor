@@ -15,7 +15,6 @@ import snakemake
 import yaml
 
 from ViroConstrictor import __version__
-from ViroConstrictor import runconfigs
 from ViroConstrictor.functions import color
 from ViroConstrictor.parser import ValidArgs
 from ViroConstrictor.runconfigs import SnakemakeConfig, SnakemakeParams, WriteYaml
@@ -25,8 +24,6 @@ from ViroConstrictor.userprofile import ReadConfig
 from ViroConstrictor.validatefasta import IsValidFasta, IsValidRef
 
 yaml.warnings({"YAMLLoadWarning": False})
-
-
 
 
 def CheckSampleProperties(sampleinfo):
@@ -57,6 +54,7 @@ def CheckSampleProperties(sampleinfo):
             )
             return False
     return True
+
 
 def main():
     """
@@ -96,10 +94,17 @@ def main():
     if os.getcwd() != outpath:
         os.chdir(outpath)
     workdir = outpath
-    
+
     samplesheet = WriteYaml(sampleinfo, f"{workdir}/samplesheet.yaml")
     run_config = SnakemakeConfig(conf, flags.threads, flags.dryrun)
-    run_params = SnakemakeParams(conf, flags.threads, sampleinfo, flags.platform, samplesheet, flags.amplicon_type)
+    run_params = SnakemakeParams(
+        conf,
+        flags.threads,
+        sampleinfo,
+        flags.platform,
+        samplesheet,
+        flags.amplicon_type,
+    )
 
     if conf["COMPUTING"]["compmode"] == "local":
         status = snakemake.snakemake(
@@ -141,15 +146,9 @@ def main():
         )
 
     workflow_state = "Failed" if status is False else "Success"
-    
+
     WriteReport(
-        workdir,
-        inpath,
-        start_path,
-        conf,
-        run_params,
-        run_config,
-        workflow_state,
+        workdir, inpath, start_path, conf, run_params, run_config, workflow_state,
     )
 
     if status is False:
