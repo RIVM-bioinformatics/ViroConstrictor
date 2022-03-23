@@ -9,7 +9,7 @@ import re
 import yaml
 
 
-def illumina_sheet(inputdir, sheet):
+def illumina_sheet(inputdir):
     illuminapattern = re.compile(r"(.*)(_|\.)R?(1|2)(?:_.*\.|\..*\.|\.)f(ast)?q(\.gz)?")
     samples = {}
     for dirname, subdir, filename in os.walk(inputdir):
@@ -19,12 +19,10 @@ def illumina_sheet(inputdir, sheet):
             if match:
                 sample = samples.setdefault(match.group(1), {})
                 sample["R{}".format(match.group(3))] = str(fullpath)
-    with open(sheet, "w") as samplesheet:
-        yaml.dump(samples, samplesheet, default_flow_style=False)
-    samplesheet.close()
+    return samples
 
 
-def nanopore_sheet(inputdir, sheet):
+def nanopore_sheet(inputdir):
     nanoporepattern = re.compile(r"(.*)\.f(ast)?q(\.gz)?")
     samples = {}
     for dirname, subdir, filename in os.walk(inputdir):
@@ -33,12 +31,10 @@ def nanopore_sheet(inputdir, sheet):
             match = nanoporepattern.fullmatch(files)
             if match:
                 samples.setdefault(match.group(1), fullpath)
-    with open(sheet, "w") as samplesheet:
-        yaml.dump(samples, samplesheet, default_flow_style=False)
-    samplesheet.close()
+    return samples
 
 
-def iontorrent_sheet(inputdir, sheet):
+def iontorrent_sheet(inputdir):
     iontorrentpattern = re.compile(r"(.*)\.f(ast)?q(\.gz)?")
     samples = {}
     for dirname, subdir, filename in os.walk(inputdir):
@@ -47,18 +43,14 @@ def iontorrent_sheet(inputdir, sheet):
             match = iontorrentpattern.fullmatch(files)
             if match:
                 samples.setdefault(match.group(1), fullpath)
-    with open(sheet, "w") as samplesheet:
-        yaml.dump(samples, samplesheet, default_flow_style=False)
-    samplesheet.close()
+    return samples
 
 
-def WriteSampleSheet(inputdir, platform):
+def GetSamples(inputdir, platform):
     if platform == "illumina":
-        illumina_sheet(inputdir, "samplesheet.yaml")
+        samples = illumina_sheet(inputdir)
     if platform == "nanopore":
-        nanopore_sheet(inputdir, "samplesheet.yaml")
+        samples = nanopore_sheet(inputdir)
     if platform == "iontorrent":
-        iontorrent_sheet(inputdir, "samplesheet.yaml")
-
-    samplesheet = os.getcwd() + "/samplesheet.yaml"
-    return samplesheet
+        samples = iontorrent_sheet(inputdir)
+    return samples
