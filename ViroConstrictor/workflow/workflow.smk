@@ -58,7 +58,7 @@ def high_memory_job(wildcards, threads, attempt):
         return min(attempt * threads * 4 * 1000, config['max_local_mem'])
     return attempt * threads * 4 * 1000
 
-rule Prepare_ref:
+rule prepare_ref:
     input: ref = reffile,
     output:
         ref = f"{datadir}{refdir}{ref_basename}.fasta",
@@ -72,17 +72,17 @@ rule Prepare_ref:
         samtools faidx {output.ref} -o {output.refindex}
             """
 
-rule CopyPrimersToData:
+rule copy_primers_to_data:
     input: primerfile
     output: f"{datadir}{prim}primers.{primers_extension}"
     threads: 1
     resources: mem_mb = low_memory_job
     shell: "cp {input} {output}"
 
-rule PrimersToBED:
+rule primers_to_bed:
     input:
-        prm = rules.CopyPrimersToData.output,
-        ref = rules.Prepare_ref.output.ref
+        prm = rules.copy_primers_to_data.output,
+        ref = rules.prepare_ref.output.ref
     output: primer_bed = f"{datadir}{prim}""primers.bed"
     conda: f"{conda_envs}Clean.yaml"
     params: pr_mm_rate = config["primer_mismatch_rate"]
@@ -98,7 +98,7 @@ rule PrimersToBED:
         """
 
 if config["features_file"] != "NONE":
-    rule Prepare_features_file:
+    rule prepare_features_file:
         input: features_file
         output: gff = temp(f"{datadir}{features}reference_features.gff")
         threads: config['threads']['Index']
@@ -108,8 +108,8 @@ if config["features_file"] != "NONE":
             cat {input} >> {output}
             """
 else:
-    rule Prepare_features_file:
-        input: rules.Prepare_ref.output.ref
+    rule prepare_features_file:
+        input: rules.prepare_ref.output.ref
         output:
             AA  = temp(f"{datadir}{refdir}{ref_basename}_ORF_AA.fa"),
             NT  = temp(f"{datadir}{refdir}{ref_basename}_ORF_NT.fa"),
@@ -134,7 +134,7 @@ else:
 if config["platform"] in ["nanopore", "iontorrent"]:
     p1_mapping_settings = "-ax sr" if config["platform"] == "iontorrent" else "-ax map-ont"
 
-    rule QC_raw:
+    rule qc_raw:
         input: lambda wildcards: SAMPLES[wildcards.sample]
         output:
             html = f"{datadir}{qc_pre}""{sample}_fastqc.html",
@@ -152,9 +152,9 @@ if config["platform"] in ["nanopore", "iontorrent"]:
             bash {params.script} {input} {params.output_dir} {output.html} {output.zip} {log}
             """
 
-    rule RemoveAdapters_p1:
+    rule remove_adapters_p1:
         input:
-            ref = rules.Prepare_ref.output.ref,
+            ref = rules.prepare_ref.output.ref,
             fq  = lambda wildcards: SAMPLES[wildcards.sample]
         output:
             bam   = f"{datadir}{cln}{raln}""{sample}.bam",
@@ -177,7 +177,7 @@ if config["platform"] in ["nanopore", "iontorrent"]:
             """
 
 if config["platform"] == "illumina":
-    rule QC_raw:
+    rule qc_raw:
         input: lambda wildcards: SAMPLES[wildcards.sample][wildcards.read]
         output:
             html = f"{datadir}{qc_pre}""{sample}_{read}_fastqc.html",
@@ -195,9 +195,9 @@ if config["platform"] == "illumina":
             bash {params.script} {input} {params.output_dir} {output.html} {output.zip} {log}
             """
 
-    rule RemoveAdapters_p1:
+    rule remove_adapters_p1:
         input:
-            ref = rules.Prepare_ref.output.ref,
+            ref = rules.prepare_ref.output.ref,
             fq  = lambda wildcards: (SAMPLES[wildcards.sample][i]
                                 for i in ("R1", "R2")
                                 )
@@ -220,8 +220,8 @@ if config["platform"] == "illumina":
             samtools index {output.bam} >> {log} 2>&1
             """
 
-rule RemoveAdapters_p2:
-    input: rules.RemoveAdapters_p1.output.bam
+rule remove_adapters_p2:
+    input: rules.remove_adapters_p1.output.bam
     output: f"{datadir}{cln}{noad}""{sample}.fastq"
     conda: f"{conda_envs}Clean.yaml"
     threads: config['threads']['AdapterRemoval']
@@ -232,8 +232,8 @@ rule RemoveAdapters_p2:
         python {params.script} --input {input} --output {output} --threads {threads}
         """
 
-rule QC_filter:
-    input: rules.RemoveAdapters_p2.output
+rule qc_filter:
+    input: rules.remove_adapters_p2.output
     output:
         fq = f"{datadir}{cln}{qcfilt}""{sample}.fastq",
         html = f"{datadir}{cln}{qcfilt}{html}""{sample}.fastp.html",
@@ -257,13 +257,13 @@ rule QC_filter:
             -h {output.html} -j {output.json} > {log} 2>&1
         """
 
-ruleorder: AmpliGone > MoveFastq
+ruleorder: ampligone > move_fastq
 
-rule AmpliGone:
+rule ampligone:
     input:
-        fq = rules.QC_filter.output.fq,
+        fq = rules.qc_filter.output.fq,
         pr = f"{datadir}{prim}primers.bed",
-        ref = rules.Prepare_ref.output.ref
+        ref = rules.prepare_ref.output.ref
     output:
         fq = f"{datadir}{cln}{prdir}""{sample}.fastq",
         ep = f"{datadir}{prim}""{sample}_removedprimers.bed"
@@ -289,8 +289,8 @@ rule AmpliGone:
             -t {threads} >> {log} 2>&1
         """
 
-rule MoveFastq:
-    input: rules.QC_filter.output.fq
+rule move_fastq:
+    input: rules.qc_filter.output.fq
     output: f"{datadir}{cln}{prdir}""{sample}.fastq"
     threads: 1
     resources: mem_mb = low_memory_job
@@ -299,7 +299,7 @@ rule MoveFastq:
         cp {input} {output}
         """
 
-rule QC_clean:
+rule qc_clean:
     input: f"{datadir}{cln}{prdir}""{sample}.fastq"
     output:
         html = f"{datadir}{qc_post}""{sample}_fastqc.html",
@@ -329,10 +329,10 @@ def get_alignment_flags(_wildcards):
     elif config["platform"] == "nanopore":
         return "-ax map-ont -E2,0 -O8,24 -A4 -B4"
 
-rule Alignment:
+rule align_before_trueconsense:
     input:
         fq = f"{datadir}{cln}{prdir}""{sample}.fastq",
-        ref = rules.Prepare_ref.output.ref
+        ref = rules.prepare_ref.output.ref
     output:
         bam = f"{datadir}{aln}{bf}""{sample}.bam",
         index = f"{datadir}{aln}{bf}""{sample}.bam.bai"
@@ -353,11 +353,11 @@ rule Alignment:
         samtools index {output.bam} >> {log} 2>&1
         """
 
-rule Consensus:
+rule trueconsense:
     input:
-        bam = rules.Alignment.output.bam,
-        gff = rules.Prepare_features_file.output.gff,
-        ref = rules.Prepare_ref.output.ref
+        bam = rules.align_before_trueconsense.output.bam,
+        gff = rules.prepare_features_file.output.gff,
+        ref = rules.prepare_ref.output.ref
     output:
         cons = f"{datadir}{cons}{seqs}""{sample}"f"_cov_ge_{mincov}.fa",
         cov = f"{datadir}{cons}{covs}""{sample}_coverage.tsv",
@@ -386,7 +386,7 @@ rule Consensus:
         --threads {threads}
         """
 
-rule Concat_Seqs:
+rule concat_sequences:
     input:
         expand(
             f"{datadir}{cons}{seqs}""{sample}_cov_ge_"f"{mincov}.fa",
@@ -398,7 +398,7 @@ rule Concat_Seqs:
     shell: "cat {input} >> {output}"
 
 
-rule VCF_to_TSV:
+rule vcf_to_tsv:
     input: vcf = f"{datadir}{aln}{vf}""{sample}"f"_cov_ge_{mincov}.vcf",
     output: tsv = temp(f"{datadir}{aln}{vf}""{sample}.tsv"),
     conda: f"{conda_envs}Mutations.yaml"
@@ -410,7 +410,7 @@ rule VCF_to_TSV:
         bcftools query {input.vcf} -f '{wildcards.sample}\t%CHROM\t%POS\t%REF\t%ALT\t%DP\n' -e 'ALT="N"' > {output.tsv} 2>> {log}
         """
 
-rule Concat_TSV_coverages:
+rule concat_tsv_coverages:
     input: tsvs = expand(f"{datadir}{aln}{vf}""{sample}.tsv", sample = SAMPLES),
     output: tsv = f"{res}mutations.tsv",
     log: f"{logdir}concat_tsv.log"
@@ -420,10 +420,10 @@ rule Concat_TSV_coverages:
         shell("echo -e 'Sample\tReference_Chromosome\tPosition\tReference\tAlternative\tDepth' > {output.tsv} 2> {log}")
         shell("cat {input.tsvs} >> {output.tsv} 2>> {log}")
 
-rule Get_Breadth_of_coverage:
+rule get_breadth_of_coverage:
     input:
-        reference = rules.Prepare_ref.output.ref,
-        coverage = rules.Consensus.output.cov,
+        reference = rules.prepare_ref.output.ref,
+        coverage = rules.trueconsense.output.cov,
     output: temp(f"{datadir}{boc}""{sample}.tsv")
     conda: f"{conda_envs}Consensus.yaml"
     threads: 1
@@ -448,7 +448,7 @@ rule concat_boc:
 rule calculate_amplicon_cov:
     input:
         pr = rules.AmpliGone.output.ep,
-        cov = rules.Consensus.output.cov
+        cov = rules.trueconsense.output.cov
     output: f"{datadir}{prim}""{sample}_ampliconcoverage.csv"
     threads: 1
     resources: mem_mb = low_memory_job
@@ -492,7 +492,7 @@ def construct_MultiQC_input(_wildcards):
     post = expand(f"{datadir}{qc_post}""{sample}_fastqc.zip", sample = SAMPLES)
     return pre + post
 
-rule MultiQC_report:
+rule multiqc_report:
     input: construct_MultiQC_input
     output:
         f"{res}multiqc.html",
