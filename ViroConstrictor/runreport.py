@@ -80,9 +80,11 @@ def WriteReport(workingdir, inpath, startpath, conf, sparams, sconfig, status):
 
     pdf.ln(5)
 
-    pdf = analysis_details(pdf, "Reference file:", sconfig["reference_file"])
-    pdf = analysis_details(pdf, "Primer file:", sconfig["primer_file"])
-    pdf = analysis_details(pdf, "GFF file:", sconfig["features_file"])
+    # TODO: re-add the references, primers, and features sections to the report (if possible) when the rest of the pipeline compatible with the new methods
+
+    # pdf = analysis_details(pdf, "Reference file:", sconfig["reference_file"])
+    # pdf = analysis_details(pdf, "Primer file:", sconfig["primer_file"])
+    # pdf = analysis_details(pdf, "GFF file:", sconfig["features_file"])
     pdf = analysis_details(pdf, "Sequencing platform:", sconfig["platform"])
     pdf = analysis_details(pdf, "Selected amplicon type:", sconfig["amplicon_type"])
     if sconfig["primer_file"] != "None":
