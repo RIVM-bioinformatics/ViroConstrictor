@@ -17,23 +17,28 @@ def ContainsSpecials(seq):
         return False
     return True
 
+
 def ContainsAmbiguities(seq):
     chars = re.compile("[umrwsykvhdbnUMRWSYKVHDBN]")
     if chars.search(seq) is None:
         return False
     return True
 
+
 def IsValidRef(inputfile):
     if IsValidFasta(inputfile):
-        return not any(ContainsAmbiguities(str(record.seq)) for record in SeqIO.parse(inputfile, "fasta"))
+        return not any(
+            ContainsAmbiguities(str(record.seq))
+            for record in SeqIO.parse(inputfile, "fasta")
+        )
     return False
+
 
 def IsValidFasta(inputfile):
     if inputfile == "NONE":
         return True
     results = [
-        ContainsSpecials(str(record.seq))
-        for record in SeqIO.parse(inputfile, "fasta")
+        ContainsSpecials(str(record.seq)) for record in SeqIO.parse(inputfile, "fasta")
     ]
 
     if any(results):

@@ -9,6 +9,7 @@ import os
 
 import yaml
 
+
 def WriteYaml(data, filepath):
     if not os.path.exists(os.path.dirname(filepath)):
         os.makedirs(os.path.dirname(filepath))
@@ -61,9 +62,7 @@ def SnakemakeConfig(conf, cores, dryrun):
     return config
 
 
-def SnakemakeParams(
-    conf, cores, sampleinfo, platform, samplesheet, amplicon_type
-):
+def SnakemakeParams(conf, cores, sampleinfo, platform, samplesheet, amplicon_type):
     if conf["COMPUTING"]["compmode"] == "local":
         threads_highcpu = int(cores - 2)
         threads_midcpu = int(cores / 2)
@@ -102,19 +101,12 @@ def SnakemakeParams(
 
 
 def WriteConfigs(
-    conf,
-    cores,
-    cwd,
-    platform,
-    sampleinfo,
-    samplesheet,
-    amplicon_type,
-    dryrun,
+    conf, cores, cwd, platform, sampleinfo, samplesheet, amplicon_type, dryrun,
 ):
-    if not os.path.exists(f'{cwd}/config'):
-        os.makedirs(f'{cwd}/config')
+    if not os.path.exists(f"{cwd}/config"):
+        os.makedirs(f"{cwd}/config")
 
-    os.chdir(f'{cwd}/config')
+    os.chdir(f"{cwd}/config")
 
     with open("config.yaml", "w") as ConfigOut:
         yaml.dump(
@@ -124,20 +116,14 @@ def WriteConfigs(
 
     with open("params.yaml", "w") as ParamsOut:
         yaml.dump(
-            SnakemakeParams(
-                conf,
-                cores,
-                platform,
-                samplesheet,
-                amplicon_type
-            ),
+            SnakemakeParams(conf, cores, platform, samplesheet, amplicon_type),
             ParamsOut,
             default_flow_style=False,
         )
     ParamsOut.close()
 
-    parameters = f'{os.getcwd()}/params.yaml'
-    snakeconfig = f'{os.getcwd()}/config.yaml'
+    parameters = f"{os.getcwd()}/params.yaml"
+    snakeconfig = f"{os.getcwd()}/config.yaml"
     return parameters, snakeconfig
 
 
