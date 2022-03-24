@@ -4,6 +4,7 @@ import yaml
 import sys
 from directories import *
 import snakemake
+from Bio import SeqIO
 
 snakemake.utils.min_version("6.0")
 
@@ -14,29 +15,36 @@ SAMPLES = {}
 with open(config["sample_sheet"]) as sample_sheet_file:
     SAMPLES = yaml.safe_load(sample_sheet_file)
 
-primers_extension = config["primer_file"].split('.')[-1]
+# primers_extension = config["primer_file"].split('.')[-1]
 
-reffile = config["reference_file"]
-ref_basename = os.path.splitext(os.path.basename(reffile))[0]
-
-features_file = config["features_file"]
+# reffile = config["reference_file"]
+# ref_basename = os.path.splitext(os.path.basename(reffile))[0]
+# 
+# features_file = config["features_file"]
 
 mincov = 30
 
-def construct_all_rule(_wildcards):
-    files = []
-    files.append(f"{res}multiqc.html")
-    files.append(f"{res}consensus.fasta")
-    files.append(f"{res}mutations.tsv")
-    files.append(f"{res}Width_of_coverage.tsv")
+def Get_Ref_header(reffile):
+    return [record.id for record in SeqIO.parse(reffile, "fasta")]
 
-    if config["primer_file"] != "NONE":
-        files.append(f"{res}Amplicon_coverage.csv")
 
-    return files
+def construct_all_rule(sampleinfo):
+    files = set()
+    files.add(f"{res}multiqc.html")
+
+    for key, val in sampleinfo.items():
+        if val["MATCH-REF"] is False:
+            for id in Get_Ref_header(val["REFERENCE"]):
+                files.add(f"{res}{val['VIRUS']}/{id}/consensus.fasta")
+                files.add(f"{res}{val['VIRUS']}/{id}/mutations.tsv")
+                files.add(f"{res}{val['VIRUS']}/{id}/Width_of_coverage.tsv")
+                if val["PRIMERS"] is not None:
+                    files.add(f"{res}{val['VIRUS']}/{id}/Amplicon_coverage.tsv")
+
+    return list(files)
 
 rule all:
-    input: construct_all_rule
+    input: construct_all_rule(SAMPLES)
 
 
 def low_memory_job(wildcards, threads, attempt):
