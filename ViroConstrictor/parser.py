@@ -30,16 +30,16 @@ def is_json_file(ext):
 
 def open_sample_sheet(file):
     """Given a file, return a pandas dataframe created with correct open function
-    
+
     Parameters
     ----------
     file
         The file to open.
-    
+
     Returns
     -------
         A pandas dataframe.
-    
+
     """
     file_extension = "".join(pathlib.Path(file).suffixes)
     if is_excel_file(file_extension):
@@ -56,16 +56,16 @@ def open_sample_sheet(file):
 def required_cols(cols):
     """The function required_cols takes a list of column names and checks to see if the required columns
     are present
-    
+
     Parameters
     ----------
     cols
         a list of column names
-    
+
     Returns
     -------
         A boolean value.
-    
+
     """
     cols = [c.upper() for c in cols]
     if any(
@@ -283,7 +283,7 @@ def get_args(givenargs, parser):
     parser.add_argument(
         "--primers",
         "-pr",
-        type=lambda s: check_input((".fasta", ".fa"), s),
+        type=lambda s: check_input((".fasta", ".fa", ".bed"), s),
         metavar="File",
         help="Used primer sequences in FASTA format",
     )
@@ -382,7 +382,9 @@ def get_args(givenargs, parser):
     )
 
     parser.add_argument(
-        "--skip-updates", action="store_true", help="Skip the update check",
+        "--skip-updates",
+        action="store_true",
+        help="Skip the update check",
     )
 
     if len(givenargs) < 1:
