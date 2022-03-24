@@ -4,6 +4,7 @@ import yaml
 import sys
 from directories import *
 import snakemake
+import shutil
 from Bio import SeqIO
 
 snakemake.utils.min_version("6.0")
