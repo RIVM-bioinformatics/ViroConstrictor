@@ -55,9 +55,21 @@ def construct_all_rule(sampleinfo):
 
     return list(files)
 
-rule all:
-    input: construct_all_rule(SAMPLES)
+def construct_MultiQC_input(_wildcards):
+    if config['platform'] == "nanopore" or config['platform'] == "iontorrent":
+        pre = expand(
+            f"{datadir}{qc_pre}{{param_struct}}_fastqc.zip", param_struct=paramspace.instance_patterns)
+    elif config['platform'] == "illumina":
+        pre = expand(
+            f"{datadir}{qc_pre}{{param_struct}}_{read}_fastqc.zip",
+            param_struct=paramspace.instance_patterns,
+            read = "R1 R2".split()
+            )
+    else:
+        raise ValueError(f"Platform {config['platform']} not recognised. Choose one of [illumina, nanopore, iontorrent].")
+    post = expand(f"{datadir}{qc_post}{{param_struct}}_fastqc.zip", param_struct=paramspace.instance_patterns)
 
+    return pre + post
 
 def low_memory_job(wildcards, threads, attempt):
     if config['computing_execution'] == 'local':
@@ -74,19 +86,29 @@ def high_memory_job(wildcards, threads, attempt):
         return min(attempt * threads * 4 * 1000, config['max_local_mem'])
     return attempt * threads * 4 * 1000
 
-rule prepare_ref:
-    input: ref = reffile,
-    output:
-        ref = f"{datadir}{refdir}{ref_basename}.fasta",
-        refindex = f"{datadir}{refdir}{ref_basename}.fasta.fai",
+localrules:
+    all,
+    prepare_refs
+
+rule all:
+    input: construct_all_rule(SAMPLES)
+
+rule prepare_refs:
+    input: lambda wildcards: SAMPLES[str(wildcards.sample).split('~')[1]]["REFERENCE"]
+    output: 
+        ref = f"{datadir}{refdir}{{target}}/{{refID}}/{{sample}}_reference.fasta",
+        ref_indx = f"{datadir}{refdir}{{target}}/{{refID}}/{{sample}}_reference.fasta.fai",
     conda: f"{conda_envs}Alignment.yaml"
     threads: config['threads']['Index']
-    resources: mem_mb = low_memory_job
+    resources:
+        mem_mb = low_memory_job
+    params:
+        script=srcdir("scripts/extract_ref.py")
     shell:
         """
-        cat {input.ref} | seqkit replace -p "\-" -s -r "N" > {output.ref}
-        samtools faidx {output.ref} -o {output.refindex}
-            """
+        python {params.script} {input} {output} {wildcards.refID}
+        samtools faidx {output.ref} -o {output.ref_indx}
+        """
 
 if primers_extension in ["fasta", "fa", "bed"]:
     rule copy_primers_to_data:
