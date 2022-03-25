@@ -5,8 +5,10 @@ import sys
 from directories import *
 import snakemake
 from Bio import SeqIO
+from snakemake.utils import Paramspace, min_version
+import pandas as pd
 
-snakemake.utils.min_version("6.0")
+min_version("6.0")
 
 yaml.warnings({'YAMLLoadWarning': False})
 shell.executable("/bin/bash")
@@ -27,6 +29,16 @@ mincov = 30
 def Get_Ref_header(reffile):
     return [record.id for record in SeqIO.parse(reffile, "fasta")]
 
+def construct_paramspace(sampleinfo):
+    space = []
+    for key, val in sampleinfo.items():
+    
+        if val["MATCH-REF"] is False:
+            for id in Get_Ref_header(val["REFERENCE"]):
+                space.append({"Virus": val["VIRUS"], "RefID": id, "Sample": key})
+    return Paramspace(pd.DataFrame.from_dict(space))
+
+paramspace = construct_paramspace(SAMPLES)
 
 def construct_all_rule(sampleinfo):
     files = set()
