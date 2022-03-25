@@ -4,6 +4,7 @@ import yaml
 import sys
 from directories import *
 import snakemake
+import shutil
 from Bio import SeqIO
 from snakemake.utils import Paramspace, min_version
 import pandas as pd
@@ -21,7 +22,7 @@ with open(config["sample_sheet"]) as sample_sheet_file:
 
 # reffile = config["reference_file"]
 # ref_basename = os.path.splitext(os.path.basename(reffile))[0]
-# 
+#
 # features_file = config["features_file"]
 
 mincov = 30
@@ -39,6 +40,20 @@ def construct_paramspace(sampleinfo):
     return Paramspace(pd.DataFrame.from_dict(space))
 
 paramspace = construct_paramspace(SAMPLES)
+
+## copy references to right locations
+for sample, vals in SAMPLES.items():
+    prims = vals['PRIMERS']
+    feats = vals['FEATURES']
+    ref = vals['REFERENCE']
+    vir = vals['VIRUS']
+    prims_ext = prims.split('.')[-1]
+
+    for id in Get_Ref_header(ref):
+        base = f"{datadir}/{vir}/{id}/{sample}.raw_align.bam"
+        shutil.copy(ref, f"{base}reference.fasta")
+        shutil.copy(feats, f"{base}features.gff")
+        shutil.copy(prims, f"{base}primers.{prims_ext}")
 
 def construct_all_rule(sampleinfo):
     files = set()
