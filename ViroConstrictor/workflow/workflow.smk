@@ -514,23 +514,6 @@ rule concat_amplicon_cov:
         python {params.script} --output {output} --input {input}
         """
 
-def construct_MultiQC_input(_wildcards):
-    if config['platform'] == "nanopore" or config['platform'] == "iontorrent":
-        pre = expand(
-            f"{datadir}{qc_pre}""{sample}_fastqc.zip",
-            sample = SAMPLES,
-            )
-    elif config['platform'] == "illumina":
-        pre = expand(
-            f"{datadir}{qc_pre}""{sample}_{read}_fastqc.zip",
-            sample = SAMPLES,
-            read = "R1 R2".split()
-            )
-    else:
-        raise ValueError(f"Platform {config['platform']} not recognised. Choose one of [illumina, nanopore, iontorrent].")
-    post = expand(f"{datadir}{qc_post}""{sample}_fastqc.zip", sample = SAMPLES)
-    return pre + post
-
 rule multiqc_report:
     input: construct_MultiQC_input
     output:
