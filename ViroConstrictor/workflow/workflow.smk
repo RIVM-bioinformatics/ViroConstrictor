@@ -3,7 +3,6 @@ import os
 import yaml
 import sys
 from directories import *
-import snakemake
 import shutil
 from Bio import SeqIO
 from snakemake.utils import Paramspace, min_version
@@ -125,30 +124,30 @@ rule prepare_refs:
         samtools faidx {output.ref} -o {output.ref_indx}
         """
 
-if primers_extension in ["fasta", "fa", "bed"]:
-    rule copy_primers_to_data:
-        input: config['primer_file']
-        output: f"{datadir}{prim}primers.{'bed' if primers_extension == 'bed' else 'fa'}"
-        threads: 1
-        resources: mem_mb = low_memory_job
-        shell: "cp {input} {output}"
-
-rule primers_to_bed:
-    input:
-        prm = f"{datadir}{prim}primers.fa",
-        ref = rules.prepare_ref.output.ref
-    output: primer_bed = f"{datadir}{prim}""primers.bed"
-    conda: f"{conda_envs}Clean.yaml"
-    params: pr_mm_rate = config["primer_mismatch_rate"]
-    log: f"{logdir}PrimersToBED.log"
+rule prepare_primers:
+    input: 
+        prm = lambda wildcards: SAMPLES[str(wildcards.sample).split('~')[1]]["PRIMERS"],
+        ref = rules.prepare_refs.output.ref,
+    output:
+        bed = f"{datadir}{refdir}{{target}}/{{refID}}/{{sample}}_primers.bed",
     threads: 1
+    resources:
+        mem_mb= low_memory_job
+    log: f"{logdir}prepare_primers_{{target}}.{{refID}}.{{sample}}.log"
+    benchmark: f"{logdir}{bench}prepare_primers_{{target}}.{{refID}}.{{sample}}.txt"
+    params:
+        pr_mm_rate = lambda wildcards: SAMPLES[str(wildcards.sample).split('~')[1]]["PRIMER-MISMATCH-RATE"]
+    conda: f"{conda_envs}Clean.yaml"
     shell:
         """
-        python -m AmpliGone.fasta2bed \
-            --primers {input.prm} \
-            --reference {input.ref} \
-            --output {output.primer_bed} \
-            --primer-mismatch-rate {params.pr_mm_rate} > {log}
+        if [[ {input.prm} == *.bed ]]:
+            cp {input.prm} {output.bed}
+        else:
+            python -m AmpliGone.fasta2bed \
+                --primers {input.prm} \
+                --reference {input.ref} \
+                --output {output.bed} \
+                --primer-mismatch-rate {params.pr_mm_rate} > {log}
         """
 
 if config["features_file"] != "NONE":
