@@ -179,15 +179,13 @@ rule prepare_gffs:
         f"{logdir}prepare_gffs_{{Virus}}.{{RefID}}.{{sample}}.log",
     benchmark:
         f"{logdir}{bench}prepare_gffs_{{Virus}}.{{RefID}}.{{sample}}.txt"
-    threads: config["threads"]["Index"]
+    threads: 1
     conda:
         f"{conda_envs}ORF_analysis.yaml"
     resources:
-        mem_mb=medium_memory_job,
+        mem_mb=low_memory_job,
     params:
         script=srcdir("scripts/extract_gff.py"),
-        prodigal_method="meta",
-        prodigal_outformat="gff",
     shell:
         """
         python {params.script} {input.feats} {output.gff} {wildcards.RefID}
@@ -212,7 +210,6 @@ rule prodigal:
     resources:
         mem_mb=medium_memory_job,
     params:
-        script=srcdir("scripts/extract_gff.py"),
         prodigal_method="meta",
         prodigal_outformat="gff",
     shell:
