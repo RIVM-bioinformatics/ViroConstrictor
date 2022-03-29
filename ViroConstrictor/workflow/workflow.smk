@@ -30,15 +30,15 @@ samples_df = (
     pd.DataFrame(SAMPLES)
     .transpose()
     .reset_index()
-    .rename(columns=dict(index="Sample", VIRUS="Virus"))
+    .rename(columns=dict(index="sample", VIRUS="Virus"))
 )
 # samples_df = samples_df[samples_df["MATCH-REF"].astype(bool)]
 samples_df["RefID"] = samples_df["REFERENCE"].apply(Get_Ref_header)
 samples_df = samples_df.explode("RefID")
 p_space = Paramspace(
-    samples_df[["Virus", "RefID", "Sample"]], filename_params=["Sample"]
+    samples_df[["Virus", "RefID", "sample"]], filename_params=["sample"]
 )
-wc_pattern = p_space.wildcard_pattern.replace("Sample~", "")
+wc_pattern = p_space.wildcard_pattern.replace("sample~", "")
 
 
 def construct_all_rule(sampleinfo):
@@ -60,8 +60,8 @@ def construct_all_rule(sampleinfo):
 def construct_MultiQC_input(_wildcards):
     if config["platform"] == "nanopore" or config["platform"] == "iontorrent":
         pre = expand(
-            f"{datadir}{qc_pre}{{Sample}}_fastqc.zip",
-            Sample=p_space.dataframe.Sample.unique(),
+            f"{datadir}{qc_pre}{{sample}}_fastqc.zip",
+            sample=SAMPLES,
         )
     elif config["platform"] == "illumina":
         pre = expand(
@@ -109,16 +109,16 @@ rule all:
             f"{datadir}" "{wc_pattern}_raw_aln.bam",
             zip,
             RefID=p_space.RefID,
-            Sample=p_space.Sample,
+            sample=p_space.sample,
             Virus=p_space.Virus,
         ),
 
 
 rule prepare_refs:
     input:
-        lambda wc: SAMPLES[wc.Sample]["REFERENCE"],
+        lambda wc: SAMPLES[wc.sample]["REFERENCE"],
     output:
-        f"{datadir}{{Virus}}/{{RefID}}/{{Sample}}_reference.fasta",
+        f"{datadir}{{Virus}}/{{RefID}}/{{sample}}_reference.fasta",
     run:
         from Bio import SeqIO
 
@@ -195,16 +195,16 @@ if config["platform"] in ["nanopore", "iontorrent"]:
 
     rule qc_raw:
         input:
-            lambda wc: SAMPLES[wc.Sample]["INPUTFILE"],
+            lambda wc: SAMPLES[wc.sample]["INPUTFILE"],
         output:
-            html=f"{datadir}{qc_pre}" "{Sample}_fastqc.html",
-            zip=f"{datadir}{qc_pre}" "{Sample}_fastqc.zip",
+            html=f"{datadir}{qc_pre}" "{sample}_fastqc.html",
+            zip=f"{datadir}{qc_pre}" "{sample}_fastqc.zip",
         conda:
             f"{conda_envs}Clean.yaml"
         log:
-            f"{logdir}QC_raw_data_" + "{Sample}.log",
+            f"{logdir}QC_raw_data_" + "{sample}.log",
         benchmark:
-            f"{logdir}{bench}QC_raw_data_" + "{Sample}.txt"
+            f"{logdir}{bench}QC_raw_data_" + "{sample}.txt"
         threads: config["threads"]["QC"]
         resources:
             mem_mb=low_memory_job,
@@ -219,16 +219,16 @@ if config["platform"] in ["nanopore", "iontorrent"]:
     rule remove_adapters_p1:
         input:
             ref=rules.prepare_refs.output,
-            fq=lambda wc: SAMPLES[wc.Sample]["INPUTFILE"],
+            fq=lambda wc: SAMPLES[wc.sample]["INPUTFILE"],
         output:
-            bam=f"{datadir}{{Virus}}/{{RefID}}/{{Sample}}_raw_aln.bam",
-            index=f"{datadir}{{Virus}}/{{RefID}}/{{Sample}}_raw_aln.bam.bai",
+            bam=f"{datadir}{{Virus}}/{{RefID}}/{{sample}}_raw_aln.bam",
+            index=f"{datadir}{{Virus}}/{{RefID}}/{{sample}}_raw_aln.bam.bai",
         conda:
             f"{conda_envs}Alignment.yaml"
         log:
-            f"{logdir}RemoveAdapters_p1_" + "{Virus}.{RefID}.{Sample}.log",
+            f"{logdir}RemoveAdapters_p1_" + "{Virus}.{RefID}.{sample}.log",
         benchmark:
-            f"{logdir}{bench}RemoveAdapters_p1_" + "{Virus}.{RefID}.{Sample}.txt"
+            f"{logdir}{bench}RemoveAdapters_p1_" + "{Virus}.{RefID}.{sample}.txt"
         threads: config["threads"]["Alignments"]
         resources:
             mem_mb=medium_memory_job,
@@ -302,7 +302,7 @@ rule remove_adapters_p2:
     input:
         rules.remove_adapters_p1.output.bam,
     output:
-        f"{datadir}{{Virus}}/{{RefID}}/{cln}{noad}{{Sample}}.fastq",
+        f"{datadir}{{Virus}}/{{RefID}}/{cln}{noad}{{sample}}.fastq",
     conda:
         f"{conda_envs}Clean.yaml"
     threads: config["threads"]["AdapterRemoval"]
@@ -320,15 +320,15 @@ rule qc_filter:
     input:
         rules.remove_adapters_p2.output,
     output:
-        fq=f"{datadir}{{Virus}}/{{RefID}}/{cln}{qcfilt}{{Sample}}.fastq",
-        html=f"{datadir}{{Virus}}/{{RefID}}/{cln}{qcfilt}{html}{{Sample}}_fastqc.html",
-        json=f"{datadir}{{Virus}}/{{RefID}}/{cln}{qcfilt}{json}{{Sample}}_fastqc.json",
+        fq=f"{datadir}{{Virus}}/{{RefID}}/{cln}{qcfilt}{{sample}}.fastq",
+        html=f"{datadir}{{Virus}}/{{RefID}}/{cln}{qcfilt}{html}{{sample}}_fastqc.html",
+        json=f"{datadir}{{Virus}}/{{RefID}}/{cln}{qcfilt}{json}{{sample}}_fastqc.json",
     conda:
         f"{conda_envs}Clean.yaml"
     log:
-        f"{logdir}QC_filter_" + "{Virus}.{RefID}.{Sample}.log",
+        f"{logdir}QC_filter_" + "{Virus}.{RefID}.{sample}.log",
     benchmark:
-        f"{logdir}{bench}QC_filter_" + "{Virus}.{RefID}.{Sample}.txt"
+        f"{logdir}{bench}QC_filter_" + "{Virus}.{RefID}.{sample}.txt"
     threads: config["threads"]["QC"]
     resources:
         mem_mb=low_memory_job,
@@ -396,14 +396,14 @@ rule qc_clean:
     input:
         rules.qc_filter.output.fq,
     output:
-        html=temp(f"{datadir}{qc_post}" + "{Virus}--{RefID}--{Sample}_fastqc.html"),
-        zip=temp(f"{datadir}{qc_post}" + "{Virus}--{RefID}--{Sample}_fastqc.zip"),
+        html=temp(f"{datadir}{qc_post}" + "{Virus}--{RefID}--{sample}_fastqc.html"),
+        zip=temp(f"{datadir}{qc_post}" + "{Virus}--{RefID}--{sample}_fastqc.zip"),
     conda:
         f"{conda_envs}Clean.yaml"
     log:
-        f"{logdir}QC_clean_" + "{Virus}.{RefID}.{Sample}.log",
+        f"{logdir}QC_clean_" + "{Virus}.{RefID}.{sample}.log",
     benchmark:
-        f"{logdir}{bench}QC_clean_" + "{Virus}.{RefID}.{Sample}.txt"
+        f"{logdir}{bench}QC_clean_" + "{Virus}.{RefID}.{sample}.txt"
     threads: config["threads"]["QC"]
     resources:
         mem_mb=low_memory_job,
