@@ -113,27 +113,7 @@ localrules:
 rule all:
     input:  #construct_all_rule(SAMPLES)
         f"{res}multiqc.html",
-        expand(
-            f"{datadir}{wc_folder}{cons}{seqs}" "{sample}" f"_cov_ge_{mincov}.fa",
-            zip,
-            RefID=p_space.RefID,
-            Virus=p_space.Virus,
-            sample=p_space.dataframe["sample"],
-        ),
-        expand(
-            f"{datadir}{wc_folder}{features}{{sample}}_features.gff",
-            zip,
-            RefID=p_space.RefID,
-            Virus=p_space.Virus,
-            sample=p_space.dataframe["sample"],
-        ),
-        expand(
-            f"{datadir}{wc_folder}{cln}{prdir}" "{sample}.fastq",
-            zip,
-            RefID=p_space.RefID,
-            Virus=p_space.Virus,
-            sample=p_space.dataframe["sample"],
-        ),
+        f"{res}consensus.fasta",
 
 
 rule prepare_refs:
@@ -551,19 +531,25 @@ rule trueconsense:
         """
 
 
-'''
 rule concat_sequences:
     input:
         expand(
-            f"{datadir}{cons}{seqs}""{sample}_cov_ge_"f"{mincov}.fa",
-            sample = SAMPLES,
-            )
-    output: f"{res}consensus.fasta",
+            f"{datadir}{wc_folder}{cons}{seqs}" "{sample}" f"_cov_ge_{mincov}.fa",
+            zip,
+            RefID=p_space.RefID,
+            Virus=p_space.Virus,
+            sample=p_space.dataframe["sample"],
+        ),
+    output:
+        f"{res}consensus.fasta",
     threads: 1
-    resources: mem_mb = low_memory_job
-    shell: "cat {input} >> {output}"
+    resources:
+        mem_mb=low_memory_job,
+    shell:
+        "cat {input} >> {output}"
 
 
+'''
 rule vcf_to_tsv:
     input: vcf = f"{datadir}{aln}{vf}""{sample}"f"_cov_ge_{mincov}.vcf",
     output: tsv = temp(f"{datadir}{aln}{vf}""{sample}.tsv"),
