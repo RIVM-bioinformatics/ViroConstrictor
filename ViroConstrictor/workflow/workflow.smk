@@ -74,13 +74,15 @@ def construct_MultiQC_input(_wildcards):
             f"Platform {config['platform']} not recognised. Choose one of [illumina, nanopore, iontorrent]."
         )
 
-    post = expand(
+    post = (
+        expand(
             f"{datadir}{wc_folder}{qc_post}{{sample}}_fastqc.zip",
             zip,
             RefID=p_space.RefID,
             Virus=p_space.Virus,
             sample=p_space.dataframe["sample"],
         )[0],
+    )
 
     return pre + list(post)
 
@@ -112,7 +114,7 @@ rule all:
     input:  #construct_all_rule(SAMPLES)
         f"{res}multiqc.html",
         expand(
-            f"{datadir}{wc_folder}{cln}{qcfilt}{{sample}}.fastq",
+            f"{datadir}{wc_folder}{cons}{seqs}" "{sample}" f"_cov_ge_{mincov}.fa",
             zip,
             RefID=p_space.RefID,
             Virus=p_space.Virus,
@@ -431,9 +433,10 @@ rule ampligone:
             -to \
             -t {threads} >> {log} 2>&1
         """
-
-
 # TODO: Make not giving primers to the cli an option
+
+
+
 rule move_fastq:
     input:
         rules.qc_filter.output.fq,
@@ -472,7 +475,6 @@ rule qc_clean:
         """
 
 
-'''
 ### Align the cleaned reads to the reference
 def get_alignment_flags(_wildcards):
     # These should correspond to the alignment settings in AmpliGone
@@ -481,22 +483,27 @@ def get_alignment_flags(_wildcards):
     elif config["platform"] == "nanopore":
         return "-ax map-ont -E2,0 -O8,24 -A4 -B4"
 
+
 rule align_before_trueconsense:
     input:
-        fq = f"{datadir}{cln}{prdir}""{sample}.fastq",
-        ref = rules.prepare_refs.output
+        fq=rules.ampligone.output.fq,
+        ref=rules.prepare_refs.output,
     output:
-        bam = f"{datadir}{aln}{bf}""{sample}.bam",
-        index = f"{datadir}{aln}{bf}""{sample}.bam.bai"
-    conda: f"{conda_envs}Alignment.yaml"
-    log: f"{logdir}""Alignment_{sample}.log"
-    benchmark: f"{logdir}{bench}""Alignment_{sample}.txt"
-    threads: config['threads']['Alignments']
-    resources: mem_mb = medium_memory_job
+        bam=f"{datadir}{wc_folder}{aln}{bf}" "{sample}.bam",
+        index=f"{datadir}{wc_folder}{aln}{bf}" "{sample}.bam.bai",
+    conda:
+        f"{conda_envs}Alignment.yaml"
+    log:
+        f"{logdir}Alignment_" "{Virus}.{RefID}.{sample}.log",
+    benchmark:
+        f"{logdir}{bench}Alignment_" "{Virus}.{RefID}.{sample}.txt"
+    threads: config["threads"]["Alignments"]
+    resources:
+        mem_mb=medium_memory_job,
     params:
-        mapthreads = config['threads']['Alignments'] - 1,
-        filters = config["runparams"]["alignmentfilters"],
-        alignment_flags = get_alignment_flags,
+        mapthreads=config["threads"]["Alignments"] - 1,
+        filters=config["runparams"]["alignmentfilters"],
+        alignment_flags=get_alignment_flags,
     shell:
         """
         minimap2 {params.alignment_flags} -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
@@ -505,26 +512,31 @@ rule align_before_trueconsense:
         samtools index {output.bam} >> {log} 2>&1
         """
 
+
 rule trueconsense:
     input:
-        bam = rules.align_before_trueconsense.output.bam,
-        gff = rules.prepare_features_file.output.gff,
-        ref = rules.prepare_refs.output
+        bam=rules.align_before_trueconsense.output.bam,
+        gff=rules.prepare_gffs.output.gff,
+        ref=rules.prepare_refs.output,
     output:
-        cons = f"{datadir}{cons}{seqs}""{sample}"f"_cov_ge_{mincov}.fa",
-        cov = f"{datadir}{cons}{covs}""{sample}_coverage.tsv",
-        vcf = f"{datadir}{aln}{vf}""{sample}"f"_cov_ge_{mincov}.vcf",
-        gff = f"{datadir}{cons}{features}""{sample}"f"_cov_ge_{mincov}.gff",
+        cons=f"{datadir}{wc_folder}{cons}{seqs}" "{sample}" f"_cov_ge_{mincov}.fa",
+        cov=f"{datadir}{wc_folder}{cons}{covs}" "{sample}_coverage.tsv",
+        vcf=f"{datadir}{wc_folder}{aln}{vf}" "{sample}" f"_cov_ge_{mincov}.vcf",
+        gff=f"{datadir}{wc_folder}{cons}{features}" "{sample}" f"_cov_ge_{mincov}.gff",
     params:
-        mincov = mincov,
-        outdir = f"{datadir}{cons}{seqs}",
-        vcfdir = f"{datadir}{aln}{vf}",
-        gffdir = f"{datadir}{cons}{features}"
-    conda: f"{conda_envs}Consensus.yaml"
-    log: f"{logdir}""Consensus_{sample}.log"
-    benchmark: f"{logdir}{bench}""Consensus_{sample}.txt"
-    threads: config['threads']['Consensus']
-    resources: mem_mb = medium_memory_job
+        mincov=mincov,
+        outdir=f"{datadir}{wc_folder}{cons}{seqs}",
+        vcfdir=f"{datadir}{wc_folder}{aln}{vf}",
+        gffdir=f"{datadir}{wc_folder}{cons}{features}",
+    conda:
+        f"{conda_envs}Consensus.yaml"
+    log:
+        f"{logdir}Consensus_" "{Virus}.{RefID}.{sample}.log",
+    benchmark:
+        f"{logdir}{bench}" "{Virus}.{RefID}.{sample}.txt"
+    threads: config["threads"]["Consensus"]
+    resources:
+        mem_mb=medium_memory_job,
     shell:
         """
         TrueConsense --input {input.bam} \
@@ -538,6 +550,8 @@ rule trueconsense:
         --threads {threads}
         """
 
+
+'''
 rule concat_sequences:
     input:
         expand(
