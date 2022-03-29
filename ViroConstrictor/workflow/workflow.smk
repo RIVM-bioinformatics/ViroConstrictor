@@ -101,6 +101,7 @@ localrules:
     all,
     prepare_refs,
 
+
 rule all:
     input:  #construct_all_rule(SAMPLES)
         f"{res}multiqc.html",
@@ -109,7 +110,7 @@ rule all:
             zip,
             RefID=p_space.RefID,
             Virus=p_space.Virus,
-            sample=p_space.dataframe['sample'],
+            sample=p_space.dataframe["sample"],
         ),
 
 
@@ -220,8 +221,8 @@ if config["platform"] in ["nanopore", "iontorrent"]:
             ref=rules.prepare_refs.output,
             fq=lambda wc: SAMPLES[wc.sample]["INPUTFILE"],
         output:
-            bam=f"{datadir}{wc_folder}{cln}{raln}{{sample}}.bam",
-            index=f"{datadir}{wc_folder}{cln}{raln}{{sample}}.bam.bai",
+            bam=f"{datadir}{wc_folder}{cln}{raln}" "{sample}.bam",
+            index=f"{datadir}{wc_folder}{cln}{raln}" "{sample}.bam.bai",
         conda:
             f"{conda_envs}Alignment.yaml"
         log:
@@ -570,6 +571,7 @@ rule concat_amplicon_cov:
         python {params.script} --output {output} --input {input}
         """
 '''
+
 
 rule multiqc_report:
     input:
