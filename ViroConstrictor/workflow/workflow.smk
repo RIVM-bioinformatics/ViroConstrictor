@@ -113,7 +113,7 @@ rule all:
             sample=p_space.dataframe["sample"],
         ),
         expand(
-            f"{datadir}{wc_folder}{prim}{{sample}}_primers.bed",
+            f"{datadir}{wc_folder}{features}{{sample}}_features.gff",
             zip,
             RefID=p_space.RefID,
             Virus=p_space.Virus,
@@ -160,17 +160,17 @@ rule prepare_primers:
                 --primer-mismatch-rate {params.pr_mm_rate} > {log}
         fi
         """
-'''
+
+ruleorder: prepare_gffs > prodigal
+
 rule prepare_gffs:
     input:
-        feats = lambda wildcards: SAMPLES[str(wildcards.sample).split('~')[1]]["FEATURES"],
+        feats = lambda wc: SAMPLES[wc.sample]["FEATURES"],
         ref = rules.prepare_refs.output,
     output:
-        gff = f"{datadir}{refdir}{{target}}/{{refID}}/{{sample}}_features.gff",
-        aa = f"{datadir}{refdir}{{target}}/{{refID}}/{{sample}}_features.aa.fasta",
-        nt = f"{datadir}{refdir}{{target}}/{{refID}}/{{sample}}_features.nt.fasta",
-    log: f"{logdir}prepare_gffs_{{target}}.{{refID}}.{{sample}}.log"
-    benchmark: f"{logdir}{bench}prepare_gffs_{{target}}.{{refID}}.{{sample}}.txt"
+        gff = f"{datadir}{wc_folder}{features}{{sample}}_features.gff",
+    log: f"{logdir}prepare_gffs_{{Virus}}.{{RefID}}.{{sample}}.log"
+    benchmark: f"{logdir}{bench}prepare_gffs_{{Virus}}.{{RefID}}.{{sample}}.txt"
     threads: config["threads"]["Index"]
     conda:
         f"{conda_envs}ORF_analysis.yaml"
@@ -181,19 +181,38 @@ rule prepare_gffs:
         prodigal_method = "meta",
         prodigal_outformat= "gff",
     shell:
-"""
-        if [[ {input.feats} == "NONE" ]]:
+        """
+            python {params.script} {input.feats} {output.gff} {wildcards.RefID}
+        """
+
+rule prodigal:
+    input:
+        feats = lambda wc: SAMPLES[wc.sample]["FEATURES"],
+        ref = rules.prepare_refs.output,
+    output:
+        gff = f"{datadir}{wc_folder}{features}{{sample}}_features.gff",
+        aa = f"{datadir}{wc_folder}{features}{{sample}}_features.aa.fasta",
+        nt = f"{datadir}{wc_folder}{features}{{sample}}_features.nt.fasta",
+    log: f"{logdir}prepare_gffs_{{Virus}}.{{RefID}}.{{sample}}.log"
+    benchmark: f"{logdir}{bench}prepare_gffs_{{Virus}}.{{RefID}}.{{sample}}.txt"
+    threads: config["threads"]["Index"]
+    conda:
+        f"{conda_envs}ORF_analysis.yaml"
+    resources:
+        mem_mb= medium_memory_job
+    params:
+        script=srcdir("scripts/extract_gff.py"),
+        prodigal_method = "meta",
+        prodigal_outformat= "gff",
+    shell:
+        """
             prodigal -q -i {input.ref} \
                 -a {output.aa} \
                 -d {output.nt} \
                 -o {output.gff} \
                 -p {params.prodigal_method} \
                 -f {params.prodigal_outformat} > {log} 2>&1
-        else:
-            python {params.script} {input.feats} {output.gff} {wildcards.refID}
         """
-'''
-
 
 if config["platform"] in ["nanopore", "iontorrent"]:
     p1_mapping_settings = (
