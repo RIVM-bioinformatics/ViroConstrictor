@@ -38,7 +38,7 @@ samples_df = samples_df.explode("RefID")
 p_space = Paramspace(
     samples_df[["Virus", "RefID", "sample"]], filename_params=["sample"]
 )
-wc_pattern = p_space.wildcard_pattern.replace("sample~", "")
+wc_folder = "/".join(p_space.wildcard_pattern.split("/")[:-1]) + "/"
 
 
 def construct_all_rule(sampleinfo):
@@ -101,23 +101,15 @@ localrules:
     all,
     prepare_refs,
 
-print(expand(
-            f"{datadir}{wc_pattern}_raw_aln.bam",
-            zip,
-            RefID=p_space.RefID,
-            sample=p_space.dataframe['sample'],
-            Virus=p_space.Virus,
-        ))
-
 rule all:
     input:  #construct_all_rule(SAMPLES)
         f"{res}multiqc.html",
         expand(
-            f"{datadir}{wc_pattern}_raw_aln.bam",
+            f"{datadir}{wc_folder}{cln}{raln}{{sample}}.bam",
             zip,
             RefID=p_space.RefID,
-            sample=p_space.dataframe['sample'],
             Virus=p_space.Virus,
+            sample=p_space.dataframe['sample'],
         ),
 
 
@@ -125,7 +117,7 @@ rule prepare_refs:
     input:
         lambda wc: SAMPLES[wc.sample]["REFERENCE"],
     output:
-        f"{datadir}{wc_pattern}_reference.fasta",
+        f"{datadir}{wc_folder}{{sample}}_reference.fasta",
     run:
         from Bio import SeqIO
 
@@ -228,8 +220,8 @@ if config["platform"] in ["nanopore", "iontorrent"]:
             ref=rules.prepare_refs.output,
             fq=lambda wc: SAMPLES[wc.sample]["INPUTFILE"],
         output:
-            bam=f"{datadir}{wc_pattern}_raw_aln.bam",
-            index=f"{datadir}{wc_pattern}_raw_aln.bam.bai",
+            bam=f"{datadir}{wc_folder}{cln}{raln}{{sample}}.bam",
+            index=f"{datadir}{wc_folder}{cln}{raln}{{sample}}.bam.bai",
         conda:
             f"{conda_envs}Alignment.yaml"
         log:
