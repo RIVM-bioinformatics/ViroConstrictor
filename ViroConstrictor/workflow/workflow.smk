@@ -119,6 +119,13 @@ rule all:
             Virus=p_space.Virus,
             sample=p_space.dataframe["sample"],
         ),
+        expand(
+            f"{datadir}{wc_folder}{cln}{prdir}" "{sample}.fastq",
+            zip,
+            RefID=p_space.RefID,
+            Virus=p_space.Virus,
+            sample=p_space.dataframe["sample"],
+        ),
 
 
 rule prepare_refs:
@@ -361,9 +368,9 @@ rule qc_filter:
     conda:
         f"{conda_envs}Clean.yaml"
     log:
-        f"{logdir}QC_filter_" + "{Virus}.{RefID}.{sample}.log",
+        f"{logdir}QC_filter_" "{Virus}.{RefID}.{sample}.log",
     benchmark:
-        f"{logdir}{bench}QC_filter_" + "{Virus}.{RefID}.{sample}.txt"
+        f"{logdir}{bench}QC_filter_" "{Virus}.{RefID}.{sample}.txt"
     threads: config["threads"]["QC"]
     resources:
         mem_mb=low_memory_job,
@@ -382,25 +389,29 @@ rule qc_filter:
         """
 
 
-'''
 ruleorder: ampligone > move_fastq
+
 
 rule ampligone:
     input:
-        fq = rules.qc_filter.output.fq,
-        pr = f"{datadir}{prim}primers.bed",
-        ref = rules.prepare_refs.output,
+        fq=rules.qc_filter.output.fq,
+        pr=rules.prepare_primers.output.bed,
+        ref=rules.prepare_refs.output,
     output:
-        fq = f"{datadir}{cln}{prdir}""{sample}.fastq",
-        ep = f"{datadir}{prim}""{sample}_removedprimers.bed"
-    conda: f"{conda_envs}Clean.yaml"
-    log: f"{logdir}""AmpliGone_{sample}.log"
-    benchmark: f"{logdir}{bench}""AmpliGone_{sample}.txt"
-    threads: config['threads']['PrimerRemoval']
-    resources: mem_mb = high_memory_job
+        fq=f"{datadir}{wc_folder}{cln}{prdir}" "{sample}.fastq",
+        ep=f"{datadir}{wc_folder}{prim}" "{sample}_removedprimers.bed",
+    conda:
+        f"{conda_envs}Clean.yaml"
+    log:
+        f"{logdir}" "AmpliGone_{Virus}.{RefID}.{sample}.log",
+    benchmark:
+        f"{logdir}{bench}" "AmpliGone_{Virus}.{RefID}.{sample}.txt"
+    threads: config["threads"]["PrimerRemoval"]
+    resources:
+        mem_mb=high_memory_job,
     params:
-        amplicontype = config["amplicon_type"],
-        pr_mm_rate = lambda wildcards: SAMPLES[str(wildcards.sample).split('~')[1]]["PRIMER-MISMATCH-RATE"]
+        amplicontype=config["amplicon_type"],
+        pr_mm_rate=lambda wc: SAMPLES[wc.sample]["PRIMER-MISMATCH-RATE"],
     shell:
         """
         echo {input.pr} > {log}
@@ -415,16 +426,20 @@ rule ampligone:
             -t {threads} >> {log} 2>&1
         """
 
+
+# TODO: Make not giving primers to the cli an option
 rule move_fastq:
-    input: rules.qc_filter.output.fq
-    output: f"{datadir}{cln}{prdir}""{sample}.fastq"
+    input:
+        rules.qc_filter.output.fq,
+    output:
+        rules.ampligone.output.fq,
     threads: 1
-    resources: mem_mb = low_memory_job
+    resources:
+        mem_mb=low_memory_job,
     shell:
         """
         cp {input} {output}
         """
-'''
 
 
 rule qc_clean:
