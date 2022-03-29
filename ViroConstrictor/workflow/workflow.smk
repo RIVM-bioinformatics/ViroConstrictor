@@ -3,56 +3,43 @@ import os
 import yaml
 import sys
 from directories import *
-import shutil
 from Bio import SeqIO
 from snakemake.utils import Paramspace, min_version
 import pandas as pd
 
+
 min_version("6.0")
 
-yaml.warnings({'YAMLLoadWarning': False})
+yaml.warnings({"YAMLLoadWarning": False})
 shell.executable("/bin/bash")
 
 SAMPLES = {}
 with open(config["sample_sheet"]) as sample_sheet_file:
     SAMPLES = yaml.safe_load(sample_sheet_file)
 
-# primers_extension = config["primer_file"].split('.')[-1]
-
-# reffile = config["reference_file"]
-# ref_basename = os.path.splitext(os.path.basename(reffile))[0]
-#
-# features_file = config["features_file"]
-
 mincov = 30
+
 
 def Get_Ref_header(reffile):
     return [record.id for record in SeqIO.parse(reffile, "fasta")]
 
-def construct_paramspace(sampleinfo):
-    space = []
-    for key, val in sampleinfo.items():
-    
-        if val["MATCH-REF"] is False:
-            for id in Get_Ref_header(val["REFERENCE"]):
-                space.append({"Virus": val["VIRUS"], "RefID": id, "Sample": key})
-    return Paramspace(pd.DataFrame.from_dict(space))
 
-paramspace = construct_paramspace(SAMPLES)
+# # p_space = construct_p_space(SAMPLES)
 
-## copy references to right locations
-for sample, vals in SAMPLES.items():
-    prims = vals['PRIMERS']
-    feats = vals['FEATURES']
-    ref = vals['REFERENCE']
-    vir = vals['VIRUS']
-    prims_ext = prims.split('.')[-1]
+samples_df = (
+    pd.DataFrame(SAMPLES)
+    .transpose()
+    .reset_index()
+    .rename(columns=dict(index="Sample", VIRUS="Virus"))
+)
+# samples_df = samples_df[samples_df["MATCH-REF"].astype(bool)]
+samples_df["RefID"] = samples_df["REFERENCE"].apply(Get_Ref_header)
+samples_df = samples_df.explode("RefID")
+p_space = Paramspace(
+    samples_df[["Virus", "RefID", "Sample"]], filename_params=["Sample"]
+)
+wc_pattern = p_space.wildcard_pattern.replace("Sample~", "")
 
-    for id in Get_Ref_header(ref):
-        base = f"{datadir}/{vir}/{id}/{sample}.raw_align.bam"
-        shutil.copy(ref, f"{base}reference.fasta")
-        shutil.copy(feats, f"{base}features.gff")
-        shutil.copy(prims, f"{base}primers.{prims_ext}")
 
 def construct_all_rule(sampleinfo):
     files = set()
@@ -69,67 +56,82 @@ def construct_all_rule(sampleinfo):
 
     return list(files)
 
+
 def construct_MultiQC_input(_wildcards):
-    if config['platform'] == "nanopore" or config['platform'] == "iontorrent":
+    if config["platform"] == "nanopore" or config["platform"] == "iontorrent":
         pre = expand(
-            f"{datadir}{qc_pre}{{param_struct}}_fastqc.zip", param_struct=paramspace.instance_patterns)
-    elif config['platform'] == "illumina":
+            f"{datadir}{qc_pre}{{Sample}}_fastqc.zip",
+            Sample=p_space.dataframe.Sample.unique(),
+        )
+    elif config["platform"] == "illumina":
         pre = expand(
             f"{datadir}{qc_pre}{{param_struct}}_{read}_fastqc.zip",
-            param_struct=paramspace.instance_patterns,
-            read = "R1 R2".split()
-            )
+            param_struct=p_space.instance_patterns,
+            read="R1 R2".split(),
+        )
     else:
-        raise ValueError(f"Platform {config['platform']} not recognised. Choose one of [illumina, nanopore, iontorrent].")
-    post = expand(f"{datadir}{qc_post}{{param_struct}}_fastqc.zip", param_struct=paramspace.instance_patterns)
+        raise ValueError(
+            f"Platform {config['platform']} not recognised. Choose one of [illumina, nanopore, iontorrent]."
+        )
+    # post = expand(f"{datadir}{qc_post}{{param_struct}}_fastqc.zip", param_struct=p_space.instance_patterns)
 
-    return pre + post
+    # print(list(set(pre)))
+    return pre  # + post
+
 
 def low_memory_job(wildcards, threads, attempt):
-    if config['computing_execution'] == 'local':
-        return min(attempt * threads * 1 * 1000, config['max_local_mem'])
+    if config["computing_execution"] == "local":
+        return min(attempt * threads * 1 * 1000, config["max_local_mem"])
     return attempt * threads * 1 * 1000
 
+
 def medium_memory_job(wildcards, threads, attempt):
-    if config['computing_execution'] == 'local':
-        return min(attempt * threads * 2 * 1000, config['max_local_mem'])
+    if config["computing_execution"] == "local":
+        return min(attempt * threads * 2 * 1000, config["max_local_mem"])
     return attempt * threads * 2 * 1000
 
+
 def high_memory_job(wildcards, threads, attempt):
-    if config['computing_execution'] == 'local':
-        return min(attempt * threads * 4 * 1000, config['max_local_mem'])
+    if config["computing_execution"] == "local":
+        return min(attempt * threads * 4 * 1000, config["max_local_mem"])
     return attempt * threads * 4 * 1000
+
 
 localrules:
     all,
-    prepare_refs
+    prepare_refs,
+
 
 rule all:
-    input: construct_all_rule(SAMPLES)
+    input:  #construct_all_rule(SAMPLES)
+        f"{res}multiqc.html",
+        expand(
+            f"{datadir}" "{wc_pattern}_raw_aln.bam",
+            zip,
+            RefID=p_space.RefID,
+            Sample=p_space.Sample,
+            Virus=p_space.Virus,
+        ),
+
 
 rule prepare_refs:
-    input: lambda wildcards: SAMPLES[str(wildcards.sample).split('~')[1]]["REFERENCE"]
-    output: 
-        ref = f"{datadir}{refdir}{{target}}/{{refID}}/{{sample}}_reference.fasta",
-        ref_indx = f"{datadir}{refdir}{{target}}/{{refID}}/{{sample}}_reference.fasta.fai",
-    conda: f"{conda_envs}Alignment.yaml"
-    threads: config['threads']['Index']
-    resources:
-        mem_mb = low_memory_job
-    params:
-        script=srcdir("scripts/extract_ref.py")
-    shell:
-        """
-        python {params.script} {input} {output} {wildcards.refID}
-        samtools faidx {output.ref} -o {output.ref_indx}
-        """
+    input:
+        lambda wc: SAMPLES[wc.Sample]["REFERENCE"],
+    output:
+        f"{datadir}{{Virus}}/{{RefID}}/{{Sample}}_reference.fasta",
+    run:
+        from Bio import SeqIO
 
+        for record in SeqIO.parse(str(input), "fasta"):
+            if wildcards.RefID in record.id:
+                SeqIO.write(record, str(output), "fasta")
 
+'''
 #TODO: maybe redo this to make sure this also works when no primers are given
 rule prepare_primers:
-    input: 
+    input:
         prm = lambda wildcards: SAMPLES[str(wildcards.sample).split('~')[1]]["PRIMERS"],
-        ref = rules.prepare_refs.output.ref,
+        ref = rules.prepare_refs.output,
     output:
         bed = f"{datadir}{refdir}{{target}}/{{refID}}/{{sample}}_primers.bed",
     threads: 1
@@ -141,7 +143,7 @@ rule prepare_primers:
         pr_mm_rate = lambda wildcards: SAMPLES[str(wildcards.sample).split('~')[1]]["PRIMER-MISMATCH-RATE"]
     conda: f"{conda_envs}Clean.yaml"
     shell:
-        """
+"""
         if [[ {input.prm} == *.bed ]]:
             cp {input.prm} {output.bed}
         else:
@@ -153,9 +155,9 @@ rule prepare_primers:
         """
 
 rule prepare_gffs:
-    input: 
+    input:
         feats = lambda wildcards: SAMPLES[str(wildcards.sample).split('~')[1]]["FEATURES"],
-        ref = rules.prepare_refs.output.ref,
+        ref = rules.prepare_refs.output,
     output:
         gff = f"{datadir}{refdir}{{target}}/{{refID}}/{{sample}}_features.gff",
         aa = f"{datadir}{refdir}{{target}}/{{refID}}/{{sample}}_features.aa.fasta",
@@ -172,7 +174,7 @@ rule prepare_gffs:
         prodigal_method = "meta",
         prodigal_outformat= "gff",
     shell:
-        """
+"""
         if [[ {input.feats} == "NONE" ]]:
             prodigal -q -i {input.ref} \
                 -a {output.aa} \
@@ -183,23 +185,32 @@ rule prepare_gffs:
         else:
             python {params.script} {input.feats} {output.gff} {wildcards.refID}
         """
+'''
+
 
 if config["platform"] in ["nanopore", "iontorrent"]:
-    p1_mapping_settings = "-ax sr" if config["platform"] == "iontorrent" else "-ax map-ont"
+    p1_mapping_settings = (
+        "-ax sr" if config["platform"] == "iontorrent" else "-ax map-ont"
+    )
 
     rule qc_raw:
-        input: lambda wildcards: SAMPLES[wildcards.sample]
+        input:
+            lambda wc: SAMPLES[wc.Sample]["INPUTFILE"],
         output:
-            html = f"{datadir}{qc_pre}""{sample}_fastqc.html",
-            zip  = f"{datadir}{qc_pre}""{sample}_fastqc.zip"
-        conda: f"{conda_envs}Clean.yaml"
-        log: f"{logdir}""QC_raw_data_{sample}.log"
-        benchmark: f"{logdir}{bench}""QC_raw_data_{sample}.txt"
-        threads: config['threads']['QC']
-        resources: mem_mb = low_memory_job
+            html=f"{datadir}{qc_pre}" "{Sample}_fastqc.html",
+            zip=f"{datadir}{qc_pre}" "{Sample}_fastqc.zip",
+        conda:
+            f"{conda_envs}Clean.yaml"
+        log:
+            f"{logdir}QC_raw_data_" + "{Sample}.log",
+        benchmark:
+            f"{logdir}{bench}QC_raw_data_" + "{Sample}.txt"
+        threads: config["threads"]["QC"]
+        resources:
+            mem_mb=low_memory_job,
         params:
-            output_dir = f"{datadir}{qc_pre}",
-            script = srcdir("scripts/fastqc_wrapper.sh")
+            output_dir=f"{datadir}{qc_pre}",
+            script=srcdir("scripts/fastqc_wrapper.sh"),
         shell:
             """
             bash {params.script} {input} {params.output_dir} {output.html} {output.zip} {log}
@@ -207,20 +218,24 @@ if config["platform"] in ["nanopore", "iontorrent"]:
 
     rule remove_adapters_p1:
         input:
-            ref = rules.prepare_ref.output.ref,
-            fq  = lambda wildcards: SAMPLES[wildcards.sample]
+            ref=rules.prepare_refs.output,
+            fq=lambda wc: SAMPLES[wc.Sample]["INPUTFILE"],
         output:
-            bam   = f"{datadir}{cln}{raln}""{sample}.bam",
-            index = f"{datadir}{cln}{raln}""{sample}.bam.bai"
-        conda: f"{conda_envs}Alignment.yaml"
-        log: f"{logdir}""RemoveAdapters_p1_{sample}.log"
-        benchmark: f"{logdir}{bench}"+ "RemoveAdapters_p1_{sample}.txt"
-        threads: config['threads']['Alignments']
-        resources: mem_mb = medium_memory_job
+            bam=f"{datadir}{{Virus}}/{{RefID}}/{{Sample}}_raw_aln.bam",
+            index=f"{datadir}{{Virus}}/{{RefID}}/{{Sample}}_raw_aln.bam.bai",
+        conda:
+            f"{conda_envs}Alignment.yaml"
+        log:
+            f"{logdir}RemoveAdapters_p1_" + "{Virus}.{RefID}.{Sample}.log",
+        benchmark:
+            f"{logdir}{bench}RemoveAdapters_p1_" + "{Virus}.{RefID}.{Sample}.txt"
+        threads: config["threads"]["Alignments"]
+        resources:
+            mem_mb=medium_memory_job,
         params:
-            mapthreads = config['threads']['Alignments'] - 1,
-            filters = config["runparams"]["alignmentfilters"],
-            mapping_settings = p1_mapping_settings
+            mapthreads=config["threads"]["Alignments"] - 1,
+            filters=config["runparams"]["alignmentfilters"],
+            mapping_settings=p1_mapping_settings,
         shell:
             """
             minimap2 {params.mapping_settings} -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
@@ -229,20 +244,27 @@ if config["platform"] in ["nanopore", "iontorrent"]:
             samtools index {output.bam} >> {log} 2>&1
             """
 
+
 if config["platform"] == "illumina":
+
     rule qc_raw:
-        input: lambda wildcards: SAMPLES[wildcards.sample][wildcards.read]
+        input:
+            lambda wildcards: SAMPLES[wildcards.sample][wildcards.read],
         output:
-            html = f"{datadir}{qc_pre}""{sample}_{read}_fastqc.html",
-            zip  = f"{datadir}{qc_pre}""{sample}_{read}_fastqc.zip",
-        conda: f"{conda_envs}Clean.yaml"
-        log: f"{logdir}""QC_raw_data_{sample}_{read}.log"
-        benchmark: f"{logdir}{bench}""QC_raw_data_{sample}_{read}.txt"
-        threads: config['threads']['QC']
-        resources: mem_mb = low_memory_job
+            html=f"{datadir}{qc_pre}" "{sample}_{read}_fastqc.html",
+            zip=f"{datadir}{qc_pre}" "{sample}_{read}_fastqc.zip",
+        conda:
+            f"{conda_envs}Clean.yaml"
+        log:
+            f"{logdir}" "QC_raw_data_{sample}_{read}.log",
+        benchmark:
+            f"{logdir}{bench}" "QC_raw_data_{sample}_{read}.txt"
+        threads: config["threads"]["QC"]
+        resources:
+            mem_mb=low_memory_job,
         params:
-            output_dir = f"{datadir}{qc_pre}",
-            script = srcdir("scripts/fastqc_wrapper.sh"),
+            output_dir=f"{datadir}{qc_pre}",
+            script=srcdir("scripts/fastqc_wrapper.sh"),
         shell:
             """
             bash {params.script} {input} {params.output_dir} {output.html} {output.zip} {log}
@@ -250,21 +272,23 @@ if config["platform"] == "illumina":
 
     rule remove_adapters_p1:
         input:
-            ref = rules.prepare_ref.output.ref,
-            fq  = lambda wildcards: (SAMPLES[wildcards.sample][i]
-                                for i in ("R1", "R2")
-                                )
+            ref=rules.prepare_refs.output,
+            fq=lambda wildcards: (SAMPLES[wildcards.sample][i] for i in ("R1", "R2")),
         output:
-            bam   = f"{datadir}{cln}{raln}""{sample}.bam",
-            index = f"{datadir}{cln}{raln}""{sample}.bam.bai"
-        conda: f"{conda_envs}Alignment.yaml"
-        log: f"{logdir}""RemoveAdapters_p1_{sample}.log"
-        benchmark: f"{logdir}{bench}""RemoveAdapters_p1_{sample}.txt"
-        threads: config['threads']['Alignments']
-        resources: mem_mb = medium_memory_job
+            bam=f"{datadir}{cln}{raln}" "{sample}.bam",
+            index=f"{datadir}{cln}{raln}" "{sample}.bam.bai",
+        conda:
+            f"{conda_envs}Alignment.yaml"
+        log:
+            f"{logdir}" "RemoveAdapters_p1_{sample}.log",
+        benchmark:
+            f"{logdir}{bench}" "RemoveAdapters_p1_{sample}.txt"
+        threads: config["threads"]["Alignments"]
+        resources:
+            mem_mb=medium_memory_job,
         params:
-            mapthreads = config['threads']['Alignments'] - 1,
-            filters = config["runparams"]["alignmentfilters"]
+            mapthreads=config["threads"]["Alignments"] - 1,
+            filters=config["runparams"]["alignmentfilters"],
         shell:
             """
             minimap2 -ax sr -t {params.mapthreads} {input.ref} {input.fq[0]:q} {input.fq[1]:q} 2>> {log} |\
@@ -273,33 +297,45 @@ if config["platform"] == "illumina":
             samtools index {output.bam} >> {log} 2>&1
             """
 
+
 rule remove_adapters_p2:
-    input: rules.remove_adapters_p1.output.bam
-    output: f"{datadir}{cln}{noad}""{sample}.fastq"
-    conda: f"{conda_envs}Clean.yaml"
-    threads: config['threads']['AdapterRemoval']
-    resources: mem_mb = low_memory_job
-    params: script = srcdir('scripts/clipper.py')
+    input:
+        rules.remove_adapters_p1.output.bam,
+    output:
+        f"{datadir}{{Virus}}/{{RefID}}/{cln}{noad}{{Sample}}.fastq",
+    conda:
+        f"{conda_envs}Clean.yaml"
+    threads: config["threads"]["AdapterRemoval"]
+    resources:
+        mem_mb=low_memory_job,
+    params:
+        script=srcdir("scripts/clipper.py"),
     shell:
         """
         python {params.script} --input {input} --output {output} --threads {threads}
         """
 
+
 rule qc_filter:
-    input: rules.remove_adapters_p2.output
+    input:
+        rules.remove_adapters_p2.output,
     output:
-        fq = f"{datadir}{cln}{qcfilt}""{sample}.fastq",
-        html = f"{datadir}{cln}{qcfilt}{html}""{sample}.fastp.html",
-        json = f"{datadir}{cln}{qcfilt}{json}""{sample}.fastp.json"
-    conda: f"{conda_envs}Clean.yaml"
-    log: f"{logdir}""Cleanup_{sample}.log"
-    benchmark: f"{logdir}{bench}""Cleanup_{sample}.txt"
-    threads: config['threads']['QC']
-    resources: mem_mb = low_memory_job
+        fq=f"{datadir}{{Virus}}/{{RefID}}/{cln}{qcfilt}{{Sample}}.fastq",
+        html=f"{datadir}{{Virus}}/{{RefID}}/{cln}{qcfilt}{html}{{Sample}}_fastqc.html",
+        json=f"{datadir}{{Virus}}/{{RefID}}/{cln}{qcfilt}{json}{{Sample}}_fastqc.json",
+    conda:
+        f"{conda_envs}Clean.yaml"
+    log:
+        f"{logdir}QC_filter_" + "{Virus}.{RefID}.{Sample}.log",
+    benchmark:
+        f"{logdir}{bench}QC_filter_" + "{Virus}.{RefID}.{Sample}.txt"
+    threads: config["threads"]["QC"]
+    resources:
+        mem_mb=low_memory_job,
     params:
-        score = config['runparams'][f"qc_filter_{config['platform']}"],
-        size = config['runparams'][f"qc_window_{config['platform']}"],
-        length = config['runparams']['qc_min_readlength']
+        score=config["runparams"][f"qc_filter_{config['platform']}"],
+        size=config["runparams"][f"qc_window_{config['platform']}"],
+        length=config["runparams"]["qc_min_readlength"],
     shell:
         """
         fastp --thread {threads} -i {input} \
@@ -310,13 +346,15 @@ rule qc_filter:
             -h {output.html} -j {output.json} > {log} 2>&1
         """
 
+
+'''
 ruleorder: ampligone > move_fastq
 
 rule ampligone:
     input:
         fq = rules.qc_filter.output.fq,
         pr = f"{datadir}{prim}primers.bed",
-        ref = rules.prepare_ref.output.ref
+        ref = rules.prepare_refs.output,
     output:
         fq = f"{datadir}{cln}{prdir}""{sample}.fastq",
         ep = f"{datadir}{prim}""{sample}_removedprimers.bed"
@@ -327,7 +365,7 @@ rule ampligone:
     resources: mem_mb = high_memory_job
     params:
         amplicontype = config["amplicon_type"],
-        pr_mm_rate = config["primer_mismatch_rate"]
+        pr_mm_rate = lambda wildcards: SAMPLES[str(wildcards.sample).split('~')[1]]["PRIMER-MISMATCH-RATE"]
     shell:
         """
         echo {input.pr} > {log}
@@ -351,29 +389,34 @@ rule move_fastq:
         """
         cp {input} {output}
         """
+'''
+
 
 rule qc_clean:
-    input: f"{datadir}{cln}{prdir}""{sample}.fastq"
+    input:
+        rules.qc_filter.output.fq,
     output:
-        html = f"{datadir}{qc_post}""{sample}_fastqc.html",
-        zip = f"{datadir}{qc_post}""{sample}_fastqc.zip"
-    conda: f"{conda_envs}Clean.yaml"
-    log: f"{logdir}""QC_clean_data_{sample}.log"
-    benchmark: f"{logdir}{bench}""QC_clean_data_{sample}.txt"
-    threads: config['threads']['QC']
-    resources: mem_mb = low_memory_job
-    params: outdir = f"{datadir}{qc_post}"
+        html=temp(f"{datadir}{qc_post}" + "{Virus}--{RefID}--{Sample}_fastqc.html"),
+        zip=temp(f"{datadir}{qc_post}" + "{Virus}--{RefID}--{Sample}_fastqc.zip"),
+    conda:
+        f"{conda_envs}Clean.yaml"
+    log:
+        f"{logdir}QC_clean_" + "{Virus}.{RefID}.{Sample}.log",
+    benchmark:
+        f"{logdir}{bench}QC_clean_" + "{Virus}.{RefID}.{Sample}.txt"
+    threads: config["threads"]["QC"]
+    resources:
+        mem_mb=low_memory_job,
+    params:
+        outdir=f"{datadir}{qc_post}",
+        script=srcdir("scripts/fastqc_wrapper.sh"),
     shell:
         """
-        if [ -s "{input}" ]; then
-            fastqc -t {threads} --quiet --outdir {params.outdir} {input} > {log} 2>&1
-        else
-            touch {output.html}
-            touch {output.zip}
-        fi
+        bash {params.script} {input} {params.outdir} {output.html} {output.zip} {log}
         """
 
 
+'''
 ### Align the cleaned reads to the reference
 def get_alignment_flags(_wildcards):
     # These should correspond to the alignment settings in AmpliGone
@@ -385,7 +428,7 @@ def get_alignment_flags(_wildcards):
 rule align_before_trueconsense:
     input:
         fq = f"{datadir}{cln}{prdir}""{sample}.fastq",
-        ref = rules.prepare_ref.output.ref
+        ref = rules.prepare_refs.output
     output:
         bam = f"{datadir}{aln}{bf}""{sample}.bam",
         index = f"{datadir}{aln}{bf}""{sample}.bam.bai"
@@ -410,7 +453,7 @@ rule trueconsense:
     input:
         bam = rules.align_before_trueconsense.output.bam,
         gff = rules.prepare_features_file.output.gff,
-        ref = rules.prepare_ref.output.ref
+        ref = rules.prepare_refs.output
     output:
         cons = f"{datadir}{cons}{seqs}""{sample}"f"_cov_ge_{mincov}.fa",
         cov = f"{datadir}{cons}{covs}""{sample}_coverage.tsv",
@@ -475,7 +518,7 @@ rule concat_tsv_coverages:
 
 rule get_breadth_of_coverage:
     input:
-        reference = rules.prepare_ref.output.ref,
+        reference = rules.prepare_refs.output,
         coverage = rules.trueconsense.output.cov,
     output: temp(f"{datadir}{boc}""{sample}.tsv")
     conda: f"{conda_envs}Consensus.yaml"
@@ -527,36 +570,48 @@ rule concat_amplicon_cov:
         """
         python {params.script} --output {output} --input {input}
         """
+'''
 
 rule multiqc_report:
-    input: construct_MultiQC_input
+    input:
+        construct_MultiQC_input,
     output:
         f"{res}multiqc.html",
-        expand(f"{res}{mqc_data}""multiqc_{program}.txt", program = "fastqc")
-    conda: f"{conda_envs}Clean.yaml"
-    log: f"{logdir}MultiQC_report.log"
-    benchmark: f"{logdir}{bench}MultiQC_report.txt"
+        expand(f"{res}{mqc_data}multiqc_{{program}}.txt", program="fastqc"),
+    conda:
+        f"{conda_envs}Clean.yaml"
+    log:
+        f"{logdir}MultiQC_report.log",
+    benchmark:
+        f"{logdir}{bench}MultiQC_report.txt"
     threads: 1
-    resources: mem_mb = medium_memory_job
+    resources:
+        mem_mb=medium_memory_job,
     params:
-        conffile = srcdir('files/multiqc_config.yaml'),
-        outdir = res
+        conffile=srcdir("files/multiqc_config.yaml"),
+        outdir=res,
     shell:
         """
         multiqc -d --force --config {params.conffile} -o {params.outdir} -n multiqc.html {input} > {log} 2>&1
         """
 
+
 onsuccess:
-    print("""
+    print(
+        """
     ViroConstrictor is finished with processing all the files in the given input directory.
 
     Generating reports and shutting down...
-    """)
+    """
+    )
     return True
 
+
 onerror:
-    print("""
+    print(
+        """
     An error occurred and ViroConstrictor had to shut down.
     Please check the input and logfiles for any abnormalities and try again.
-    """)
+    """
+    )
     return False
