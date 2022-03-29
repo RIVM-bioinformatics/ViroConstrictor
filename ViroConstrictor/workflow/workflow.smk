@@ -73,10 +73,16 @@ def construct_MultiQC_input(_wildcards):
         raise ValueError(
             f"Platform {config['platform']} not recognised. Choose one of [illumina, nanopore, iontorrent]."
         )
-    # post = expand(f"{datadir}{qc_post}{{param_struct}}_fastqc.zip", param_struct=p_space.instance_patterns)
 
-    # print(list(set(pre)))
-    return pre  # + post
+    post = expand(
+            f"{datadir}{wc_folder}{qc_post}{{sample}}_fastqc.zip",
+            zip,
+            RefID=p_space.RefID,
+            Virus=p_space.Virus,
+            sample=p_space.dataframe["sample"],
+        )[0],
+
+    return pre + list(post)
 
 
 def low_memory_job(wildcards, threads, attempt):
@@ -446,8 +452,8 @@ rule qc_clean:
     input:
         rules.qc_filter.output.fq,
     output:
-        html=temp(f"{datadir}{qc_post}" + "{Virus}--{RefID}--{sample}_fastqc.html"),
-        zip=temp(f"{datadir}{qc_post}" + "{Virus}--{RefID}--{sample}_fastqc.zip"),
+        html=f"{datadir}{wc_folder}{qc_post}{{sample}}_fastqc.html",
+        zip=f"{datadir}{wc_folder}{qc_post}{{sample}}_fastqc.zip",
     conda:
         f"{conda_envs}Clean.yaml"
     log:
@@ -458,7 +464,7 @@ rule qc_clean:
     resources:
         mem_mb=low_memory_job,
     params:
-        outdir=f"{datadir}{qc_post}",
+        outdir=f"{datadir}{wc_folder}{qc_post}",
         script=srcdir("scripts/fastqc_wrapper.sh"),
     shell:
         """

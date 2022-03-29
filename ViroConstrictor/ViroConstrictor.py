@@ -148,7 +148,13 @@ def main():
     workflow_state = "Failed" if status is False else "Success"
 
     WriteReport(
-        workdir, inpath, start_path, conf, run_params, run_config, workflow_state,
+        workdir,
+        inpath,
+        start_path,
+        conf,
+        run_params,
+        run_config,
+        workflow_state,
     )
 
     if status is False:
