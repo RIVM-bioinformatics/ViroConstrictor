@@ -101,15 +101,22 @@ localrules:
     all,
     prepare_refs,
 
+print(expand(
+            f"{datadir}{wc_pattern}_raw_aln.bam",
+            zip,
+            RefID=p_space.RefID,
+            sample=p_space.dataframe['sample'],
+            Virus=p_space.Virus,
+        ))
 
 rule all:
     input:  #construct_all_rule(SAMPLES)
         f"{res}multiqc.html",
         expand(
-            f"{datadir}" "{wc_pattern}_raw_aln.bam",
+            f"{datadir}{wc_pattern}_raw_aln.bam",
             zip,
             RefID=p_space.RefID,
-            sample=p_space.sample,
+            sample=p_space.dataframe['sample'],
             Virus=p_space.Virus,
         ),
 
