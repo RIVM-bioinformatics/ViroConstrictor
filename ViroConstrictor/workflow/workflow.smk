@@ -105,7 +105,7 @@ rule all:
     input:  #construct_all_rule(SAMPLES)
         f"{res}multiqc.html",
         expand(
-            f"{datadir}{wc_folder}{cln}{raln}{{sample}}.bam",
+            f"{datadir}{wc_folder}{cln}{qcfilt}{{sample}}.fastq",
             zip,
             RefID=p_space.RefID,
             Virus=p_space.Virus,
@@ -301,7 +301,7 @@ rule remove_adapters_p2:
     input:
         rules.remove_adapters_p1.output.bam,
     output:
-        f"{datadir}{{Virus}}/{{RefID}}/{cln}{noad}{{sample}}.fastq",
+        f"{datadir}{wc_folder}{cln}{noad}{{sample}}.fastq",
     conda:
         f"{conda_envs}Clean.yaml"
     threads: config["threads"]["AdapterRemoval"]
@@ -319,9 +319,9 @@ rule qc_filter:
     input:
         rules.remove_adapters_p2.output,
     output:
-        fq=f"{datadir}{{Virus}}/{{RefID}}/{cln}{qcfilt}{{sample}}.fastq",
-        html=f"{datadir}{{Virus}}/{{RefID}}/{cln}{qcfilt}{html}{{sample}}_fastqc.html",
-        json=f"{datadir}{{Virus}}/{{RefID}}/{cln}{qcfilt}{json}{{sample}}_fastqc.json",
+        fq=f"{datadir}{wc_folder}{cln}{qcfilt}{{sample}}.fastq",
+        html=f"{datadir}{wc_folder}{cln}{qcfilt}{html}{{sample}}_fastqc.html",
+        json=f"{datadir}{wc_folder}{cln}{qcfilt}{json}{{sample}}_fastqc.json",
     conda:
         f"{conda_envs}Clean.yaml"
     log:
