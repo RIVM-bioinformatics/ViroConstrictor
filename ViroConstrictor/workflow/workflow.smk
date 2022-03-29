@@ -118,7 +118,7 @@ rule prepare_refs:
     input:
         lambda wc: SAMPLES[wc.sample]["REFERENCE"],
     output:
-        f"{datadir}{{Virus}}/{{RefID}}/{{sample}}_reference.fasta",
+        f"{datadir}{wc_pattern}_reference.fasta",
     run:
         from Bio import SeqIO
 
@@ -221,8 +221,8 @@ if config["platform"] in ["nanopore", "iontorrent"]:
             ref=rules.prepare_refs.output,
             fq=lambda wc: SAMPLES[wc.sample]["INPUTFILE"],
         output:
-            bam=f"{datadir}{{Virus}}/{{RefID}}/{{sample}}_raw_aln.bam",
-            index=f"{datadir}{{Virus}}/{{RefID}}/{{sample}}_raw_aln.bam.bai",
+            bam=f"{datadir}{wc_pattern}_raw_aln.bam",
+            index=f"{datadir}{wc_pattern}_raw_aln.bam.bai",
         conda:
             f"{conda_envs}Alignment.yaml"
         log:
