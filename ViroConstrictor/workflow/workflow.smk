@@ -114,6 +114,8 @@ rule all:
     input:  #construct_all_rule(SAMPLES)
         f"{res}multiqc.html",
         f"{res}consensus.fasta",
+        f"{res}mutations.tsv",
+
 
 
 rule prepare_refs:
@@ -549,29 +551,37 @@ rule concat_sequences:
         "cat {input} >> {output}"
 
 
-'''
 rule vcf_to_tsv:
-    input: vcf = f"{datadir}{aln}{vf}""{sample}"f"_cov_ge_{mincov}.vcf",
-    output: tsv = temp(f"{datadir}{aln}{vf}""{sample}.tsv"),
+    input: vcf = rules.trueconsense.output.vcf,
+    output: tsv = temp(f"{datadir}{wc_folder}{aln}{vf}" "{sample}.tsv"),
     conda: f"{conda_envs}Mutations.yaml"
     threads: config['threads']['Index']
     resources: mem_mb = low_memory_job
-    log: f"{logdir}""vcf_to_tsv_{sample}.log"
+    log: f"{logdir}""vcf_to_tsv_{Virus}.{RefID}.{sample}.log",
     shell:
         """
         bcftools query {input.vcf} -f '{wildcards.sample}\t%CHROM\t%POS\t%REF\t%ALT\t%DP\n' -e 'ALT="N"' > {output.tsv} 2>> {log}
         """
 
 rule concat_tsv_coverages:
-    input: tsvs = expand(f"{datadir}{aln}{vf}""{sample}.tsv", sample = SAMPLES),
-    output: tsv = f"{res}mutations.tsv",
+    input:
+        expand(
+            f"{datadir}{wc_folder}{aln}{vf}" "{sample}.tsv",
+            zip,
+            RefID=p_space.RefID,
+            Virus=p_space.Virus,
+            sample=p_space.dataframe["sample"],
+        ),
+    output: f"{res}mutations.tsv",
     log: f"{logdir}concat_tsv.log"
     threads: 1
     resources: mem_mb = low_memory_job
     run:
-        shell("echo -e 'Sample\tReference_Chromosome\tPosition\tReference\tAlternative\tDepth' > {output.tsv} 2> {log}")
-        shell("cat {input.tsvs} >> {output.tsv} 2>> {log}")
+        shell("echo -e 'Sample\tReference_Chromosome\tPosition\tReference\tAlternative\tDepth' > {output} 2> {log}")
+        shell("cat {input} >> {output} 2>> {log}")
 
+
+'''
 rule get_breadth_of_coverage:
     input:
         reference = rules.prepare_refs.output,
