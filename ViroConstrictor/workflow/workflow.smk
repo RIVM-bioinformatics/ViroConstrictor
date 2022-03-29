@@ -124,6 +124,8 @@ rule prepare_refs:
         samtools faidx {output.ref} -o {output.ref_indx}
         """
 
+
+#TODO: maybe redo this to make sure this also works when no primers are given
 rule prepare_primers:
     input: 
         prm = lambda wildcards: SAMPLES[str(wildcards.sample).split('~')[1]]["PRIMERS"],
@@ -150,39 +152,37 @@ rule prepare_primers:
                 --primer-mismatch-rate {params.pr_mm_rate} > {log}
         """
 
-if config["features_file"] != "NONE":
-    rule prepare_features_file:
-        input: features_file
-        output: gff = temp(f"{datadir}{features}reference_features.gff")
-        threads: config['threads']['Index']
-        resources: mem_mb = low_memory_job
-        shell:
-            """
-            cat {input} >> {output}
-            """
-else:
-    rule prepare_features_file:
-        input: rules.prepare_ref.output.ref
-        output:
-            AA  = temp(f"{datadir}{refdir}{ref_basename}_ORF_AA.fa"),
-            NT  = temp(f"{datadir}{refdir}{ref_basename}_ORF_NT.fa"),
-            gff = temp(f"{datadir}{refdir}{ref_basename}_annotation.gff"),
-        conda: f"{conda_envs}ORF_analysis.yaml"
-        threads: config['threads']['Index']
-        resources: mem_mb = medium_memory_job
-        log: f"{logdir}ORF_Analysis.log"
-        params:
-            procedure = "meta",
-            output_format = "gff",
-        shell:
-            """
-            prodigal -q -i {input} \
-            -a {output.AA} \
-            -d {output.NT} \
-            -o {output.gff} \
-            -p {params.procedure} \
-            -f {params.output_format} > {log} 2>&1
-            """
+rule prepare_gffs:
+    input: 
+        feats = lambda wildcards: SAMPLES[str(wildcards.sample).split('~')[1]]["FEATURES"],
+        ref = rules.prepare_refs.output.ref,
+    output:
+        gff = f"{datadir}{refdir}{{target}}/{{refID}}/{{sample}}_features.gff",
+        aa = f"{datadir}{refdir}{{target}}/{{refID}}/{{sample}}_features.aa.fasta",
+        nt = f"{datadir}{refdir}{{target}}/{{refID}}/{{sample}}_features.nt.fasta",
+    log: f"{logdir}prepare_gffs_{{target}}.{{refID}}.{{sample}}.log"
+    benchmark: f"{logdir}{bench}prepare_gffs_{{target}}.{{refID}}.{{sample}}.txt"
+    threads: config["threads"]["Index"]
+    conda:
+        f"{conda_envs}ORF_analysis.yaml"
+    resources:
+        mem_mb= medium_memory_job
+    params:
+        script=srcdir("scripts/extract_gff.py"),
+        prodigal_method = "meta",
+        prodigal_outformat= "gff",
+    shell:
+        """
+        if [[ {input.feats} == "NONE" ]]:
+            prodigal -q -i {input.ref} \
+                -a {output.aa} \
+                -d {output.nt} \
+                -o {output.gff} \
+                -p {params.prodigal_method} \
+                -f {params.prodigal_outformat} > {log} 2>&1
+        else:
+            python {params.script} {input.feats} {output.gff} {wildcards.refID}
+        """
 
 if config["platform"] in ["nanopore", "iontorrent"]:
     p1_mapping_settings = "-ax sr" if config["platform"] == "iontorrent" else "-ax map-ont"
