@@ -112,6 +112,13 @@ rule all:
             Virus=p_space.Virus,
             sample=p_space.dataframe["sample"],
         ),
+        expand(
+            f"{datadir}{wc_folder}{prim}{{sample}}_primers.bed",
+            zip,
+            RefID=p_space.RefID,
+            Virus=p_space.Virus,
+            sample=p_space.dataframe["sample"],
+        ),
 
 
 rule prepare_refs:
@@ -126,34 +133,34 @@ rule prepare_refs:
             if wildcards.RefID in record.id:
                 SeqIO.write(record, str(output), "fasta")
 
-'''
 #TODO: maybe redo this to make sure this also works when no primers are given
 rule prepare_primers:
     input:
-        prm = lambda wildcards: SAMPLES[str(wildcards.sample).split('~')[1]]["PRIMERS"],
+        prm = lambda wc: SAMPLES[wc.sample]["PRIMERS"],
         ref = rules.prepare_refs.output,
     output:
-        bed = f"{datadir}{refdir}{{target}}/{{refID}}/{{sample}}_primers.bed",
+        bed = f"{datadir}{wc_folder}{prim}{{sample}}_primers.bed",
     threads: 1
     resources:
         mem_mb= low_memory_job
-    log: f"{logdir}prepare_primers_{{target}}.{{refID}}.{{sample}}.log"
-    benchmark: f"{logdir}{bench}prepare_primers_{{target}}.{{refID}}.{{sample}}.txt"
+    log: f"{logdir}prepare_primers_{{Virus}}.{{RefID}}.{{sample}}.log"
+    benchmark: f"{logdir}{bench}prepare_primers_{{Virus}}.{{RefID}}.{{sample}}.txt"
     params:
-        pr_mm_rate = lambda wildcards: SAMPLES[str(wildcards.sample).split('~')[1]]["PRIMER-MISMATCH-RATE"]
+        pr_mm_rate = lambda wc: SAMPLES[wc.sample]["PRIMER-MISMATCH-RATE"]
     conda: f"{conda_envs}Clean.yaml"
     shell:
-"""
-        if [[ {input.prm} == *.bed ]]:
+        """
+        if [[ {input.prm} == *.bed ]]; then
             cp {input.prm} {output.bed}
-        else:
+        else
             python -m AmpliGone.fasta2bed \
                 --primers {input.prm} \
                 --reference {input.ref} \
                 --output {output.bed} \
                 --primer-mismatch-rate {params.pr_mm_rate} > {log}
+        fi
         """
-
+'''
 rule prepare_gffs:
     input:
         feats = lambda wildcards: SAMPLES[str(wildcards.sample).split('~')[1]]["FEATURES"],
