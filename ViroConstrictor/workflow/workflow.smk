@@ -64,12 +64,12 @@ def construct_all_rule(p_space):
 def construct_MultiQC_input(_wildcards):
     if config["platform"] == "nanopore" or config["platform"] == "iontorrent":
         pre = expand(
-            f"{datadir}{qc_pre}{{sample}}_fastqc.zip",
+            f"{datadir}{qc_pre}" "{sample}_fastqc.zip",
             sample=SAMPLES,
         )
     elif config["platform"] == "illumina":
         pre = expand(
-            f"{datadir}{qc_pre}{{param_struct}}_{read}_fastqc.zip",
+            f"{datadir}{qc_pre}" "{param_struct}_{read}_fastqc.zip",
             param_struct=p_space.instance_patterns,
             read="R1 R2".split(),
         )
@@ -80,7 +80,7 @@ def construct_MultiQC_input(_wildcards):
 
     post = (
         expand(
-            f"{datadir}{wc_folder}{qc_post}{{sample}}_fastqc.zip",
+            f"{datadir}{wc_folder}{qc_post}" "{sample}_fastqc.zip",
             zip,
             RefID=p_space.RefID,
             Virus=p_space.Virus,
@@ -127,7 +127,7 @@ rule prepare_refs:
     input:
         lambda wc: SAMPLES[wc.sample]["REFERENCE"],
     output:
-        f"{datadir}{wc_folder}{{sample}}_reference.fasta",
+        f"{datadir}{wc_folder}" "{sample}_reference.fasta",
     run:
         from Bio import SeqIO
 
@@ -142,13 +142,13 @@ rule prepare_primers:
         prm=lambda wc: SAMPLES[wc.sample]["PRIMERS"],
         ref=rules.prepare_refs.output,
     output:
-        bed=f"{datadir}{wc_folder}{prim}{{sample}}_primers.bed",
+        bed=f"{datadir}{wc_folder}{prim}" "{sample}_primers.bed",
     resources:
         mem_mb=low_memory_job,
     log:
-        f"{logdir}prepare_primers_{{Virus}}.{{RefID}}.{{sample}}.log",
+        f"{logdir}prepare_primers_" "{Virus}.{RefID}.{sample}.log",
     benchmark:
-        f"{logdir}{bench}prepare_primers_{{Virus}}.{{RefID}}.{{sample}}.txt"
+        f"{logdir}{bench}prepare_primers_" "{Virus}.{RefID}.{sample}.txt"
     params:
         pr_mm_rate=lambda wc: SAMPLES[wc.sample]["PRIMER-MISMATCH-RATE"],
     conda:
@@ -175,11 +175,11 @@ rule prepare_gffs:
         feats=lambda wc: SAMPLES[wc.sample]["FEATURES"],
         ref=rules.prepare_refs.output,
     output:
-        gff=f"{datadir}{wc_folder}{features}{{sample}}_features.gff",
+        gff=f"{datadir}{wc_folder}{features}" "{sample}_features.gff",
     log:
-        f"{logdir}prepare_gffs_{{Virus}}.{{RefID}}.{{sample}}.log",
+        f"{logdir}prepare_gffs_" "{Virus}.{RefID}}.{sample}.log",
     benchmark:
-        f"{logdir}{bench}prepare_gffs_{{Virus}}.{{RefID}}.{{sample}}.txt"
+        f"{logdir}{bench}prepare_gffs_" "{Virus}.{RefID}}.{sample}.txt"
     conda:
         f"{conda_envs}ORF_analysis.yaml"
     resources:
@@ -197,13 +197,13 @@ rule prodigal:
         feats=lambda wc: SAMPLES[wc.sample]["FEATURES"],
         ref=rules.prepare_refs.output,
     output:
-        gff=f"{datadir}{wc_folder}{features}{{sample}}_features.gff",
-        aa=f"{datadir}{wc_folder}{features}{{sample}}_features.aa.fasta",
-        nt=f"{datadir}{wc_folder}{features}{{sample}}_features.nt.fasta",
+        gff=f"{datadir}{wc_folder}{features}" "{sample}_features.gff",
+        aa=f"{datadir}{wc_folder}{features}" "{sample}_features.aa.fasta",
+        nt=f"{datadir}{wc_folder}{features}" "{sample}_features.nt.fasta",
     log:
-        f"{logdir}prepare_gffs_{{Virus}}.{{RefID}}.{{sample}}.log",
+        f"{logdir}prepare_gffs_" "{Virus}.{RefID}}.{sample}.log",
     benchmark:
-        f"{logdir}{bench}prepare_gffs_{{Virus}}.{{RefID}}.{{sample}}.txt"
+        f"{logdir}{bench}prepare_gffs_" "{Virus}.{RefID}}.{sample}.txt"
     threads: config["threads"]["Index"]
     conda:
         f"{conda_envs}ORF_analysis.yaml"
@@ -237,9 +237,9 @@ if config["platform"] in ["nanopore", "iontorrent"]:
         conda:
             f"{conda_envs}Clean.yaml"
         log:
-            f"{logdir}QC_raw_data_" + "{sample}.log",
+            f"{logdir}QC_raw_data_" "{sample}.log",
         benchmark:
-            f"{logdir}{bench}QC_raw_data_" + "{sample}.txt"
+            f"{logdir}{bench}QC_raw_data_" "{sample}.txt"
         threads: config["threads"]["QC"]
         resources:
             mem_mb=low_memory_job,
@@ -261,9 +261,9 @@ if config["platform"] in ["nanopore", "iontorrent"]:
         conda:
             f"{conda_envs}Alignment.yaml"
         log:
-            f"{logdir}RemoveAdapters_p1_" + "{Virus}.{RefID}.{sample}.log",
+            f"{logdir}RemoveAdapters_p1_" "{Virus}.{RefID}.{sample}.log",
         benchmark:
-            f"{logdir}{bench}RemoveAdapters_p1_" + "{Virus}.{RefID}.{sample}.txt"
+            f"{logdir}{bench}RemoveAdapters_p1_" "{Virus}.{RefID}.{sample}.txt"
         threads: config["threads"]["Alignments"]
         resources:
             mem_mb=medium_memory_job,
@@ -337,7 +337,7 @@ rule remove_adapters_p2:
     input:
         rules.remove_adapters_p1.output.bam,
     output:
-        f"{datadir}{wc_folder}{cln}{noad}{{sample}}.fastq",
+        f"{datadir}{wc_folder}{cln}{noad}" "{sample}.fastq",
     conda:
         f"{conda_envs}Clean.yaml"
     threads: config["threads"]["AdapterRemoval"]
@@ -355,9 +355,9 @@ rule qc_filter:
     input:
         rules.remove_adapters_p2.output,
     output:
-        fq=f"{datadir}{wc_folder}{cln}{qcfilt}{{sample}}.fastq",
-        html=f"{datadir}{wc_folder}{cln}{qcfilt}{html}{{sample}}_fastqc.html",
-        json=f"{datadir}{wc_folder}{cln}{qcfilt}{json}{{sample}}_fastqc.json",
+        fq=f"{datadir}{wc_folder}{cln}{qcfilt}" "{sample}.fastq",
+        html=f"{datadir}{wc_folder}{cln}{qcfilt}{html}" "{sample}_fastqc.html",
+        json=f"{datadir}{wc_folder}{cln}{qcfilt}{json}" "{sample}_fastqc.json",
     conda:
         f"{conda_envs}Clean.yaml"
     log:
@@ -439,14 +439,14 @@ rule qc_clean:
     input:
         rules.qc_filter.output.fq,
     output:
-        html=f"{datadir}{wc_folder}{qc_post}{{sample}}_fastqc.html",
-        zip=f"{datadir}{wc_folder}{qc_post}{{sample}}_fastqc.zip",
+        html=f"{datadir}{wc_folder}{qc_post}" "{sample}_fastqc.html",
+        zip=f"{datadir}{wc_folder}{qc_post}" "{sample}_fastqc.zip",
     conda:
         f"{conda_envs}Clean.yaml"
     log:
-        f"{logdir}QC_clean_" + "{Virus}.{RefID}.{sample}.log",
+        f"{logdir}QC_clean_" "{Virus}.{RefID}.{sample}.log",
     benchmark:
-        f"{logdir}{bench}QC_clean_" + "{Virus}.{RefID}.{sample}.txt"
+        f"{logdir}{bench}QC_clean_" "{Virus}.{RefID}.{sample}.txt"
     threads: config["threads"]["QC"]
     resources:
         mem_mb=low_memory_job,
@@ -676,7 +676,7 @@ rule multiqc_report:
         construct_MultiQC_input,
     output:
         f"{res}multiqc.html",
-        expand(f"{res}{mqc_data}multiqc_{{program}}.txt", program="fastqc"),
+        expand(f"{res}{mqc_data}multiqc_" "{program}.txt", program="fastqc"),
     conda:
         f"{conda_envs}Clean.yaml"
     log:
