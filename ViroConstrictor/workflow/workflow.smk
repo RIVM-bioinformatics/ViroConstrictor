@@ -637,15 +637,13 @@ def construct_MultiQC_input(_wildcards):
             f"Platform {config['platform']} not recognised. Choose one of [illumina, nanopore, iontorrent]."
         )
 
-    post = (
-        expand(
+    post = expand(
             f"{datadir}{wc_folder}{qc_post}" "{sample}_fastqc.zip",
             zip,
             RefID=p_space.RefID,
             Virus=p_space.Virus,
             sample=p_space.dataframe["sample"],
-        )[0],
-    )
+        )
 
     return pre + list(post)
 
