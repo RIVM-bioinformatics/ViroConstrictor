@@ -41,20 +41,24 @@ p_space = Paramspace(
 wc_folder = "/".join(p_space.wildcard_pattern.split("/")[:-1]) + "/"
 
 
-def construct_all_rule(sampleinfo):
-    files = set()
-    files.add(f"{res}multiqc.html")
-
-    for key, val in sampleinfo.items():
-        if val["MATCH-REF"] is False:
-            for id in Get_Ref_header(val["REFERENCE"]):
-                files.add(f"{res}{val['VIRUS']}/{id}/consensus.fasta")
-                files.add(f"{res}{val['VIRUS']}/{id}/mutations.tsv")
-                files.add(f"{res}{val['VIRUS']}/{id}/Width_of_coverage.tsv")
-                if val["PRIMERS"] is not None:
-                    files.add(f"{res}{val['VIRUS']}/{id}/Amplicon_coverage.tsv")
-
-    return list(files)
+def construct_all_rule(p_space):
+    multiqc = f"{res}multiqc.html"
+    folders = expand(
+        f"{res}{wc_folder}",
+        zip,
+        RefID=p_space.RefID,
+        Virus=p_space.Virus,
+    )
+    return [multiqc] + expand(
+        "{folder}{file}",
+        folder=folders,
+        file=[
+            "consensus.fasta",
+            "mutations.tsv",
+            "Width_of_coverage.tsv",
+            "Amplicon_coverage.csv",
+        ],
+    )
 
 
 def construct_MultiQC_input(_wildcards):
@@ -108,18 +112,15 @@ def high_memory_job(wildcards, threads, attempt):
 localrules:
     all,
     prepare_refs,
+    concat_sequences,
     concat_boc,
     concat_tsv_coverages,
     concat_amplicon_cov,
 
 
 rule all:
-    input:  #construct_all_rule(SAMPLES)
-        f"{res}multiqc.html",
-        f"{res}consensus.fasta",
-        f"{res}mutations.tsv",
-        f"{res}Width_of_coverage.tsv",
-        f"{res}Amplicon_coverage.csv",
+    input:
+        construct_all_rule(p_space),
 
 
 rule prepare_refs:
@@ -547,7 +548,7 @@ rule concat_sequences:
             sample=p_space.dataframe["sample"],
         ),
     output:
-        f"{res}consensus.fasta",
+        f"{res}{wc_folder}consensus.fasta",
     threads: 1
     resources:
         mem_mb=low_memory_job,
@@ -583,17 +584,15 @@ rule concat_tsv_coverages:
             sample=p_space.dataframe["sample"],
         ),
     output:
-        f"{res}mutations.tsv",
-    log:
-        f"{logdir}concat_tsv.log",
+        f"{res}{wc_folder}mutations.tsv",
     threads: 1
     resources:
         mem_mb=low_memory_job,
-    run:
-        shell(
-            "echo -e 'Sample\tReference_Chromosome\tPosition\tReference\tAlternative\tDepth' > {output} 2> {log}"
-        )
-        shell("cat {input} >> {output} 2>> {log}")
+    shell:
+        """
+        echo -e 'Sample\tReference_Chromosome\tPosition\tReference\tAlternative\tDepth' > {output}
+        cat {input} >> {output}
+        """
 
 
 rule get_breadth_of_coverage:
@@ -623,7 +622,7 @@ rule concat_boc:
             sample=p_space.dataframe["sample"],
         ),
     output:
-        f"{res}Width_of_coverage.tsv",
+        f"{res}{wc_folder}Width_of_coverage.tsv",
     threads: 1
     resources:
         mem_mb=low_memory_job,
@@ -667,7 +666,7 @@ rule concat_amplicon_cov:
             sample=p_space.dataframe["sample"],
         ),
     output:
-        f"{res}Amplicon_coverage.csv",
+        f"{res}{wc_folder}Amplicon_coverage.csv",
     threads: 1
     resources:
         mem_mb=low_memory_job,
