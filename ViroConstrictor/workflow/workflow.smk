@@ -59,6 +59,7 @@ def high_memory_job(wildcards, threads, attempt):
 localrules:
     all,
     prepare_refs,
+    prepare_gffs,
     concat_sequences,
     concat_boc,
     concat_tsv_coverages,
@@ -586,6 +587,9 @@ rule calculate_amplicon_cov:
         cov=rules.trueconsense.output.cov,
     output:
         f"{datadir}{wc_folder}{prim}" "{sample}_ampliconcoverage.csv",
+    log: f"{logdir}" "calculate_amplicon_cov_{Virus}.{RefID}.{sample}.log",
+    benchmark:
+        f"{logdir}{bench}" "calculate_amplicon_cov_{Virus}.{RefID}.{sample}.txt",
     resources:
         mem_mb=low_memory_job,
     conda:
@@ -598,7 +602,7 @@ rule calculate_amplicon_cov:
         --primers {input.pr} \
         --coverages {input.cov} \
         --key {wildcards.sample} \
-        --output {output}
+        --output {output} > {log} 2>&1
         """
 
 
