@@ -108,6 +108,8 @@ def high_memory_job(wildcards, threads, attempt):
 localrules:
     all,
     prepare_refs,
+    concat_boc,
+    concat_tsv_coverages,
 
 
 rule all:
@@ -581,13 +583,11 @@ rule concat_tsv_coverages:
         shell("cat {input} >> {output} 2>> {log}")
 
 
-'''
 rule get_breadth_of_coverage:
     input:
         reference = rules.prepare_refs.output,
         coverage = rules.trueconsense.output.cov,
-    output: temp(f"{datadir}{boc}""{sample}.tsv")
-    conda: f"{conda_envs}Consensus.yaml"
+    output: temp(f"{datadir}{wc_folder}{boc}" "{sample}.tsv")
     threads: 1
     resources: mem_mb = low_memory_job
     params: script = srcdir("scripts/boc.py")
@@ -597,7 +597,14 @@ rule get_breadth_of_coverage:
         """
 
 rule concat_boc:
-    input: pct = expand(f"{datadir}{boc}""{sample}.tsv", sample = SAMPLES)
+    input:
+        expand(
+            f"{datadir}{wc_folder}{boc}" "{sample}.tsv",
+            zip,
+            RefID=p_space.RefID,
+            Virus=p_space.Virus,
+            sample=p_space.dataframe["sample"],
+        )
     output: f"{res}Width_of_coverage.tsv"
     threads: 1
     resources: mem_mb = low_memory_job
@@ -607,6 +614,7 @@ rule concat_boc:
         cat {input} >> {output}
         """
 
+'''
 rule calculate_amplicon_cov:
     input:
         pr = rules.ampligone.output.ep,
