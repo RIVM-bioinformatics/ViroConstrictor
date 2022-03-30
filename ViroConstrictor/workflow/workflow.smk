@@ -118,6 +118,8 @@ rule all:
         f"{res}multiqc.html",
         f"{res}consensus.fasta",
         f"{res}mutations.tsv",
+        f"{res}Width_of_coverage.tsv",
+        f"{res}Amplicon_coverage.csv",
 
 
 rule prepare_refs:
