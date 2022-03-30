@@ -110,6 +110,7 @@ localrules:
     prepare_refs,
     concat_boc,
     concat_tsv_coverages,
+    concat_amplicon_cov,
 
 
 rule all:
@@ -117,7 +118,6 @@ rule all:
         f"{res}multiqc.html",
         f"{res}consensus.fasta",
         f"{res}mutations.tsv",
-
 
 
 rule prepare_refs:
@@ -554,16 +554,22 @@ rule concat_sequences:
 
 
 rule vcf_to_tsv:
-    input: vcf = rules.trueconsense.output.vcf,
-    output: tsv = temp(f"{datadir}{wc_folder}{aln}{vf}" "{sample}.tsv"),
-    conda: f"{conda_envs}Mutations.yaml"
-    threads: config['threads']['Index']
-    resources: mem_mb = low_memory_job
-    log: f"{logdir}""vcf_to_tsv_{Virus}.{RefID}.{sample}.log",
+    input:
+        vcf=rules.trueconsense.output.vcf,
+    output:
+        tsv=temp(f"{datadir}{wc_folder}{aln}{vf}" "{sample}.tsv"),
+    conda:
+        f"{conda_envs}Mutations.yaml"
+    threads: config["threads"]["Index"]
+    resources:
+        mem_mb=low_memory_job,
+    log:
+        f"{logdir}" "vcf_to_tsv_{Virus}.{RefID}.{sample}.log",
     shell:
         """
         bcftools query {input.vcf} -f '{wildcards.sample}\t%CHROM\t%POS\t%REF\t%ALT\t%DP\n' -e 'ALT="N"' > {output.tsv} 2>> {log}
         """
+
 
 rule concat_tsv_coverages:
     input:
@@ -574,27 +580,36 @@ rule concat_tsv_coverages:
             Virus=p_space.Virus,
             sample=p_space.dataframe["sample"],
         ),
-    output: f"{res}mutations.tsv",
-    log: f"{logdir}concat_tsv.log"
+    output:
+        f"{res}mutations.tsv",
+    log:
+        f"{logdir}concat_tsv.log",
     threads: 1
-    resources: mem_mb = low_memory_job
+    resources:
+        mem_mb=low_memory_job,
     run:
-        shell("echo -e 'Sample\tReference_Chromosome\tPosition\tReference\tAlternative\tDepth' > {output} 2> {log}")
+        shell(
+            "echo -e 'Sample\tReference_Chromosome\tPosition\tReference\tAlternative\tDepth' > {output} 2> {log}"
+        )
         shell("cat {input} >> {output} 2>> {log}")
 
 
 rule get_breadth_of_coverage:
     input:
-        reference = rules.prepare_refs.output,
-        coverage = rules.trueconsense.output.cov,
-    output: temp(f"{datadir}{wc_folder}{boc}" "{sample}.tsv")
+        reference=rules.prepare_refs.output,
+        coverage=rules.trueconsense.output.cov,
+    output:
+        temp(f"{datadir}{wc_folder}{boc}" "{sample}.tsv"),
     threads: 1
-    resources: mem_mb = low_memory_job
-    params: script = srcdir("scripts/boc.py")
+    resources:
+        mem_mb=low_memory_job,
+    params:
+        script=srcdir("scripts/boc.py"),
     shell:
         """
         python {params.script} {input.reference} {wildcards.sample} {input.coverage} {output}
         """
+
 
 rule concat_boc:
     input:
@@ -604,26 +619,32 @@ rule concat_boc:
             RefID=p_space.RefID,
             Virus=p_space.Virus,
             sample=p_space.dataframe["sample"],
-        )
-    output: f"{res}Width_of_coverage.tsv"
+        ),
+    output:
+        f"{res}Width_of_coverage.tsv",
     threads: 1
-    resources: mem_mb = low_memory_job
+    resources:
+        mem_mb=low_memory_job,
     shell:
         """
         echo -e "Sample_name\tWidth_at_mincov_1\tWidth_at_mincov_5\tWidth_at_mincov_10\tWidth_at_mincov_50\tWidth_at_mincov_100" > {output}
         cat {input} >> {output}
         """
 
-'''
+
 rule calculate_amplicon_cov:
     input:
-        pr = rules.ampligone.output.ep,
-        cov = rules.trueconsense.output.cov
-    output: f"{datadir}{prim}""{sample}_ampliconcoverage.csv"
+        pr=rules.ampligone.output.ep,
+        cov=rules.trueconsense.output.cov,
+    output:
+        f"{datadir}{wc_folder}{prim}" "{sample}_ampliconcoverage.csv",
     threads: 1
-    resources: mem_mb = low_memory_job
-    conda: f"{conda_envs}Clean.yaml"
-    params: script = srcdir("scripts/amplicon_covs.py")
+    resources:
+        mem_mb=low_memory_job,
+    conda:
+        f"{conda_envs}Clean.yaml"
+    params:
+        script=srcdir("scripts/amplicon_covs.py"),
     shell:
         """
         python {params.script} \
@@ -633,18 +654,29 @@ rule calculate_amplicon_cov:
         --output {output}
         """
 
+
 rule concat_amplicon_cov:
-    input: expand(f"{datadir}{prim}""{sample}_ampliconcoverage.csv", sample = SAMPLES)
-    output: f"{res}Amplicon_coverage.csv"
+    input:
+        expand(
+            f"{datadir}{wc_folder}{prim}" "{sample}_ampliconcoverage.csv",
+            zip,
+            RefID=p_space.RefID,
+            Virus=p_space.Virus,
+            sample=p_space.dataframe["sample"],
+        ),
+    output:
+        f"{res}Amplicon_coverage.csv",
     threads: 1
-    resources: mem_mb = low_memory_job
-    conda: f"{conda_envs}Clean.yaml"
-    params: script = srcdir("scripts/concat_amplicon_covs.py")
+    resources:
+        mem_mb=low_memory_job,
+    conda:
+        f"{conda_envs}Clean.yaml"
+    params:
+        script=srcdir("scripts/concat_amplicon_covs.py"),
     shell:
         """
         python {params.script} --output {output} --input {input}
         """
-'''
 
 
 rule multiqc_report:
