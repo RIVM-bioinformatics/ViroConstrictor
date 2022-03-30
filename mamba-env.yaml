@@ -5,7 +5,7 @@ channels:
   - anaconda
   - defaults
 dependencies:
-  - python=3.7
+  - python=3.8
   - conda=4.11
   - mamba>=0.17
   - drmaa==0.7.9
