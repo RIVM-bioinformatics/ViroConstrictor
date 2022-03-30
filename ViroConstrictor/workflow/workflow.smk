@@ -136,7 +136,7 @@ rule prepare_primers:
 
 rule prepare_gffs:
     input:
-        feats=lambda wc: SAMPLES[wc.sample]["FEATURES"],
+        feats=lambda wc: file if (file := SAMPLES[wc.sample]["FEATURES"]) else '',
         ref=rules.prepare_refs.output,
     output:
         gff=f"{datadir}{wc_folder}{features}" "{sample}_features.gff",
@@ -161,7 +161,6 @@ ruleorder: prepare_gffs > prodigal
 
 rule prodigal:
     input:
-        feats=lambda wc: SAMPLES[wc.sample]["FEATURES"],
         ref=rules.prepare_refs.output,
     output:
         gff=f"{datadir}{wc_folder}{features}" "{sample}_features.gff",
@@ -469,7 +468,7 @@ rule align_before_trueconsense:
 rule trueconsense:
     input:
         bam=rules.align_before_trueconsense.output.bam,
-        gff=rules.prepare_gffs.output.gff,
+        gff=f"{datadir}{wc_folder}{features}" "{sample}_features.gff",
         ref=rules.prepare_refs.output,
     output:
         cons=f"{datadir}{wc_folder}{cons}{seqs}" "{sample}" f"_cov_ge_{mincov}.fa",

@@ -68,9 +68,7 @@ def required_cols(cols):
 
     """
     cols = [c.upper() for c in cols]
-    if any(
-        i not in cols for i in ["SAMPLE", "VIRUS", "PRIMERS", "REFERENCE", "FEATURES"]
-    ):
+    if any(i not in cols for i in ["SAMPLE", "VIRUS", "REFERENCE"]):
         return False
     return True
 
@@ -188,13 +186,13 @@ def check_sample_sheet(file):
 
 def is_valid_samplesheet_file(f):
     if os.path.isfile(f):
-        if "".join(pathlib.Path(f).suffixes) in [
+        if "".join(pathlib.Path(f).suffixes) in {
             ".xls",
             ".xlsx",
             ".csv",
             ".tsv",
             ".json",
-        ]:
+        }:
             return os.path.abspath(f)
         raise argparse.ArgumentTypeError(f"{f} is not a valid samplesheet file type.")
     print("Sample sheet file not found")
@@ -453,6 +451,15 @@ def make_sampleinfo_dict(df, args, filedict):
                 f"\n{color.RED + color.BOLD}Not all sample in the samplesheet are present in the given input directory. Please check your samplesheet or input directory and try again.{color.END}\n"
             )
             sys.exit(1)
+        if df.get("PRIMER-MISMATCH-RATE") is None:
+            df["PRIMER-MISMATCH-RATE"] = args.primer_mismatch_rate
+        if df.get("MIN-COVERAGE") is None:
+            df["MIN-COVERAGE"] = args.min_coverage
+        if df.get("PRIMERS") is None:
+            df["PRIMERS"] = None
+        if df.get("FEATURES") is None:
+            df["FEATURES"] = None
+
         return df.to_dict(orient="index")
     return args_to_dict(args, indirFrame).to_dict(orient="index")
 
@@ -489,11 +496,9 @@ def ValidArgs(sysargs):
             df, args, GetSamples(args.input, args.platform)
         )
     else:
-        if (
-            args.primers is None
-            or args.reference is None
-            or args.features is None
-            or args.target is None
+        if any(
+            lambda f: f is None,
+            {args.primers, args.reference, args.features, args.target},
         ):
             print(
                 f"{color.RED + color.BOLD}Run-wide analysis settings were not provided and no samplesheet was given either with per-sample run information.\nPlease either provide all required information (reference, primers, genomic features and viral-target) for a run-wide analysis or provide a samplesheet with per-sample run information{color.END}"
