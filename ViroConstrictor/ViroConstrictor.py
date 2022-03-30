@@ -28,16 +28,6 @@ yaml.warnings({"YAMLLoadWarning": False})
 
 def CheckSampleProperties(sampleinfo):
     for sample in sampleinfo:
-        if not os.path.isfile(sampleinfo.get(sample).get("PRIMERS")):
-            print(
-                f"\n{color.RED + color.BOLD}The given primer fasta file for sample '{sample}' does not exist. Please check the primer fasta and try again. Exiting...{color.END}\n"
-            )
-            return False
-        if not IsValidFasta(sampleinfo.get(sample).get("PRIMERS")):
-            print(
-                f"\n{color.RED + color.BOLD}The given primer fasta file for sample '{sample}' does not seem to be a valid Fasta file. Please check the primer fasta and try again. Exiting...{color.END}\n"
-            )
-            return False
         if not os.path.isfile(sampleinfo.get(sample).get("REFERENCE")):
             print(
                 f"\n{color.RED + color.BOLD}The given reference fasta file for sample '{sample}' does not exist. Please check the reference fasta and try again. Exiting...{color.END}\n"
@@ -46,11 +36,6 @@ def CheckSampleProperties(sampleinfo):
         if not IsValidRef(sampleinfo.get(sample).get("REFERENCE")):
             print(
                 f"\n{color.RED + color.BOLD}The given reference fasta file for sample '{sample}' does not seem to be a valid Fasta file or contains ambiguity nucleotide characters. Please check the reference fasta and try again. Exiting...{color.END}\n"
-            )
-            return False
-        if not os.path.isfile(sampleinfo.get(sample).get("FEATURES")):
-            print(
-                f"\n{color.RED + color.BOLD}The given feature file for sample '{sample}' does not exist. Please check the feature file and try again. Exiting...{color.END}\n"
             )
             return False
     return True
