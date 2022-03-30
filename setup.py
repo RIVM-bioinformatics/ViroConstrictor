@@ -4,9 +4,10 @@ from packaging import version as vv
 from setuptools import find_packages, setup
 
 from ViroConstrictor import __version__
+from ViroConstrictor.functions import color
 
-if sys.version_info.major != 3 or sys.version_info.minor < 7:
-    print("Error: you must execute setup.py using Python 3.7 or later")
+if sys.version_info.major != 3 or sys.version_info.minor < 8:
+    print("Error: you must execute setup.py using Python 3.8 or later")
     sys.exit(1)
 
 try:
