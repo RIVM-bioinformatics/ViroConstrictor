@@ -24,71 +24,18 @@ def Get_Ref_header(reffile):
     return [record.id for record in SeqIO.parse(reffile, "fasta")]
 
 
-# # p_space = construct_p_space(SAMPLES)
-
 samples_df = (
     pd.DataFrame(SAMPLES)
     .transpose()
     .reset_index()
     .rename(columns=dict(index="sample", VIRUS="Virus"))
 )
-# samples_df = samples_df[samples_df["MATCH-REF"].astype(bool)]
 samples_df["RefID"] = samples_df["REFERENCE"].apply(Get_Ref_header)
 samples_df = samples_df.explode("RefID")
 p_space = Paramspace(
     samples_df[["Virus", "RefID", "sample"]], filename_params=["sample"]
 )
 wc_folder = "/".join(p_space.wildcard_pattern.split("/")[:-1]) + "/"
-
-
-def construct_all_rule(p_space):
-    multiqc = f"{res}multiqc.html"
-    folders = expand(
-        f"{res}{wc_folder}",
-        zip,
-        RefID=p_space.RefID,
-        Virus=p_space.Virus,
-    )
-    return [multiqc] + expand(
-        "{folder}{file}",
-        folder=folders,
-        file=[
-            "consensus.fasta",
-            "mutations.tsv",
-            "Width_of_coverage.tsv",
-            "Amplicon_coverage.csv",
-        ],
-    )
-
-
-def construct_MultiQC_input(_wildcards):
-    if config["platform"] == "nanopore" or config["platform"] == "iontorrent":
-        pre = expand(
-            f"{datadir}{qc_pre}" "{sample}_fastqc.zip",
-            sample=SAMPLES,
-        )
-    elif config["platform"] == "illumina":
-        pre = expand(
-            f"{datadir}{qc_pre}" "{param_struct}_{read}_fastqc.zip",
-            param_struct=p_space.instance_patterns,
-            read="R1 R2".split(),
-        )
-    else:
-        raise ValueError(
-            f"Platform {config['platform']} not recognised. Choose one of [illumina, nanopore, iontorrent]."
-        )
-
-    post = (
-        expand(
-            f"{datadir}{wc_folder}{qc_post}" "{sample}_fastqc.zip",
-            zip,
-            RefID=p_space.RefID,
-            Virus=p_space.Virus,
-            sample=p_space.dataframe["sample"],
-        )[0],
-    )
-
-    return pre + list(post)
 
 
 def low_memory_job(wildcards, threads, attempt):
@@ -116,6 +63,26 @@ localrules:
     concat_boc,
     concat_tsv_coverages,
     concat_amplicon_cov,
+
+
+def construct_all_rule(p_space):
+    multiqc = f"{res}multiqc.html"
+    folders = expand(
+        f"{res}{wc_folder}",
+        zip,
+        RefID=p_space.RefID,
+        Virus=p_space.Virus,
+    )
+    return [multiqc] + expand(
+        "{folder}{file}",
+        folder=folders,
+        file=[
+            "consensus.fasta",
+            "mutations.tsv",
+            "Width_of_coverage.tsv",
+            "Amplicon_coverage.csv",
+        ],
+    )
 
 
 rule all:
@@ -167,9 +134,6 @@ rule prepare_primers:
         """
 
 
-ruleorder: prepare_gffs > prodigal
-
-
 rule prepare_gffs:
     input:
         feats=lambda wc: SAMPLES[wc.sample]["FEATURES"],
@@ -190,6 +154,9 @@ rule prepare_gffs:
         """
         python {params.script} {input.feats} {output.gff} {wildcards.RefID}
         """
+
+
+ruleorder: prepare_gffs > prodigal
 
 
 rule prodigal:
@@ -418,6 +385,8 @@ rule ampligone:
 
 
 ruleorder: ampligone > move_fastq
+
+
 # TODO: Make not giving primers to the cli an option
 
 
@@ -669,6 +638,36 @@ rule concat_amplicon_cov:
         """
         python {params.script} --output {output} --input {input}
         """
+
+
+def construct_MultiQC_input(_wildcards):
+    if config["platform"] == "nanopore" or config["platform"] == "iontorrent":
+        pre = expand(
+            f"{datadir}{qc_pre}" "{sample}_fastqc.zip",
+            sample=SAMPLES,
+        )
+    elif config["platform"] == "illumina":
+        pre = expand(
+            f"{datadir}{qc_pre}" "{param_struct}_{read}_fastqc.zip",
+            param_struct=p_space.instance_patterns,
+            read="R1 R2".split(),
+        )
+    else:
+        raise ValueError(
+            f"Platform {config['platform']} not recognised. Choose one of [illumina, nanopore, iontorrent]."
+        )
+
+    post = (
+        expand(
+            f"{datadir}{wc_folder}{qc_post}" "{sample}_fastqc.zip",
+            zip,
+            RefID=p_space.RefID,
+            Virus=p_space.Virus,
+            sample=p_space.dataframe["sample"],
+        )[0],
+    )
+
+    return pre + list(post)
 
 
 rule multiqc_report:
