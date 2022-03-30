@@ -143,7 +143,6 @@ rule prepare_primers:
         ref=rules.prepare_refs.output,
     output:
         bed=f"{datadir}{wc_folder}{prim}{{sample}}_primers.bed",
-    threads: 1
     resources:
         mem_mb=low_memory_job,
     log:
@@ -181,7 +180,6 @@ rule prepare_gffs:
         f"{logdir}prepare_gffs_{{Virus}}.{{RefID}}.{{sample}}.log",
     benchmark:
         f"{logdir}{bench}prepare_gffs_{{Virus}}.{{RefID}}.{{sample}}.txt"
-    threads: 1
     conda:
         f"{conda_envs}ORF_analysis.yaml"
     resources:
@@ -429,7 +427,6 @@ rule move_fastq:
         rules.qc_filter.output.fq,
     output:
         rules.ampligone.output.fq,
-    threads: 1
     resources:
         mem_mb=low_memory_job,
     shell:
@@ -549,7 +546,6 @@ rule concat_sequences:
         ),
     output:
         f"{res}{wc_folder}consensus.fasta",
-    threads: 1
     resources:
         mem_mb=low_memory_job,
     shell:
@@ -585,7 +581,6 @@ rule concat_tsv_coverages:
         ),
     output:
         f"{res}{wc_folder}mutations.tsv",
-    threads: 1
     resources:
         mem_mb=low_memory_job,
     shell:
@@ -601,7 +596,6 @@ rule get_breadth_of_coverage:
         coverage=rules.trueconsense.output.cov,
     output:
         temp(f"{datadir}{wc_folder}{boc}" "{sample}.tsv"),
-    threads: 1
     resources:
         mem_mb=low_memory_job,
     params:
@@ -623,7 +617,6 @@ rule concat_boc:
         ),
     output:
         f"{res}{wc_folder}Width_of_coverage.tsv",
-    threads: 1
     resources:
         mem_mb=low_memory_job,
     shell:
@@ -639,7 +632,6 @@ rule calculate_amplicon_cov:
         cov=rules.trueconsense.output.cov,
     output:
         f"{datadir}{wc_folder}{prim}" "{sample}_ampliconcoverage.csv",
-    threads: 1
     resources:
         mem_mb=low_memory_job,
     conda:
@@ -667,7 +659,6 @@ rule concat_amplicon_cov:
         ),
     output:
         f"{res}{wc_folder}Amplicon_coverage.csv",
-    threads: 1
     resources:
         mem_mb=low_memory_job,
     conda:
@@ -692,7 +683,6 @@ rule multiqc_report:
         f"{logdir}MultiQC_report.log",
     benchmark:
         f"{logdir}{bench}MultiQC_report.txt"
-    threads: 1
     resources:
         mem_mb=medium_memory_job,
     params:
