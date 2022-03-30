@@ -503,16 +503,14 @@ rule trueconsense:
         --threads {threads}
         """
 
+def group_items(wildcards, folder, filename):
+    filtered_virus = p_space.dataframe.loc[p_space.dataframe['Virus'] == wildcards.Virus]
+    filtered_refid = filtered_virus.loc[filtered_virus['RefID'] == wildcards.RefID]
+    return [f"{folder}{item}{filename}" for item in list(filtered_refid['sample'])]
 
 rule concat_sequences:
     input:
-        expand(
-            f"{datadir}{wc_folder}{cons}{seqs}" "{sample}" f"_cov_ge_{mincov}.fa",
-            zip,
-            RefID=p_space.RefID,
-            Virus=p_space.Virus,
-            sample=p_space.dataframe["sample"],
-        ),
+        lambda wildcards: group_items(wildcards, f"{datadir}{wc_folder}{cons}{seqs}", filename=f"_cov_ge_{mincov}.fa"),
     output:
         f"{res}{wc_folder}consensus.fasta",
     resources:
@@ -541,13 +539,7 @@ rule vcf_to_tsv:
 
 rule concat_tsv_coverages:
     input:
-        expand(
-            f"{datadir}{wc_folder}{aln}{vf}" "{sample}.tsv",
-            zip,
-            RefID=p_space.RefID,
-            Virus=p_space.Virus,
-            sample=p_space.dataframe["sample"],
-        ),
+        lambda wildcards: group_items(wildcards, folder=f"{datadir}{wc_folder}{aln}{vf}", filename=".tsv"),
     output:
         f"{res}{wc_folder}mutations.tsv",
     resources:
@@ -577,13 +569,7 @@ rule get_breadth_of_coverage:
 
 rule concat_boc:
     input:
-        expand(
-            f"{datadir}{wc_folder}{boc}" "{sample}.tsv",
-            zip,
-            RefID=p_space.RefID,
-            Virus=p_space.Virus,
-            sample=p_space.dataframe["sample"],
-        ),
+        lambda wildcards: group_items(wildcards, folder=f"{datadir}{wc_folder}{boc}", filename=".tsv"),
     output:
         f"{res}{wc_folder}Width_of_coverage.tsv",
     resources:
@@ -619,13 +605,7 @@ rule calculate_amplicon_cov:
 
 rule concat_amplicon_cov:
     input:
-        expand(
-            f"{datadir}{wc_folder}{prim}" "{sample}_ampliconcoverage.csv",
-            zip,
-            RefID=p_space.RefID,
-            Virus=p_space.Virus,
-            sample=p_space.dataframe["sample"],
-        ),
+        lambda wildcards: group_items(wildcards, folder=f"{datadir}{wc_folder}{prim}", filename="_ampliconcoverage.csv"),
     output:
         f"{res}{wc_folder}Amplicon_coverage.csv",
     resources:
