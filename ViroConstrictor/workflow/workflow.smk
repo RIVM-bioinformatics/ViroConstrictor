@@ -382,9 +382,6 @@ rule qc_filter:
         """
 
 
-ruleorder: ampligone > move_fastq
-
-
 rule ampligone:
     input:
         fq=rules.qc_filter.output.fq,
@@ -418,10 +415,13 @@ rule ampligone:
             -to \
             -t {threads} >> {log} 2>&1
         """
+
+
+ruleorder: ampligone > move_fastq
 # TODO: Make not giving primers to the cli an option
 
 
-
+# If no primers are given (e.g. with illumina runs), this rule makes sure the fastq's end up in the right place
 rule move_fastq:
     input:
         rules.qc_filter.output.fq,
