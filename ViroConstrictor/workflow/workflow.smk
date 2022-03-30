@@ -141,9 +141,9 @@ rule prepare_gffs:
     output:
         gff=f"{datadir}{wc_folder}{features}" "{sample}_features.gff",
     log:
-        f"{logdir}prepare_gffs_" "{Virus}.{RefID}}.{sample}.log",
+        f"{logdir}prepare_gffs_" "{Virus}.{RefID}.{sample}.log",
     benchmark:
-        f"{logdir}{bench}prepare_gffs_" "{Virus}.{RefID}}.{sample}.txt"
+        f"{logdir}{bench}prepare_gffs_" "{Virus}.{RefID}.{sample}.txt"
     conda:
         f"{conda_envs}ORF_analysis.yaml"
     resources:
@@ -167,9 +167,9 @@ rule prodigal:
         aa=f"{datadir}{wc_folder}{features}" "{sample}_features.aa.fasta",
         nt=f"{datadir}{wc_folder}{features}" "{sample}_features.nt.fasta",
     log:
-        f"{logdir}prepare_gffs_" "{Virus}.{RefID}}.{sample}.log",
+        f"{logdir}prepare_gffs_" "{Virus}.{RefID}.{sample}.log",
     benchmark:
-        f"{logdir}{bench}prepare_gffs_" "{Virus}.{RefID}}.{sample}.txt"
+        f"{logdir}{bench}prepare_gffs_" "{Virus}.{RefID}.{sample}.txt"
     threads: config["threads"]["Index"]
     conda:
         f"{conda_envs}ORF_analysis.yaml"
