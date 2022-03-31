@@ -275,16 +275,17 @@ if config["platform"] == "illumina":
     rule remove_adapters_p1:
         input:
             ref=rules.prepare_refs.output,
-            fq=lambda wildcards: (SAMPLES[wildcards.sample][i] for i in ("R1", "R2")),
+            fq1=lambda wildcards: SAMPLES[wildcards.sample]["R1"],
+            fq2=lambda wildcards: SAMPLES[wildcards.sample]["R2"],
         output:
-            bam=f"{datadir}{cln}{raln}" "{sample}.bam",
-            index=f"{datadir}{cln}{raln}" "{sample}.bam.bai",
+            bam=f"{datadir}{wc_folder}{cln}{raln}" "{sample}.bam",
+            index=f"{datadir}{wc_folder}{cln}{raln}" "{sample}.bam.bai",
         conda:
             f"{conda_envs}Alignment.yaml"
         log:
-            f"{logdir}" "RemoveAdapters_p1_{sample}.log",
+            f"{logdir}" "RemoveAdapters_p1_{Virus}.{RefID}.{sample}.log",
         benchmark:
-            f"{logdir}{bench}" "RemoveAdapters_p1_{sample}.txt"
+            f"{logdir}{bench}" "RemoveAdapters_p1_{Virus}.{RefID}.{sample}.log"
         threads: config["threads"]["Alignments"]
         resources:
             mem_mb=medium_memory_job,
@@ -293,7 +294,7 @@ if config["platform"] == "illumina":
             filters=config["runparams"]["alignmentfilters"],
         shell:
             """
-            minimap2 -ax sr -t {params.mapthreads} {input.ref} {input.fq[0]:q} {input.fq[1]:q} 2>> {log} |\
+            minimap2 -ax sr -t {params.mapthreads} {input.ref} {input.fq1} {input.fq2} 2>> {log} |\
             samtools view -@ {threads} {params.filters} -uS 2>> {log} |\
             samtools sort -o {output.bam} >> {log} 2>&1
             samtools index {output.bam} >> {log} 2>&1
@@ -631,8 +632,8 @@ def construct_MultiQC_input(_wildcards):
         )
     elif config["platform"] == "illumina":
         pre = expand(
-            f"{datadir}{qc_pre}" "{param_struct}_{read}_fastqc.zip",
-            param_struct=p_space.instance_patterns,
+            f"{datadir}{qc_pre}" "{sample}_{read}_fastqc.zip",
+            sample=SAMPLES,
             read="R1 R2".split(),
         )
     else:
