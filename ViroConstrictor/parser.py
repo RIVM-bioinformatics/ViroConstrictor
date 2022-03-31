@@ -447,7 +447,7 @@ def make_sampleinfo_dict(df, args, filedict):
             sys.exit(1)
         if len(indirFrame) < len(df):
             print(
-                f"\n{color.RED + color.BOLD}Not all sample in the samplesheet are present in the given input directory. Please check your samplesheet or input directory and try again.{color.END}\n"
+                f"\n{color.RED + color.BOLD}Either not all samples in the samplesheet are present in the given input directory, or there are duplicate samples in the samplesheet. Please check your samplesheet or input directory and try again.{color.END}\n"
             )
             sys.exit(1)
         if df.get("PRIMER-MISMATCH-RATE") is None:
@@ -495,10 +495,12 @@ def ValidArgs(sysargs):
             df, args, GetSamples(args.input, args.platform)
         )
     else:
-        if any(map(
-            lambda f: f is None,
-            {args.primers, args.reference, args.features, args.target},
-        )):
+        if any(
+            map(
+                lambda f: f is None,
+                {args.primers, args.reference, args.features, args.target},
+            )
+        ):
             print(
                 f"{color.RED + color.BOLD}Run-wide analysis settings were not provided and no samplesheet was given either with per-sample run information.\nPlease either provide all required information (reference, primers, genomic features and viral-target) for a run-wide analysis or provide a samplesheet with per-sample run information{color.END}"
             )
