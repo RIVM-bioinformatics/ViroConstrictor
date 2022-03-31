@@ -324,8 +324,8 @@ rule qc_filter:
         rules.remove_adapters_p2.output,
     output:
         fq=f"{datadir}{wc_folder}{cln}{qcfilt}" "{sample}.fastq",
-        html=f"{datadir}{wc_folder}{cln}{qcfilt}{html}" "{sample}_fastqc.html",
-        json=f"{datadir}{wc_folder}{cln}{qcfilt}{json}" "{sample}_fastqc.json",
+        html=f"{datadir}{wc_folder}{cln}{qcfilt}{html}" "{sample}_fastp.html",
+        json=f"{datadir}{wc_folder}{cln}{qcfilt}{json}" "{sample}_fastp.json",
     conda:
         f"{conda_envs}Clean.yaml"
     log:
@@ -649,7 +649,15 @@ def construct_MultiQC_input(_wildcards):
             sample=p_space.dataframe["sample"],
         )
 
-    return pre + list(post)
+    fastp_out = expand(
+        f"{datadir}{wc_folder}{cln}{qcfilt}{json}" "{sample}_fastp.json", 
+        zip, 
+        RefID=p_space.RefID, 
+        Virus=p_space.Virus, 
+        sample=p_space.dataframe["sample"]
+        )
+
+    return pre + list(post) + fastp_out
 
 
 rule multiqc_report:
