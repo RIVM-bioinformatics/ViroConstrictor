@@ -473,12 +473,12 @@ rule trueconsense:
         gff=f"{datadir}{wc_folder}{features}" "{sample}_features.gff",
         ref=rules.prepare_refs.output,
     output:
-        cons=f"{datadir}{wc_folder}{cons}{seqs}" "{sample}" f"_cov_ge_{mincov}.fa",
+        cons=f"{datadir}{wc_folder}{cons}{seqs}" "{sample}.fa",
         cov=f"{datadir}{wc_folder}{cons}{covs}" "{sample}_coverage.tsv",
-        vcf=f"{datadir}{wc_folder}{aln}{vf}" "{sample}" f"_cov_ge_{mincov}.vcf",
-        gff=f"{datadir}{wc_folder}{cons}{features}" "{sample}" f"_cov_ge_{mincov}.gff",
+        vcf=f"{datadir}{wc_folder}{aln}{vf}" "{sample}.vcf",
+        gff=f"{datadir}{wc_folder}{cons}{features}" "{sample}.gff",
     params:
-        mincov=mincov,
+        mincov=lambda wc: SAMPLES[wc.sample]["MIN-COVERAGE"],
         outdir=f"{datadir}{wc_folder}{cons}{seqs}",
         vcfdir=f"{datadir}{wc_folder}{aln}{vf}",
         gffdir=f"{datadir}{wc_folder}{cons}{features}",
@@ -487,7 +487,7 @@ rule trueconsense:
     log:
         f"{logdir}Consensus_" "{Virus}.{RefID}.{sample}.log",
     benchmark:
-        f"{logdir}{bench}" "{Virus}.{RefID}.{sample}.txt"
+        f"{logdir}{bench}Trueconsense_" "{Virus}.{RefID}.{sample}.txt"
     threads: config["threads"]["Consensus"]
     resources:
         mem_mb=medium_memory_job,
@@ -495,13 +495,13 @@ rule trueconsense:
         """
         TrueConsense --input {input.bam} \
         --reference {input.ref} --features {input.gff} \
-        --coverage-levels {params.mincov} \
+        --coverage-level {params.mincov} \
         --samplename {wildcards.sample} \
         --output {params.outdir} \
         --variants {params.vcfdir} \
         --output-gff {params.gffdir} \
         --depth-of-coverage {output.cov} \
-        --threads {threads}
+        --threads {threads} > {log} 2>&1
         """
 
 def group_items(wildcards, folder, filename):
@@ -509,9 +509,16 @@ def group_items(wildcards, folder, filename):
     filtered_refid = filtered_virus.loc[filtered_virus['RefID'] == wildcards.RefID]
     return [f"{folder}{item}{filename}" for item in list(filtered_refid['sample'])]
 
+
+
 rule concat_sequences:
-    input:
-        lambda wildcards: group_items(wildcards, f"{datadir}{wc_folder}{cons}{seqs}", filename=f"_cov_ge_{mincov}.fa"),
+    input: # we don't use group_items here as mincov is in the filename
+        lambda wc: (
+            f"{datadir}{wc_folder}{cons}{seqs}{sample}.fa"
+            for sample in p_space.dataframe.loc[
+                (p_space.Virus == wc.Virus) & (p_space.RefID == wc.RefID)
+            ]["sample"]
+        ),
     output:
         f"{res}{wc_folder}consensus.fasta",
     resources:

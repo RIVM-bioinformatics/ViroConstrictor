@@ -495,10 +495,10 @@ def ValidArgs(sysargs):
             df, args, GetSamples(args.input, args.platform)
         )
     else:
-        if any(
+        if any(map(
             lambda f: f is None,
             {args.primers, args.reference, args.features, args.target},
-        ):
+        )):
             print(
                 f"{color.RED + color.BOLD}Run-wide analysis settings were not provided and no samplesheet was given either with per-sample run information.\nPlease either provide all required information (reference, primers, genomic features and viral-target) for a run-wide analysis or provide a samplesheet with per-sample run information{color.END}"
             )
