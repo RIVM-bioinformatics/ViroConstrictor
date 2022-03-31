@@ -414,7 +414,6 @@ def sampledir_to_df(sampledict, platform):
     frame = pd.DataFrame.from_dict(sampledict, orient="index")
     if platform == "illumina":
         frame.index.rename("SAMPLE", inplace=True)
-        frame.rename(columns={"R1": "INPUTFILE_R1", "R2": "INPUTFILE_R2"}, inplace=True)
         return frame
     if platform in ["nanopore", "iontorrent"]:
         frame.index.rename("SAMPLE", inplace=True)
