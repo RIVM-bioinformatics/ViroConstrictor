@@ -8,7 +8,7 @@ from snakemake.utils import Paramspace, min_version
 import pandas as pd
 
 
-min_version("6.0")
+min_version("7.3")
 
 yaml.warnings({"YAMLLoadWarning": False})
 shell.executable("/bin/bash")
