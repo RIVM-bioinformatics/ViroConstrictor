@@ -17,8 +17,6 @@ SAMPLES = {}
 with open(config["sample_sheet"]) as sample_sheet_file:
     SAMPLES = yaml.safe_load(sample_sheet_file)
 
-mincov = 30
-
 def check_ref_header(s):
     if not s:
         raise ValueError(f"Reference fasta does not have a header. Please add it.")
