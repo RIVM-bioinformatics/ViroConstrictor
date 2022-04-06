@@ -208,7 +208,7 @@ def check_input(choices, fname):
             raise argparse.ArgumentTypeError(
                 f"Input file doesn't end with one of {choices}"
             )
-        return fname
+        return os.path.abspath(fname)
     print(f'"{fname}" is not a file. Exiting...')
     sys.exit(-1)
 
