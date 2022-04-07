@@ -695,7 +695,7 @@ rule multiqc_report:
     benchmark:
         f"{logdir}{bench}MultiQC_report.txt"
     resources:
-        mem_mb=medium_memory_job,
+        mem_mb=high_memory_job,
     params:
         conffile=srcdir("files/multiqc_config.yaml"),
         outdir=res,
