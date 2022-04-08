@@ -17,26 +17,8 @@ SAMPLES = {}
 with open(config["sample_sheet"]) as sample_sheet_file:
     SAMPLES = yaml.safe_load(sample_sheet_file)
 
-def check_ref_header(s):
-    if not s:
-        raise ValueError(f"Reference fasta does not have a header. Please add it.")
-    blacklisted_characters = {"\\", "/", ":", "*", "?", "\"", "<", ">", "|", "\0"}
-    if found_in_blacklist := [c for c in s if c in blacklisted_characters]:
-        raise ValueError(f"Reference fasta header\n\t{s}\ncontains invalid characters\n\t{found_in_blacklist}\nPlease change the fasta header for this reference.")
-    reserved_words_on_windows = {
-        "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5",
-        "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5",
-        "LPT6", "LPT7", "LPT8", "LPT9",
-    }
-    if s in reserved_words_on_windows:
-        raise ValueError(f"Reference fasta header\n\t{s}\nis a reserved word on the windows operating system. Please change it.")
-    if all(c == '.' for c in s):
-        raise ValueError(f"Reference fasta header\n\t{s}\nis not valid.\nPlease change the fasta header for this reference.")
-    return s
-
-
 def Get_Ref_header(reffile):
-    return [check_ref_header(record.id) for record in SeqIO.parse(reffile, "fasta")]
+    return [record.id for record in SeqIO.parse(reffile, "fasta")]
 
 
 samples_df = (

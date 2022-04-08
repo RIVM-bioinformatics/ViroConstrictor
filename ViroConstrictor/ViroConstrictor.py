@@ -21,7 +21,7 @@ from ViroConstrictor.runconfigs import SnakemakeConfig, SnakemakeParams, WriteYa
 from ViroConstrictor.runreport import WriteReport
 from ViroConstrictor.update import update
 from ViroConstrictor.userprofile import ReadConfig
-from ViroConstrictor.validatefasta import IsValidFasta, IsValidRef
+from ViroConstrictor.validatefasta import CheckReferenceFile
 
 yaml.warnings({"YAMLLoadWarning": False})
 
@@ -29,16 +29,13 @@ yaml.warnings({"YAMLLoadWarning": False})
 def CheckSampleProperties(sampleinfo):
     for sample in sampleinfo:
         if not os.path.isfile(sampleinfo.get(sample).get("REFERENCE")):
-            print(
+            raise FileNotFoundError(
                 f"\n{color.RED + color.BOLD}The given reference fasta file for sample '{sample}' does not exist. Please check the reference fasta and try again. Exiting...{color.END}\n"
             )
-            return False
-        if not IsValidRef(sampleinfo.get(sample).get("REFERENCE")):
-            print(
-                f"\n{color.RED + color.BOLD}The given reference fasta file for sample '{sample}' does not seem to be a valid Fasta file or contains ambiguity nucleotide characters. Please check the reference fasta and try again. Exiting...{color.END}\n"
-            )
-            return False
-    return True
+
+    reference_files = {sampleinfo.get(sample).get("REFERENCE") for sample in sampleinfo}
+    for f in reference_files:
+        CheckReferenceFile(f)
 
 
 def main():
@@ -68,8 +65,7 @@ def main():
 
     Snakefile = os.path.join(exec_folder, "workflow", "workflow.smk")
 
-    if not CheckSampleProperties(sampleinfo):
-        sys.exit(1)
+    CheckSampleProperties(sampleinfo)  # raises errors if stuff is not right
 
     ##@ check if the output dir exists, create if not
     ##@ change the working directory
