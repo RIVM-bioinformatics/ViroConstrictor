@@ -134,12 +134,13 @@ rule prepare_primers:
         f"{logdir}{bench}prepare_primers_" "{Virus}.{RefID}.{sample}.txt"
     params:
         pr_mm_rate=lambda wc: SAMPLES[wc.sample]["PRIMER-MISMATCH-RATE"],
+        script=srcdir("scripts/filter_bed_input.py"),
     conda:
         f"{conda_envs}Clean.yaml"
     shell:
         """
         if [[ {input.prm} == *.bed ]]; then
-            cp {input.prm} {output.bed}
+            python {params.script} {input.prm} {output.bed} {wildcards.RefID}
         else
             python -m AmpliGone.fasta2bed \
                 --primers {input.prm} \
