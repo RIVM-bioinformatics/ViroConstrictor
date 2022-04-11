@@ -24,9 +24,6 @@ def is_tsv_file(ext):
     return ext in [".tsv"]
 
 
-def is_json_file(ext):
-    return ext in [".json"]
-
 
 def open_sample_sheet(file):
     """Given a file, return a pandas dataframe created with correct open function
@@ -48,8 +45,6 @@ def open_sample_sheet(file):
         return pd.read_csv(file)
     if is_tsv_file(file_extension):
         return pd.read_csv(file, sep="\t")
-    if is_json_file(file_extension):
-        return pd.read_json(file, orient="records")
     raise TypeError(f"{file} is not a valid samplesheet file type.")
 
 
