@@ -1,5 +1,6 @@
-import gffpandas.gffpandas as gffpd
 import sys
+
+import gffpandas.gffpandas as gffpd
 
 _, input, output, refID = sys.argv
 

@@ -380,9 +380,7 @@ def get_args(givenargs, parser):
     )
 
     parser.add_argument(
-        "--skip-updates",
-        action="store_true",
-        help="Skip the update check",
+        "--skip-updates", action="store_true", help="Skip the update check",
     )
 
     if len(givenargs) < 1:
