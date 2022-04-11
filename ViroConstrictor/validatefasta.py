@@ -12,7 +12,7 @@ from ViroConstrictor.functions import color
 
 
 def ContainsSpecials(seq):
-    '''It takes a string as input and returns True if the string contains any characters other than the 20
+    """It takes a string as input and returns True if the string contains any characters other than the 20
     amino acids, '-', or '*'
     
     Parameters
@@ -24,7 +24,7 @@ def ContainsSpecials(seq):
     -------
         True or False
     
-    '''
+    """
 
     chars = re.compile("[^actgumrwsykvhdbnACTGUMRWSYKVHDBN-]")
 
@@ -34,7 +34,7 @@ def ContainsSpecials(seq):
 
 
 def ContainsAmbiguities(seq):
-    '''If the sequence contains any of the characters in the string "umrwsykvhdbnUMRWSYKVHDBN" (all possible nucleotide ambiguities), then return
+    """If the sequence contains any of the characters in the string "umrwsykvhdbnUMRWSYKVHDBN" (all possible nucleotide ambiguities), then return
     True, otherwise return False
     
     Parameters
@@ -46,7 +46,7 @@ def ContainsAmbiguities(seq):
     -------
         A boolean value.
     
-    '''
+    """
     chars = re.compile("[umrwsykvhdbnUMRWSYKVHDBN]")
     if chars.search(seq) is None:
         return False
@@ -54,7 +54,7 @@ def ContainsAmbiguities(seq):
 
 
 def IsValidRef(inputfile):
-    '''If the input file is a valid FASTA file, and none of the sequences in the file contain ambiguous
+    """If the input file is a valid FASTA file, and none of the sequences in the file contain ambiguous
     characters, then the file is a valid reference file
     
     Parameters
@@ -66,7 +66,7 @@ def IsValidRef(inputfile):
     -------
         A boolean value.
     
-    '''
+    """
     if IsValidFasta(inputfile):
         return not any(
             ContainsAmbiguities(str(record.seq))
@@ -76,7 +76,7 @@ def IsValidRef(inputfile):
 
 
 def IsValidFasta(inputfile):
-    '''Function takes a fasta file (path) as input and returns True if all sequences in the file are valid, and False if
+    """Function takes a fasta file (path) as input and returns True if all sequences in the file are valid, and False if
     any sequence in given fasta is invalid
     
     Parameters
@@ -88,7 +88,7 @@ def IsValidFasta(inputfile):
     -------
         A boolean value.
     
-    '''
+    """
     if inputfile == "NONE":
         return True
     results = [
@@ -101,7 +101,7 @@ def IsValidFasta(inputfile):
 
 
 def CheckReferenceFile(referencefile, warnings_as_errors=False):
-    '''Checks reference file properties to be compatible. Does not return anything.
+    """Checks reference file properties to be compatible. Does not return anything.
     
     Parameters
     ----------
@@ -110,7 +110,7 @@ def CheckReferenceFile(referencefile, warnings_as_errors=False):
     warnings_as_errors, optional
         If True, warnings will be treated as errors.
     
-    '''
+    """
     errors = []
     warnings = []
     for record in SeqIO.parse(referencefile, "fasta"):
@@ -156,7 +156,7 @@ def CheckReferenceFile(referencefile, warnings_as_errors=False):
 
 
 def check_ref_header(s):
-    '''Function checks wether or not the reference header is valid.
+    """Function checks wether or not the reference header is valid.
     Checks include blacklisted characters (e.g. characters used in system paths, or '*) and reserved windows words (e.g. 'CON' & 'AUX').
     Returns the header if it is valid, otherwise raises an error.
     
@@ -169,7 +169,7 @@ def check_ref_header(s):
     -------
         A list of tuples.
     
-    '''
+    """
     if not s:
         raise ValueError("Reference fasta does not have a header. Please add it.")
     blacklisted_characters = {"\\", "/", ":", "*", "?", '"', "<", ">", "|", "\0"}
