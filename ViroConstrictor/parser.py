@@ -13,7 +13,7 @@ from ViroConstrictor.samplesheet import GetSamples
 
 
 def is_excel_file(ext):
-    '''If the extension is in the list of Excel extensions, return True, otherwise return False
+    """If the extension is in the list of Excel extensions, return True, otherwise return False
     
     Only checks the file extension, not file integrity.
     
@@ -26,12 +26,12 @@ def is_excel_file(ext):
     -------
         A boolean value.
     
-    '''
+    """
     return ext in [".xls", ".xlsx"]
 
 
 def is_csv_file(ext):
-    '''Return True if the file extension is .csv, otherwise return False.
+    """Return True if the file extension is .csv, otherwise return False.
     
     Only checks the file extension, not file integrity
     
@@ -44,12 +44,12 @@ def is_csv_file(ext):
     -------
         A boolean value.
     
-    '''
+    """
     return ext in [".csv"]
 
 
 def is_tsv_file(ext):
-    '''If the extension is in the list of extensions, return True, otherwise return False.
+    """If the extension is in the list of extensions, return True, otherwise return False.
     
     Only checks the file extension, not file integrity.
     
@@ -62,9 +62,8 @@ def is_tsv_file(ext):
     -------
         A list of all the files in the directory that end with the extension .tsv
     
-    '''
+    """
     return ext in [".tsv"]
-
 
 
 def open_sample_sheet(file):
@@ -111,7 +110,7 @@ def required_cols(cols):
 
 
 def check_samplesheet_columns(df):
-    '''Wrapper-function to check whether the samplesheet file has all the required columns or not
+    """Wrapper-function to check whether the samplesheet file has all the required columns or not
     
     Parameters
     ----------
@@ -122,7 +121,7 @@ def check_samplesheet_columns(df):
     -------
         A boolean value.
     
-    '''
+    """
     if not required_cols(df.columns):
         print(
             f"{color.RED + color.BOLD}Missing required columns in samplesheet file.{color.END}",
@@ -133,7 +132,7 @@ def check_samplesheet_columns(df):
 
 
 def check_samplesheet_rows(df):
-    '''Checks whether the row-based contents of the samplesheet dataframe are valid.
+    """Checks whether the row-based contents of the samplesheet dataframe are valid.
     
     Parameters
     ----------
@@ -145,7 +144,7 @@ def check_samplesheet_rows(df):
         A dataframe with the columns: SAMPLE, VIRUS, PRIMERS, REFERENCE, FEATURES, MATCH-REF, MIN-COVERAGE,
     PRIMER-MISMATCH-RATE
     
-    '''
+    """
     formats = {
         "SAMPLE": {
             "dtype": str,
@@ -238,7 +237,7 @@ def check_samplesheet_rows(df):
 
 
 def check_sample_sheet(file):
-    '''Wrapper function that takes a samplesheet and triggers the checks for required columns and required (row-based) values.
+    """Wrapper function that takes a samplesheet and triggers the checks for required columns and required (row-based) values.
     
     Parameters
     ----------
@@ -249,7 +248,7 @@ def check_sample_sheet(file):
     -------
         the result of the check_samplesheet_rows function. (pandas dataframe)
     
-    '''
+    """
     df = open_sample_sheet(file)
     df.columns = df.columns.str.upper()
     req_cols = check_samplesheet_columns(df)
@@ -259,7 +258,7 @@ def check_sample_sheet(file):
 
 
 def is_valid_samplesheet_file(f):
-    '''If the file exists and has a valid extension, return the absolute path to the file
+    """If the file exists and has a valid extension, return the absolute path to the file
     
     Parameters
     ----------
@@ -270,7 +269,7 @@ def is_valid_samplesheet_file(f):
     -------
         The absolute path of the file.
     
-    '''
+    """
     if os.path.isfile(f):
         if "".join(pathlib.Path(f).suffixes) in {
             ".xls",
@@ -286,7 +285,7 @@ def is_valid_samplesheet_file(f):
 
 
 def check_input(choices, fname):
-    '''If the input file name is "NONE", return it; otherwise, check that the file exists and has a valid
+    """If the input file name is "NONE", return it; otherwise, check that the file exists and has a valid
     extension, and return the absolute path to the file
     
     Parameters
@@ -300,7 +299,7 @@ def check_input(choices, fname):
     -------
         The absolute path of the file.
     
-    '''
+    """
     if fname == "NONE":
         return fname
     if os.path.isfile(fname):
@@ -315,7 +314,7 @@ def check_input(choices, fname):
 
 
 def dir_path(arginput):
-    '''If the input is a directory, return it. Otherwise, print an error message and exit
+    """If the input is a directory, return it. Otherwise, print an error message and exit
     
     Parameters
     ----------
@@ -326,7 +325,7 @@ def dir_path(arginput):
     -------
         the directory path.
     
-    '''
+    """
     if os.path.isdir(arginput):
         return arginput
     print(f'"{arginput}" is not a directory. Exiting...')
@@ -334,18 +333,18 @@ def dir_path(arginput):
 
 
 def currentpath():
-    '''Returns the current working directory
+    """Returns the current working directory
     
     Returns
     -------
         The current working directory.
     
-    '''
+    """
     return os.getcwd()
 
 
 def CheckInputFiles(indir):
-    '''Check if the input files are valid fastq files
+    """Check if the input files are valid fastq files
     
     The function takes one argument, indir, which is the directory where the input files are located.
     The function returns a boolean value, True or False
@@ -359,7 +358,7 @@ def CheckInputFiles(indir):
     -------
         A boolean value.
     
-    '''
+    """
     allowedextensions = [".fastq", ".fq", ".fastq.gz", ".fq.gz"]
     foundfiles = []
 
@@ -527,7 +526,7 @@ def get_args(givenargs, parser):
 
 
 def args_to_df(args, df):
-    '''It takes the arguments from the command line and places them into a dataframe
+    """It takes the arguments from the command line and places them into a dataframe
     
     Parameters
     ----------
@@ -540,7 +539,7 @@ def args_to_df(args, df):
     -------
         A dataframe with the arguments as columns.
     
-    '''
+    """
     df["VIRUS"] = args.target
     df["MATCH-REF"] = args.match_ref
     df["PRIMERS"] = args.primers
@@ -552,7 +551,7 @@ def args_to_df(args, df):
 
 
 def sampledir_to_df(sampledict, platform):
-    '''Function converts a dictionary of samples to a pandas dataframe
+    """Function converts a dictionary of samples to a pandas dataframe
     
     Parameters
     ----------
@@ -565,7 +564,7 @@ def sampledir_to_df(sampledict, platform):
     -------
         A dataframe with the sample name as the index and the input file as the column.
     
-    '''
+    """
     frame = pd.DataFrame.from_dict(sampledict, orient="index")
     if platform == "illumina":
         frame.index.rename("SAMPLE", inplace=True)
@@ -578,7 +577,7 @@ def sampledir_to_df(sampledict, platform):
 
 
 def make_sampleinfo_dict(df, args, filedict):
-    '''It takes a samplesheet (dataframe) and a dictionary fastq files, and returns a dictionary of sample
+    """It takes a samplesheet (dataframe) and a dictionary fastq files, and returns a dictionary of sample
     information
     
     Parameters
@@ -594,7 +593,7 @@ def make_sampleinfo_dict(df, args, filedict):
     -------
         A dictionary of the samplesheet and input directory.
     
-    '''
+    """
     if not CheckInputFiles(args.input):
         print(
             f"\n{color.RED + color.BOLD}'{args.input}' does not contain any valid FastQ files. Exiting...{color.END}\n"
@@ -636,7 +635,7 @@ def make_sampleinfo_dict(df, args, filedict):
 
 
 def ValidArgs(sysargs):
-    '''Wrapper function which takes the command line arguments and returns a dictionary with all the information needed to run the pipeline
+    """Wrapper function which takes the command line arguments and returns a dictionary with all the information needed to run the pipeline
     
     Parameters
     ----------
@@ -647,7 +646,7 @@ def ValidArgs(sysargs):
     -------
         args, sampleinfo
     
-    '''
+    """
     parser = argparse.ArgumentParser(
         prog=__prog__,
         usage=f"{__prog__} [required options] [optional arguments]",

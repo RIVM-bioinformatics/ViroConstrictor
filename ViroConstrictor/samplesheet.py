@@ -10,7 +10,7 @@ import yaml
 
 
 def illumina_sheet(inputdir):
-    '''Function takes a directory as input, and returns a dictionary of dictionaries, where the keys of the outer
+    """Function takes a directory as input, and returns a dictionary of dictionaries, where the keys of the outer
     dictionary are the sample names, and the keys of the inner dictionaries are the read numbers (R1 and
     R2)
     
@@ -23,7 +23,7 @@ def illumina_sheet(inputdir):
     -------
         A dictionary of dictionaries.
     
-    '''
+    """
     illuminapattern = re.compile(r"(.*)(_|\.)R?(1|2)(?:_.*\.|\..*\.|\.)f(ast)?q(\.gz)?")
     samples = {}
     for dirname, subdir, filename in os.walk(inputdir):
@@ -36,7 +36,7 @@ def illumina_sheet(inputdir):
 
 
 def nanopore_sheet(inputdir):
-    '''Function takes a directory as input, and returns a dictionary of sample names and their corresponding file
+    """Function takes a directory as input, and returns a dictionary of sample names and their corresponding file
     paths
     
     Parameters
@@ -48,7 +48,7 @@ def nanopore_sheet(inputdir):
     -------
         A dictionary with the sample name as the key and the full path to the file as the value.
     
-    '''
+    """
     nanoporepattern = re.compile(r"(.*)\.f(ast)?q(\.gz)?")
     samples = {}
     for dirname, subdir, filename in os.walk(inputdir):
@@ -60,7 +60,7 @@ def nanopore_sheet(inputdir):
 
 
 def iontorrent_sheet(inputdir):
-    '''Function takes a directory as input, and returns a dictionary of sample names and their corresponding file
+    """Function takes a directory as input, and returns a dictionary of sample names and their corresponding file
     paths
     
     Parameters
@@ -72,7 +72,7 @@ def iontorrent_sheet(inputdir):
     -------
         A dictionary with the sample name as the key and the full path to the file as the value.
     
-    '''
+    """
     iontorrentpattern = re.compile(r"(.*)\.f(ast)?q(\.gz)?")
     samples = {}
     for dirname, subdir, filename in os.walk(inputdir):
@@ -84,7 +84,7 @@ def iontorrent_sheet(inputdir):
 
 
 def GetSamples(inputdir, platform):
-    '''Wrapping function taking in a directory and sequencing platform, triggers appropriate sub-function and returns a dictionary of samples
+    """Wrapping function taking in a directory and sequencing platform, triggers appropriate sub-function and returns a dictionary of samples
     
     Parameters
     ----------
@@ -97,7 +97,7 @@ def GetSamples(inputdir, platform):
     -------
         A dict of samples
     
-    '''
+    """
     if platform == "illumina":
         samples = illumina_sheet(inputdir)
     if platform == "nanopore":
