@@ -14,7 +14,7 @@ from .functions import color, tabCompleter
 
 
 def FileExists(file):
-    '''Function returns a boolean value (True or False) depending on whether the file exists or not
+    """Function returns a boolean value (True or False) depending on whether the file exists or not
     
     Parameters
     ----------
@@ -25,12 +25,12 @@ def FileExists(file):
     -------
         True or False
     
-    '''
+    """
     return bool(os.path.isfile(file))
 
 
 def FileIsPopulated(file):
-    '''If the file exists and is not empty, return True. Otherwise, return False
+    """If the file exists and is not empty, return True. Otherwise, return False
     
     Parameters
     ----------
@@ -41,12 +41,12 @@ def FileIsPopulated(file):
     -------
         The size of the file in bytes.
     
-    '''
+    """
     return os.stat(file).st_size >= 1
 
 
 def AskPrompts(intro, prompt, options, fixedchoices=False):
-    '''This function is used to ask the user a question and provide a list of options to choose from. 
+    """This function is used to ask the user a question and provide a list of options to choose from. 
     A free-text user reply is also possible.
     
     The function takes 4 arguments:
@@ -72,7 +72,7 @@ def AskPrompts(intro, prompt, options, fixedchoices=False):
     -------
         the reply variable.
     
-    '''
+    """
     if fixedchoices is True:
         completer = tabCompleter()
         completer.createListCompleter(options)
@@ -104,14 +104,14 @@ def AskPrompts(intro, prompt, options, fixedchoices=False):
 
 
 def BuildConfig(file):
-    '''Function asks the user a series of questions and writes the answers to a config file
+    """Function asks the user a series of questions and writes the answers to a config file
     
     Parameters
     ----------
     file
         The file to write the config to.
     
-    '''
+    """
     # pylint: disable=C0301
     if os.path.exists(file):
         os.remove(file)
@@ -167,7 +167,7 @@ ViroConstrictor will not automatically update itself, but ViroConstrictor can st
 
 
 def AllOptionsGiven(config):
-    '''Function checks if all required config options are present in the already existing config file.
+    """Function checks if all required config options are present in the already existing config file.
     Necessary to avoid missing config options when a user updates to a new version of ViroConstrictor.
     
     Parameters
@@ -179,17 +179,27 @@ def AllOptionsGiven(config):
     -------
         A boolean value.
     
-    '''
+    """
     all_present = True
 
     if config.has_section("COMPUTING") is True:
-        if config.has_option("COMPUTING", "compmode") is True and config["COMPUTING"]["compmode"] == "grid" and config.has_option("COMPUTING", "queuename") is False or config.has_option("COMPUTING", "compmode") is not True:
+        if (
+            config.has_option("COMPUTING", "compmode") is True
+            and config["COMPUTING"]["compmode"] == "grid"
+            and config.has_option("COMPUTING", "queuename") is False
+            or config.has_option("COMPUTING", "compmode") is not True
+        ):
             all_present = False
     else:
         all_present = False
 
     if config.has_section("GENERAL") is True:
-        if config.has_option("GENERAL", "auto_update") is True and config["GENERAL"]["auto_update"] == "no" and config.has_option("GENERAL", "ask_for_update") is False or config.has_option("GENERAL", "auto_update") is not True:
+        if (
+            config.has_option("GENERAL", "auto_update") is True
+            and config["GENERAL"]["auto_update"] == "no"
+            and config.has_option("GENERAL", "ask_for_update") is False
+            or config.has_option("GENERAL", "auto_update") is not True
+        ):
             all_present = False
     else:
         all_present = False
@@ -198,7 +208,7 @@ def AllOptionsGiven(config):
 
 
 def ReadConfig(file):
-    '''ReadConfig() reads a config file, and if it doesn't exist, it creates it. 
+    """ReadConfig() reads a config file, and if it doesn't exist, it creates it. 
     -> If it does exist, but is empty, the configfile is recreated. 
     -> If it exists and is populated, it reads it. 
     -> If it exists and is populated, but not all necessary options are given, the configfile is recreated
@@ -212,7 +222,7 @@ def ReadConfig(file):
     -------
         A configparser object
     
-    '''
+    """
     if FileExists(file) is False:
         BuildConfig(file)
     if FileExists(file) is True and FileIsPopulated(file) is False:
