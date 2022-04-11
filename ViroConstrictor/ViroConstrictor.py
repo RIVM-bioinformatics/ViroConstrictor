@@ -27,6 +27,15 @@ yaml.warnings({"YAMLLoadWarning": False})
 
 
 def CheckSampleProperties(sampleinfo):
+    '''This function checks that the reference fasta file exists and that it is a valid fasta file
+    
+    Parameters
+    ----------
+    sampleinfo
+        A dictionary of dictionaries. The outer dictionary is keyed by sample name, and the inner
+        dictionary should contain the "REFERENCE" key containing a path to the reference fasta file.
+    
+    '''
     for sample in sampleinfo:
         if not os.path.isfile(sampleinfo.get(sample).get("REFERENCE")):
             raise FileNotFoundError(
