@@ -14,15 +14,11 @@ from .functions import color, tabCompleter
 
 
 def FileExists(file):
-    if os.path.isfile(file):
-        return True
-    return False
+    return bool(os.path.isfile(file))
 
 
 def FileIsPopulated(file):
-    if not os.stat(file).st_size >= 1:
-        return False
-    return True
+    return os.stat(file).st_size >= 1
 
 
 def AskPrompts(intro, prompt, options, fixedchoices=False):
