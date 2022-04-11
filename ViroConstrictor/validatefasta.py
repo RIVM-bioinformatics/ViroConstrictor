@@ -4,9 +4,7 @@
 Basic functions to see if a fasta is valid
 """
 
-import os
 import re
-import warnings as wa
 
 from Bio import SeqIO
 
