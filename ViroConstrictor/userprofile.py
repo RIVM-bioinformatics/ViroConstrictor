@@ -115,21 +115,13 @@ def AllOptionsGiven(config):
     all_present = True
 
     if config.has_section("COMPUTING") is True:
-        if config.has_option("COMPUTING", "compmode") is True:
-            if config["COMPUTING"]["compmode"] == "grid":
-                if config.has_option("COMPUTING", "queuename") is False:
-                    all_present = False
-        else:
+        if config.has_option("COMPUTING", "compmode") is True and config["COMPUTING"]["compmode"] == "grid" and config.has_option("COMPUTING", "queuename") is False or config.has_option("COMPUTING", "compmode") is not True:
             all_present = False
     else:
         all_present = False
 
     if config.has_section("GENERAL") is True:
-        if config.has_option("GENERAL", "auto_update") is True:
-            if config["GENERAL"]["auto_update"] == "no":
-                if config.has_option("GENERAL", "ask_for_update") is False:
-                    all_present = False
-        else:
+        if config.has_option("GENERAL", "auto_update") is True and config["GENERAL"]["auto_update"] == "no" and config.has_option("GENERAL", "ask_for_update") is False or config.has_option("GENERAL", "auto_update") is not True:
             all_present = False
     else:
         all_present = False
