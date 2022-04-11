@@ -15,10 +15,9 @@ def illumina_sheet(inputdir):
     for dirname, subdir, filename in os.walk(inputdir):
         for files in filename:
             fullpath = os.path.abspath(os.path.join(dirname, files))
-            match = illuminapattern.fullmatch(files)
-            if match:
-                sample = samples.setdefault(match.group(1), {})
-                sample["R{}".format(match.group(3))] = str(fullpath)
+            if match := illuminapattern.fullmatch(files):
+                sample = samples.setdefault(match[1], {})
+                sample[f"R{match[3]}"] = str(fullpath)
     return samples
 
 
@@ -28,9 +27,8 @@ def nanopore_sheet(inputdir):
     for dirname, subdir, filename in os.walk(inputdir):
         for files in filename:
             fullpath = os.path.abspath(os.path.join(dirname, files))
-            match = nanoporepattern.fullmatch(files)
-            if match:
-                samples.setdefault(match.group(1), fullpath)
+            if match := nanoporepattern.fullmatch(files):
+                samples.setdefault(match[1], fullpath)
     return samples
 
 
@@ -40,9 +38,8 @@ def iontorrent_sheet(inputdir):
     for dirname, subdir, filename in os.walk(inputdir):
         for files in filename:
             fullpath = os.path.abspath(os.path.join(dirname, files))
-            match = iontorrentpattern.fullmatch(files)
-            if match:
-                samples.setdefault(match.group(1), fullpath)
+            if match := iontorrentpattern.fullmatch(files):
+                samples.setdefault(match[1], fullpath)
     return samples
 
 
