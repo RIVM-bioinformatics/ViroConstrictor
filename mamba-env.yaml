@@ -10,9 +10,9 @@ dependencies:
   - drmaa==0.7.9
   - snakemake=7.3
   - biopython==1.79
-  - pandas
+  - pandas==1.4.2
   - openpyxl==3.0.9
   - pyyaml==6.0
   - urllib3>=1.26
-  - fpdf2
+  - fpdf2==2.5.1
   - pip
