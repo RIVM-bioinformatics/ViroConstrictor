@@ -507,8 +507,6 @@ def ValidArgs(sysargs):
             None, args, GetSamples(args.input, args.platform)
         )
 
-    # print(sampleinfo)
     if not sampleinfo:
-        print("wut")
         sys.exit(1)
     return args, sampleinfo
