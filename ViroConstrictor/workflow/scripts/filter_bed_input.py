@@ -1,9 +1,12 @@
-import pandas as pd
 import sys
+
+import pandas as pd
 
 _, inputfile, outputfile, refID = sys.argv
 
-df = pd.read_csv(inputfile, sep="\t", names=["ref", "start", "stop", "name", "score", "strand"])
+df = pd.read_csv(
+    inputfile, sep="\t", names=["ref", "start", "stop", "name", "score", "strand"]
+)
 
 df = df[df.ref == refID]
 
