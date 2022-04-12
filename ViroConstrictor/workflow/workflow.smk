@@ -17,6 +17,7 @@ SAMPLES = {}
 with open(config["sample_sheet"]) as sample_sheet_file:
     SAMPLES = yaml.safe_load(sample_sheet_file)
 
+
 def Get_Ref_header(reffile):
     return [record.id for record in SeqIO.parse(reffile, "fasta")]
 
@@ -101,7 +102,6 @@ rule prepare_refs:
                 SeqIO.write(record, str(output), "fasta")
 
 
-# TODO: maybe redo this to make sure this also works when no primers are given
 rule prepare_primers:
     input:
         prm=lambda wc: SAMPLES[wc.sample]["PRIMERS"],
@@ -135,7 +135,7 @@ rule prepare_primers:
 
 rule prepare_gffs:
     input:
-        feats=lambda wc: file if (file := SAMPLES[wc.sample]["FEATURES"]) else '',
+        feats=lambda wc: file if (file := SAMPLES[wc.sample]["FEATURES"]) else "",
         ref=rules.prepare_refs.output,
     output:
         gff=f"{datadir}{wc_folder}{features}" "{sample}_features.gff",
@@ -386,20 +386,18 @@ rule ampligone:
 ruleorder: ampligone > move_fastq
 
 
-# TODO: Make not giving primers to the cli an option
-
-
 # If no primers are given (e.g. with illumina runs), this rule makes sure the fastq's end up in the right place
 rule move_fastq:
     input:
         rules.qc_filter.output.fq,
     output:
-        rules.ampligone.output.fq,
+        fq=f"{datadir}{wc_folder}{cln}{prdir}" "{sample}.fastq",
+        ep=touch(f"{datadir}{wc_folder}{prim}" "{sample}_removedprimers.bed"),
     resources:
         mem_mb=low_memory_job,
     shell:
         """
-        cp {input} {output}
+        cp {input} {output.fq}
         """
 
 
@@ -438,7 +436,7 @@ def get_alignment_flags(_wildcards):
 
 rule align_before_trueconsense:
     input:
-        fq=rules.ampligone.output.fq,
+        fq=f"{datadir}{wc_folder}{cln}{prdir}" "{sample}.fastq",  #rules.ampligone.output.fq,
         ref=rules.prepare_refs.output,
     output:
         bam=f"{datadir}{wc_folder}{aln}{bf}" "{sample}.bam",
@@ -502,15 +500,17 @@ rule trueconsense:
         --threads {threads} > {log} 2>&1
         """
 
-def group_items(wildcards, folder, filename):
-    filtered_virus = p_space.dataframe.loc[p_space.dataframe['Virus'] == wildcards.Virus]
-    filtered_refid = filtered_virus.loc[filtered_virus['RefID'] == wildcards.RefID]
-    return [f"{folder}{item}{filename}" for item in list(filtered_refid['sample'])]
 
+def group_items(wildcards, folder, filename):
+    filtered_virus = p_space.dataframe.loc[
+        p_space.dataframe["Virus"] == wildcards.Virus
+    ]
+    filtered_refid = filtered_virus.loc[filtered_virus["RefID"] == wildcards.RefID]
+    return [f"{folder}{item}{filename}" for item in list(filtered_refid["sample"])]
 
 
 rule concat_sequences:
-    input: # we don't use group_items here as mincov is in the filename
+    input:  # we don't use group_items here as mincov is in the filename
         lambda wc: (
             f"{datadir}{wc_folder}{cons}{seqs}{sample}.fa"
             for sample in p_space.dataframe.loc[
@@ -545,7 +545,9 @@ rule vcf_to_tsv:
 
 rule concat_tsv_coverages:
     input:
-        lambda wildcards: group_items(wildcards, folder=f"{datadir}{wc_folder}{aln}{vf}", filename=".tsv"),
+        lambda wildcards: group_items(
+            wildcards, folder=f"{datadir}{wc_folder}{aln}{vf}", filename=".tsv"
+        ),
     output:
         f"{res}{wc_folder}mutations.tsv",
     resources:
@@ -575,7 +577,9 @@ rule get_breadth_of_coverage:
 
 rule concat_boc:
     input:
-        lambda wildcards: group_items(wildcards, folder=f"{datadir}{wc_folder}{boc}", filename=".tsv"),
+        lambda wildcards: group_items(
+            wildcards, folder=f"{datadir}{wc_folder}{boc}", filename=".tsv"
+        ),
     output:
         f"{res}{wc_folder}Width_of_coverage.tsv",
     resources:
@@ -589,13 +593,14 @@ rule concat_boc:
 
 rule calculate_amplicon_cov:
     input:
-        pr=rules.ampligone.output.ep,
+        pr=f"{datadir}{wc_folder}{prim}" "{sample}_removedprimers.bed",
         cov=rules.trueconsense.output.cov,
     output:
         f"{datadir}{wc_folder}{prim}" "{sample}_ampliconcoverage.csv",
-    log: f"{logdir}" "calculate_amplicon_cov_{Virus}.{RefID}.{sample}.log",
+    log:
+        f"{logdir}" "calculate_amplicon_cov_{Virus}.{RefID}.{sample}.log",
     benchmark:
-        f"{logdir}{bench}" "calculate_amplicon_cov_{Virus}.{RefID}.{sample}.txt",
+        f"{logdir}{bench}" "calculate_amplicon_cov_{Virus}.{RefID}.{sample}.txt"
     resources:
         mem_mb=low_memory_job,
     conda:
@@ -614,7 +619,11 @@ rule calculate_amplicon_cov:
 
 rule concat_amplicon_cov:
     input:
-        lambda wildcards: group_items(wildcards, folder=f"{datadir}{wc_folder}{prim}", filename="_ampliconcoverage.csv"),
+        lambda wildcards: group_items(
+            wildcards,
+            folder=f"{datadir}{wc_folder}{prim}",
+            filename="_ampliconcoverage.csv",
+        ),
     output:
         f"{res}{wc_folder}Amplicon_coverage.csv",
     resources:
@@ -647,20 +656,20 @@ def construct_MultiQC_input(_wildcards):
         )
 
     post = expand(
-            f"{datadir}{wc_folder}{qc_post}" "{sample}_fastqc.zip",
-            zip,
-            RefID=p_space.RefID,
-            Virus=p_space.Virus,
-            sample=p_space.dataframe["sample"],
-        )
+        f"{datadir}{wc_folder}{qc_post}" "{sample}_fastqc.zip",
+        zip,
+        RefID=p_space.RefID,
+        Virus=p_space.Virus,
+        sample=p_space.dataframe["sample"],
+    )
 
     fastp_out = expand(
         f"{datadir}{wc_folder}{cln}{qcfilt}{json}" "{sample}_fastp.json",
         zip,
         RefID=p_space.RefID,
         Virus=p_space.Virus,
-        sample=p_space.dataframe["sample"]
-        )
+        sample=p_space.dataframe["sample"],
+    )
 
     return pre + list(post) + fastp_out
 
