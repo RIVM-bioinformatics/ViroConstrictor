@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.4.2](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v0.4.1...v0.4.2) (2022-04-12)
+
+
+### Bug Fixes
+
+* limit the self-updater to only update minor and patch versions ([f864f55](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/f864f55ab65e45c297a52e0f1cb9fa295c34a08f))
+
 ### [0.4.1](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v0.4.0...v0.4.1) (2022-03-08)
 
 
