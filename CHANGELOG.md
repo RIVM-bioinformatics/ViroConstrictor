@@ -1,5 +1,23 @@
 # Changelog
 
+### [0.4.3](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v0.4.2...v0.4.3) (2022-04-14)
+
+
+### Dependencies
+
+* update AmpliGone to version 1.0.1 ([d595c35](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/d595c35985d611f259a68b4e64f41fdd753c6085))
+* update TrueConsense version to v0.4.0 ([fe0b08c](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/fe0b08c13111db46a07c3710e02fa41defa0252d))
+* use Pypi for AmpliGone installation instead of building from source ([d595c35](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/d595c35985d611f259a68b4e64f41fdd753c6085))
+
+
+### Documentation
+
+* Add information for primer bed support ([4034fc8](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/4034fc87d5ce74bc71fd45b778986b2571fbe2dd))
+* update docs for multi-target analysis ([94c1874](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/94c1874bc7610e596c2c34e95c49ddbdf9eb2386))
+* update documentation for new ViroConstrictor functions ([0b81841](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/0b81841304274a5c595e210eee942ba47c796d8f))
+* update documentation index page with correct required snakemake version ([d54204a](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/d54204afe9690e7721aac0a8dc9b898ea89d17e4))
+* update installation command for python3.10 ([4c9aa54](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/4c9aa546569a6c34000b7b191e16a151db8d3628))
+
 ### [0.4.2](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v0.4.1...v0.4.2) (2022-04-12)
 
 
