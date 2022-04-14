@@ -3,10 +3,11 @@ import sys
 from packaging import version as vv
 from setuptools import find_packages, setup
 
-from ViroConstrictor.version import __version__
+from ViroConstrictor import __version__
+from ViroConstrictor.functions import color
 
-if sys.version_info.major != 3 or sys.version_info.minor < 7:
-    print("Error: you must execute setup.py using Python 3.7 or later")
+if sys.version_info.major != 3 or sys.version_info.minor < 8:
+    print("Error: you must execute setup.py using Python 3.8 or later")
     sys.exit(1)
 
 try:
@@ -29,13 +30,13 @@ Please make sure SnakeMake is installed properly before installing ViroConstrict
 """
     )
 
-if vv.parse(snakemake.__version__) < vv.parse("6.0"):
+if vv.parse(snakemake.__version__) < vv.parse("7.3"):
     sys.exit(
         f"""
 The installed SnakeMake version is older than the minimally required version:
 
 Installed SnakeMake version: {snakemake.__version__}
-Required SnakeMake version: 6.0 or later
+Required SnakeMake version: 7.3 or later
 
 Please update SnakeMake to a supported version and try again
 """
@@ -64,7 +65,9 @@ setup(
         "urllib3>=1.26",
         "biopython==1.79",
         "drmaa==0.7.9",
-        "fpdf==1.7.2",
+        "fpdf2==2.5.1",
+        "pandas==1.4.2",
+        "openpyxl==3.0.9",
         "pyyaml==6.0",
     ],
     entry_points={

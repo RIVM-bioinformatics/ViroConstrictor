@@ -5,7 +5,7 @@ hide:
 ---
 
 [![CodeFactor](https://www.codefactor.io/repository/github/rivm-bioinformatics/viroconstrictor/badge)](https://www.codefactor.io/repository/github/rivm-bioinformatics/viroconstrictor)
-![Snakemake](https://img.shields.io/badge/snakemake-6.4.1-brightgreen.svg?style=flat-square)
+![Snakemake](https://img.shields.io/badge/snakemake-7.3-brightgreen.svg)
 
 ![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/RIVM-bioinformatics/ViroConstrictor?include_prereleases)
 ![GitHub](https://img.shields.io/github/license/RIVM-bioinformatics/ViroConstrictor)

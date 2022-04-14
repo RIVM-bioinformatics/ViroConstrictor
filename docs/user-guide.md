@@ -12,13 +12,18 @@ To run an analysis, you need the following inputs:
 
 ## Preparing your input primers
 
-In order to get optimal results, please make sure the fasta headers in your fasta file with primers are formatted properly. Please make sure the fasta headers are formatted according the following format:
+ViroConstrictor has two options for primer input: [BED](https://en.wikipedia.org/wiki/BED_(file_format)) and [fasta](https://en.wikipedia.org/wiki/FASTA_format).
+The BED format specifies the coordinates of the primers with respect to the given reference genome.
+
+In order to get optimal results, please make sure the fasta headers in your fasta file are formatted properly.
+This also counts for the name column in your bed file.
+Please make sure the headers are formatted according the following format:
 
 `>{primer-name}_{primer-number}_{orientation}`
 
 It's important that the primers which together form a single amplicon have the same primer-name and number.  
 
-Orientation keywords for forward primers are: *"LEFT"*/*"PLUS"*/*"POSITIVE"*/*"FORWARD"*  
+Orientation keywords for forward primers are: *"LEFT"*/*"PLUS"*/*"POSITIVE"*/*"FORWARD"*
 Orientation keywords for reverse primers are: *"RIGHT"*/*"MINUS"*/*"NEGATIVE"*/*"REVERSE"*
 
 !!! example "Example of formatted primer names from the ArticV3 SARS-CoV-2 sequencing protocol"
