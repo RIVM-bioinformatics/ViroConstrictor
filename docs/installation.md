@@ -53,5 +53,3 @@ git clone https://github.com/RIVM-bioinformatics/ViroConstrictor.git; cd ViroCon
 **ViroConstrictor is now installed!**  
 You can start ViroConstrictor from anywhere on your system as long as the ViroConstrictor conda-environment is active.  
 You can also use the ViroConstrictor pipeline in a different conda-environment as long as the software dependencies match.
-
-You can verify if ViroConstrictor was properly installed by typing `viroconstrictor -v`, which should return the installed version. Or by typing `viroconstrictor -h` which should return the help document.
