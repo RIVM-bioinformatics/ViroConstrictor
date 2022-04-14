@@ -7,15 +7,8 @@ edit_uri: ""
 # Navigation menu
 nav:
   - Home: index.md
-  - Getting started:
-    - Download & installation: installation.md
-    - Global configuration: global-config.md
-  - Usage: 
-    - manual.md
-    - Formatting input primers: primers.md
-    - Explanation of amplicon types: amplicons.md
-
-  - Changelog: changelog.md
+  - Installation: installation.md
+  - User guide: user-guide.md
 
 # Basic config theming config settings
 theme:
@@ -29,7 +22,7 @@ theme:
       - navigation.tabs
       - navigation.tabs.sticky
       - navigation.instant
-      #- toc.integrate
+      - toc.integrate
       - navigation.top
   palette:
     - media: "(prefers-color-scheme: light)"
