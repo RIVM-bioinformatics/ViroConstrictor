@@ -5,3 +5,8 @@ channels:
   - defaults
 dependencies:
   - prodigal==2.6.3
+  - python==3.9
+  - pandas
+  - pip
+  - pip:
+    - gffpandas>=1.2

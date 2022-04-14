@@ -6,7 +6,7 @@ channels:
   - anaconda
   - defaults
 dependencies:
-  - python=3.7
+  - python>=3.8
   - libffi==3.3
   - pysam==0.16.0.1
   - parmap==1.5.3
@@ -23,5 +23,4 @@ dependencies:
   - multiqc==1.11
   - pip
   - pip:
-    - git+https://github.com/RIVM-bioinformatics/AmpliGone.git@v0.4.3
-
+    - AmpliGone==1.0.1
