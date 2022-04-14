@@ -14,65 +14,18 @@ from .functions import color, tabCompleter
 
 
 def FileExists(file):
-    """Function returns a boolean value (True or False) depending on whether the file exists or not
-    
-    Parameters
-    ----------
-    file
-        The file to check if it exists.
-    
-    Returns
-    -------
-        True or False
-    
-    """
-    return bool(os.path.isfile(file))
+    if os.path.isfile(file):
+        return True
+    return False
 
 
 def FileIsPopulated(file):
-    """If the file exists and is not empty, return True. Otherwise, return False
-    
-    Parameters
-    ----------
-    file
-        The file to check.
-    
-    Returns
-    -------
-        The size of the file in bytes.
-    
-    """
-    return os.stat(file).st_size >= 1
+    if not os.stat(file).st_size >= 1:
+        return False
+    return True
 
 
 def AskPrompts(intro, prompt, options, fixedchoices=False):
-    """This function is used to ask the user a question and provide a list of options to choose from. 
-    A free-text user reply is also possible.
-    
-    The function takes 4 arguments:
-    
-    1. intro: This is the introduction text that will be displayed to the user.
-    2. prompt: This is the question that will be asked to the user.
-    3. options: This is a list of options that the user can choose from.
-    4. fixedchoices: This is a boolean value that determines whether the user can enter a custom answer
-    or not
-    
-    Parameters
-    ----------
-    intro
-        This is the text that will be displayed before the prompt.
-    prompt
-        The prompt that will be displayed to the user
-    options
-        a list of options to choose from
-    fixedchoices, optional
-        If set to True, the user will be able to use the tab key to autocomplete the available options.
-    
-    Returns
-    -------
-        the reply variable.
-    
-    """
     if fixedchoices is True:
         completer = tabCompleter()
         completer.createListCompleter(options)
@@ -104,14 +57,6 @@ def AskPrompts(intro, prompt, options, fixedchoices=False):
 
 
 def BuildConfig(file):
-    """Function asks the user a series of questions and writes the answers to a config file
-    
-    Parameters
-    ----------
-    file
-        The file to write the config to.
-    
-    """
     # pylint: disable=C0301
     if os.path.exists(file):
         os.remove(file)
@@ -167,39 +112,24 @@ ViroConstrictor will not automatically update itself, but ViroConstrictor can st
 
 
 def AllOptionsGiven(config):
-    """Function checks if all required config options are present in the already existing config file.
-    Necessary to avoid missing config options when a user updates to a new version of ViroConstrictor.
-    
-    Parameters
-    ----------
-    config
-        The configuration file.
-    
-    Returns
-    -------
-        A boolean value.
-    
-    """
     all_present = True
 
     if config.has_section("COMPUTING") is True:
-        if (
-            config.has_option("COMPUTING", "compmode") is True
-            and config["COMPUTING"]["compmode"] == "grid"
-            and config.has_option("COMPUTING", "queuename") is False
-            or config.has_option("COMPUTING", "compmode") is not True
-        ):
+        if config.has_option("COMPUTING", "compmode") is True:
+            if config["COMPUTING"]["compmode"] == "grid":
+                if config.has_option("COMPUTING", "queuename") is False:
+                    all_present = False
+        else:
             all_present = False
     else:
         all_present = False
 
     if config.has_section("GENERAL") is True:
-        if (
-            config.has_option("GENERAL", "auto_update") is True
-            and config["GENERAL"]["auto_update"] == "no"
-            and config.has_option("GENERAL", "ask_for_update") is False
-            or config.has_option("GENERAL", "auto_update") is not True
-        ):
+        if config.has_option("GENERAL", "auto_update") is True:
+            if config["GENERAL"]["auto_update"] == "no":
+                if config.has_option("GENERAL", "ask_for_update") is False:
+                    all_present = False
+        else:
             all_present = False
     else:
         all_present = False
@@ -208,21 +138,6 @@ def AllOptionsGiven(config):
 
 
 def ReadConfig(file):
-    """ReadConfig() reads a config file, and if it doesn't exist, it creates it. 
-    -> If it does exist, but is empty, the configfile is recreated. 
-    -> If it exists and is populated, it reads it. 
-    -> If it exists and is populated, but not all necessary options are given, the configfile is recreated
-    
-    Parameters
-    ----------
-    file
-        The file to read from.
-    
-    Returns
-    -------
-        A configparser object
-    
-    """
     if FileExists(file) is False:
         BuildConfig(file)
     if FileExists(file) is True and FileIsPopulated(file) is False:
