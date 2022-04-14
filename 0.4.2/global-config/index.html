@@ -13,7 +13,7 @@
     
     
       
-        <title>Download & installation - ViroConstrictor</title>
+        <title>Global configuration - ViroConstrictor</title>
       
     
     
@@ -63,7 +63,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#installation" class="md-skip">
+        <a href="#configuration-options" class="md-skip">
           Skip to content
         </a>
       
@@ -104,7 +104,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Download & installation
+              Global configuration
             
           </span>
         </div>
@@ -212,7 +212,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="./" class="md-tabs__link md-tabs__link--active">
+      <a href="../installation/" class="md-tabs__link md-tabs__link--active">
         Getting started
       </a>
     </li>
@@ -346,6 +346,20 @@
               
   
   
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        Download & installation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
     
   
   
@@ -358,12 +372,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Download & installation
+          Global configuration
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Download & installation
+        Global configuration
       </a>
       
         
@@ -382,15 +396,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#download" class="md-nav__link">
-    Download
+  <a href="#setting-up-computing-settings" class="md-nav__link">
+    Setting up computing settings
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#installation_1" class="md-nav__link">
-    Installation
+  <a href="#updating-settings" class="md-nav__link">
+    Updating settings
   </a>
   
 </li>
@@ -399,20 +413,6 @@
   
 </nav>
       
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../global-config/" class="md-nav__link">
-        Global configuration
-      </a>
     </li>
   
 
@@ -542,15 +542,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#download" class="md-nav__link">
-    Download
+  <a href="#setting-up-computing-settings" class="md-nav__link">
+    Setting up computing settings
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#installation_1" class="md-nav__link">
-    Installation
+  <a href="#updating-settings" class="md-nav__link">
+    Updating settings
   </a>
   
 </li>
@@ -569,53 +569,38 @@
                 
 
 
-<h1 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h1>
-<p>ViroConstrictor is only available on Linux (or Linux-based) operating systems. MacOS may also work but is not tested.
-ViroConstrictor will <em>not work</em> on Windows.  </p>
-<p><strong><em>Download and installation instructions through Conda will be made available as soon as possible.</em></strong><br />
-Until then, please perform manual installation as described on this page below.</p>
-<h2 id="download">Download<a class="headerlink" href="#download" title="Permanent link">&para;</a></h2>
-<p>Use the following command to download the <u><strong>latest</strong></u> release of ViroConstrictor and move to the newly downloaded <code>ViroConstrictor/</code> directory:</p>
-<div class="highlight"><pre><span></span><code>git clone https://github.com/RIVM-bioinformatics/ViroConstrictor.git<span class="p">;</span> <span class="nb">cd</span> ViroConstrictor<span class="p">;</span> git checkout tags/<span class="k">$(</span>git tag --sort<span class="o">=</span>committerdate <span class="p">|</span> tail -1<span class="k">)</span> &gt;&gt; /dev/null
-</code></pre></div>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>If you want to download a <u><strong>specific version</strong></u> of ViroConstrictor then please use the following command below where you replace <code>{VERSION}</code> with the version that you want.</p>
-<div class="highlight"><pre><span></span><code>git clone --depth <span class="m">1</span> -b <span class="o">{</span>VERSION<span class="o">}</span> https://github.com/RIVM-bioinformatics/ViroConstrictor.git<span class="p">;</span> <span class="nb">cd</span> ViroConstrictor
-</code></pre></div>
-</div>
-<h2 id="installation_1">Installation<a class="headerlink" href="#installation_1" title="Permanent link">&para;</a></h2>
-<p><strong>Before you install ViroConstrictor, make sure <a href="https://docs.conda.io/projects/conda/en/latest/index.html">Conda</a> is installed on your system and functioning properly!</strong></p>
+<h1 id="configuration-options">Configuration options<a class="headerlink" href="#configuration-options" title="Permanent link">&para;</a></h1>
+<p>When you first run ViroConstrictor you will be asked to set some global configuration settings.<br />
+These settings are used every time you execute ViroConstrictor and tell the application <em>how</em> the analysis, or even the entire application, should behave.</p>
+<p>There's two main sections of global configuration that need to be set up:</p>
 <ol>
-<li>
-<p>Create the required conda-environment and install the necessary dependencies.<br />
-    Copy and paste the code-snippet below to create the new conda-environment and directly activate it.<br />
-    <div class="highlight"><pre><span></span><code>conda create --name ViroConstrictor -c conda-forge mamba <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.10 -y<span class="p">;</span> 
-conda activate ViroConstrictor<span class="p">;</span> mamba env update -f mamba-env.yaml
-</code></pre></div></p>
-<details class="info">
-<summary>Click here if that code-snippet did not work for you</summary>
-<p>if you get errors from Conda, you can also try the following command(s):
-<div class="highlight"><pre><span></span><code>conda env create -f env.yml <span class="o">&amp;&amp;</span> conda activate ViroConstrictor
-</code></pre></div></p>
-</details>
-<p>The "ViroConstrictor" environment should now be active  </p>
-</li>
-<li>
-<p>You can now actually install ViroConstrictor on your system with:<br />
-    <div class="highlight"><pre><span></span><code>pip install .
-</code></pre></div></p>
-<details class="info">
-<summary>Click here if that command did not work for you</summary>
-<p>If you get errors from <code>pip</code>, you can also try the following command: 
-<div class="highlight"><pre><span></span><code>python setup.py install
-</code></pre></div></p>
-</details>
-</li>
+<li>The <a href="#setting-up-computing-settings">computing settings</a> which ViroConstrictor will use when running the analysis.</li>
+<li>The <a href="#updating-settings">updating-behavior</a> of the ViroConstrictor application.</li>
 </ol>
-<p><strong>ViroConstrictor is now installed!</strong><br />
-You can start ViroConstrictor from anywhere on your system as long as the ViroConstrictor conda-environment is active.<br />
-You can also use the ViroConstrictor pipeline in a different conda-environment as long as the software dependencies match.</p>
+<p>ViroConstrictor will store the information you provide during this first setup so you won't have to provide this information every time you run an analysis.</p>
+<h2 id="setting-up-computing-settings">Setting up computing settings<a class="headerlink" href="#setting-up-computing-settings" title="Permanent link">&para;</a></h2>
+<p>You will be asked to provide the information which tells ViroConstrictor <em>where</em> the actual analysis should be executed. ViroConstrictor is able to run both on your local (linux) machine as well as High Performace Computing (HPC/grid) infrastructures.</p>
+<p>You will therefore be asked in which <em>computing-mode</em> you want ViroConstrictor to run.<br />
+The options are <u>local</u> or <u>grid</u> mode.</p>
+<details class="question">
+<summary>What is local execution mode?</summary>
+<p>Local execution mode means that every step of the ViroConstrictor analysis will be performed on the computer where you turned on said analysis.<br />
+Use this option when you're running ViroConstrictor on your own computer or if you don't know if your analysis environment has a grid infrastructure.</p>
+</details>
+<details class="question">
+<summary>What is grid execution mode?</summary>
+<p>Grid execution mode means that every step of the ViroConstrictor analysis will be performed on other computers within the computing-infrastructure. This allows a large amount of analysis steps to be performed in parallel.</p>
+</details>
+<p>If you choose the grid computing-mode then you'll be asked a follow up question regarding the computing-queue.<br />
+High Performance Computing infrastructures are often set up with task-queues for its users. With these queues it's possible to determine on which (remote) computers the various analysis tasks will be executed and which tasks have priority over other types of tasks.<br />
+You will therefore be asked to provide the name of the computing-queue that you wish to use during analysis with ViroConstrictor.<br />
+If you don't know the computing-queue then please check with your system administrator beforehand.</p>
+<h2 id="updating-settings">Updating settings<a class="headerlink" href="#updating-settings" title="Permanent link">&para;</a></h2>
+<p>ViroConstrictor is able to update itself to newer <em>minor</em> and <em>patch</em> versions.<br />
+During the initial configuration setup you will be asked your preferences regarding the auto-updating features.</p>
+<p>When auto-updating is enabled, ViroConstrictor will update itself to the latest possible version without asking you first. When this setting is enabled then ViroConstrictor will only let you know it <em>has</em> updated to the latest possible version, or when it was unable to update itself to the latest version.</p>
+<p>If you choose to disable auto-updating during the configuration then you'll get a follow-up question if instead of completely automatic updates you wish to be asked to update to the latest version.<br />
+For most use-cases, this is the preferred option where you can still have ViroConstrictor update itself but you stay in control of the used version.</p>
 
               
             </article>
@@ -634,7 +619,7 @@ You can also use the ViroConstrictor pipeline in a different conda-environment a
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
         
-        <a href=".." class="md-footer__link md-footer__link--prev" aria-label="Previous: Home" rel="prev">
+        <a href="../installation/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Download &amp; installation" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
           </div>
@@ -643,20 +628,20 @@ You can also use the ViroConstrictor pipeline in a different conda-environment a
               <span class="md-footer__direction">
                 Previous
               </span>
-              Home
+              Download & installation
             </div>
           </div>
         </a>
       
       
         
-        <a href="../global-config/" class="md-footer__link md-footer__link--next" aria-label="Next: Global configuration" rel="next">
+        <a href="../manual/" class="md-footer__link md-footer__link--next" aria-label="Next: Starting an analysis" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Global configuration
+              Starting an analysis
             </div>
           </div>
           <div class="md-footer__button md-icon">

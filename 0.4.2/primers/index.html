@@ -13,7 +13,7 @@
     
     
       
-        <title>Download & installation - ViroConstrictor</title>
+        <title>Formatting input primers - ViroConstrictor</title>
       
     
     
@@ -63,7 +63,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#installation" class="md-skip">
+        <a href="#formatting-your-input-primers" class="md-skip">
           Skip to content
         </a>
       
@@ -104,7 +104,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Download & installation
+              Formatting input primers
             
           </span>
         </div>
@@ -204,15 +204,13 @@
         
   
   
-    
-  
 
 
   
   
   
     <li class="md-tabs__item">
-      <a href="./" class="md-tabs__link md-tabs__link--active">
+      <a href="../installation/" class="md-tabs__link">
         Getting started
       </a>
     </li>
@@ -222,13 +220,15 @@
         
   
   
+    
+  
 
 
   
   
   
     <li class="md-tabs__item">
-      <a href="../manual/" class="md-tabs__link">
+      <a href="../manual/" class="md-tabs__link md-tabs__link--active">
         Usage
       </a>
     </li>
@@ -318,14 +318,12 @@
 
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
       
       
       
@@ -346,59 +344,11 @@
               
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          Download & installation
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
         Download & installation
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#download" class="md-nav__link">
-    Download
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#installation_1" class="md-nav__link">
-    Installation
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -430,12 +380,14 @@
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
       
       
       
@@ -470,11 +422,21 @@
               
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../primers/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         Formatting input primers
       </a>
+      
     </li>
   
 
@@ -535,28 +497,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#download" class="md-nav__link">
-    Download
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#installation_1" class="md-nav__link">
-    Installation
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -569,53 +509,55 @@
                 
 
 
-<h1 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h1>
-<p>ViroConstrictor is only available on Linux (or Linux-based) operating systems. MacOS may also work but is not tested.
-ViroConstrictor will <em>not work</em> on Windows.  </p>
-<p><strong><em>Download and installation instructions through Conda will be made available as soon as possible.</em></strong><br />
-Until then, please perform manual installation as described on this page below.</p>
-<h2 id="download">Download<a class="headerlink" href="#download" title="Permanent link">&para;</a></h2>
-<p>Use the following command to download the <u><strong>latest</strong></u> release of ViroConstrictor and move to the newly downloaded <code>ViroConstrictor/</code> directory:</p>
-<div class="highlight"><pre><span></span><code>git clone https://github.com/RIVM-bioinformatics/ViroConstrictor.git<span class="p">;</span> <span class="nb">cd</span> ViroConstrictor<span class="p">;</span> git checkout tags/<span class="k">$(</span>git tag --sort<span class="o">=</span>committerdate <span class="p">|</span> tail -1<span class="k">)</span> &gt;&gt; /dev/null
-</code></pre></div>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>If you want to download a <u><strong>specific version</strong></u> of ViroConstrictor then please use the following command below where you replace <code>{VERSION}</code> with the version that you want.</p>
-<div class="highlight"><pre><span></span><code>git clone --depth <span class="m">1</span> -b <span class="o">{</span>VERSION<span class="o">}</span> https://github.com/RIVM-bioinformatics/ViroConstrictor.git<span class="p">;</span> <span class="nb">cd</span> ViroConstrictor
+<h1 id="formatting-your-input-primers">Formatting your input primers<a class="headerlink" href="#formatting-your-input-primers" title="Permanent link">&para;</a></h1>
+<p>ViroConstrictor has two options for primer input: <a href="https://en.wikipedia.org/wiki/BED_(file_format)">BED</a> and <a href="https://en.wikipedia.org/wiki/FASTA_format">fasta</a>.</p>
+<p>In order to get optimal results, please make sure the fasta headers in your fasta file with primers are formatted properly. 
+This also counts for the name column in your BED file.
+The strand column of the BED file is leading in determining the orientation of the primer.
+Please make sure the fasta headers/name column are formatted according the following format:</p>
+<p><code>&gt;{primer-name}_{primer-number}_{orientation}</code></p>
+<p>It's important that the primers which together form a single amplicon have the same primer-name and number.  </p>
+<p>Orientation keywords for forward primers are: <em>"LEFT"</em>/<em>"PLUS"</em>/<em>"POSITIVE"</em>/<em>"FORWARD"</em><br />
+Orientation keywords for reverse primers are: <em>"RIGHT"</em>/<em>"MINUS"</em>/<em>"NEGATIVE"</em>/<em>"REVERSE"</em></p>
+<div class="admonition example">
+<p class="admonition-title">Example of formatted primer names from the ArticV3 SARS-CoV-2 sequencing protocol</p>
+<div class="highlight"><pre><span></span><code>&gt;nCoV-2019_1_LEFT  
+ACCAACCAACTTTCGATCTCTTGT  
+&gt;nCoV-2019_1_RIGHT  
+CATCTTTAAGATGTTGACGTGCCTC  
+&gt;nCoV-2019_2_LEFT  
+CTGTTTTACAGGTTCGCGACGT  
+&gt;nCoV-2019_2_RIGHT  
+TAAGGATCAGTGCCAAGCTCGT
 </code></pre></div>
 </div>
-<h2 id="installation_1">Installation<a class="headerlink" href="#installation_1" title="Permanent link">&para;</a></h2>
-<p><strong>Before you install ViroConstrictor, make sure <a href="https://docs.conda.io/projects/conda/en/latest/index.html">Conda</a> is installed on your system and functioning properly!</strong></p>
-<ol>
-<li>
-<p>Create the required conda-environment and install the necessary dependencies.<br />
-    Copy and paste the code-snippet below to create the new conda-environment and directly activate it.<br />
-    <div class="highlight"><pre><span></span><code>conda create --name ViroConstrictor -c conda-forge mamba <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.10 -y<span class="p">;</span> 
-conda activate ViroConstrictor<span class="p">;</span> mamba env update -f mamba-env.yaml
-</code></pre></div></p>
-<details class="info">
-<summary>Click here if that code-snippet did not work for you</summary>
-<p>if you get errors from Conda, you can also try the following command(s):
-<div class="highlight"><pre><span></span><code>conda env create -f env.yml <span class="o">&amp;&amp;</span> conda activate ViroConstrictor
-</code></pre></div></p>
-</details>
-<p>The "ViroConstrictor" environment should now be active  </p>
-</li>
-<li>
-<p>You can now actually install ViroConstrictor on your system with:<br />
-    <div class="highlight"><pre><span></span><code>pip install .
-</code></pre></div></p>
-<details class="info">
-<summary>Click here if that command did not work for you</summary>
-<p>If you get errors from <code>pip</code>, you can also try the following command: 
-<div class="highlight"><pre><span></span><code>python setup.py install
-</code></pre></div></p>
-</details>
-</li>
-</ol>
-<p><strong>ViroConstrictor is now installed!</strong><br />
-You can start ViroConstrictor from anywhere on your system as long as the ViroConstrictor conda-environment is active.<br />
-You can also use the ViroConstrictor pipeline in a different conda-environment as long as the software dependencies match.</p>
+<p>If your protocol has alternative primers then make sure the fasta header contains the "alt" keyword in the following format:</p>
+<p><code>&gt;{primer-name}_{primer-number}_alt_{orientation}</code>  </p>
+<p>Please make sure the "alt" keyword is in the middle and not at the end of the fasta header.</p>
+<div class="admonition example">
+<p class="admonition-title">Example of formatted primer names from the ArticV3 SARS-CoV-2 sequencing protocol with alternative primers included</p>
+<div class="highlight"><pre><span></span><code>&gt;nCoV-2019_13_LEFT  
+TCGCACAAATGTCTACTTAGCTGT  
+&gt;nCoV-2019_13_RIGHT  
+ACCACAGCAGTTAAAACACCCT  
+&gt;nCoV-2019_14_LEFT  
+CATCCAGATTCTGCCACTCTTGT  
+&gt;nCoV-2019_14_alt_LEFT  
+TGGCAATCTTCATCCAGATTCTGC  
+&gt;nCoV-2019_14_RIGHT  
+AGTTTCCACACAGACAGGCATT  
+&gt;nCoV-2019_14_alt_RIGHT  
+TGCGTGTTTCTTCTGCATGTGC  
+&gt;nCoV-2019_15_LEFT  
+ACAGTGCTTAAAAAGTGTAAAAGTGCC  
+&gt;nCoV-2019_15_alt_LEFT  
+AGTGCTTAAAAAGTGTAAAAGTGCCT  
+&gt;nCoV-2019_15_RIGHT  
+AACAGAAACTGTAGCTGGCACT  
+&gt;nCoV-2019_15_alt_RIGHT  
+ACTGTAGCTGGCACTTTGAGAGA
+</code></pre></div>
+</div>
 
               
             </article>
@@ -634,7 +576,7 @@ You can also use the ViroConstrictor pipeline in a different conda-environment a
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
         
-        <a href=".." class="md-footer__link md-footer__link--prev" aria-label="Previous: Home" rel="prev">
+        <a href="../manual/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Starting an analysis" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
           </div>
@@ -643,20 +585,20 @@ You can also use the ViroConstrictor pipeline in a different conda-environment a
               <span class="md-footer__direction">
                 Previous
               </span>
-              Home
+              Starting an analysis
             </div>
           </div>
         </a>
       
       
         
-        <a href="../global-config/" class="md-footer__link md-footer__link--next" aria-label="Next: Global configuration" rel="next">
+        <a href="../amplicons/" class="md-footer__link md-footer__link--next" aria-label="Next: Explanation of amplicon types" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Global configuration
+              Explanation of amplicon types
             </div>
           </div>
           <div class="md-footer__button md-icon">
