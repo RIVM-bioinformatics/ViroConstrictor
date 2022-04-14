@@ -101,3 +101,17 @@ An example table can be seen below, or download the example excel spreadsheet [h
 
 Please keep in mind that the Sample key as given in de samplesheet must correspond with the FastQ filename in your input directory. If this isn't the case then ViroConstrictor will let you know without running to ensure you won't get unexplainable data.
 
+!!! Example "You can start a multi-target analysis with a command such as the following"
+    ```bash
+    viroconstrictor \
+        --input {path/to/FastQ-files} \
+        --output {path/to/desired/output/folder} \
+        --samplesheet {path/to/samplesheet.xlsx} \
+        --platform {nanopore/illumina/iontorrent} \
+        --amplicon-type {end-to-end/end-to-mid}
+    ```
+
+With a multi-target analysis it's also possible to combine run-wide parameters with a samplesheet.  
+For example, you wish to analyse a batch of samples and set different minimum coverage values for every sample, but all other parameters in your analysis are the same.  
+You can then leave out certain information in your samplesheet and supplement this information through the command line.  
+Please note that in the given samplesheet, the columns "Samples", "Virus", and "Reference" are considered to be mandatory. starting an analysis without this information in the samplesheet will not work.
