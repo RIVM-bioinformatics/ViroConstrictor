@@ -1,10 +1,12 @@
 import json
+import os
 import subprocess
 import sys
 from distutils.version import LooseVersion
 from urllib import request
 
 from ViroConstrictor import __version__
+
 
 from .functions import color
 from .userprofile import AskPrompts
@@ -40,7 +42,10 @@ def update(sysargs, conf):
 
         localversion = LooseVersion(__version__)
 
-        if localversion < latest_release_tag_tidied:
+        if (
+            localversion < latest_release_tag_tidied
+            and localversion.version[0] == latest_release_tag_tidied.version[0]
+        ):
             subprocess.run(
                 [
                     sys.executable,
@@ -61,6 +66,46 @@ def update(sysargs, conf):
 
             subprocess.run(sysargs)
             sys.exit(0)
+        if (
+            localversion < latest_release_tag_tidied
+            and localversion.version[0] != latest_release_tag_tidied.version[0]
+        ):
+            if (
+                AskPrompts(
+                    f"""{color.RED + color.BOLD}There's a new version of ViroConstrictor available. This new version is a {color.UNDERLINE}major{color.END + color.RED + color.BOLD} update and cannot be installed automatically.{color.END}
+
+Current version: {color.RED + color.BOLD}{'v' + __version__}{color.END}
+Latest version: {color.GREEN + color.BOLD}{latest_release_tag}{color.END}
+
+The auto-updater can't install major version changes for you, as this would (probably) severely break your installation.
+If you wish to update to the newest version you will have to do so manually.
+
+If you want to run ViroConstrictor with the current version then please turn off the auto-updater. 
+If you won't turn off the auto-updater we'll keep nagging you about this until you manually updated to the newest version.
+""",
+                    "Do you want to turn off the auto-updater so you wont get this message again? (yes/no) ",
+                    ("yes", "no"),
+                    fixedchoices=True,
+                )
+                == "yes"
+            ):
+                conf["GENERAL"]["auto_update"] = "no"
+                conf["GENERAL"]["ask_for_update"] = "yes"
+
+                with open(
+                    os.path.expanduser("~/.ViroConstrictor_defaultprofile.ini"), "w"
+                ) as f:
+                    conf.write(f)
+                print("The ViroConstrictor auto-updater is now turned off")
+                print(
+                    f"Please re-run the ViroConstrictor command to execute the workflow with the current version ({'v' + __version__}) or update manually to the newest version"
+                )
+                sys.exit(0)
+            print(
+                "ViroConstrictor is unable to update itself to the newest version as this is a major version change that cannot be installed automatically.\nPlease update manually and try again or turn-off the auto-updater "
+            )
+            print("Exiting...")
+            sys.exit(1)
         return
 
     if autocontinue is False and ask_prompt is False:
@@ -84,7 +129,10 @@ def update(sysargs, conf):
 
         localversion = LooseVersion(__version__)
 
-        if localversion < latest_release_tag_tidied:
+        if (
+            localversion < latest_release_tag_tidied
+            and localversion.version[0] == latest_release_tag_tidied.version[0]
+        ):
             if (
                 AskPrompts(
                     f"""
@@ -121,4 +169,18 @@ Latest version: {color.GREEN + color.BOLD}{latest_release_tag}{color.END}\n""",
             print(f"Skipping update to version {latest_release_tag}")
             print(f"Continuing...")
             return
+        if (
+            localversion < latest_release_tag_tidied
+            and localversion.version[0] != latest_release_tag_tidied.version[0]
+        ):
+            print(
+                f"{color.RED}There's a new version of ViroConstrictor available. This new version is a {color.UNDERLINE}major{color.END + color.RED} update and cannot be installed automatically.{color.END}"
+            )
+            print(
+                f"""
+Current version: {color.RED + color.BOLD}{'v' + __version__}{color.END}
+Latest version: {color.GREEN + color.BOLD}{latest_release_tag}{color.END}
+                """
+            )
+            print("Continuing without updating...\n")
         return
