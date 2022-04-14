@@ -28,7 +28,7 @@ git clone https://github.com/RIVM-bioinformatics/ViroConstrictor.git; cd ViroCon
 1. Create the required conda-environment and install the necessary dependencies.  
     Copy and paste the code-snippet below to create the new conda-environment and directly activate it.  
     ```bash
-    conda create --name ViroConstrictor -c conda-forge mamba python=3.7 -y; 
+    conda create --name ViroConstrictor -c conda-forge mamba python=3.10 -y; 
     conda activate ViroConstrictor; mamba env update -f mamba-env.yaml
     ```
 
@@ -53,5 +53,3 @@ git clone https://github.com/RIVM-bioinformatics/ViroConstrictor.git; cd ViroCon
 **ViroConstrictor is now installed!**  
 You can start ViroConstrictor from anywhere on your system as long as the ViroConstrictor conda-environment is active.  
 You can also use the ViroConstrictor pipeline in a different conda-environment as long as the software dependencies match.
-
-You can verify if ViroConstrictor was properly installed by typing `viroconstrictor -v`, which should return the installed version. Or by typing `viroconstrictor -h` which should return the help document.
