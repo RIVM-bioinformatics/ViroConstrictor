@@ -23,4 +23,4 @@ dependencies:
   - multiqc==1.11
   - pip
   - pip:
-    - git+https://github.com/RIVM-bioinformatics/AmpliGone.git@bed_support
+    - AmpliGone==1.0.1
