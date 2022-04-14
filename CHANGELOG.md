@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.0.0](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v0.4.2...v1.0.0) (2022-04-14)
+
+
+### Bug Fixes
+
+* Add option to not give primers on cli ([e4c054c](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab))
+* Check combination of samplesheet and cli args ([e4c054c](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab))
+
+
+### Code Refactoring
+
+* move version to __init__ file ([e4c054c](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab))
+
+
+### Dependencies
+
+* update AmpliGone to version 1.0.1 ([e4c054c](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab))
+* update TrueConsense version to v0.4.0 ([e4c054c](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab))
+* use Pypi for AmpliGone installation instead of building from source ([e4c054c](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab))
+
+
+### Documentation
+
+* Add information for primer bed support ([e4c054c](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab))
+* update docs for multi-target analysis ([e4c054c](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab))
+* update documentation for new ViroConstrictor functions ([e4c054c](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab))
+* update documentation index page with correct required snakemake version ([e4c054c](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab))
+* update installation command for python3.10 ([e4c054c](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab))
+
 ### [0.4.2](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v0.4.1...v0.4.2) (2022-04-12)
 
 
