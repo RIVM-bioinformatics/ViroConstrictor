@@ -500,6 +500,20 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    ⚠ BREAKING CHANGES
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    Features
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#bug-fixes" class="md-nav__link">
     Bug Fixes
   </a>
@@ -569,7 +583,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
+  <a href="#features_1" class="md-nav__link">
     Features
   </a>
   
@@ -617,7 +631,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#features_1" class="md-nav__link">
+  <a href="#features_2" class="md-nav__link">
     Features
   </a>
   
@@ -706,6 +720,20 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    ⚠ BREAKING CHANGES
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    Features
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#bug-fixes" class="md-nav__link">
     Bug Fixes
   </a>
@@ -775,7 +803,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
+  <a href="#features_1" class="md-nav__link">
     Features
   </a>
   
@@ -823,7 +851,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#features_1" class="md-nav__link">
+  <a href="#features_2" class="md-nav__link">
     Features
   </a>
   
@@ -885,28 +913,99 @@
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
 <h2 id="100-2022-04-14"><a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v0.4.2...v1.0.0">1.0.0</a> (2022-04-14)<a class="headerlink" href="#100-2022-04-14" title="Permanent link">&para;</a></h2>
+<h3 id="breaking-changes">⚠ BREAKING CHANGES<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use a single coverage level during analysis, defaults to 30 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/6d6fc016741cf818817790f66ab85df1ddcd6e63">6d6fc01</a>)</li>
+<li>add support for per-sample analysis settings with an input samplesheet in Excel, TSV or CSV format (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/a0b726d544cab9bb61918037e6e0cf04470e0029">a0b726</a>)</li>
+<li>Add support for BED files in amplicon_covs (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/ece3dfa359d1937453a729209a4fbbc8dee1aa44">ece3dfa</a>)</li>
+<li>Use BED files as output of AmpliGone (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/79fd2382a60e78000600997b750e703a5c89acc0">79fd23</a>)</li>
+<li>Update to python version 3.10 in base environments. (minimal required version = 3.8) (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/18432840a8ec3b2edfebfd101ffe13fb36103cd6">184328</a>)</li>
+<li>Use a single coverage level for TrueConsense (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e5701b9acc50204dec87f5224b9c4193ad57b815">e5701b9a</a>)</li>
+</ul>
+<h3 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h3>
+<ul>
+<li>flexible snakemake rule_all based on samplesheet inputs (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/93ad0cfc55ae46023a1b81129d0f7894aa036703">93ad0c</a>)</li>
+<li>use the snakemake Paramspace for wildcard generation (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/94d1738c1d0a47958f9301261f57338ea544fed8">94d1738</a>)</li>
+<li>Add remove_adapters_p1 to all (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/64c906939259c43eaaaff3adb2e1c5f8f981e28d">64c9069</a>)</li>
+<li>Add remove_adapters_p2 and qc_filter to all (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/a8956089455320236b328132061f0c5818a77519">a89560</a>)</li>
+<li>Add prepare_primers (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/6dc7c9321cfbfcd3b92c1f652580573fd2c47e31">6dc7c9</a>)</li>
+<li>Add prepare_gff rule (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/a0bc0fb7a00271aaa30c320a62b58f8a0f3e021b">a0bc0fb</a>)</li>
+<li>Re-add ampligone (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/89cc2a0ad9167e1932cf0313a7e309e73971f821">89cc2a0</a>)</li>
+<li>Re-add qc_post to multiqc (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/45c0d124dd993041be49a8433bc0d1f1c6dfbbc0">45c0d12</a>)</li>
+<li>Re-add TrueConsense (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/44f36c1b922e0da53589c2ac10984f710553d4e3">44f36c1</a>)</li>
+<li>Re-add concat_seq (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/ab229dedb2588f145791da5a72c723301237e8e3">ab229de</a>)</li>
+<li>Re-add tsv output (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/5bf10aa8a14b74f37c7b94c7438f12f2a1bfedf6">5bf10aa</a>)</li>
+<li>Re-add breadth of coverage to snakefile (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/003b2f45e5604ed6c8282b0369f243409ba790f1">003b2f</a>)</li>
+<li>Re-add amplicon_cov (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/6f608826eca77d36abdcc148a0f1d2adea39df34">6f6088</a>)</li>
+<li>Correctly handle missing inputs in samplesheet (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/aa69950d4e1f3cbec00242ab63ca0ac46226339b">aa6995</a>)</li>
+<li>re-add illumina support in new workflow structure (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/8eb400bb6712028d6b26c651c251717af8ba60bc">8eb400</a>)</li>
+<li>add fastP stats to multiqc report (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/19627f672473d8214e1ca1502df8dd9cea76271e">19627f</a>)</li>
+</ul>
 <h3 id="bug-fixes">Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Add option to not give primers on cli (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab">e4c054c</a>)</li>
 <li>Check combination of samplesheet and cli args (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab">e4c054c</a>)</li>
+<li>Fix broken snakefile (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/a704c5e1ff1bc9fb816d8e5a7f5e56c2663ee3c2">a704c5e</a>)</li>
+<li>Add .bed as filetype for primers (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/f165564010da178ff8de86a18792e6f7cc5f5707">f16556</a>)</li>
+<li>Make prodigal and prepare_gff unique (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/7613376599ca116c6b2696898ecf03f635b33124">761337</a>)</li>
+<li>Fix aggregation outputs to rule all (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/2269340d95bbb5c821070e22831c56d7118bfff4">2269340</a>)</li>
+<li>Fix restructuring of results folder (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/76fda4679c7ee00b258c169573f05a37d1bb6a2d">76fda46</a>)</li>
+<li>group concatenated files in correct results subfolders (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/f3f1d9e50f65f15b1ea3b5b1f356710eb140f9b7">f3f1d9e</a>)</li>
+<li>Make sure all post_qc is added in multiqc (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/b51f0ceab0460bab1cd5420810dead3699d21b16">b51f0ce</a>)</li>
+<li>Remove excess bracket in various log&amp;bench rules (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/4a5e96c883fa2e068d5d939a75c9f28aa958510c">4a5e96c</a>)</li>
+<li>add logs for calculate_amplicon_cov rule (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/fbd2c1cf5e281375d2c1109443c8cd7d502f862f">fbd2c1c</a>)</li>
+<li>always use absolute path for input reference, primer and features files (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/fa68a7a56c95117915351fa5b101f99c1bdcb3ef">fa68a7a</a>)</li>
+<li>always provide absolute path for input fastq files (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/030324495165f3e587f5b14da55f633bd7a613fa">0303244</a>)</li>
+<li>Raise error if fasta contains invalid char (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/5209a7b2d385b4779403f8781fe6ab4dd0a3051f">5209a7b</a>)</li>
+<li>Bump minimum snakemake version (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/a31b50332551b4ab767703cc4c0e796e98b752d1">a31b503</a>)</li>
+<li>change multiqc memory requirements to 'high' (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/05b9db33e8b26807f9f2c6cf515d7332ca654bd8">05b9db3</a>)</li>
+<li>filter input primer bedfile to only output matching refID bedfile (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/c2b9c0ce3f59d998d6a6dff1520e17cf78fd5efc">c2b9c0c</a>)</li>
 </ul>
 <h3 id="code-refactoring">Code Refactoring<a class="headerlink" href="#code-refactoring" title="Permanent link">&para;</a></h3>
 <ul>
 <li>move version to <strong>init</strong> file (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab">e4c054c</a>)</li>
+<li>Remove empty.primers (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/bfe0044978aa71c871fe74a57cf8f8b7ae1c70fc">bfe0044</a>)</li>
+<li>use the snakemake Paramspace wildcards in the multiQC aggregation (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/1204b09fafb67802caf938353ba9fd79c8e4b1a9">1204b09</a>)</li>
+<li>add the "extract_refs.py" script to repo (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/5a7ea4023a9a8a70ad656c007b9ce90478b2a339">5a7ea4</a>)</li>
+<li>move multiqc input function to top of snakefile (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/1134bbf67d6fcb34829bf8b8ad54f5507e8aa3a5">1134bb</a>)</li>
+<li>use new prepare_primers rule in new structure (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/4d06939eca1c4b76e40ed84ef8906af2bed46d75">4d06939</a>)</li>
+<li>use new prepare_gffs rule with the new structure (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/537d09b596fdf2211a0e02df02b3416e8dbf7305">537d09</a>)</li>
+<li>add basic gff filter script (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/09ada979a36765ff2d24b3cd5a2f3af31d8b9838">09ada9</a>)</li>
+<li>Refactor with bottum up approach (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/682cafa93f74efe137e6de2a0af745dc6e5a226d">682cafa</a>)</li>
+<li>Rename Sample to sample (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/a6c0e4821b48e916c311c8576b330c812fe42784">a6c0e48</a>)</li>
+<li>Change to wc_pattern (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/214e216c0921f6d069b2b75d4994924d87c8e656">214e21</a>)</li>
+<li>Switch wc_pattern to wc_folder (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/40d4d2e9aee8edb241cdd646a35170cd9b97dc7b">40d4d2e</a>)</li>
+<li>Remove threads: 1 as it is default (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/5cd6ca6b51dab55b6f860648524d3a4b95c6be32">5cd6ca6</a>)</li>
+<li>Make wildcard notation consistent (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/8fe4f7e3a2eaf057a40d57f44692d14b961455b3">8fe4f7e</a>)</li>
+<li>Re-ordering of code (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/b3d891be0d53530bfa51a547118061bc3a572c92">b3d891</a>)</li>
+<li>Remove mincov variable in snakefile (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/5bb47a945b33d75cc920c947e59f83eec12aca94">5bb47a9</a>)</li>
+<li>change used fonts in the generated report to accomodate fpdf2 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/5bb91d161d28973ac7d61441c78aad066d1d2831">5bb91d1</a>)</li>
+<li>merge if statement blocks to singular condition (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/7b2882fe51a8a87d9e86f72d534745a19a46edc4">7b2882f</a>)</li>
+<li>simplify boolean returns (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/615d2cf9ad6e84e35d74a6b5bf6437b6cd9461b6">615d2cf</a>)</li>
+<li>use new expression for conditional in samplesheet generator (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/8ca585a0b4bacb87cc23961457bb5fe3d6b62236">8ca585a</a>)</li>
 </ul>
 <h3 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Permanent link">&para;</a></h3>
 <ul>
 <li>update AmpliGone to version 1.0.1 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab">e4c054c</a>)</li>
 <li>update TrueConsense version to v0.4.0 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab">e4c054c</a>)</li>
 <li>use Pypi for AmpliGone installation instead of building from source (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab">e4c054c</a>)</li>
+<li>add python3.7 to the Alignment env for improved env-stability (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/d87c7462af624a01a79acc182db66ec6d0bf719c">d87c746</a>)</li>
+<li>update snakemake to lenient version 7.3 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/56d8fe01f5c872261cd83e8288e2f854af66b579">56d8fe</a>)</li>
 </ul>
 <h3 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Add information for primer bed support (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab">e4c054c</a>)</li>
 <li>update docs for multi-target analysis (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab">e4c054c</a>)</li>
 <li>update documentation for new ViroConstrictor functions (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab">e4c054c</a>)</li>
-<li>update documentation index page with correct required snakemake version (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab">e4c054c</a>)</li>
 <li>update installation command for python3.10 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab">e4c054c</a>)</li>
+<li>update documentation index page with correct required snakemake version (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab">e4c054c</a>)</li>
+<li>Add explanatory docstring to <code>CheckSampleProperties</code> function (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/4a552ad1ab1e2c3385da904fc760c356c709b1d7">4a552ad</a>)</li>
+<li>Add explanatory docstrings to all functions in <code>ViroConstrictor.parser</code> (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/b09f4dc0d3e7f3db301c871bfd5f924ce91b3b82">b09f4d</a>)</li>
+<li>Add explanatory docstrings to all functions in <code>ViroConstrictor.runconfigs</code> (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/2ff818572565595fedb7124cdac084fbde8c273d">2ff8185</a>)</li>
+<li>Add explanatory docstrings to all functions in <code>ViroConstrictor.samplesheet</code> (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/a1e7093ff58a1b077131d5b898a7d4e7b85e38e5">a1e7093</a>)</li>
+<li>Add explanatory docstrings to all functions in <code>ViroConstrictor.userprofile</code> (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/30ec8af8cc2a2493df786e28c35de481460e2cf8">30ec8af8</a>)</li>
+<li>Add explanatory docstrings to all functions in <code>ViroConstrictor.validatefasta</code> (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/c199d7c9b6104cddedce1dff105e9ab713d134cb">c199d7c9</a>)</li>
+<li>Add error message for samplesheet duplicates (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/efa0761538a257202a30c0832f3979b790ccb91d">efa0761</a>)</li>
 </ul>
 <h3 id="042-2022-04-12"><a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v0.4.1...v0.4.2">0.4.2</a> (2022-04-12)<a class="headerlink" href="#042-2022-04-12" title="Permanent link">&para;</a></h3>
 <h3 id="bug-fixes_1">Bug Fixes<a class="headerlink" href="#bug-fixes_1" title="Permanent link">&para;</a></h3>
@@ -919,7 +1018,7 @@
 <li>correct the memory assignment and threads for RemovePrimers job when no primers are given (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/a9ebe02cdc7995219d1a3c06fa9be6020881e43a">a9ebe02</a>)</li>
 </ul>
 <h2 id="040-2022-02-04"><a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v0.3.0...v0.4.0">0.4.0</a> (2022-02-04)<a class="headerlink" href="#040-2022-02-04" title="Permanent link">&para;</a></h2>
-<h3 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h3>
+<h3 id="features_1">Features<a class="headerlink" href="#features_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li>add an adjustable mismatch rate for the primer search (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/7fc42651ac9bf9e926a93528a92cb9d6f58a9448">7fc4265</a>)</li>
 <li>dynamically set usable cpus/threads in local execution mode (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/1ec85bb79c600d96c70bd4755451b174f25b0e80">1ec85bb</a>)</li>
@@ -973,7 +1072,7 @@
 <li>update installation instructions (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/5944d225361797ef2c12b8cb2e5dc3c0cbd12c85">5944d22</a>)</li>
 </ul>
 <h2 id="030-2021-11-15"><a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v0.2.3...v0.3.0">0.3.0</a> (2021-11-15)<a class="headerlink" href="#030-2021-11-15" title="Permanent link">&para;</a></h2>
-<h3 id="features_1">Features<a class="headerlink" href="#features_1" title="Permanent link">&para;</a></h3>
+<h3 id="features_2">Features<a class="headerlink" href="#features_2" title="Permanent link">&para;</a></h3>
 <ul>
 <li>allow ViroConstrictor to update itself to latest release (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/11ad6160f7748556598e7447b35975b9dfb378fd">11ad616</a>)</li>
 <li>flexible memory requirements per workflow job (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/7c189cdac758f49fcc578ec228abb21c2f5af1ad">7c189cd</a>)</li>
