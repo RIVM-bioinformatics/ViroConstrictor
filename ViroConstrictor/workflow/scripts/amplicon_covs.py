@@ -223,7 +223,7 @@ if __name__ == "__main__":
             )
         sys.exit()
 
-    if len(prims) <= 0:
+    if len(prims) <= 1:
         print("Primers file is empty, writing output and exiting...")
         with open(flags.output, "w") as f:
             f.write(
