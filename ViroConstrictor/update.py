@@ -120,14 +120,22 @@ If you won't turn off the auto-updater we'll keep nagging you about this until y
     localversion = LooseVersion(__version__)
 
     if (
-            localversion < latest_release_tag_tidied
-            and localversion.version[0] == latest_release_tag_tidied.version[0]
-        ):
-        if AskPrompts(f"""
+        localversion < latest_release_tag_tidied
+        and localversion.version[0] == latest_release_tag_tidied.version[0]
+    ):
+        if (
+            AskPrompts(
+                f"""
 There's a new version of ViroConstrictor available.
 
 Current version: {color.RED + color.BOLD}{'v' + __version__}{color.END}
-Latest version: {color.GREEN + color.BOLD}{latest_release_tag}{color.END}\n""", """Do you want to update? [yes/no] """, ["yes", "no"], fixedchoices=True) == "yes":
+Latest version: {color.GREEN + color.BOLD}{latest_release_tag}{color.END}\n""",
+                """Do you want to update? [yes/no] """,
+                ["yes", "no"],
+                fixedchoices=True,
+            )
+            == "yes"
+        ):
             subprocess.run(
                 [
                     sys.executable,
@@ -155,7 +163,9 @@ Latest version: {color.GREEN + color.BOLD}{latest_release_tag}{color.END}\n""", 
         print(
             f"{color.RED}There's a new version of ViroConstrictor available. This new version is a {color.UNDERLINE}major{color.END + color.RED} update and cannot be installed automatically.{color.END}"
         )
-        print(f"""Current version: {color.RED + color.BOLD}v{__version__}{color.END}\nLatest version: {color.GREEN + color.BOLD}{latest_release_tag}{color.END}""")
+        print(
+            f"""Current version: {color.RED + color.BOLD}v{__version__}{color.END}\nLatest version: {color.GREEN + color.BOLD}{latest_release_tag}{color.END}"""
+        )
 
         print("Continuing without updating...\n")
     return
