@@ -7,7 +7,6 @@ from urllib import request
 
 from ViroConstrictor import __version__
 
-
 from .functions import color
 from .userprofile import AskPrompts
 
