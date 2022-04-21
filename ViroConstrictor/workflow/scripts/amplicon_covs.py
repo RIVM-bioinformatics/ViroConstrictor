@@ -122,13 +122,11 @@ def remove_alt_primer_r(df):
     to_rm = []
     lastindex = list(enumerate(xx))[-1][0]
     for a, x in enumerate(xx):
-        if a != lastindex:
-            if xx[a].get("name") == xx[a + 1].get("name"):
-                rm_indx = index_to_remove_starts(xx[a], a, xx[a + 1], a + 1)
-                if rm_indx is not None:
-                    to_rm.append(rm_indx)
-    filtereddf = df.drop(to_rm)
-    return filtereddf
+        if a != lastindex and xx[a].get("name") == xx[a + 1].get("name"):
+            rm_indx = index_to_remove_starts(xx[a], a, xx[a + 1], a + 1)
+            if rm_indx is not None:
+                to_rm.append(rm_indx)
+    return df.drop(to_rm)
 
 
 def Find_NonOverlap(df):
@@ -139,23 +137,12 @@ def Find_NonOverlap(df):
     firstindex = list(enumerate(dd))[0][0]
     for x, v in enumerate(dd):
         t_end = v.get("rightstart")
-        if x != firstindex:
-            s = dd[x - 1].get("rightstart")
+        s = dd[x - 1].get("rightstart") if x != firstindex else v.get("leftend")
+        end_override = dd[x + 1].get("leftend") if x != lastindex else None
+        primerstart = s
+        if end_override is not None and end_override in range(primerstart, t_end):
+            primerend = end_override
         else:
-            s = v.get("leftend")
-        if x != lastindex:
-            end_override = dd[x + 1].get("leftend")
-        else:
-            end_override = None
-        if end_override is not None:
-            if end_override in range(s, t_end):
-                primerstart = s
-                primerend = end_override
-            else:
-                primerstart = s
-                primerend = t_end
-        else:
-            primerstart = s
             primerend = t_end
         startingpoint[primerstart] = v.get("name")
         endingpoint[primerend] = v.get("name")
