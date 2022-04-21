@@ -99,6 +99,7 @@ rule prepare_refs:
 
         for record in SeqIO.parse(str(input), "fasta"):
             if wildcards.RefID in record.id:
+                record.seq = record.seq.upper()
                 SeqIO.write(record, str(output), "fasta")
 
 
