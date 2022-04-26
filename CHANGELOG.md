@@ -1,5 +1,13 @@
 # Changelog
 
+### [1.0.1](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.0.0...v1.0.1) (2022-04-26)
+
+
+### Bug Fixes
+
+* correctly exit amplicon_coverage calc when only one side of an amplicon could be found combined with low coverage samples ([aa77006](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/aa77006992cef2c9f34e7514f3d2c17b73b9526c))
+* ensure the split reference sequences are always in uppercase ([fcf034c](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/fcf034ce2bae75731b3e27e69a5e4499a56345b9))
+
 ## [1.0.0](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v0.4.2...v1.0.0) (2022-04-14)
 
 
