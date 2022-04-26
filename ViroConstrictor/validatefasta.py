@@ -140,8 +140,6 @@ def CheckReferenceFile(referencefile, warnings_as_errors=False):
             else:
                 warnings.append(w)
     if warnings:
-        print(warnings)
-    if warnings:
         print(color.YELLOW)
         for w in warnings:
             print(w.args[0])
