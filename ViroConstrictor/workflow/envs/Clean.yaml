@@ -7,11 +7,8 @@ channels:
   - defaults
 dependencies:
   - python>=3.8
-  - libffi==3.3
-  - pysam==0.16.0.1
-  - parmap==1.5.3
-  - tqdm=4.62
-  - pandas==1.3.5
+  - ampligone==1.0.3
+  - pandas>=1.3
   - minimap2==2.24
   - mappy==2.24
   - samtools==1.14
@@ -22,5 +19,3 @@ dependencies:
   - fastp==0.23.2
   - multiqc==1.11
   - pip
-  - pip:
-    - AmpliGone==1.0.1
