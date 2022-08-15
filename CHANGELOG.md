@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.2](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.0.1...v1.0.2) (2022-08-15)
+
+
+### Dependencies
+
+* update AmpliGone to version 1.1.0 ([153719d](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/153719d0aa10862b26024aca4408d1894ab2c552))
+* update included snakemake version to 7.12.x ([e59edf9](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/e59edf99de0deeffaf770c3f97883f1b4f1c358a))
+* use the bioconda channel to install AmpliGone instead of pip ([0f1fd65](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/0f1fd65728c1c6ae473f690374a00eda18b6d37a))
+
 ### [1.0.1](https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.0.0...v1.0.1) (2022-04-26)
 
 
