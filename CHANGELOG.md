@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.3](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.0.2...v1.0.3) (2022-10-12)
+
+
+### Dependencies
+
+* pin snakemake to version 7.15.2 for dependency compatibility ([0914b56](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/0914b561913a0a84c181b9c646d15d34c8409502))
+* set snakemake 7.15.2 as a minimal version in setup.py ([0914b56](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/0914b561913a0a84c181b9c646d15d34c8409502))
+
 ## [1.0.2](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.0.1...v1.0.2) (2022-08-15)
 
 
