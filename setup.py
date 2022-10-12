@@ -30,13 +30,13 @@ Please make sure SnakeMake is installed properly before installing ViroConstrict
 """
     )
 
-if vv.parse(snakemake.__version__) < vv.parse("7.3"):
+if vv.parse(snakemake.__version__) < vv.parse("7.15.2"):
     sys.exit(
         f"""
 The installed SnakeMake version is older than the minimally required version:
 
 Installed SnakeMake version: {snakemake.__version__}
-Required SnakeMake version: 7.3 or later
+Required SnakeMake version: 7.15.2 or later
 
 Please update SnakeMake to a supported version and try again
 """
