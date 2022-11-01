@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.0.4](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.0.3...v1.0.4) (2022-11-01)
+
+
+### Bug Fixes
+
+* cleanly exit vcf_to_tsv.py script when vcf is empty after filtering ([037467b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/037467b5fa213cffdc45b1f04bd71d83f4a358b9))
+* replace bcftools with python script to avoid bcftools shared libraries error ([eefaead](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/eefaeadb07008d00412aafac36579ae3bd30ffaf))
+
+
+### Dependencies
+
+* remove bcftools as a dependency ([eefaead](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/eefaeadb07008d00412aafac36579ae3bd30ffaf))
+* remove the entire Mutations environment as it is no longer necessary ([eefaead](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/eefaeadb07008d00412aafac36579ae3bd30ffaf))
+
 ## [1.0.3](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.0.2...v1.0.3) (2022-10-12)
 
 
