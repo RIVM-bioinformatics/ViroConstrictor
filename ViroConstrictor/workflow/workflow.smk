@@ -532,16 +532,19 @@ rule vcf_to_tsv:
     output:
         tsv=temp(f"{datadir}{wc_folder}{aln}{vf}" "{sample}.tsv"),
     conda:
-        f"{conda_envs}Mutations.yaml"
+        f"{conda_envs}Consensus.yaml"
     threads: config["threads"]["Index"]
     resources:
         mem_mb=low_memory_job,
     log:
         f"{logdir}" "vcf_to_tsv_{Virus}.{RefID}.{sample}.log",
+    params:
+        script=srcdir("scripts/vcf_to_tsv.py"),
     shell:
         """
-        bcftools query {input.vcf} -f '{wildcards.sample}\t%CHROM\t%POS\t%REF\t%ALT\t%DP\n' -e 'ALT="N"' > {output.tsv} 2>> {log}
+        python {params.script} {input.vcf} {output.tsv} {wildcards.sample} >> {log} 2>&1
         """
+
 
 
 rule concat_tsv_coverages:
@@ -555,7 +558,7 @@ rule concat_tsv_coverages:
         mem_mb=low_memory_job,
     shell:
         """
-        echo -e 'Sample\tReference_Chromosome\tPosition\tReference\tAlternative\tDepth' > {output}
+        echo -e 'Sample\tReference_ID\tPosition\tReference_Base\tVariant_Base\tDepth' > {output}
         cat {input} >> {output}
         """
 
