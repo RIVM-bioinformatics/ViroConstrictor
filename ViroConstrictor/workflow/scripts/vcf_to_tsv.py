@@ -20,15 +20,6 @@ df["INFO"] = df["INFO"].str.split("=", expand=True)[1].str.split(";", expand=Tru
 # drop the unnecessary columns in the dataframe
 df.drop(["ID", "QUAL", "FILTER"], axis=1, inplace=True)
 
-# Rename the columns to match the format
-df.rename(columns={
-    "CHROM": "Reference_ID",
-    "POS": "Position",
-    "REF": "Reference_Base",
-    "ALT": "Variant_Base",
-    "INFO": "Depth"
-    }, inplace=True)
-
 # insert the samplename as a column
 df.insert(loc=0, column="Sample", value=samplename)
 
