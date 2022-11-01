@@ -14,6 +14,10 @@ df = pd.read_csv(
 # drop all rows where ALT is a non-determined base (N)
 df = df[df.ALT != "N"]
 
+if df.empty is True:
+    df.to_csv(output_tsv, sep="\t", index=False, header=False)
+    sys.exit(0)
+
 # change the INFO column to only contain the depth-numbers, remove the keys
 df["INFO"] = df["INFO"].str.split("=", expand=True)[1].str.split(";", expand=True)[0]
 
