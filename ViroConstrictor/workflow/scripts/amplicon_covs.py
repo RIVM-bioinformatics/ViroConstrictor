@@ -35,25 +35,21 @@ flags = args.parse_args()
 
 
 def split_frames(df):
-    left = ["LEFT", "PLUS", "POSITIVE"]
-    right = ["RIGHT", "MINUS", "NEGATIVE"]
+    left = ["LEFT", "PLUS", "POSITIVE", "FORWARD"]
+    right = ["RIGHT", "MINUS", "NEGATIVE", "REVERSE"]
 
     leftdf = pd.DataFrame(columns=df.columns)
     rightdf = pd.DataFrame(columns=df.columns)
 
     for x in df.itertuples():
         if any(l in x[1] for l in left):
-            leftdf = leftdf.append(
-                pd.DataFrame(
+            leftdf = pd.concat([leftdf, pd.DataFrame(
                     {"name": x.name, "start": x.start, "end": x.end}, index=[0]
-                )
-            )
+                    )], ignore_index=True)
         if any(r in x[1] for r in right):
-            rightdf = rightdf.append(
-                pd.DataFrame(
+            rightdf = pd.concat([rightdf, pd.DataFrame(
                     {"name": x.name, "start": x.start, "end": x.end}, index=[0]
-                )
-            )
+                )], ignore_index=True)
 
     leftdf.reset_index(inplace=True)
     rightdf.reset_index(inplace=True)
@@ -65,7 +61,7 @@ def split_frames(df):
 
 
 def remove_keyword(prname):
-    keywords = ["LEFT", "RIGHT", "PLUS", "MINUS", "POSITIVE", "NEGATIVE"]
+    keywords = ["LEFT", "RIGHT", "PLUS", "MINUS", "POSITIVE", "NEGATIVE", "FORWARD", "REVERSE"]
     sname = prname.split("_")
     for y, z in enumerate(sname):
         if z in keywords:
