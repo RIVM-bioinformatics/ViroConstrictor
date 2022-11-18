@@ -2,11 +2,22 @@ import pprint
 import os
 import yaml
 import sys
-from directories import *
-from Bio import SeqIO
-from snakemake.utils import Paramspace, min_version
+import logging
+
 import pandas as pd
 
+from directories import *
+from Bio import SeqIO
+from AminoExtract import get_feature_name_attribute
+from snakemake.utils import Paramspace, min_version
+
+# setup and delete the log handlers which are imported from other modules.
+# We only want the log handler from snakemake, not from the imported modules.
+# import snakemake afterwards to re-set the log handlers without handlers from the imported modules.
+logger = logging.getLogger()
+logger.handlers.clear()
+
+from snakemake import logger # you have to explicitly import the logger again, without this snakemake will not write to the log file.
 
 min_version("7.3")
 
@@ -21,6 +32,19 @@ with open(config["sample_sheet"]) as sample_sheet_file:
 def Get_Ref_header(reffile):
     return [record.id for record in SeqIO.parse(reffile, "fasta")]
 
+def Get_AA_feats(df):
+    records = samples_df.to_dict(orient="records")
+
+    for rec in records:
+        AA_dict = get_feature_name_attribute(
+            input_gff=str(rec["FEATURES"]), 
+            input_seq=str(rec["REFERENCE"]), 
+            feature_type="all"
+            )
+        for k, v in AA_dict.items():
+            if k == rec["RefID"]:
+                rec["AA_FEAT_NAMES"] = v
+    return pd.DataFrame.from_records(records)
 
 samples_df = (
     pd.DataFrame(SAMPLES)
@@ -30,6 +54,7 @@ samples_df = (
 )
 samples_df["RefID"] = samples_df["REFERENCE"].apply(Get_Ref_header)
 samples_df = samples_df.explode("RefID")
+samples_df = Get_AA_feats(samples_df)
 p_space = Paramspace(
     samples_df[["Virus", "RefID", "sample"]], filename_params=["sample"]
 )
@@ -64,6 +89,8 @@ localrules:
     concat_amplicon_cov,
 
 
+
+
 def construct_all_rule(p_space):
     multiqc = f"{res}multiqc.html"
     folders = expand(
@@ -80,9 +107,9 @@ def construct_all_rule(p_space):
             "mutations.tsv",
             "Width_of_coverage.tsv",
             "Amplicon_coverage.csv",
+            "aminoacids.fasta"
         ],
     )
-
 
 rule all:
     input:
@@ -520,6 +547,38 @@ rule concat_sequences:
         ),
     output:
         f"{res}{wc_folder}consensus.fasta",
+    resources:
+        mem_mb=low_memory_job,
+    shell:
+        "cat {input} >> {output}"
+
+rule Translate_AminoAcids:
+    input:
+        seq=rules.trueconsense.output.cons,
+        gff=rules.trueconsense.output.gff,
+    output:
+        directory(f"{datadir}{wc_folder}{amino}" "{sample}/"),
+    conda:
+        f"{conda_envs}ORF_analysis.yaml"
+    resources:
+        mem_mb=low_memory_job,
+    params:
+        feature_type="all"
+    shell:
+        """
+        AminoExtract -i {input.seq} -gff {input.gff} -o {output} -ft {params.feature_type} -n {wildcards.sample}
+        """
+
+rule concat_aminoacids:
+    input:
+        lambda wc: (
+            f"{datadir}{wc_folder}{amino}{sample}/"
+            for sample in p_space.dataframe.loc[
+                (p_space.Virus == wc.Virus) & (p_space.RefID == wc.RefID)
+            ]["sample"]
+        ),
+    output:
+        f"{res}{wc_folder}aminoacids.fasta",
     resources:
         mem_mb=low_memory_job,
     shell:
