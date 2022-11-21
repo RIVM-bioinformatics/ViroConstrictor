@@ -503,9 +503,6 @@ rule trueconsense:
         gff=f"{datadir}{wc_folder}{cons}{features}" "{sample}.gff",
     params:
         mincov=lambda wc: SAMPLES[wc.sample]["MIN-COVERAGE"],
-        outdir=f"{datadir}{wc_folder}{cons}{seqs}",
-        vcfdir=f"{datadir}{wc_folder}{aln}{vf}",
-        gffdir=f"{datadir}{wc_folder}{cons}{features}",
     conda:
         f"{conda_envs}Consensus.yaml"
     log:
@@ -521,9 +518,9 @@ rule trueconsense:
         --reference {input.ref} --features {input.gff} \
         --coverage-level {params.mincov} \
         --samplename {wildcards.sample} \
-        --output {params.outdir} \
-        --variants {params.vcfdir} \
-        --output-gff {params.gffdir} \
+        --output {output.cons} \
+        --variants {output.vcf} \
+        --output-gff {output.gff} \
         --depth-of-coverage {output.cov} \
         --threads {threads} > {log} 2>&1
         """
