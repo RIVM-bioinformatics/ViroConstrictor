@@ -5,6 +5,7 @@ import sys
 import logging
 
 import pandas as pd
+import numpy as np
 
 from directories import *
 from Bio import SeqIO
@@ -45,6 +46,8 @@ def Get_AA_feats(df):
             for k, v in AA_dict.items():
                 if k == rec["RefID"]:
                     rec["AA_FEAT_NAMES"] = v
+        else:
+            rec["AA_FEAT_NAMES"] = np.nan
     return pd.DataFrame.from_records(records)
 
 samples_df = (
