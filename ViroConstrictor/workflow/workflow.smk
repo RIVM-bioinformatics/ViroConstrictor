@@ -621,7 +621,7 @@ rule concat_aminoacids:
     threads: 1
     params:
         script=srcdir("scripts/group_aminoacids.py"),
-        space=samples_df.to_dict(),
+        space=samples_df[~samples_df["AA_FEAT_NAMES"].isnull()].to_dict(),
     shell:
         "python {params.script} \"{input}\" \"{output}\" \"{params.space}\""
 
