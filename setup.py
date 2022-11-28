@@ -70,7 +70,7 @@ setup(
         "pandas==1.4.2",
         "openpyxl==3.0.9",
         "pyyaml==6.0",
-        "AminoExtract"
+        "AminoExtract",
     ],
     entry_points={
         "console_scripts": [

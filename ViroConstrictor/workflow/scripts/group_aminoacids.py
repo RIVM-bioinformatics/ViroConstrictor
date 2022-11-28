@@ -1,7 +1,8 @@
-from Bio import SeqIO
-import pandas as pd
-import sys
 import ast
+import sys
+
+import pandas as pd
+from Bio import SeqIO
 
 _, input_files, output_files, space = sys.argv
 
