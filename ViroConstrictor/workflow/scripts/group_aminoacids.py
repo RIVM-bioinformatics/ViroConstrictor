@@ -15,7 +15,7 @@ SeqRecords = pd.DataFrame()
 for f in input_files:
     for s in list(SeqIO.parse(f, "fasta")):
         sample = s.id.split(".")[0]
-        aa_feat = s.id.split(".")[1]
+        aa_feat = ".".join(s.id.split(".")[1:])
         # select the rows that contain the sample name from snakemake.params.space
         data = space.loc[space["sample"] == sample]
         data = data.explode("AA_FEAT_NAMES").reset_index(drop=True)[
