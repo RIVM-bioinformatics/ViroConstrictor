@@ -20,7 +20,7 @@ logger.handlers.clear()
 
 from snakemake import logger # you have to explicitly import the logger again, without this snakemake will not write to the log file.
 
-min_version("7.3")
+min_version("7.15")
 
 yaml.warnings({"YAMLLoadWarning": False})
 shell.executable("/bin/bash")
@@ -43,9 +43,12 @@ def Get_AA_feats(df):
                 input_seq=str(rec["REFERENCE"]), 
                 feature_type="all"
                 )
-            for k, v in AA_dict.items():
-                if k == rec["RefID"]:
-                    rec["AA_FEAT_NAMES"] = v
+            if AA_dict:
+                for k, v in AA_dict.items():
+                    if k == rec["RefID"]:
+                        rec["AA_FEAT_NAMES"] = v
+            else:
+                rec["AA_FEAT_NAMES"] = np.nan
         else:
             rec["AA_FEAT_NAMES"] = np.nan
     return pd.DataFrame.from_records(records)
