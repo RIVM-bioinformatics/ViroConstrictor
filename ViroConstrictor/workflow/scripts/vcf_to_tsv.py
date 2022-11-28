@@ -1,5 +1,6 @@
-import pandas as pd
 import sys
+
+import pandas as pd
 
 _, input_vcf, output_tsv, samplename = sys.argv
 
