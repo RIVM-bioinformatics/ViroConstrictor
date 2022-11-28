@@ -583,11 +583,15 @@ rule Translate_AminoAcids:
         f"{conda_envs}ORF_analysis.yaml"
     resources:
         mem_mb=low_memory_job,
+    log:
+        f"{logdir}Translate_AA_" "{Virus}.{RefID}.{sample}.log",
+    benchmark:
+        f"{logdir}{bench}Translate_AA_" "{Virus}.{RefID}.{sample}.txt"
     params:
         feature_type="all"
     shell:
         """
-        AminoExtract -i {input.seq} -gff {input.gff} -o {output} -ft {params.feature_type} -n {wildcards.sample}
+        AminoExtract -i {input.seq} -gff {input.gff} -o {output} -ft {params.feature_type} -n {wildcards.sample} >> {log} 2>&1
         """
 
 
