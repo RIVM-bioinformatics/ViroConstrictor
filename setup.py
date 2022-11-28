@@ -6,8 +6,8 @@ from setuptools import find_packages, setup
 from ViroConstrictor import __version__
 from ViroConstrictor.functions import color
 
-if sys.version_info.major != 3 or sys.version_info.minor < 8:
-    print("Error: you must execute setup.py using Python 3.8 or later")
+if sys.version_info.major != 3 or sys.version_info.minor < 10:
+    print("Error: you must execute setup.py using Python 3.10 or later")
     sys.exit(1)
 
 try:
@@ -54,6 +54,7 @@ setup(
     license="AGPLv3",
     version=__version__,
     packages=find_packages(),
+    python_requires=">=3.10",
     scripts=[
         "ViroConstrictor/workflow/workflow.smk",
         "ViroConstrictor/workflow/directories.py",
@@ -69,6 +70,7 @@ setup(
         "pandas==1.4.2",
         "openpyxl==3.0.9",
         "pyyaml==6.0",
+        "AminoExtract"
     ],
     entry_points={
         "console_scripts": [
