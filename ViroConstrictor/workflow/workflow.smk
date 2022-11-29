@@ -2,13 +2,25 @@ import pprint
 import os
 import yaml
 import sys
+import logging
+
+import pandas as pd
+import numpy as np
+
 from directories import *
 from Bio import SeqIO
+import AminoExtract
 from snakemake.utils import Paramspace, min_version
-import pandas as pd
 
+# setup and delete the log handlers which are imported from other modules.
+# We only want the log handler from snakemake, not from the imported modules.
+# import snakemake afterwards to re-set the log handlers without handlers from the imported modules.
+logger = logging.getLogger()
+logger.handlers.clear()
 
-min_version("7.3")
+from snakemake import logger # you have to explicitly import the logger again, without this snakemake will not write to the log file.
+
+min_version("7.15")
 
 yaml.warnings({"YAMLLoadWarning": False})
 shell.executable("/bin/bash")
@@ -22,6 +34,27 @@ def Get_Ref_header(reffile):
     return [record.id for record in SeqIO.parse(reffile, "fasta")]
 
 
+def Get_AA_feats(df):
+    records = samples_df.to_dict(orient="records")
+
+    for rec in records:
+        if rec["FEATURES"] != "NONE":
+            AA_dict = AminoExtract.get_feature_name_attribute(
+                input_gff=str(rec["FEATURES"]),
+                input_seq=str(rec["REFERENCE"]),
+                feature_type="all",
+            )
+            if AA_dict:
+                for k, v in AA_dict.items():
+                    if k == rec["RefID"]:
+                        rec["AA_FEAT_NAMES"] = v
+            else:
+                rec["AA_FEAT_NAMES"] = np.nan
+        else:
+            rec["AA_FEAT_NAMES"] = np.nan
+    return pd.DataFrame.from_records(records)
+
+
 samples_df = (
     pd.DataFrame(SAMPLES)
     .transpose()
@@ -30,6 +63,7 @@ samples_df = (
 )
 samples_df["RefID"] = samples_df["REFERENCE"].apply(Get_Ref_header)
 samples_df = samples_df.explode("RefID")
+samples_df = Get_AA_feats(samples_df)
 p_space = Paramspace(
     samples_df[["Virus", "RefID", "sample"]], filename_params=["sample"]
 )
@@ -64,6 +98,19 @@ localrules:
     concat_amplicon_cov,
 
 
+def list_aa_result_outputs():
+    aa_feats = []
+    for x in samples_df.to_dict(orient="records"):
+        Virus = x["Virus"]
+        RefID = x["RefID"]
+        Feats = x["AA_FEAT_NAMES"]
+        if not isinstance(Feats, float):
+            aa_feats.extend(
+                [f"{res}Virus~{Virus}/RefID~{RefID}/{amino}{aa}.faa" for aa in Feats]
+            )
+    return list(set(aa_feats))
+
+
 def construct_all_rule(p_space):
     multiqc = f"{res}multiqc.html"
     folders = expand(
@@ -72,7 +119,9 @@ def construct_all_rule(p_space):
         RefID=p_space.RefID,
         Virus=p_space.Virus,
     )
-    return [multiqc] + expand(
+    aa_feat_files = list_aa_result_outputs()
+
+    base_results_files = expand(
         "{folder}{file}",
         folder=folders,
         file=[
@@ -82,6 +131,16 @@ def construct_all_rule(p_space):
             "Amplicon_coverage.csv",
         ],
     )
+
+    return [multiqc] + base_results_files + aa_feat_files
+
+
+wildcard_constraints:
+    # regular expression to match only alphanumeric characters, underscores, dashes, and dots. exclude '/' and only match the first part of the string.
+    RefID="[\w\-\.\d]+",
+    Virus="[\w\-\.\d]+",
+    # regular expression to match only alphanumeric characters, underscores, dashes. exclude '/' and only match the first part of the string.
+    sample="[\w\-\.\d]+",
 
 
 rule all:
@@ -523,6 +582,71 @@ rule concat_sequences:
         "cat {input} >> {output}"
 
 
+rule Translate_AminoAcids:
+    input:
+        seq=rules.trueconsense.output.cons,
+        gff=rules.trueconsense.output.gff,
+    output:
+        f"{datadir}{wc_folder}{amino}" "{sample}/aa.faa",
+    conda:
+        f"{conda_envs}ORF_analysis.yaml"
+    resources:
+        mem_mb=low_memory_job,
+    log:
+        f"{logdir}Translate_AA_" "{Virus}.{RefID}.{sample}.log",
+    benchmark:
+        f"{logdir}{bench}Translate_AA_" "{Virus}.{RefID}.{sample}.txt"
+    params:
+        feature_type="all",
+    shell:
+        """
+        AminoExtract -i {input.seq} -gff {input.gff} -o {output} -ft {params.feature_type} -n {wildcards.sample} >> {log} 2>&1
+        """
+
+
+def group_aminoacids_inputs(wildcards):
+
+    filtered_df = samples_df.loc[samples_df["AA_FEAT_NAMES"].notnull()]
+    filtered_vir_list = list(filtered_df["Virus"].unique())
+
+    struct = {}
+    for i in filtered_vir_list:
+        select_samples = list(
+            samples_df.loc[samples_df["Virus"] == i]["sample"].unique()
+        )
+        select_refIDs = list(samples_df.loc[samples_df["Virus"] == i]["RefID"].unique())
+
+        # create a dictionary of dictionaries for each virus, with 'i' as the primary key and sample as the secondary key having a list of refIDs as the value
+        struct[i] = {sample: select_refIDs for sample in select_samples}
+
+    file_list = []
+    for virus, sample in struct.items():
+        for sample, refid in sample.items():
+            for ref in refid:
+                file_list.append(
+                    f"{datadir}Virus~{virus}/RefID~{ref}/{amino}{sample}/aa.faa"
+                )
+
+    return file_list
+
+
+rule concat_aminoacids:
+    input:
+        lambda wildcards: group_aminoacids_inputs(wildcards),
+    output:
+        list_aa_result_outputs(),
+    resources:
+        mem_mb=low_memory_job,
+    conda:
+        f"{conda_envs}ORF_analysis.yaml"
+    threads: 1
+    params:
+        script=srcdir("scripts/group_aminoacids.py"),
+        space=samples_df[~samples_df["AA_FEAT_NAMES"].isnull()].to_dict(),
+    shell:
+        'python {params.script} "{input}" "{output}" "{params.space}"'
+
+
 rule vcf_to_tsv:
     input:
         vcf=rules.trueconsense.output.vcf,
@@ -541,7 +665,6 @@ rule vcf_to_tsv:
         """
         python {params.script} {input.vcf} {output.tsv} {wildcards.sample} >> {log} 2>&1
         """
-
 
 
 rule concat_tsv_coverages:
