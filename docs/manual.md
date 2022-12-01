@@ -42,7 +42,7 @@ To run an analysis, you need to provide the following inputs/information:
 * The input directory containing your FastQ data via the `--input`/`-i` flag
 * The desired output directory for results and data via the `--output`/`-o` flag
 * The path to a reference fasta file via the `--reference`/`-ref` flag
-* Used sequencing primers [in correct fasta format](#preparing-your-input-primers) or as a bed-file via the `--primers`/`-pr` flag  
+* Used sequencing primers [in correct fasta format](input-formatting.md#formatting-your-input-primers) or as a bed-file via the `--primers`/`-pr` flag  
     
     !!! Info ""
         If you did not use any primers during your sequencing run then provide `--primers NONE` on the command line
@@ -50,16 +50,18 @@ To run an analysis, you need to provide the following inputs/information:
 * A GFF file containing the genomic features of the given reference file via the `--features`/`-gff` flag
 
     !!! Info ""
-        If you don't have access to a GFF file with genomic features matching the reference then provide `--features NONE`. ViroConstrictor will then attempt to guess the genomic features of the given reference during analysis.
+        If you don't have access to a GFF file with genomic features matching the reference then provide `--features NONE`. ViroConstrictor will then attempt to guess the genomic features of the given reference during analysis.  
+        
+        However, amino acid translations of the genomic features will **not** be provided in the results folder when no GFF file is given, if amino acid translations are desired then an input GFF file matching your reference fasta is required. 
 
 * The used sequencing platform via `--platform`, can be "nanopore", "illumina", or "iontorrent"
-* The [Amplicon-type](#amplicon-types) in your provided data via the `--amplicon-type`/`-at` flag.  
+* The [Amplicon-type](amplicons.md) in your provided data via the `--amplicon-type`/`-at` flag.  
     
     !!! Info ""
         If you did not use any primers, and set `--primers NONE` then this information will be ignored   
         (you still have to provide this command-line flag but it won't be used)
 
-* A named viral target.
+* A named viral target via the `--target` flag.
 
 Additional information that you can provide, but is not always required is the minimum coverage level (`--min-coverage`) as well as the primer-mismatch rate (`--primer-mismatch-rate`). When these flags are not provided then their default values are used during analysis.
 

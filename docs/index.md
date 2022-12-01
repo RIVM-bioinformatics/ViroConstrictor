@@ -20,7 +20,7 @@ ViroConstrictor is able to run both on a standalone (linux) computer, as well as
 
 ViroConstrictor is compatible with Nanopore, Illumina, and IONTorrent data (fastq).
 
-Please see the [installation page](installation.md) for download and installation instructions, and please see the [user guide page](user-guide.md) page for basic usage instructions.
+Please see the [getting started](installation.md) for download and installation instructions, and please see the [user guide page](manual.md) page for basic usage instructions.
 
 ViroConstrictor is available under the [AGPLv3 licence](https://www.gnu.org/licenses/agpl-3.0.en.html) 
 
