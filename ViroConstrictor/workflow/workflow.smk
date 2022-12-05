@@ -600,7 +600,7 @@ rule Translate_AminoAcids:
         feature_type="all",
     shell:
         """
-        AminoExtract -i {input.seq} -gff {input.gff} -o {output} -ft {params.feature_type} -n {wildcards.sample} >> {log} 2>&1
+        AminoExtract -i {input.seq} -gff {input.gff} -o {output} -ft {params.feature_type} -n {wildcards.sample} --keep-gaps >> {log} 2>&1
         """
 
 
