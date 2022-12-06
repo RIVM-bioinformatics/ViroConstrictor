@@ -10,4 +10,4 @@ dependencies:
   - pip
   - pip:
     - gffpandas>=1.2
-    - AminoExtract==0.2.0
+    - AminoExtract==0.2.1
