@@ -5,8 +5,9 @@ channels:
   - defaults
 dependencies:
   - prodigal==2.6.3
-  - python==3.9
+  - python=3.10
   - pandas
   - pip
   - pip:
     - gffpandas>=1.2
+    - AminoExtract==0.2.1

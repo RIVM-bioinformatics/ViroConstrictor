@@ -12,7 +12,7 @@ nav:
     - Global configuration: global-config.md
   - Usage: 
     - manual.md
-    - Formatting input primers: primers.md
+    - Formatting inputs: input-formatting.md
     - Explanation of amplicon types: amplicons.md
 
   - Changelog: changelog.md
