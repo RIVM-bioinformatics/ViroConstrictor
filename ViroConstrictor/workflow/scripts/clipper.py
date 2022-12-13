@@ -21,6 +21,32 @@ arg.add_argument(
 )
 
 arg.add_argument(
+    "--exclude-spliced",
+    action="store_true",
+    default=False,
+    help="Exclude spliced reads from the output",
+    required=False,
+)
+
+arg.add_argument(
+    "--spliced-length-threshold",
+    metavar="INT",
+    type=int,
+    default=0,
+    help="When excluding spliced reads, only exclude reads with a spliced length above this threshold",
+    required=False,
+)
+
+arg.add_argument(
+    "--min-aligned-length",
+    metavar="INT",
+    type=int,
+    required=False,
+    help="Filter reads based on the minimum length of the aligned part of the read",
+    default=0,
+)
+
+arg.add_argument(
     "--threads",
     metavar="Number",
     help="Number of threads that can be used for decompressing/compressing the BAM file",
@@ -30,6 +56,36 @@ arg.add_argument(
 )
 
 flags = arg.parse_args()
+
+
+def split_cigar(cigar: str) -> list:
+    cigar_tuples = []
+    current_number = ""
+    for char in cigar:
+        if char.isdigit():
+            current_number += char
+        else:
+            cigar_tuples.append((int(current_number), char))
+            current_number = ""
+    return cigar_tuples
+
+
+def is_spliced(cigar_tuples: list) -> bool:
+    return any(cigar_tuple[1] == "N" for cigar_tuple in cigar_tuples)
+
+
+def get_largest_spliced_len(cigar_tuples: list) -> int:
+    largest_spliced_len = 0
+    current_spliced_len = 0
+    for cigar_tuple in cigar_tuples:
+        if cigar_tuple[1] == "N":
+            current_spliced_len += cigar_tuple[0]
+        else:
+            if current_spliced_len > largest_spliced_len:
+                largest_spliced_len = current_spliced_len
+            current_spliced_len = 0
+    return largest_spliced_len
+
 
 with flags.output as fileout:
     bamfile = pysam.AlignmentFile(flags.input, "rb", threads=flags.threads)
@@ -50,6 +106,18 @@ with flags.output as fileout:
             trimmed_qual = trimmed_qual[::-1]
 
         if len(trimmed_seq) == 0:
+            continue
+
+        if flags.exclude_spliced:
+            cigartuples = split_cigar(read.cigarstring)
+            if is_spliced(cigartuples):
+                if (
+                    get_largest_spliced_len(cigartuples)
+                    < flags.spliced_length_threshold
+                ):
+                    continue
+
+        if read.query_alignment_length <= flags.min_aligned_length:
             continue
 
         fileout.write(
