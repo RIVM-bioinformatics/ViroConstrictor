@@ -181,10 +181,10 @@ Please check the input-target and try again if a different preset is required.""
 
     if preset_score_warnings and not flags.disable_presets:
         for w in preset_score_warnings:
-            print(f"{color.YELLOW}Warning: {w}{color.END}")
+            print(f"{color.YELLOW}Warning: {w}{color.END}\n")
     if preset_fallback_warnings and not flags.disable_presets:
         for w in preset_fallback_warnings:
-            print(f"{color.YELLOW + color.BOLD}Warning: {w}{color.END}")
+            print(f"{color.YELLOW + color.BOLD}Warning: {w}{color.END}\n")
 
     if status is False:
         exit(1)
