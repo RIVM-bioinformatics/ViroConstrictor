@@ -52,7 +52,7 @@ presets = {
     "INFLUENZA": {
         "RawAlign_AdditionalSettings": "--splice",
         "BaseBAMFilters": "-F 256 -F 512 -F 4 -F 2048",
-        "ClipperSettings": "--exclude-spliced --spliced-length-threshold 50 --min-aligned-length 50",
+        "ClipperSettings": "--exclude-spliced --spliced-length-threshold 50 --min-aligned-length 0.5",
         "Fastp_PhredScore_cutoff_illumina": 20,
         "Fastp_PhredScore_cutoff_nanopore": 7,
         "Fastp_PhredScore_cutoff_iontorrent": 20,
