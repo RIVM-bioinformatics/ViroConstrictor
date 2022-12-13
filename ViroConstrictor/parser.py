@@ -5,11 +5,13 @@ import pathlib
 import re
 import sys
 
+import numpy as np
 import pandas as pd
 
 from ViroConstrictor import __prog__, __version__
 from ViroConstrictor.functions import MyHelpFormatter, color
 from ViroConstrictor.samplesheet import GetSamples
+from ViroConstrictor.workflow.presets import match_preset_name
 
 
 def is_excel_file(ext):
@@ -79,6 +81,10 @@ def open_sample_sheet(file):
         A pandas dataframe.
 
     """
+    # check if file is not empty
+    if os.stat(file).st_size == 0:
+        print(f"{color.RED + color.BOLD}Samplesheet file is empty.{color.END}")
+        sys.exit(1)
     file_extension = "".join(pathlib.Path(file).suffixes)
     if is_excel_file(file_extension):
         return pd.read_excel(file)
@@ -480,6 +486,14 @@ def get_args(givenargs, parser):
     )
 
     parser.add_argument(
+        "--disable-presets",
+        "-dp",
+        action="store_true",
+        default=False,
+        help="Disable the use of presets, this will cause all analysis settings to be set to default values",
+    )
+
+    parser.add_argument(
         "--threads",
         "-t",
         default=min(multiprocessing.cpu_count(), 128),
@@ -549,6 +563,8 @@ def args_to_df(args, df):
     df["FEATURES"] = args.features
     df["MIN-COVERAGE"] = args.min_coverage
     df["PRIMER-MISMATCH-RATE"] = args.primer_mismatch_rate
+    df[["PRESET", "PRESET_SCORE"]] = match_preset_name(args.target, args.presets)
+    df = pd.DataFrame.replace(df, np.nan, None)
     return df
 
 
@@ -641,7 +657,14 @@ def make_sampleinfo_dict(df, args, filedict):
                     f"\n{color.RED + color.BOLD}No features file specified in samplesheet or in command line options. Consider adding the -gff flag.{color.END}\n"
                 )
                 sys.exit(1)
-
+        if df.get("PRESET") is None:
+            df[["PRESET", "PRESET_SCORE"]] = df.apply(
+                lambda x: pd.Series(
+                    match_preset_name(x["VIRUS"], use_presets=args.presets)
+                ),
+                axis=1,
+            )
+        df = pd.DataFrame.replace(df, np.nan, None)
         return df.to_dict(orient="index")
     return args_to_df(args, indirFrame).to_dict(orient="index")
 
@@ -667,6 +690,11 @@ def ValidArgs(sysargs):
         add_help=False,
     )
     args = get_args(sysargs, parser)
+
+    df = None
+
+    # invert the flag as this is easier to check downstream
+    args.presets = args.disable_presets is False
 
     if args.samplesheet is not None:
         if args.primers is not None:
@@ -701,6 +729,8 @@ def ValidArgs(sysargs):
             None, args, GetSamples(args.input, args.platform)
         )
 
+    if df is not None:
+        df = pd.DataFrame.from_dict(sampleinfo, orient="index")
     if not sampleinfo:
         sys.exit(1)
-    return args, sampleinfo
+    return args, sampleinfo, df
