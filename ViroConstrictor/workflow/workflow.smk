@@ -667,9 +667,21 @@ def group_aminoacids_inputs(wildcards):
     return file_list
 
 
+rule make_pickle:
+    output: temp(f"{datadir}sampleinfo.pkl")
+    resources:
+        mem_mb=low_memory_job,
+    threads: 1
+    params:
+        space=samples_df[~samples_df["AA_FEAT_NAMES"].isnull()]
+    run:
+        import pandas as pd
+        params.space.to_pickle(output[0],compression=None)
+
 rule concat_aminoacids:
     input:
-        lambda wildcards: group_aminoacids_inputs(wildcards),
+        files=lambda wildcards: group_aminoacids_inputs(wildcards),
+        sampleinfo=rules.make_pickle.output,
     output:
         list_aa_result_outputs(),
     resources:
@@ -679,9 +691,8 @@ rule concat_aminoacids:
     threads: 1
     params:
         script=srcdir("scripts/group_aminoacids.py"),
-        space=samples_df[~samples_df["AA_FEAT_NAMES"].isnull()].to_dict(),
     shell:
-        'python {params.script} "{input}" "{output}" "{params.space}"'
+        'python {params.script} "{input.files}" "{output}" {input.sampleinfo}'
 
 
 rule vcf_to_tsv:

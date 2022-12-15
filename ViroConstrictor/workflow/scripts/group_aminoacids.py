@@ -1,4 +1,3 @@
-import ast
 import sys
 
 import pandas as pd
@@ -8,7 +7,7 @@ _, input_files, output_files, space = sys.argv
 
 input_files = input_files.split()
 output_files = output_files.split()
-space = pd.DataFrame.from_dict(ast.literal_eval(space))
+space = pd.read_pickle(space)
 
 ## process the input files into individual amino acid records and store the information in the SeqRecords dataframe
 SeqRecords = pd.DataFrame()
