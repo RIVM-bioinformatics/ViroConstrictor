@@ -389,7 +389,7 @@ rule remove_adapters_p2:
         script=srcdir("scripts/clipper.py"),
         clipper_settings=lambda wc: get_preset_parameter(
             preset_name=SAMPLES[wc.sample]["PRESET"],
-            parameter_name="ClipperSettings",
+            parameter_name=f"ClipperSettings_{config['platform']}",
         ),
     shell:
         """
@@ -452,7 +452,6 @@ rule ampligone:
     benchmark:
         f"{logdir}{bench}" "AmpliGone_{Virus}.{RefID}.{sample}.txt"
     threads: config["threads"]["PrimerRemoval"]
-    message: "Removing primers with AmpliGone"
     resources:
         mem_mb=high_memory_job,
     params:
@@ -668,15 +667,18 @@ def group_aminoacids_inputs(wildcards):
 
 
 rule make_pickle:
-    output: temp(f"{datadir}sampleinfo.pkl")
+    output:
+        temp(f"{datadir}sampleinfo.pkl"),
     resources:
         mem_mb=low_memory_job,
     threads: 1
     params:
-        space=samples_df[~samples_df["AA_FEAT_NAMES"].isnull()]
+        space=samples_df[~samples_df["AA_FEAT_NAMES"].isnull()],
     run:
         import pandas as pd
-        params.space.to_pickle(output[0],compression=None)
+
+        params.space.to_pickle(output[0], compression=None)
+
 
 rule concat_aminoacids:
     input:

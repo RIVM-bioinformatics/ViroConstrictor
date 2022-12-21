@@ -178,7 +178,6 @@ Please check the input-target and try again if a different preset is required.""
         workflow_state,
     )
 
-
     if preset_score_warnings and not flags.disable_presets:
         for w in preset_score_warnings:
             print(f"{color.YELLOW}Warning: {w}{color.END}\n")
