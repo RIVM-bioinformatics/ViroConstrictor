@@ -89,10 +89,10 @@ def get_largest_spliced_len(cigar_tuples: list) -> int:
 
 with flags.output as fileout:
     bamfile = pysam.AlignmentFile(flags.input, "rb", threads=flags.threads)
-    
+
     reflength = bamfile.lengths[0]
     minimal_read_length = int(reflength * flags.min_aligned_length)
-    
+
     for read in bamfile:
 
         read_start = read.query_alignment_start
