@@ -43,7 +43,7 @@ arg.add_argument(
     type=float,
     required=False,
     help="Filter reads based on the minimum length of the aligned part of the read",
-    default=1,
+    default=0,
 )
 
 arg.add_argument(
