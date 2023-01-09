@@ -70,6 +70,7 @@ setup(
         "pandas==1.4.2",
         "openpyxl==3.0.9",
         "pyyaml==6.0",
+        "rich==13.*",
         "AminoExtract",
     ],
     entry_points={
