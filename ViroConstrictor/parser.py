@@ -8,7 +8,7 @@ import sys
 import pandas as pd
 
 from ViroConstrictor import __prog__, __version__
-from ViroConstrictor.functions import MyHelpFormatter, color
+from ViroConstrictor.functions import FlexibleArgFormatter, RichParser, color
 from ViroConstrictor.samplesheet import GetSamples
 
 
@@ -374,7 +374,10 @@ def get_args(givenargs, parser):
     Parse the commandline args
     """
 
-    parser.add_argument(
+    required_args = parser.add_argument_group("Required arguments")
+    optional_args = parser.add_argument_group("Optional arguments")
+
+    required_args.add_argument(
         "--input",
         "-i",
         type=dir_path,
@@ -383,7 +386,7 @@ def get_args(givenargs, parser):
         required=True,
     )
 
-    parser.add_argument(
+    required_args.add_argument(
         "--output",
         "-o",
         metavar="DIR",
@@ -393,7 +396,7 @@ def get_args(givenargs, parser):
         required=True,
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--samplesheet",
         "-samples",
         metavar="File",
@@ -401,7 +404,7 @@ def get_args(givenargs, parser):
         help="Sample sheet information file",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--reference",
         "-ref",
         type=lambda s: check_input((".fasta", ".fa"), s),
@@ -409,7 +412,7 @@ def get_args(givenargs, parser):
         help="Input Reference sequence genome in FASTA format",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--primers",
         "-pr",
         type=lambda s: check_input((".fasta", ".fa", ".bed"), s),
@@ -417,7 +420,7 @@ def get_args(givenargs, parser):
         help="Used primer sequences in FASTA or BED format. If no primers should be removed, supply the value NONE to this flag.",
     )
 
-    parser.add_argument(
+    required_args.add_argument(
         "--platform",
         default="nanopore",
         const="nanopore",
@@ -425,27 +428,29 @@ def get_args(givenargs, parser):
         choices=("nanopore", "illumina", "iontorrent"),
         help="Define the sequencing platform that was used to generate the dataset, either being 'nanopore', 'illumina' or 'iontorrent', see the docs for more info",
         required=True,
+        metavar="'nanopore'/'illumina'/'iontorrent'",
     )
 
-    parser.add_argument(
+    required_args.add_argument(
         "--amplicon-type",
         "-at",
         default="end-to-end",
         const="end-to-end",
         nargs="?",
-        choices=("end-to-end", "end-to-mid"),
-        help="Define the amplicon-type, either being 'end-to-end' or 'end-to-mid', see the docs for more info",
+        choices=("end-to-end", "end-to-mid", "fragmented"),
+        help="Define the amplicon-type, either being 'end-to-end', 'end-to-mid', or 'fragmented'. See the docs for more info",
         required=True,
+        metavar="'end-to-end'/'end-to-mid'/'fragmented'",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--target",
         "--preset",
         metavar="Str",
         help="Define the specific target for the pipeline, if the target matches a certain preset then pre-defined analysis settings will be used, see the docs for more info",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--match-ref",
         "-mr",
         default=False,
@@ -453,7 +458,7 @@ def get_args(givenargs, parser):
         help="Match your data to the best reference available in the given reference fasta file.",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--min-coverage",
         "-mc",
         default=30,
@@ -462,7 +467,7 @@ def get_args(givenargs, parser):
         help="Minimum coverage for the consensus sequence.",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--features",
         "-gff",
         type=lambda s: check_input((".gff"), s),
@@ -470,7 +475,7 @@ def get_args(givenargs, parser):
         help="GFF file containing the Open Reading Frame (ORF) information of the reference. Supplying NONE will let ViroConstrictor use prodigal to determine coding regions",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--primer-mismatch-rate",
         "-pmr",
         type=float,
@@ -479,7 +484,7 @@ def get_args(givenargs, parser):
         help="Maximum number of mismatches allowed in the primer sequences during primer coordinate search. Use 0 for exact primer matches\nDefault is 3.",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--threads",
         "-t",
         default=min(multiprocessing.cpu_count(), 128),
@@ -488,7 +493,7 @@ def get_args(givenargs, parser):
         help=f"Number of local threads that are available to use.\nDefault is the number of available threads in your system ({min(multiprocessing.cpu_count(), 128)})",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--version",
         "-v",
         version=__version__,
@@ -496,7 +501,7 @@ def get_args(givenargs, parser):
         help="Show the ViroConstrictor version and exit",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--help",
         "-h",
         action="help",
@@ -504,13 +509,13 @@ def get_args(givenargs, parser):
         help="Show this help message and exit",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--dryrun",
         action="store_true",
         help="Run the workflow without actually doing anything",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--skip-updates",
         action="store_true",
         help="Skip the update check",
@@ -659,11 +664,11 @@ def ValidArgs(sysargs):
         args, sampleinfo
 
     """
-    parser = argparse.ArgumentParser(
-        prog=__prog__,
-        usage=f"{__prog__} [required options] [optional arguments]",
-        description="ViroConstrictor: a pipeline for analysing Viral targeted (amplicon) sequencing data in order to generate a biologically valid consensus sequence.",
-        formatter_class=MyHelpFormatter,
+    parser = RichParser(
+        prog=f"[bold]{__prog__}[/bold]",
+        usage="%(prog)s \[required arguments] \[optional arguments]",
+        description="%(prog)s: a pipeline for analysing Viral targeted (amplicon) sequencing data in order to generate a biologically valid consensus sequence.",
+        formatter_class=FlexibleArgFormatter,
         add_help=False,
     )
     args = get_args(sysargs, parser)
