@@ -139,6 +139,7 @@ Please check the input-target and try again if a different preset is required.""
             dryrun=run_config["dryrun"],
             configfiles=[WriteYaml(run_params, f"{workdir}/config/run_params.yaml")],
             restart_times=3,
+            keepgoing=True,
         )
     if conf["COMPUTING"]["compmode"] == "grid":
         status = snakemake.snakemake(
@@ -155,6 +156,7 @@ Please check the input-target and try again if a different preset is required.""
             dryrun=run_config["dryrun"],
             configfiles=[WriteYaml(run_params, f"{workdir}/config/run_params.yaml")],
             restart_times=3,
+            keepgoing=True,
         )
 
     if run_config["dryrun"] is False and status is True:
