@@ -257,40 +257,13 @@ def check_sample_sheet(file):
     return check_samplesheet_rows(df)
 
 
-def is_valid_samplesheet_file(f):
-    """If the file exists and has a valid extension, return the absolute path to the file
-
-    Parameters
-    ----------
-    f
-        the file path to the samplesheet
-
-    Returns
-    -------
-        The absolute path of the file.
-
-    """
-    if os.path.isfile(f):
-        if "".join(pathlib.Path(f).suffixes) in {
-            ".xls",
-            ".xlsx",
-            ".csv",
-            ".tsv",
-            ".json",
-        }:
-            return os.path.abspath(f)
-        raise argparse.ArgumentTypeError(f"{f} is not a valid samplesheet file type.")
-    print("Sample sheet file not found")
-    sys.exit(1)
-
-
-def check_input(choices, fname):
+def check_file_extension(allowed_extensions, fname):
     """If the input file name is "NONE", return it; otherwise, check that the file exists and has a valid
     extension, and return the absolute path to the file
 
     Parameters
     ----------
-    choices
+    allowed_extensions
         a list of file extensions that are allowed
     fname
         The name of the file to be checked.
@@ -304,9 +277,9 @@ def check_input(choices, fname):
         return fname
     if os.path.isfile(fname):
         ext = "".join(pathlib.Path(fname).suffixes)
-        if ext not in choices:
+        if not any(ext.endswith(c) for c in allowed_extensions):
             raise argparse.ArgumentTypeError(
-                f"Input file doesn't end with one of {choices}"
+                f"Input file doesn't end with one of {allowed_extensions}"
             )
         return os.path.abspath(fname)
     print(f'"{fname}" is not a file. Exiting...')
@@ -330,17 +303,6 @@ def dir_path(arginput):
         return arginput
     print(f'"{arginput}" is not a directory. Exiting...')
     sys.exit(1)
-
-
-def currentpath():
-    """Returns the current working directory
-
-    Returns
-    -------
-        The current working directory.
-
-    """
-    return os.getcwd()
 
 
 def CheckInputFiles(indir):
@@ -391,7 +353,7 @@ def get_args(givenargs, parser):
         "-o",
         metavar="DIR",
         type=str,
-        default=currentpath(),
+        default=os.getcwd(),  # Default output dir is the current working dir
         help="Output directory",
         required=True,
     )
@@ -400,14 +362,16 @@ def get_args(givenargs, parser):
         "--samplesheet",
         "-samples",
         metavar="File",
-        type=is_valid_samplesheet_file,
+        type=lambda s: check_file_extension(
+            (".xls", ".xlsx", ".csv", ".tsv", ".json"), s
+        ),
         help="Sample sheet information file",
     )
 
     optional_args.add_argument(
         "--reference",
         "-ref",
-        type=lambda s: check_input((".fasta", ".fa"), s),
+        type=lambda s: check_file_extension((".fasta", ".fa"), s),
         metavar="File",
         help="Input Reference sequence genome in FASTA format",
     )
@@ -415,7 +379,7 @@ def get_args(givenargs, parser):
     optional_args.add_argument(
         "--primers",
         "-pr",
-        type=lambda s: check_input((".fasta", ".fa", ".bed"), s),
+        type=lambda s: check_file_extension((".fasta", ".fa", ".bed"), s),
         metavar="File",
         help="Used primer sequences in FASTA or BED format. If no primers should be removed, supply the value NONE to this flag.",
     )
@@ -470,7 +434,7 @@ def get_args(givenargs, parser):
     optional_args.add_argument(
         "--features",
         "-gff",
-        type=lambda s: check_input((".gff"), s),
+        type=lambda s: check_file_extension((".gff"), s),
         metavar="File",
         help="GFF file containing the Open Reading Frame (ORF) information of the reference. Supplying NONE will let ViroConstrictor use prodigal to determine coding regions",
     )
