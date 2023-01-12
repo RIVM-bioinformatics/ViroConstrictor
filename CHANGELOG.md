@@ -1,5 +1,39 @@
 # Changelog
 
+## [1.1.0](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.0.4...v1.1.0) (2022-12-06)
+
+
+### Features
+
+* add base of functionality to translate and write amino acid sequences ([25884b7](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/25884b7085d6c4eed616968b749c500494b15e9b))
+* translate and extract aminoacids sequences for multiple targets ([657aaff](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/657aaff0928014c7b73826a2392a9b1b49993a80))
+
+
+### Bug Fixes
+
+* add the missing "FORWARD" and "REVERSE" primer keywords ([74b92c6](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/74b92c648a357059376ba202d7b7d4f0c83ef485))
+* change found features to `np.nan` if input reference and features file don't match ([3e812e4](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/3e812e41360e00a176456f1b01895f4084933358))
+* circumvent issue where null values cause problems in data translation steps ([6007fca](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/6007fca6f424e8f4499a692d204551b0fc08ca69))
+* correctly parse amino acids that have a name with a dot in it ([3e14dd5](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/3e14dd525a75d5a5efe6d59e0b20df6e07cbd53b))
+* make sure all required info is present when no gff files are given ([d589989](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/d5899894a9a6b8f2d6cf3e1c0356caa4646bc5d2))
+
+
+### Documentation
+
+* clarify some sections in the docs ([9bc4171](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/9bc417105773250aa41d6f77ae9517a5545997bd))
+* fix broken links ([9bc4171](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/9bc417105773250aa41d6f77ae9517a5545997bd))
+* update documentation to match new functionality ([9bc4171](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/9bc417105773250aa41d6f77ae9517a5545997bd))
+
+
+### Dependencies
+
+* add AminoExtract to dependency list ([acb378e](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/acb378ecb68043d817101d548408636cbfe8adf8))
+* change minimal python version to 3.10 ([acb378e](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/acb378ecb68043d817101d548408636cbfe8adf8))
+* pin AminoExtract version to v0.2.0 ([cce1cf9](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/cce1cf9fdf71c096dc7d5ca1be5f90be8459c158))
+* pin AminoExtract version to v0.2.1 ([c0e869f](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/c0e869f844a1f0c4dfb22cf1ef903a8cf45d10dd))
+* update TrueConsense to v0.5.0 and change rules accordingly ([af15b9c](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/af15b9c477540337cf1222c72eaa692e1956798a))
+* update TrueConsense version to 0.5.1 ([b1a61e4](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/b1a61e452b219d75948bfbd246e1f7baaa0873a1))
+
 ## [1.0.4](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.0.3...v1.0.4) (2022-11-01)
 
 
