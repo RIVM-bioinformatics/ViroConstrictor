@@ -98,6 +98,7 @@ localrules:
     concat_boc,
     concat_tsv_coverages,
     concat_amplicon_cov,
+    make_pickle,
 
 
 def list_aa_result_outputs():
