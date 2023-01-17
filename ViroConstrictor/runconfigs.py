@@ -177,16 +177,6 @@ def SnakemakeParams(conf, cores, sampleinfo, platform, samplesheet, amplicon_typ
             "Index": threads_lowcpu,
             "Typing": threads_lowcpu,
         },
-        "runparams": {
-            "alignmentfilters": "-F 256 -F 512 -F 4 -F 2048",
-            "qc_filter_illumina": 20,
-            "qc_filter_nanopore": 7,
-            "qc_filter_iontorrent": 20,
-            "qc_window_illumina": 5,
-            "qc_window_nanopore": 20,
-            "qc_window_iontorrent": 15,
-            "qc_min_readlength": 100,
-        },
     }
 
 
