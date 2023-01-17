@@ -154,8 +154,8 @@ def SnakemakeParams(conf, cores, sampleinfo, platform, samplesheet, amplicon_typ
 
     """
     if conf["COMPUTING"]["compmode"] == "local":
-        threads_highcpu = int(cores - 2)
-        threads_midcpu = int(cores / 2)
+        threads_highcpu = min(int(cores - 2), 12)
+        threads_midcpu = min(int(cores / 2), 6)
         threads_lowcpu = 1
     if conf["COMPUTING"]["compmode"] == "grid":
         threads_highcpu = 12
