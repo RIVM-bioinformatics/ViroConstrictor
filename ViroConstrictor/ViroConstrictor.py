@@ -60,7 +60,38 @@ def main():
     ##> Check the default userprofile, make it if it doesn't exist
     conf = ReadConfig(os.path.expanduser("~/.ViroConstrictor_defaultprofile.ini"))
 
-    flags, sampleinfo = ValidArgs(sys.argv[1:])
+    flags, sampleinfo, samples_df = ValidArgs(sys.argv[1:])
+    samples_df = samples_df.reset_index(drop=False).rename(columns={"index": "SAMPLE"})
+
+    preset_fallback_warnings = []
+    preset_score_warnings = []
+    for s in samples_df.itertuples():
+        sample, preset, score, input_target = (
+            s.SAMPLE,
+            s.PRESET,
+            s.PRESET_SCORE,
+            s.VIRUS,
+        )
+        if score == 0.0:
+            warn = Warning(
+                f"""Sample '{sample}' was given the following information as an input-target: '{input_target}'.
+This information could however not be used to determine a preset. Because of this, the preset '{preset}' was used instead.
+Please check your input-target for any significant misspellings, or consider using an alias or a different abbreviation for your input-target to check whether this resolves the issue.
+
+It may be that your input-target does not yet have an associated preset in ViroConstrictor. 
+If your suspect this to be the case, please open an issue on the ViroConstrictor GitHub page: https://github.com/RIVM-bioinformatics/ViroConstrictor"""
+            )
+            preset_fallback_warnings.append(warn)
+            continue
+        if score < 0.8:
+            warn = Warning(
+                f"""Sample '{sample}' was given the following information as an input-target: '{input_target}'.
+As a result, the preset '{preset}' was chosen. But this was done with less than 80% certainty.
+Certainty score: {score:.0%}
+Please check the input-target and try again if a different preset is required."""
+            )
+            preset_score_warnings.append(warn)
+            continue
 
     if not flags.skip_updates:
         update(sys.argv, conf)
@@ -108,6 +139,7 @@ def main():
             dryrun=run_config["dryrun"],
             configfiles=[WriteYaml(run_params, f"{workdir}/config/run_params.yaml")],
             restart_times=3,
+            keepgoing=True,
         )
     if conf["COMPUTING"]["compmode"] == "grid":
         status = snakemake.snakemake(
@@ -124,6 +156,7 @@ def main():
             dryrun=run_config["dryrun"],
             configfiles=[WriteYaml(run_params, f"{workdir}/config/run_params.yaml")],
             restart_times=3,
+            keepgoing=True,
         )
 
     if run_config["dryrun"] is False and status is True:
@@ -146,6 +179,13 @@ def main():
         run_config,
         workflow_state,
     )
+
+    if preset_score_warnings and not flags.disable_presets:
+        for w in preset_score_warnings:
+            print(f"{color.YELLOW}Warning: {w}{color.END}\n")
+    if preset_fallback_warnings and not flags.disable_presets:
+        for w in preset_fallback_warnings:
+            print(f"{color.YELLOW + color.BOLD}Warning: {w}{color.END}\n")
 
     if status is False:
         exit(1)

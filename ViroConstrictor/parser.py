@@ -5,11 +5,13 @@ import pathlib
 import re
 import sys
 
+import numpy as np
 import pandas as pd
 
 from ViroConstrictor import __prog__, __version__
-from ViroConstrictor.functions import MyHelpFormatter, color
+from ViroConstrictor.functions import FlexibleArgFormatter, RichParser, color
 from ViroConstrictor.samplesheet import GetSamples
+from ViroConstrictor.workflow.presets import match_preset_name
 
 
 def is_excel_file(ext):
@@ -79,6 +81,10 @@ def open_sample_sheet(file):
         A pandas dataframe.
 
     """
+    # check if file is not empty
+    if os.stat(file).st_size == 0:
+        print(f"{color.RED + color.BOLD}Samplesheet file is empty.{color.END}")
+        sys.exit(1)
     file_extension = "".join(pathlib.Path(file).suffixes)
     if is_excel_file(file_extension):
         return pd.read_excel(file)
@@ -257,40 +263,13 @@ def check_sample_sheet(file):
     return check_samplesheet_rows(df)
 
 
-def is_valid_samplesheet_file(f):
-    """If the file exists and has a valid extension, return the absolute path to the file
-
-    Parameters
-    ----------
-    f
-        the file path to the samplesheet
-
-    Returns
-    -------
-        The absolute path of the file.
-
-    """
-    if os.path.isfile(f):
-        if "".join(pathlib.Path(f).suffixes) in {
-            ".xls",
-            ".xlsx",
-            ".csv",
-            ".tsv",
-            ".json",
-        }:
-            return os.path.abspath(f)
-        raise argparse.ArgumentTypeError(f"{f} is not a valid samplesheet file type.")
-    print("Sample sheet file not found")
-    sys.exit(1)
-
-
-def check_input(choices, fname):
+def check_file_extension(allowed_extensions, fname):
     """If the input file name is "NONE", return it; otherwise, check that the file exists and has a valid
     extension, and return the absolute path to the file
 
     Parameters
     ----------
-    choices
+    allowed_extensions
         a list of file extensions that are allowed
     fname
         The name of the file to be checked.
@@ -304,9 +283,9 @@ def check_input(choices, fname):
         return fname
     if os.path.isfile(fname):
         ext = "".join(pathlib.Path(fname).suffixes)
-        if ext not in choices:
+        if not any(ext.endswith(c) for c in allowed_extensions):
             raise argparse.ArgumentTypeError(
-                f"Input file doesn't end with one of {choices}"
+                f"Input file doesn't end with one of {allowed_extensions}"
             )
         return os.path.abspath(fname)
     print(f'"{fname}" is not a file. Exiting...')
@@ -330,17 +309,6 @@ def dir_path(arginput):
         return arginput
     print(f'"{arginput}" is not a directory. Exiting...')
     sys.exit(1)
-
-
-def currentpath():
-    """Returns the current working directory
-
-    Returns
-    -------
-        The current working directory.
-
-    """
-    return os.getcwd()
 
 
 def CheckInputFiles(indir):
@@ -374,7 +342,10 @@ def get_args(givenargs, parser):
     Parse the commandline args
     """
 
-    parser.add_argument(
+    required_args = parser.add_argument_group("Required arguments")
+    optional_args = parser.add_argument_group("Optional arguments")
+
+    required_args.add_argument(
         "--input",
         "-i",
         type=dir_path,
@@ -383,41 +354,43 @@ def get_args(givenargs, parser):
         required=True,
     )
 
-    parser.add_argument(
+    required_args.add_argument(
         "--output",
         "-o",
         metavar="DIR",
         type=str,
-        default=currentpath(),
+        default=os.getcwd(),  # Default output dir is the current working dir
         help="Output directory",
         required=True,
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--samplesheet",
         "-samples",
         metavar="File",
-        type=is_valid_samplesheet_file,
+        type=lambda s: check_file_extension(
+            (".xls", ".xlsx", ".csv", ".tsv", ".json"), s
+        ),
         help="Sample sheet information file",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--reference",
         "-ref",
-        type=lambda s: check_input((".fasta", ".fa"), s),
+        type=lambda s: check_file_extension((".fasta", ".fa"), s),
         metavar="File",
         help="Input Reference sequence genome in FASTA format",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--primers",
         "-pr",
-        type=lambda s: check_input((".fasta", ".fa", ".bed"), s),
+        type=lambda s: check_file_extension((".fasta", ".fa", ".bed"), s),
         metavar="File",
         help="Used primer sequences in FASTA or BED format. If no primers should be removed, supply the value NONE to this flag.",
     )
 
-    parser.add_argument(
+    required_args.add_argument(
         "--platform",
         default="nanopore",
         const="nanopore",
@@ -425,27 +398,29 @@ def get_args(givenargs, parser):
         choices=("nanopore", "illumina", "iontorrent"),
         help="Define the sequencing platform that was used to generate the dataset, either being 'nanopore', 'illumina' or 'iontorrent', see the docs for more info",
         required=True,
+        metavar="'nanopore'/'illumina'/'iontorrent'",
     )
 
-    parser.add_argument(
+    required_args.add_argument(
         "--amplicon-type",
         "-at",
         default="end-to-end",
         const="end-to-end",
         nargs="?",
-        choices=("end-to-end", "end-to-mid"),
-        help="Define the amplicon-type, either being 'end-to-end' or 'end-to-mid', see the docs for more info",
+        choices=("end-to-end", "end-to-mid", "fragmented"),
+        help="Define the amplicon-type, either being 'end-to-end', 'end-to-mid', or 'fragmented'. See the docs for more info",
         required=True,
+        metavar="'end-to-end'/'end-to-mid'/'fragmented'",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--target",
         "--preset",
         metavar="Str",
         help="Define the specific target for the pipeline, if the target matches a certain preset then pre-defined analysis settings will be used, see the docs for more info",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--match-ref",
         "-mr",
         default=False,
@@ -453,7 +428,7 @@ def get_args(givenargs, parser):
         help="Match your data to the best reference available in the given reference fasta file.",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--min-coverage",
         "-mc",
         default=30,
@@ -462,15 +437,15 @@ def get_args(givenargs, parser):
         help="Minimum coverage for the consensus sequence.",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--features",
         "-gff",
-        type=lambda s: check_input((".gff"), s),
+        type=lambda s: check_file_extension((".gff", ".gff3"), s),
         metavar="File",
         help="GFF file containing the Open Reading Frame (ORF) information of the reference. Supplying NONE will let ViroConstrictor use prodigal to determine coding regions",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--primer-mismatch-rate",
         "-pmr",
         type=float,
@@ -479,7 +454,15 @@ def get_args(givenargs, parser):
         help="Maximum number of mismatches allowed in the primer sequences during primer coordinate search. Use 0 for exact primer matches\nDefault is 3.",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
+        "--disable-presets",
+        "-dp",
+        action="store_true",
+        default=False,
+        help="Disable the use of presets, this will cause all analysis settings to be set to default values",
+    )
+
+    optional_args.add_argument(
         "--threads",
         "-t",
         default=min(multiprocessing.cpu_count(), 128),
@@ -488,7 +471,7 @@ def get_args(givenargs, parser):
         help=f"Number of local threads that are available to use.\nDefault is the number of available threads in your system ({min(multiprocessing.cpu_count(), 128)})",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--version",
         "-v",
         version=__version__,
@@ -496,7 +479,7 @@ def get_args(givenargs, parser):
         help="Show the ViroConstrictor version and exit",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--help",
         "-h",
         action="help",
@@ -504,13 +487,13 @@ def get_args(givenargs, parser):
         help="Show this help message and exit",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--dryrun",
         action="store_true",
         help="Run the workflow without actually doing anything",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--skip-updates",
         action="store_true",
         help="Skip the update check",
@@ -549,6 +532,8 @@ def args_to_df(args, df):
     df["FEATURES"] = args.features
     df["MIN-COVERAGE"] = args.min_coverage
     df["PRIMER-MISMATCH-RATE"] = args.primer_mismatch_rate
+    df[["PRESET", "PRESET_SCORE"]] = match_preset_name(args.target, args.presets)
+    df = pd.DataFrame.replace(df, np.nan, None)
     return df
 
 
@@ -641,7 +626,14 @@ def make_sampleinfo_dict(df, args, filedict):
                     f"\n{color.RED + color.BOLD}No features file specified in samplesheet or in command line options. Consider adding the -gff flag.{color.END}\n"
                 )
                 sys.exit(1)
-
+        if df.get("PRESET") is None:
+            df[["PRESET", "PRESET_SCORE"]] = df.apply(
+                lambda x: pd.Series(
+                    match_preset_name(x["VIRUS"], use_presets=args.presets)
+                ),
+                axis=1,
+            )
+        df = pd.DataFrame.replace(df, np.nan, None)
         return df.to_dict(orient="index")
     return args_to_df(args, indirFrame).to_dict(orient="index")
 
@@ -659,14 +651,19 @@ def ValidArgs(sysargs):
         args, sampleinfo
 
     """
-    parser = argparse.ArgumentParser(
-        prog=__prog__,
-        usage=f"{__prog__} [required options] [optional arguments]",
-        description="ViroConstrictor: a pipeline for analysing Viral targeted (amplicon) sequencing data in order to generate a biologically valid consensus sequence.",
-        formatter_class=MyHelpFormatter,
+    parser = RichParser(
+        prog=f"[bold]{__prog__}[/bold]",
+        usage="%(prog)s \[required arguments] \[optional arguments]",
+        description="%(prog)s: a pipeline for analysing Viral targeted (amplicon) sequencing data in order to generate a biologically valid consensus sequence.",
+        formatter_class=FlexibleArgFormatter,
         add_help=False,
     )
     args = get_args(sysargs, parser)
+
+    df = None
+
+    # invert the flag as this is easier to check downstream
+    args.presets = args.disable_presets is False
 
     if args.samplesheet is not None:
         if args.primers is not None:
@@ -701,6 +698,8 @@ def ValidArgs(sysargs):
             None, args, GetSamples(args.input, args.platform)
         )
 
+    if df is not None:
+        df = pd.DataFrame.from_dict(sampleinfo, orient="index")
     if not sampleinfo:
         sys.exit(1)
-    return args, sampleinfo
+    return args, sampleinfo, df

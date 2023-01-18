@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 
 from directories import *
+from presets import get_preset_parameter
 from Bio import SeqIO
 import AminoExtract
 from snakemake.utils import Paramspace, min_version
@@ -18,7 +19,8 @@ from snakemake.utils import Paramspace, min_version
 logger = logging.getLogger()
 logger.handlers.clear()
 
-from snakemake import logger # you have to explicitly import the logger again, without this snakemake will not write to the log file.
+# you have to explicitly import the logger again, without this snakemake will not write to the log file.
+from snakemake import logger
 
 min_version("7.15")
 
@@ -96,6 +98,7 @@ localrules:
     concat_boc,
     concat_tsv_coverages,
     concat_amplicon_cov,
+    make_pickle,
 
 
 def list_aa_result_outputs():
@@ -294,12 +297,19 @@ if config["platform"] in ["nanopore", "iontorrent"]:
             mem_mb=medium_memory_job,
         params:
             mapthreads=config["threads"]["Alignments"] - 1,
-            filters=config["runparams"]["alignmentfilters"],
-            mapping_settings=p1_mapping_settings,
+            mapping_base_settings=p1_mapping_settings,
+            mapping_additionalsettings=lambda wc: get_preset_parameter(
+                preset_name=SAMPLES[wc.sample]["PRESET"],
+                parameter_name="RawAlign_AdditionalSettings",
+            ),
+            BAMfilters=lambda wc: get_preset_parameter(
+                preset_name=SAMPLES[wc.sample]["PRESET"],
+                parameter_name="BaseBAMFilters",
+            ),
         shell:
             """
-            minimap2 {params.mapping_settings} -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
-            samtools view -@ {threads} {params.filters} -uS 2>> {log} |\
+            minimap2 {params.mapping_base_settings} {params.mapping_additionalsettings} -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
+            samtools view -@ {threads} {params.BAMfilters} -uS 2>> {log} |\
             samtools sort -o {output.bam} >> {log} 2>&1
             samtools index {output.bam} >> {log} 2>&1
             """
@@ -349,11 +359,18 @@ if config["platform"] == "illumina":
             mem_mb=medium_memory_job,
         params:
             mapthreads=config["threads"]["Alignments"] - 1,
-            filters=config["runparams"]["alignmentfilters"],
+            mapping_additionalsettings=lambda wc: get_preset_parameter(
+                preset_name=SAMPLES[wc.sample]["PRESET"],
+                parameter_name="RawAlign_AdditionalSettings",
+            ),
+            BAMfilters=lambda wc: get_preset_parameter(
+                preset_name=SAMPLES[wc.sample]["PRESET"],
+                parameter_name="BaseBAMFilters",
+            ),
         shell:
             """
-            minimap2 -ax sr -t {params.mapthreads} {input.ref} {input.fq1} {input.fq2} 2>> {log} |\
-            samtools view -@ {threads} {params.filters} -uS 2>> {log} |\
+            minimap2 -ax sr {params.mapping_additionalsettings} -t {params.mapthreads} {input.ref} {input.fq1} {input.fq2} 2>> {log} |\
+            samtools view -@ {threads} {params.BAMfilters} -uS 2>> {log} |\
             samtools sort -o {output.bam} >> {log} 2>&1
             samtools index {output.bam} >> {log} 2>&1
             """
@@ -371,9 +388,13 @@ rule remove_adapters_p2:
         mem_mb=low_memory_job,
     params:
         script=srcdir("scripts/clipper.py"),
+        clipper_settings=lambda wc: get_preset_parameter(
+            preset_name=SAMPLES[wc.sample]["PRESET"],
+            parameter_name=f"ClipperSettings_{config['platform']}",
+        ),
     shell:
         """
-        python {params.script} --input {input} --output {output} --threads {threads}
+        python {params.script} --input {input} --output {output} {params.clipper_settings} --threads {threads}
         """
 
 
@@ -394,9 +415,18 @@ rule qc_filter:
     resources:
         mem_mb=low_memory_job,
     params:
-        score=config["runparams"][f"qc_filter_{config['platform']}"],
-        size=config["runparams"][f"qc_window_{config['platform']}"],
-        length=config["runparams"]["qc_min_readlength"],
+        score=lambda wc: get_preset_parameter(
+            preset_name=SAMPLES[wc.sample]["PRESET"],
+            parameter_name=f"Fastp_PhredScore_cutoff_{config['platform']}",
+        ),
+        size=lambda wc: get_preset_parameter(
+            preset_name=SAMPLES[wc.sample]["PRESET"],
+            parameter_name=f"Fastp_WindowSize_{config['platform']}",
+        ),
+        length=lambda wc: get_preset_parameter(
+            preset_name=SAMPLES[wc.sample]["PRESET"],
+            parameter_name="Fastp_MinReadLength",
+        ),
     shell:
         """
         fastp --thread {threads} -i {input} \
@@ -427,7 +457,7 @@ rule ampligone:
         mem_mb=high_memory_job,
     params:
         amplicontype=config["amplicon_type"],
-        pr_mm_rate=lambda wc: SAMPLES[wc.sample]["PRIMER-MISMATCH-RATE"],
+        primer_mismatch_rate=lambda wc: SAMPLES[wc.sample]["PRIMER-MISMATCH-RATE"],
     shell:
         """
         echo {input.pr} > {log}
@@ -436,7 +466,7 @@ rule ampligone:
             -ref {input.ref} -pr {input.pr} \
             -o {output.fq} \
             -at {params.amplicontype} \
-            --error-rate {params.pr_mm_rate} \
+            --error-rate {params.primer_mismatch_rate} \
             --export-primers {output.ep} \
             -to \
             -t {threads} >> {log} 2>&1
@@ -491,7 +521,7 @@ def get_alignment_flags(_wildcards):
     if config["platform"] in ["illumina", "iontorrent"]:
         return "-ax sr"
     elif config["platform"] == "nanopore":
-        return "-ax map-ont -E2,0 -O8,24 -A4 -B4"
+        return "-ax map-ont"
 
 
 rule align_before_trueconsense:
@@ -512,12 +542,19 @@ rule align_before_trueconsense:
         mem_mb=medium_memory_job,
     params:
         mapthreads=config["threads"]["Alignments"] - 1,
-        filters=config["runparams"]["alignmentfilters"],
-        alignment_flags=get_alignment_flags,
+        alignment_base_settings=get_alignment_flags,
+        alignment_additional_settings=lambda wc: get_preset_parameter(
+            preset_name=SAMPLES[wc.sample]["PRESET"],
+            parameter_name=f"CleanAlign_AdditionalSettings_{config['platform']}",
+        ),
+        BAMfilters=lambda wc: get_preset_parameter(
+            preset_name=SAMPLES[wc.sample]["PRESET"],
+            parameter_name=f"BaseBAMFilters",
+        ),
     shell:
         """
-        minimap2 {params.alignment_flags} -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
-        samtools view -@ {threads} {params.filters} -uS 2>> {log} |\
+        minimap2 {params.alignment_base_settings} {params.alignment_additional_settings} -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
+        samtools view -@ {threads} {params.BAMfilters} -uS 2>> {log} |\
         samtools sort -o {output.bam} >> {log} 2>&1
         samtools index {output.bam} >> {log} 2>&1
         """
@@ -630,9 +667,24 @@ def group_aminoacids_inputs(wildcards):
     return file_list
 
 
+rule make_pickle:
+    output:
+        temp(f"{datadir}sampleinfo.pkl"),
+    resources:
+        mem_mb=low_memory_job,
+    threads: 1
+    params:
+        space=samples_df[~samples_df["AA_FEAT_NAMES"].isnull()],
+    run:
+        import pandas as pd
+
+        params.space.to_pickle(output[0], compression=None)
+
+
 rule concat_aminoacids:
     input:
-        lambda wildcards: group_aminoacids_inputs(wildcards),
+        files=lambda wildcards: group_aminoacids_inputs(wildcards),
+        sampleinfo=rules.make_pickle.output,
     output:
         list_aa_result_outputs(),
     resources:
@@ -642,9 +694,8 @@ rule concat_aminoacids:
     threads: 1
     params:
         script=srcdir("scripts/group_aminoacids.py"),
-        space=samples_df[~samples_df["AA_FEAT_NAMES"].isnull()].to_dict(),
     shell:
-        'python {params.script} "{input}" "{output}" "{params.space}"'
+        'python {params.script} "{input.files}" "{output}" {input.sampleinfo}'
 
 
 rule vcf_to_tsv:

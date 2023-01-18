@@ -154,8 +154,8 @@ def SnakemakeParams(conf, cores, sampleinfo, platform, samplesheet, amplicon_typ
 
     """
     if conf["COMPUTING"]["compmode"] == "local":
-        threads_highcpu = int(cores - 2)
-        threads_midcpu = int(cores / 2)
+        threads_highcpu = min(int(cores - 2), 12)
+        threads_midcpu = min(int(cores / 2), 6)
         threads_lowcpu = 1
     if conf["COMPUTING"]["compmode"] == "grid":
         threads_highcpu = 12
@@ -176,16 +176,6 @@ def SnakemakeParams(conf, cores, sampleinfo, platform, samplesheet, amplicon_typ
             "Consensus": threads_midcpu,
             "Index": threads_lowcpu,
             "Typing": threads_lowcpu,
-        },
-        "runparams": {
-            "alignmentfilters": "-F 256 -F 512 -F 4 -F 2048",
-            "qc_filter_illumina": 20,
-            "qc_filter_nanopore": 7,
-            "qc_filter_iontorrent": 20,
-            "qc_window_illumina": 5,
-            "qc_window_nanopore": 20,
-            "qc_window_iontorrent": 15,
-            "qc_min_readlength": 100,
         },
     }
 
