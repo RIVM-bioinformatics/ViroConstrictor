@@ -440,7 +440,7 @@ def get_args(givenargs, parser):
     optional_args.add_argument(
         "--features",
         "-gff",
-        type=lambda s: check_file_extension((".gff"), s),
+        type=lambda s: check_file_extension((".gff", ".gff3"), s),
         metavar="File",
         help="GFF file containing the Open Reading Frame (ORF) information of the reference. Supplying NONE will let ViroConstrictor use prodigal to determine coding regions",
     )
