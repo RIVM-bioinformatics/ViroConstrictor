@@ -1,5 +1,43 @@
 # Changelog
 
+## [1.2.0](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.1.0...v1.2.0) (2023-01-18)
+
+
+### Features
+
+* add option to filted for minimum aligned length in `clipper.py` ([d06caf5](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/d06caf5bdb89c39605639df39ee698d54d842a83))
+* add option to filter spliced reads in `clipper.py` ([d06caf5](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/d06caf5bdb89c39605639df39ee698d54d842a83))
+* add support for working with presets for specific viral targets ([29bfa3c](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/29bfa3c5a1ff0a03ebace707b1c87e298ff1451c))
+
+
+### Bug Fixes
+
+* add `.gff3` file extension as allowed to features flag ([b4fdf5d](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/b4fdf5dc3cae26639b600adc3a6b7b9a0026240f))
+* change Clipper settings to a per-platform config per preset ([3d952bb](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/3d952bb004cea064d67e583a87d72a2a8fa38781))
+* change the minimal alignment length in `clipper.py` to be a percentage of the reference length ([68597e8](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/68597e8a5f36e4efc1efaf652563d6e5c4960363))
+* correct minimum aligned read length default value ([60b9230](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/60b9230621f0744eaa643aa352d57fed7d96d532))
+* Fix extension checking for input files ([6c4f91e](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/6c4f91e812fd1a5c46919413656fa49308dd8ea3))
+* set snakemake `keepgoing` to True as a default ([0076d52](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/0076d52c463ba0ad76eb9cdd1d87254e1ffec0c6))
+* use the correct columns of input BED file when there are more columns given than necessary ([56b5259](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/56b5259a3fa1803b0b19fb5e9206527bb0b4143c))
+* workaround for `Argument list too long` error when parsing complex workflows ([2835c44](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/2835c44de75da7bf59143aeb617ac761ccc8ae56))
+
+
+### Performance Improvements
+
+* change `make_pickle` rule to localrule ([f41cc01](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/f41cc018d79477b6c9733f6b148ff508b5acb481))
+* change threads in local execution mode to improve parallel performance ([869c81a](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/869c81a27c6db56667f56fdaedd3b82f1debaada))
+
+
+### Dependencies
+
+* add `Rich` as a dependency with version 13.*.* ([e63cac7](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/e63cac778dd4f75c89677eb660bc209fefc3c4da))
+* update AmpliGone to version 1.2.0 ([dfb22f1](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/dfb22f10369fa9c4b3b2d89888c70fe101cf0fdf))
+
+
+### Documentation
+
+* update documentation to include presets functionalities ([adc5265](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/adc526541406363b3cf3afdbf225b71616c9d3a5))
+
 ## [1.1.0](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.0.4...v1.1.0) (2022-12-06)
 
 
