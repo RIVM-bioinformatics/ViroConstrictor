@@ -23,12 +23,14 @@ Below, you can find a brief summary if all available command line options and th
 | `--primers` /<br>`-pr` | [primer fasta] / `NONE` | Used primer sequences in FASTA format.<br>Use `NONE` if your sequencing protocol does not use primers|
 | `--features` /<br>`-gff` | [GFF file] / `NONE` | The GFF3 file containing the genomic features (open reading frames etc.) matching the given reference fasta.<br>Use `NONE` if you don't have access to a GFF3 file containing this information.
 | `--platform` | `nanopore` / `illumina` / `iontorrent` | The sequencing platform that was used to generate the dataset. Either being 'nanopore', 'illumina' or 'iontorrent'.<br>Default is `nanopore` |
-| `--amplicon-type` /<br>`-at` | `end-to-end` / `end-to-mid` | The amplicon type that matches your sequencing experiment/protocol.<br>Either being `end-to-end` or `end-to-mid` |
+| `--amplicon-type` /<br>`-at` | `end-to-end` / `end-to-mid` / `fragmented` | The amplicon type that matches your sequencing experiment/protocol.<br>Either being `end-to-end`,`end-to-mid`, or `fragmented` |
 | `--min-coverage` /<br>`-mc` | Minimum coverage | The minimum coverage for the consensus sequence(s)<br>Default is **30**
 | `--primer-mismatch-rate`/<br>`-pmr` | Fraction of maximum primer mismatches | The maximum percentage mismatches that is tolerated during the primer search. Mismatches are counted in substitutions between primer and reference. Insertions and/or deletions are not taken into account.<br>Default is **0.1** (10%)<br>This means that max 10% of the length of a primer may be a mismatch, i.e. if your primer is 30nt then maximum 3 mismatches are allowed |
-| `--target` | Name of the viral target | The basic descriptive name of the viral target that is being analysed<br>i.e. "Measles", "Sars-CoV-2", "HPV16", or "Influenza_A"
+| `--target` /<br>`--preset` | Name of the viral target | The basic descriptive name of the viral target that is being analysed<br>i.e. "Measles", "Sars-CoV-2", "HPV16", or "Influenza_A"<br>This viral target will be used as an analysis-preset if there is a preset available for the given viral target. If no preset is available for the given target then default settings will be used. Disable the use of analysis-presets with the `--disable-presets` flag.
+| `--disable-presets` /<br>`-dp` | N/A | Switches off the use of analysis presets, default analysis settings will be used for all given samples/viral-targets. It is still necessar to provide the information of viral-target. |
 | `--threads` /<br>`-t` | Amount of threads | Number of local threads that are available to use.<br>Default is the number of available threads in your system |
 | `--dryrun` | N/A | Run the ViroConstrictor workflow without actually doing anything.<br>(default: False) |
+| `--skip-updates` | N/A | Skip the check for a new version |
 | `--version` /<br>`-v` | N/A | Shows the current version of ViroConstrictor and exits |
 | `--help` /<br>`-h` | N/A | Show the ViroConstrictor help document and exits |
 
@@ -37,7 +39,7 @@ Below, you can find a brief summary if all available command line options and th
 
 When running ViroConstrictor as a single-target analysis its possible to provide all necessary information via the command line. The given information will be applied to all samples in the analysis.
 
-To run an analysis, you need to provide the following inputs/information:  
+To run an analysis, you need to provide (at least) the following inputs/information:  
 
 * The input directory containing your FastQ data via the `--input`/`-i` flag
 * The desired output directory for results and data via the `--output`/`-o` flag
@@ -61,7 +63,10 @@ To run an analysis, you need to provide the following inputs/information:
         If you did not use any primers, and set `--primers NONE` then this information will be ignored   
         (you still have to provide this command-line flag but it won't be used)
 
-* A named viral target via the `--target` flag.
+* A named viral target via the `--target` or `--preset` flag.
+
+    !!! Attention ""
+        The given viral target will be used to enable an analysis-preset if ViroConstrictor is able to match your input to a known preset. If no preset is available then the default analysis settings will be used for the given viral-target. You can disable the use of analysis-presets with the `--disable-presets` flag.
 
 Additional information that you can provide, but is not always required is the minimum coverage level (`--min-coverage`) as well as the primer-mismatch rate (`--primer-mismatch-rate`). When these flags are not provided then their default values are used during analysis.
 
@@ -102,6 +107,8 @@ An example table can be seen below, or download the example excel spreadsheet [h
     Setting the `Match-ref` to `TRUE` as in the example above will therefore not do anything in the analysis as per the current version.
 
 Please keep in mind that the Sample key as given in de samplesheet must correspond with the FastQ filename in your input directory. If this isn't the case then ViroConstrictor will let you know without running to ensure you won't get unexplainable data.
+
+The Virus column in the samplesheet will be used as the viral-target name for analysis. This named viral target will be used to enable an analysis-preset if ViroConstrictor is able to match your input to a known preset for analysis. If no preset is available then the default analysis settings will be used for the given viral-target. You can disable the use of analysis-presets with the `--disable-presets` flag.
 
 !!! Example "You can start a multi-target analysis with a command such as the following"
     ```bash
