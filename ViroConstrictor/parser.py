@@ -698,7 +698,7 @@ def ValidArgs(sysargs):
             None, args, GetSamples(args.input, args.platform)
         )
 
-    if df is not None:
+    if df is None:
         df = pd.DataFrame.from_dict(sampleinfo, orient="index")
     if not sampleinfo:
         sys.exit(1)
