@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.1](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.2.0...v1.2.1) (2023-01-19)
+
+
+### Bug Fixes
+
+* correction in argument parser to avoid a NoneType AttributeError when all required information is passed through commandline options ([f2acedf](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/f2acedfb610f87d754fe38303609b528f1afacfc))
+
+
+### Dependencies
+
+* correct the `rich` version in all base environment files ([f2acedf](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/f2acedfb610f87d754fe38303609b528f1afacfc))
+
 ## [1.2.0](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.1.0...v1.2.0) (2023-01-18)
 
 
