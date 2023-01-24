@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.2](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.2.1...v1.2.2) (2023-01-24)
+
+
+### Bug Fixes
+
+* correctly parse presets when using  a samplesheet ([2ca2149](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/2ca21493986cf7480e14f6ada6cdada6cdcf0ba1))
+* make the ViroConstrictor main entrypoint less case sensitive ([43b27aa](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/43b27aaa1d8cd95caf01781e964f910649d374fe))
+
 ## [1.2.1](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.2.0...v1.2.1) (2023-01-19)
 
 
