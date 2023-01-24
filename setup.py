@@ -4,7 +4,6 @@ from packaging import version as vv
 from setuptools import find_packages, setup
 
 from ViroConstrictor import __version__
-from ViroConstrictor.functions import color
 
 if sys.version_info.major != 3 or sys.version_info.minor < 10:
     print("Error: you must execute setup.py using Python 3.10 or later")
@@ -58,6 +57,7 @@ setup(
     scripts=[
         "ViroConstrictor/workflow/workflow.smk",
         "ViroConstrictor/workflow/directories.py",
+        "ViroConstrictor/workflow/presets.py",
     ],
     package_data={
         "ViroConstrictor": ["workflow/envs/*", "workflow/scripts/*", "workflow/files/*"]
@@ -77,9 +77,18 @@ setup(
         "console_scripts": [
             "ViroConstrictor = ViroConstrictor.ViroConstrictor:main",
             "viroconstrictor = ViroConstrictor.ViroConstrictor:main",
+            "viroConstrictor = ViroConstrictor.ViroConstrictor:main",
+            "Viroconstrictor = ViroConstrictor.ViroConstrictor:main",
         ]
     },
     keywords=[],
     include_package_data=True,
     zip_safe=False,
+    classifiers=[
+        "Development Status :: 5 - Production/Stable",
+        "Programming Language :: Python :: 3.8",
+        "License :: OSI Approved :: GNU Affero General Public License v3",
+        "Topic :: Scientific/Engineering :: Bio-Informatics",
+        "Intended Audience :: Science/Research",
+    ],
 )
