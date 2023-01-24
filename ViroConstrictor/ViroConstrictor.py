@@ -13,6 +13,7 @@ import sys
 
 import snakemake
 import yaml
+import pandas as pd
 
 from ViroConstrictor import __version__
 from ViroConstrictor.functions import color
@@ -62,10 +63,11 @@ def main():
 
     flags, sampleinfo, samples_df = ValidArgs(sys.argv[1:])
     samples_df = samples_df.reset_index(drop=False).rename(columns={"index": "SAMPLE"})
+    sampleinfo_df = pd.DataFrame.from_dict(sampleinfo, orient="index").reset_index(drop=False).rename(columns={"index": "SAMPLE"})
 
     preset_fallback_warnings = []
     preset_score_warnings = []
-    for s in samples_df.itertuples():
+    for s in sampleinfo_df.itertuples():
         sample, preset, score, input_target = (
             s.SAMPLE,
             s.PRESET,
