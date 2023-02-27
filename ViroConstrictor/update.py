@@ -1,3 +1,4 @@
+import configparser
 import json
 import os
 import subprocess
@@ -6,13 +7,12 @@ from distutils.version import LooseVersion
 from urllib import request
 
 from ViroConstrictor import __version__
+from ViroConstrictor.logging import log
+from ViroConstrictor.userprofile import AskPrompts
 
-from .functions import color
-from .userprofile import AskPrompts
 
-
-def update(sysargs, conf):
-
+# TODO refactor and split this function
+def update(sysargs: list[str], conf: configparser.ConfigParser) -> None:
     autocontinue = conf["GENERAL"]["auto_update"] == "yes"
     ask_prompt = not autocontinue and conf["GENERAL"]["ask_for_update"] == "yes"
     if autocontinue:
@@ -21,7 +21,7 @@ def update(sysargs, conf):
                 "https://api.github.com/repos/RIVM-bioinformatics/Viroconstrictor/releases"
             )
         except Exception as e:
-            sys.stderr.write("Unable to connect to GitHub API\n" f"{e}")
+            log.warning("Unable to connect to GitHub API\n" f"{e}")
             return
 
         latest_release = json.loads(latest_release.read().decode("utf-8"))[0]
@@ -51,8 +51,8 @@ def update(sysargs, conf):
                 stderr=subprocess.DEVNULL,
             )
 
-            print(
-                f"ViroConstrictor updated to {color.YELLOW + color.BOLD}{latest_release_tag}{color.END}"
+            log.info(
+                f"ViroConstrictor updated to [bold yellow]{latest_release_tag}[/bold yellow]"
             )
 
             subprocess.run(sysargs)
@@ -63,10 +63,10 @@ def update(sysargs, conf):
         ):
             if (
                 AskPrompts(
-                    f"""{color.RED + color.BOLD}There's a new version of ViroConstrictor available. This new version is a {color.UNDERLINE}major{color.END + color.RED + color.BOLD} update and cannot be installed automatically.{color.END}
+                    f"""[bold red]There's a new version of ViroConstrictor available. This new version is a major[/underline] update and cannot be installed automatically.[/bold red]
 
-Current version: {color.RED + color.BOLD}{'v' + __version__}{color.END}
-Latest version: {color.GREEN + color.BOLD}{latest_release_tag}{color.END}
+Current version: [bold red]{'v' + __version__}[/bold red]
+Latest version: [bold green]{latest_release_tag}[/bold green]
 
 The auto-updater can't install major version changes for you, as this would (probably) severely break your installation.
 If you wish to update to the newest version you will have to do so manually.
@@ -74,8 +74,8 @@ If you wish to update to the newest version you will have to do so manually.
 If you want to run ViroConstrictor with the current version then please turn off the auto-updater. 
 If you won't turn off the auto-updater we'll keep nagging you about this until you manually updated to the newest version.
 """,
-                    "Do you want to turn off the auto-updater so you wont get this message again? (yes/no) ",
-                    ("yes", "no"),
+                    "Do you want to turn off the auto-updater so you wont get this message again? \[yes/no] ",
+                    ["yes", "no"],
                     fixedchoices=True,
                 )
                 == "yes"
@@ -87,15 +87,14 @@ If you won't turn off the auto-updater we'll keep nagging you about this until y
                     os.path.expanduser("~/.ViroConstrictor_defaultprofile.ini"), "w"
                 ) as f:
                     conf.write(f)
-                print("The ViroConstrictor auto-updater is now turned off")
-                print(
+                log.info("The ViroConstrictor auto-updater is now turned off")
+                log.info(
                     f"Please re-run the ViroConstrictor command to execute the workflow with the current version ({'v' + __version__}) or update manually to the newest version"
                 )
                 sys.exit(0)
-            print(
-                "ViroConstrictor is unable to update itself to the newest version as this is a major version change that cannot be installed automatically.\nPlease update manually and try again or turn-off the auto-updater "
+            log.error(
+                "ViroConstrictor is unable to update itself to the newest version as this is a major version change that cannot be installed automatically.\nPlease update manually and try again or turn-off the auto-updater\nExiting..."
             )
-            print("Exiting...")
             sys.exit(1)
         return
 
@@ -107,7 +106,7 @@ If you won't turn off the auto-updater we'll keep nagging you about this until y
             "https://api.github.com/repos/RIVM-bioinformatics/Viroconstrictor/releases"
         )
     except Exception as e:
-        sys.stderr.write("Unable to connect to GitHub API\n" f"{e}")
+        log.error("Unable to connect to GitHub API\n" f"{e}")
         return
 
     latest_release = json.loads(latest_release.read().decode("utf-8"))[0]
@@ -128,9 +127,9 @@ If you won't turn off the auto-updater we'll keep nagging you about this until y
                 f"""
 There's a new version of ViroConstrictor available.
 
-Current version: {color.RED + color.BOLD}{'v' + __version__}{color.END}
-Latest version: {color.GREEN + color.BOLD}{latest_release_tag}{color.END}\n""",
-                """Do you want to update? [yes/no] """,
+Current version: [bold red]{'v' + __version__}[/bold red]
+Latest version: [bold green]{latest_release_tag}[/bold green]\n""",
+                """Do you want to update? \[yes/no] """,
                 ["yes", "no"],
                 fixedchoices=True,
             )
@@ -150,22 +149,21 @@ Latest version: {color.GREEN + color.BOLD}{latest_release_tag}{color.END}\n""",
                 stderr=subprocess.DEVNULL,
             )
 
-            print(
-                f"ViroConstrictor updated to {color.YELLOW + color.BOLD}{latest_release_tag}{color.END}"
+            log.info(
+                f"ViroConstrictor updated to [bold yellow]{latest_release_tag}[/bold yellow]"
             )
 
             subprocess.run(sysargs)
             sys.exit(0)
-        print(f"Skipping update to version {latest_release_tag}")
-        print("Continuing...")
+        log.info(f"Skipping update to version {latest_release_tag}\nContinuing...")
         return
     if localversion < latest_release_tag_tidied:
-        print(
-            f"{color.RED}There's a new version of ViroConstrictor available. This new version is a {color.UNDERLINE}major{color.END + color.RED} update and cannot be installed automatically.{color.END}"
+        log.warning(
+            "[red]There's a new version of ViroConstrictor available. This new version is a [underline]major[/underline] update and cannot be installed automatically.[/red]"
         )
-        print(
-            f"""Current version: {color.RED + color.BOLD}v{__version__}{color.END}\nLatest version: {color.GREEN + color.BOLD}{latest_release_tag}{color.END}"""
+        log.warning(
+            f"""Current version: [bold red]v{__version__}[/bold red]\nLatest version: [bold green]{latest_release_tag}[/bold green]"""
         )
 
-        print("Continuing without updating...\n")
+        log.warning("Continuing without updating...\n")
     return

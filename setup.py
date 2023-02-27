@@ -75,10 +75,10 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "ViroConstrictor = ViroConstrictor.ViroConstrictor:main",
-            "viroconstrictor = ViroConstrictor.ViroConstrictor:main",
-            "viroConstrictor = ViroConstrictor.ViroConstrictor:main",
-            "Viroconstrictor = ViroConstrictor.ViroConstrictor:main",
+            "ViroConstrictor = ViroConstrictor.__main__:main",
+            "viroconstrictor = ViroConstrictor.__main__:main",
+            "viroConstrictor = ViroConstrictor.__main__:main",
+            "Viroconstrictor = ViroConstrictor.__main__:main",
         ]
     },
     keywords=[],
