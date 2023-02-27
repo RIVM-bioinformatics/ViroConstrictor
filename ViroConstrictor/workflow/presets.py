@@ -107,7 +107,7 @@ presets = {
 }
 
 
-def get_key_from_value(d: dict, value: str) -> str:
+def get_key_from_value(d: dict, value: str) -> str | None:
     """This function finds the key in a dictionary which has a value matching the input value.
 
     Parameters
@@ -134,7 +134,7 @@ def match_preset_name(targetname: str, use_presets: bool) -> Tuple[str, float]:
     query = re.sub(r"[^_a-zA-Z0-9/-]+", "", targetname).upper()
 
     if query == "DEFAULT":
-        return "DEFAULT"
+        return "DEFAULT", 0
 
     # flatten list of lists aliases.values() into a single list
     aliases_list = [item for sublist in aliases.values() for item in sublist]
@@ -144,8 +144,9 @@ def match_preset_name(targetname: str, use_presets: bool) -> Tuple[str, float]:
 
     if score < 0.35:
         return "DEFAULT", 0
-    matched_preset = get_key_from_value(aliases, best_match)
-    return matched_preset, score
+    if matched_preset := get_key_from_value(aliases, best_match):
+        return matched_preset, score
+    return "DEFAULT", 0
 
 
 def get_preset_parameter(preset_name: str, parameter_name: str) -> str:
