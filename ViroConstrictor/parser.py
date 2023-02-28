@@ -334,7 +334,11 @@ def CheckInputFiles(indir):
         extensions = "".join(pathlib.Path(filenames).suffixes)
         foundfiles.append(extensions)
 
-    return bool(any(i in allowedextensions for i in foundfiles))
+    return any(
+        file
+        for file in foundfiles
+        if any(file.endswith(ext) for ext in allowedextensions)
+    )
 
 
 def get_args(givenargs, parser):
