@@ -54,7 +54,7 @@ presets = {
         "CleanAlign_AdditionalSettings_iontorrent": "",
     },
     "INFLUENZA": {
-        "RawAlign_AdditionalSettings": "--splice",
+        "RawAlign_AdditionalSettings": "--splice --frag=no",
         "BaseBAMFilters": "-F 256 -F 512 -F 4 -F 2048",
         "ClipperSettings_nanopore": "--exclude-spliced --spliced-length-threshold 50 --min-aligned-length 0.5",
         "ClipperSettings_illumina": "--exclude-spliced --spliced-length-threshold 50",
