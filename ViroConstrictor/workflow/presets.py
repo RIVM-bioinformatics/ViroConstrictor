@@ -134,7 +134,7 @@ def match_preset_name(targetname: str, use_presets: bool) -> Tuple[str, float]:
     query = re.sub(r"[^_a-zA-Z0-9/-]+", "", targetname).upper()
 
     if query == "DEFAULT":
-        return "DEFAULT"
+        return "DEFAULT", 0
 
     # flatten list of lists aliases.values() into a single list
     aliases_list = [item for sublist in aliases.values() for item in sublist]
