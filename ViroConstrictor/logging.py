@@ -97,6 +97,16 @@ def LogFileOverride(msg: dict[str, Any], logfile) -> None:
     if msg.get("msg") is not None:
         log.info(f"Complete log: [magenta]{logfile}[/magenta]")
 
+def SubmitDRMAAMessage(msg: dict[str, Any]) -> None:
+    if logmessage := msg.get("msg"):
+        logmessage_items = logmessage.rstrip(".").split(" ")
+        identifiers = []
+        for item in logmessage_items:
+            try:
+                identifiers.append(int(item))
+            except Exception:
+                continue
+        log.info(f"Submitted JobID [cyan]{identifiers[0]}[/cyan] to the DRMAA cluster using external JobID [cyan]{identifiers[1]}[/cyan].")
 
 def HandleJobInfoMessage(msg: dict[str, Any]) -> None:
     if not (processname := msg.get("name")):
@@ -157,6 +167,7 @@ logmessage_strings_info: dict[str, Any] = {
     "Terminating processes on user request, this might take some time.": BaseSnakemakeAbortMessage,
     "Removing temporary output": ColorizeLogMessagePath,
     "will be created.": ColorizeLogMessagePath,
+    "Submitted DRMAA job": BaseLogMessage,
     "Nothing to be done (all requested files are present and up to date).": BaseLogMessage,
 }
 logmessage_strings_warning: list[str] = [
