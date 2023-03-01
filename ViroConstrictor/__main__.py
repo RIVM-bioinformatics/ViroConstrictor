@@ -13,7 +13,6 @@ from typing import Literal, NoReturn
 
 import pandas as pd
 import snakemake
-from rich.progress import BarColumn, Progress, TextColumn
 
 import ViroConstrictor.logging
 from ViroConstrictor import __version__
@@ -97,81 +96,59 @@ def main() -> NoReturn:
 
     snakemake_run_details = GetSnakemakeRunDetails(inputs_obj=parsed_input)
 
-    log.info(f"{'='*25} [bold yellow] Starting Workflow [/bold yellow] {'='*25}")
+    log.info(f"{'='*20} [bold yellow] Starting Workflow [/bold yellow] {'='*20}")
     status: bool = False
 
-    with Progress(
-        TextColumn("[bold yellow]{task.description}[/bold yellow]"),
-        BarColumn(bar_width=None),
-        transient=True,
-        expand=True,
-    ) as progress:
-        if parsed_input.user_config["COMPUTING"]["compmode"] == "local":
-            progress.add_task(
-                "Running ViroConstrictor workflow in local execution mode"
-                if snakemake_run_details.snakemake_run_conf["dryrun"] is False
-                else "Running Workflow in 'dryrun' mode",
-                total=None,
-            )
-            status = snakemake.snakemake(
-                snakefile=parsed_input.snakefile,
-                workdir=parsed_input.workdir,
-                cores=snakemake_run_details.snakemake_run_conf["cores"],
-                use_conda=snakemake_run_details.snakemake_run_conf["use-conda"],
-                conda_frontend="mamba",
-                jobname=snakemake_run_details.snakemake_run_conf["jobname"],
-                latency_wait=snakemake_run_details.snakemake_run_conf["latency-wait"],
-                dryrun=snakemake_run_details.snakemake_run_conf["dryrun"],
-                configfiles=[
-                    WriteYaml(
-                        snakemake_run_details.snakemake_run_parameters,
-                        f"{parsed_input.workdir}/config/run_params.yaml",
-                    )
-                ],
-                restart_times=3,
-                keepgoing=True,
-                quiet=["all"],  # type: ignore
-                log_handler=[
-                    ViroConstrictor.logging.snakemake_logger(
-                        logfile=parsed_input.logfile
-                    )
-                ],
-                printshellcmds=False,
-            )
-        if parsed_input.user_config["COMPUTING"]["compmode"] == "grid":
-            progress.add_task(
-                "Running ViroConstrictor workflow in grid execution mode"
-                if snakemake_run_details.snakemake_run_conf["dryrun"] is False
-                else "Running Workflow in 'dryrun' mode",
-                total=None,
-            )
-            status = snakemake.snakemake(
-                snakefile=parsed_input.snakefile,
-                workdir=parsed_input.workdir,
-                cores=snakemake_run_details.snakemake_run_conf["cores"],
-                nodes=snakemake_run_details.snakemake_run_conf["cores"],
-                use_conda=snakemake_run_details.snakemake_run_conf["use-conda"],
-                conda_frontend="mamba",
-                jobname=snakemake_run_details.snakemake_run_conf["jobname"],
-                latency_wait=snakemake_run_details.snakemake_run_conf["latency-wait"],
-                drmaa=snakemake_run_details.snakemake_run_conf["drmaa"],
-                drmaa_log_dir=snakemake_run_details.snakemake_run_conf["drmaa-log-dir"],
-                dryrun=snakemake_run_details.snakemake_run_conf["dryrun"],
-                configfiles=[
-                    WriteYaml(
-                        snakemake_run_details.snakemake_run_parameters,
-                        f"{parsed_input.workdir}/config/run_params.yaml",
-                    )
-                ],
-                restart_times=3,
-                keepgoing=True,
-                quiet=["all"],  # type: ignore
-                log_handler=[
-                    ViroConstrictor.logging.snakemake_logger(
-                        logfile=parsed_input.logfile
-                    )
-                ],
-            )
+    if parsed_input.user_config["COMPUTING"]["compmode"] == "local":
+        status = snakemake.snakemake(
+            snakefile=parsed_input.snakefile,
+            workdir=parsed_input.workdir,
+            cores=snakemake_run_details.snakemake_run_conf["cores"],
+            use_conda=snakemake_run_details.snakemake_run_conf["use-conda"],
+            conda_frontend="mamba",
+            jobname=snakemake_run_details.snakemake_run_conf["jobname"],
+            latency_wait=snakemake_run_details.snakemake_run_conf["latency-wait"],
+            dryrun=snakemake_run_details.snakemake_run_conf["dryrun"],
+            configfiles=[
+                WriteYaml(
+                    snakemake_run_details.snakemake_run_parameters,
+                    f"{parsed_input.workdir}/config/run_params.yaml",
+                )
+            ],
+            restart_times=3,
+            keepgoing=True,
+            quiet=["all"],  # type: ignore
+            log_handler=[
+                ViroConstrictor.logging.snakemake_logger(logfile=parsed_input.logfile)
+            ],
+            printshellcmds=False,
+        )
+    if parsed_input.user_config["COMPUTING"]["compmode"] == "grid":
+        status = snakemake.snakemake(
+            snakefile=parsed_input.snakefile,
+            workdir=parsed_input.workdir,
+            cores=snakemake_run_details.snakemake_run_conf["cores"],
+            nodes=snakemake_run_details.snakemake_run_conf["cores"],
+            use_conda=snakemake_run_details.snakemake_run_conf["use-conda"],
+            conda_frontend="mamba",
+            jobname=snakemake_run_details.snakemake_run_conf["jobname"],
+            latency_wait=snakemake_run_details.snakemake_run_conf["latency-wait"],
+            drmaa=snakemake_run_details.snakemake_run_conf["drmaa"],
+            drmaa_log_dir=snakemake_run_details.snakemake_run_conf["drmaa-log-dir"],
+            dryrun=snakemake_run_details.snakemake_run_conf["dryrun"],
+            configfiles=[
+                WriteYaml(
+                    snakemake_run_details.snakemake_run_parameters,
+                    f"{parsed_input.workdir}/config/run_params.yaml",
+                )
+            ],
+            restart_times=3,
+            keepgoing=True,
+            quiet=["all"],  # type: ignore
+            log_handler=[
+                ViroConstrictor.logging.snakemake_logger(logfile=parsed_input.logfile)
+            ],
+        )
 
     if snakemake_run_details.snakemake_run_conf["dryrun"] is False and status is True:
         snakemake.snakemake(
@@ -190,7 +167,6 @@ def main() -> NoReturn:
             ],
         )
 
-    log.info(f"{'='*25} [bold yellow] Finished Workflow [/bold yellow] {'='*25}")
     workflow_state: Literal["Failed", "Success"] = (
         "Failed" if status is False else "Success"
     )
