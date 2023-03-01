@@ -23,10 +23,11 @@ authors:
       Environment (RIVM)
   - name: "The RIVM-IDS Bioinformatics team"
 version: 1.2.3 #x-release-please-version
-# identifiers:
-#   - type: doi
-#     value: none
-#     description: This is the collection of archived snapshots of all versions of ViroConstrictor
+doi: 10.5281/zenodo.7688035
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.7688035
+    description: This is the collection of archived snapshots of all versions of ViroConstrictor
 repository-code: 'https://github.com/RIVM-bioinformatics/ViroConstrictor'
 url: >-
   https://rivm-bioinformatics.github.io/ViroConstrictor/latest/
