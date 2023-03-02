@@ -58,12 +58,16 @@ def main():
     --> Run snakemake with appropriate settings
     """
 
-    ##> Check the default userprofile, make it if it doesn't exist
-    conf = ReadConfig(os.path.expanduser("~/.ViroConstrictor_defaultprofile.ini"))
-
     flags, sampleinfo, samples_df = ValidArgs(sys.argv[1:])
     samples_df = samples_df.reset_index(drop=False).rename(columns={"index": "SAMPLE"})
-    sampleinfo_df = pd.DataFrame.from_dict(sampleinfo, orient="index").reset_index(drop=False).rename(columns={"index": "SAMPLE"})
+    sampleinfo_df = (
+        pd.DataFrame.from_dict(sampleinfo, orient="index")
+        .reset_index(drop=False)
+        .rename(columns={"index": "SAMPLE"})
+    )
+
+    ##> Check the default userprofile, make it if it doesn't exist
+    conf = ReadConfig(os.path.expanduser("~/.ViroConstrictor_defaultprofile.ini"))
 
     preset_fallback_warnings = []
     preset_score_warnings = []
