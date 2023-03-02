@@ -167,7 +167,7 @@ logmessage_strings_info: dict[str, Any] = {
     "Terminating processes on user request, this might take some time.": BaseSnakemakeAbortMessage,
     "Removing temporary output": ColorizeLogMessagePath,
     "will be created.": ColorizeLogMessagePath,
-    "Submitted DRMAA job": BaseLogMessage,
+    "Submitted DRMAA job": SubmitDRMAAMessage,
     "Nothing to be done (all requested files are present and up to date).": BaseLogMessage,
 }
 logmessage_strings_warning: list[str] = [
