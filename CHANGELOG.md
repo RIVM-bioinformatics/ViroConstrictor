@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.4](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.2.3...v1.2.4) (2023-03-02)
+
+
+### Dependencies
+
+* use conda for installing aminoextract instead of pip ([1855470](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/1855470c2ead4510e785ec0f81526259281fe73a))
+
 ## [1.2.3](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.2.2...v1.2.3) (2023-03-01)
 
 
