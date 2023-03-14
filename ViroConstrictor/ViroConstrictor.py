@@ -11,9 +11,9 @@ https://github.com/RIVM-bioinformatics/ViroConstrictor
 import os
 import sys
 
+import pandas as pd
 import snakemake
 import yaml
-import pandas as pd
 
 from ViroConstrictor import __version__
 from ViroConstrictor.functions import color
