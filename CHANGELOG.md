@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.2.5](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.2.4...v1.2.5) (2023-03-14)
+
+
+### Dependencies
+
+* update AmpliGone to version 1.2.1 ([7abaedd](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/7abaedd244db5b19362eb5e6b0ec4ba917cb1a42))
+* update minimal mamba version to 1.0.0 ([7ad5fe8](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/7ad5fe852945de7a7abc0be1c80f5a02e032523f))
+
+
+### Documentation
+
+* add information badges to readme ([53e818f](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/53e818f85eb9b5e08ced64ae3cc6a97b370b822a))
+* update installation instructions in docs ([da57e82](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/da57e82ad40d65619d26a91fd4d10d173a9a54a5))
+
 ## [1.2.4](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.2.3...v1.2.4) (2023-03-02)
 
 
