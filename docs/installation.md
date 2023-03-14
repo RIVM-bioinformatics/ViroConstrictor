@@ -3,53 +3,69 @@
 ViroConstrictor is only available on Linux (or Linux-based) operating systems. MacOS may also work but is not tested.
 ViroConstrictor will *not work* on Windows.  
 
-***Download and installation instructions through Conda will be made available as soon as possible.***  
-Until then, please perform manual installation as described on this page below.
 
-## Download
+## Installation with conda
 
-Use the following command to download the <u>**latest**</u> release of ViroConstrictor and move to the newly downloaded `ViroConstrictor/` directory:
+ViroConstrictor releases are published on Bioconda to allow for easy installation.
 
+If you already have [Mamba](https://mamba.readthedocs.io/en/latest/installation.html) installed then please use the command below:
 ```bash
-git clone https://github.com/RIVM-bioinformatics/ViroConstrictor.git; cd ViroConstrictor; git checkout tags/$(git tag --sort=committerdate | tail -1) >> /dev/null
+mamba install -c conda-forge -c bioconda viroconstrictor
 ```
 
-!!! tip  
+??? info "Click here if you don't have mamba installed in your system already"
+    ```bash
+    conda install -c conda-forge -c bioconda viroconstrictor
+    ```
+
+Installation through mamba/conda is the recommended method for installing ViroConstrictor.
+
+!!! tip "Use a dedicated conda environment for ViroConstrictor"
+    It is recommended to install and use ViroConstrictor in a dedicated conda-environment. This is to ensure there will be no conflicting dependencies.
+
+    You can create a dedicated environment and install viroconstrictor in it through a single command with both mamba and conda.
+
+    The following command will use **mamba** to create a new environment named 'pipeline_env' with viroconstrictor installed in it.
+    ```bash
+    mamba create --name pipeline_env -c conda-forge -c bioconda viroconstrictor
+    ```
+
+    You can change "mamba" for "conda" in the command above if you prefer to use conda or if mamba is not installed on your system.
+
+
+## Download and installation from source
+
+First start by cloning the repository and make sure you're on the latest released version of ViroConstrictor:
+
+??? info inline end "Download a specific version"
     If you want to download a <u>**specific version**</u> of ViroConstrictor then please use the following command below where you replace `{VERSION}` with the version that you want.
 
     ```bash
-    git clone --depth 1 -b {VERSION} https://github.com/RIVM-bioinformatics/ViroConstrictor.git; cd ViroConstrictor
+    git clone -b {VERSION} --depth 1 https://github.com/RIVM-bioinformatics/ViroConstrictor.git; cd ViroConstrictor
     ```
 
-## Installation
+```bash
+# clone the repository from github and switch to the latest released version
+git clone https://github.com/RIVM-bioinformatics/ViroConstrictor.git; cd ViroConstrictor; git checkout tags/$(git tag --sort=committerdate | tail -1) >> /dev/null
+```
 
-**Before you install ViroConstrictor, make sure [Conda](https://docs.conda.io/projects/conda/en/latest/index.html) is installed on your system and functioning properly!**
 
-1. Create the required conda-environment and install the necessary dependencies.  
-    Copy and paste the code-snippet below to create the new conda-environment and directly activate it.  
+!!! tip "Make a new Conda environment before continuing"
+    If you have Conda installed on your system, please create and activate a new environment before continuing.
+
+    Use the following command to create and activate a new Conda environment named "ViroConstrictor" based on the environment-recipe we provide in the github-repository
+
     ```bash
-    conda create --name ViroConstrictor -c conda-forge mamba python=3.10 -y; 
-    conda activate ViroConstrictor; mamba env update -f mamba-env.yaml
+    conda env create -f env.yml; conda activate AmpliGone
     ```
+    The "ViroConstrictor" conda-environment should now be active
 
-    ??? info "Click here if that code-snippet did not work for you"
-        if you get errors from Conda, you can also try the following command(s):
-        ```bash
-        conda env create -f env.yml && conda activate ViroConstrictor
-        ```
-    The "ViroConstrictor" environment should now be active  
+Once the ViroConstrictor repository is downloaded and you've created a conda environment to work in then you can install the downloaded package with pip:
 
-2. You can now actually install ViroConstrictor on your system with:  
-    ```
-    pip install .
-    ```
+```bash
+# Install the downloaded package with pip
+pip install .
+```
 
-    ??? info "Click here if that command did not work for you"
-        If you get errors from `pip`, you can also try the following command: 
-        ```bash
-        python setup.py install
-        ```
-
-**ViroConstrictor is now installed!**  
-You can start ViroConstrictor from anywhere on your system as long as the ViroConstrictor conda-environment is active.  
-You can also use the ViroConstrictor pipeline in a different conda-environment as long as the software dependencies match.
+ViroConstrictor should now be installed!
+You can verify if installation was successful by typing `viroconstrictor --version` on the command-line, this should show the installed ViroConstrictor version.

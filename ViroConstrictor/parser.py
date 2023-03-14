@@ -841,7 +841,11 @@ def CheckInputFiles(indir: str) -> bool:
         extensions = "".join(pathlib.Path(filenames).suffixes)
         foundfiles.append(extensions)
 
-    return any((i in allowedextensions for i in foundfiles))
+    return any(
+        file
+        for file in foundfiles
+        if any(file.endswith(ext) for ext in allowedextensions)
+    )
 
 
 def args_to_df(args: argparse.Namespace, df: pd.DataFrame) -> pd.DataFrame:

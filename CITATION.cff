@@ -1,0 +1,39 @@
+cff-version: 1.2.0
+title: "ViroConstrictor"
+message: "If you use ViroConstrictor for your data analysis, then please cite it as below"
+authors:
+  - given-names: Florian
+    family-names: Zwagemaker
+    affiliation: >-
+      National Institute for Public Health and the
+      Environment (RIVM)
+    orcid: 'https://orcid.org/0000-0001-7788-0307'
+  - given-names: Karim
+    family-names: Hajji
+    affiliation: >-
+      National Institute for Public Health and the
+      Environment (RIVM)
+    orcid: 'https://orcid.org/0009-0002-6384-3446'
+  - given-names: Dennis
+    family-names: Schmitz
+  - given-names: Annelies
+    family-names: Kroneman
+    affiliation: >-
+      National Institute for Public Health and the
+      Environment (RIVM)
+  - name: "The RIVM-IDS Bioinformatics team"
+version: 1.2.5 #x-release-please-version
+doi: 10.5281/zenodo.7688035
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.7688035
+    description: This is the collection of archived snapshots of all versions of ViroConstrictor
+repository-code: 'https://github.com/RIVM-bioinformatics/ViroConstrictor'
+url: >-
+  https://rivm-bioinformatics.github.io/ViroConstrictor/latest/
+abstract: >-
+  ViroConstrictor is a pipeline designed to process raw
+  FastQ data from viral amplicon-based sequencing and
+  generate biologically correct consensus sequences of a
+  given viral genome
+license: AGPL-3.0

@@ -1,5 +1,48 @@
 # Changelog
 
+## [1.2.5](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.2.4...v1.2.5) (2023-03-14)
+
+
+### Dependencies
+
+* update AmpliGone to version 1.2.1 ([7abaedd](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/7abaedd244db5b19362eb5e6b0ec4ba917cb1a42))
+* update minimal mamba version to 1.0.0 ([7ad5fe8](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/7ad5fe852945de7a7abc0be1c80f5a02e032523f))
+
+
+### Documentation
+
+* add information badges to readme ([53e818f](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/53e818f85eb9b5e08ced64ae3cc6a97b370b822a))
+* update installation instructions in docs ([da57e82](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/da57e82ad40d65619d26a91fd4d10d173a9a54a5))
+
+## [1.2.4](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.2.3...v1.2.4) (2023-03-02)
+
+
+### Dependencies
+
+* use conda for installing aminoextract instead of pip ([1855470](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/1855470c2ead4510e785ec0f81526259281fe73a))
+
+## [1.2.3](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.2.2...v1.2.3) (2023-03-01)
+
+
+### Bug Fixes
+
+* allow input fastq files that contain multiple dots ([07994a2](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/07994a2d5caec1fef067fcef3ba19390bbf3f92a))
+* ensure compability between the Influenza preset and illumina short read data ([9a9f1d9](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/9a9f1d985d28064e28cc729d75f8e8039c30b8e9))
+* ensure match_preset_name() actually returns all required values ([d49f238](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/d49f2381f430b0f3730ba2991c9360179cac2ff3))
+* update permissions for GH-actions workflows ([1f760ba](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/1f760bacf71b069b0e1b07bd043e9d4af0857640))
+
+
+### Documentation
+
+* add citations file ([1f760ba](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/1f760bacf71b069b0e1b07bd043e9d4af0857640))
+* update installation instructions for new environment file and environment creation with Mamba ([84183a7](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/84183a79c4c21543eb69cb0ede0a7923eb54459c))
+
+
+### Dependencies
+
+* add python-magic version 0.4.27 to environment ([84183a7](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/84183a79c4c21543eb69cb0ede0a7923eb54459c))
+* pin version of AminoExtract to 0.2.1 ([84183a7](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/84183a79c4c21543eb69cb0ede0a7923eb54459c))
+
 ## [1.2.2](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.2.1...v1.2.2) (2023-01-24)
 
 
