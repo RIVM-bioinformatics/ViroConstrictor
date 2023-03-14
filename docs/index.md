@@ -3,10 +3,10 @@ hide:
   - navigation
   - toc
 ---
+[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/viroconstrictor/README.html)
 
 [![CodeFactor](https://www.codefactor.io/repository/github/rivm-bioinformatics/viroconstrictor/badge)](https://www.codefactor.io/repository/github/rivm-bioinformatics/viroconstrictor)
-![Snakemake](https://img.shields.io/badge/snakemake-7.15-brightgreen.svg)
-
+![Snakemake](https://img.shields.io/badge/snakemake-7.15-brightgreen.svg)  
 ![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/RIVM-bioinformatics/ViroConstrictor?include_prereleases)
 ![GitHub](https://img.shields.io/github/license/RIVM-bioinformatics/ViroConstrictor)
 
