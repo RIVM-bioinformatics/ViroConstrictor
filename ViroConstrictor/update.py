@@ -1,3 +1,4 @@
+import contextlib
 import json
 import os
 import subprocess
@@ -5,167 +6,141 @@ import sys
 from distutils.version import LooseVersion
 from urllib import request
 
-from ViroConstrictor import __version__
+from mamba.api import install as mamba_install
+from rich import print
+
+from ViroConstrictor import __prog__, __version__
 
 from .functions import color
 from .userprofile import AskPrompts
 
+repo_channels = ("bioconda", "conda-forge", "intel", "anaconda")
+
+
+@contextlib.contextmanager
+def silence_stdout_stderr():
+    sderr_fd = sys.stderr.fileno()
+    sdout_fd = sys.stdout.fileno()
+    orig_stderr_fd = os.dup(sderr_fd)
+    orig_stdout_fd = os.dup(sdout_fd)
+    null_fd = os.open(os.devnull, os.O_WRONLY)
+    os.dup2(null_fd, sdout_fd)
+    os.dup2(null_fd, sderr_fd)
+    try:
+        yield
+    finally:
+        os.dup2(orig_stdout_fd, sdout_fd)
+        os.dup2(orig_stderr_fd, sderr_fd)
+        os.close(null_fd)
+        os.close(orig_stderr_fd)
+        os.close(orig_stdout_fd)
+
 
 def update(sysargs, conf):
 
+    local_version = LooseVersion(__version__)
+    online_version = None
+
     autocontinue = conf["GENERAL"]["auto_update"] == "yes"
     ask_prompt = not autocontinue and conf["GENERAL"]["ask_for_update"] == "yes"
+
     if autocontinue:
         try:
-            latest_release = request.urlopen(
-                "https://api.github.com/repos/RIVM-bioinformatics/Viroconstrictor/releases"
+            online_metadata = request.urlopen(
+                f"https://api.anaconda.org/release/bioconda/{__prog__.lower()}/latest"
             )
         except Exception as e:
-            sys.stderr.write("Unable to connect to GitHub API\n" f"{e}")
+            sys.stderr.write("Unable to connect to Anaconda API\n" f"{e}")
             return
 
-        latest_release = json.loads(latest_release.read().decode("utf-8"))[0]
+        online_metadata = json.loads(online_metadata.read().decode("utf-8"))
+        if latest_online_release := online_metadata.get("distributions")[0]:
+            release_metadata = latest_online_release
+            online_version = LooseVersion(release_metadata.get("version"))
 
-        latest_release_tag = latest_release["tag_name"]
-        latest_release_tag_tidied = LooseVersion(
-            latest_release["tag_name"].lstrip("v").strip()
-        )
-
-        localversion = LooseVersion(__version__)
-
-        if (
-            localversion < latest_release_tag_tidied
-            and localversion.version[0] == latest_release_tag_tidied.version[0]
-        ):
-            subprocess.run(
-                [
-                    sys.executable,
-                    "-m",
-                    "pip",
-                    "install",
-                    "--upgrade",
-                    f"git+https://github.com/RIVM-bioinformatics/ViroConstrictor@{latest_release_tag}",
-                ],
-                check=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-
-            print(
-                f"ViroConstrictor updated to {color.YELLOW + color.BOLD}{latest_release_tag}{color.END}"
-            )
-
-            subprocess.run(sysargs)
-            sys.exit(0)
-        if (
-            localversion < latest_release_tag_tidied
-            and localversion.version[0] != latest_release_tag_tidied.version[0]
-        ):
-            if (
-                AskPrompts(
-                    f"""{color.RED + color.BOLD}There's a new version of ViroConstrictor available. This new version is a {color.UNDERLINE}major{color.END + color.RED + color.BOLD} update and cannot be installed automatically.{color.END}
-
-Current version: {color.RED + color.BOLD}{'v' + __version__}{color.END}
-Latest version: {color.GREEN + color.BOLD}{latest_release_tag}{color.END}
-
-The auto-updater can't install major version changes for you, as this would (probably) severely break your installation.
-If you wish to update to the newest version you will have to do so manually.
-
-If you want to run ViroConstrictor with the current version then please turn off the auto-updater. 
-If you won't turn off the auto-updater we'll keep nagging you about this until you manually updated to the newest version.
-""",
-                    "Do you want to turn off the auto-updater so you wont get this message again? (yes/no) ",
-                    ("yes", "no"),
-                    fixedchoices=True,
-                )
-                == "yes"
-            ):
-                conf["GENERAL"]["auto_update"] = "no"
-                conf["GENERAL"]["ask_for_update"] = "yes"
-
-                with open(
-                    os.path.expanduser("~/.ViroConstrictor_defaultprofile.ini"), "w"
-                ) as f:
-                    conf.write(f)
-                print("The ViroConstrictor auto-updater is now turned off")
+            if online_version is not None and (local_version < online_version):
                 print(
-                    f"Please re-run the ViroConstrictor command to execute the workflow with the current version ({'v' + __version__}) or update manually to the newest version"
+                    f"Updating ViroConstrictor to latest version: [bold yellow]{online_version}[/bold yellow]"
                 )
-                sys.exit(0)
-            print(
-                "ViroConstrictor is unable to update itself to the newest version as this is a major version change that cannot be installed automatically.\nPlease update manually and try again or turn-off the auto-updater "
-            )
-            print("Exiting...")
-            sys.exit(1)
-        return
-
+                result = False
+                with silence_stdout_stderr():
+                    result = mamba_install(
+                        os.environ["CONDA_PREFIX"],
+                        (f"{__prog__.lower()} {online_version}",),
+                        repo_channels,
+                    )
+                if result:
+                    print(
+                        f"ViroConstrictor updated to version [bold yellow]{online_version}[/bold yellow]]"
+                    )
+                    subprocess.run(sysargs)
+                    sys.exit(0)
+                print(
+                    f"Failed to update ViroConstrictor to version [bold yellow]{online_version}[/bold yellow]]]"
+                )
+                print("Please update manually")
+                print(
+                    f"Continuing with current version: [bold red]{local_version}[/bold red]"
+                )
+                return
     if not ask_prompt:
         return
 
     try:
-        latest_release = request.urlopen(
-            "https://api.github.com/repos/RIVM-bioinformatics/Viroconstrictor/releases"
+        online_metadata = request.urlopen(
+            f"https://api.anaconda.org/release/bioconda/{__prog__.lower()}/latest"
         )
     except Exception as e:
-        sys.stderr.write("Unable to connect to GitHub API\n" f"{e}")
+        sys.stderr.write("Unable to connect to Anaconda API\n" f"{e}")
         return
 
-    latest_release = json.loads(latest_release.read().decode("utf-8"))[0]
+    online_metadata = json.loads(online_metadata.read().decode("utf-8"))
+    if latest_online_release := online_metadata.get("distributions")[0]:
+        online_version = LooseVersion(latest_online_release.get("version"))
 
-    latest_release_tag = latest_release["tag_name"]
-    latest_release_tag_tidied = LooseVersion(
-        latest_release["tag_name"].lstrip("v").strip()
-    )
-
-    localversion = LooseVersion(__version__)
-
-    if (
-        localversion < latest_release_tag_tidied
-        and localversion.version[0] == latest_release_tag_tidied.version[0]
-    ):
-        if (
-            AskPrompts(
-                f"""
+        if local_version < online_version:
+            if (
+                AskPrompts(
+                    f"""
 There's a new version of ViroConstrictor available.
 
-Current version: {color.RED + color.BOLD}{'v' + __version__}{color.END}
-Latest version: {color.GREEN + color.BOLD}{latest_release_tag}{color.END}\n""",
-                """Do you want to update? [yes/no] """,
-                ["yes", "no"],
-                fixedchoices=True,
-            )
-            == "yes"
-        ):
-            subprocess.run(
-                [
-                    sys.executable,
-                    "-m",
-                    "pip",
-                    "install",
-                    "--upgrade",
-                    f"git+https://github.com/RIVM-bioinformatics/ViroConstrictor@{latest_release_tag}",
-                ],
-                check=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
+Current version: {color.BOLD + color.RED}{local_version}{color.END}
+Latest version: {color.BOLD + color.GREEN}{online_version}{color.END}\n""",
+                    "Do you want to update? [yes/no]",
+                    ["yes", "no"],
+                    fixedchoices=True,
+                )
+                == "yes"
+            ):
 
+                print(
+                    f"Updating ViroConstrictor to latest version: [bold yellow]{online_version}[/bold yellow]"
+                )
+
+                result = False
+                with silence_stdout_stderr():
+                    result = mamba_install(
+                        os.environ["CONDA_PREFIX"],
+                        (f"{__prog__.lower()} {online_version}",),
+                        repo_channels,
+                    )
+                if result:
+                    print(
+                        f"ViroConstrictor updated to version [bold yellow]{online_version}[/bold yellow]"
+                    )
+                    subprocess.run(sysargs)
+                    sys.exit(0)
+                print(
+                    f"Failed to update ViroConstrictor to version [bold yellow]{online_version}[/bold yellow]"
+                )
+                print("Please update manually")
+                print(
+                    f"Continuing with current version: [bold red]{local_version}[/bold red]"
+                )
+                return
             print(
-                f"ViroConstrictor updated to {color.YELLOW + color.BOLD}{latest_release_tag}{color.END}"
+                f"Skipping update to version: [bold yellow]{online_version}[/bold yellow]"
             )
-
-            subprocess.run(sysargs)
-            sys.exit(0)
-        print(f"Skipping update to version {latest_release_tag}")
-        print("Continuing...")
+            print("Continuing...")
+            return
         return
-    if localversion < latest_release_tag_tidied:
-        print(
-            f"{color.RED}There's a new version of ViroConstrictor available. This new version is a {color.UNDERLINE}major{color.END + color.RED} update and cannot be installed automatically.{color.END}"
-        )
-        print(
-            f"""Current version: {color.RED + color.BOLD}v{__version__}{color.END}\nLatest version: {color.GREEN + color.BOLD}{latest_release_tag}{color.END}"""
-        )
-
-        print("Continuing without updating...\n")
-    return
