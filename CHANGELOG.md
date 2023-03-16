@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.6](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.2.5...v1.2.6) (2023-03-16)
+
+
+### Bug Fixes
+
+* add amino-acid names as a tuple to allow for hashing ([9f002c7](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/9f002c7b2814fa15ac47be8f040ee77621adba71))
+
+
+### Dependencies
+
+* allow for more lenient snakemake versioning &gt;=7.15.2 in base environment ([adc6051](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/adc6051d83e856c89c6e253f984bb9ebec77b83c))
+
 ## [1.2.5](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.2.4...v1.2.5) (2023-03-14)
 
 
