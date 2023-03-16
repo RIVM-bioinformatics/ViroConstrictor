@@ -49,7 +49,7 @@ def Get_AA_feats(df):
             if AA_dict:
                 for k, v in AA_dict.items():
                     if k == rec["RefID"]:
-                        rec["AA_FEAT_NAMES"] = v
+                        rec["AA_FEAT_NAMES"] = tuple(v)
             else:
                 rec["AA_FEAT_NAMES"] = np.nan
         else:
