@@ -1,4 +1,5 @@
 import contextlib
+import configparser
 import json
 import os
 import subprocess
@@ -10,9 +11,8 @@ from mamba.api import install as mamba_install
 from rich import print
 
 from ViroConstrictor import __prog__, __version__
-
-from .functions import color
-from .userprofile import AskPrompts
+from ViroConstrictor.logging import log
+from ViroConstrictor.userprofile import AskPrompts
 
 repo_channels = ("bioconda", "conda-forge", "intel", "anaconda")
 
@@ -50,7 +50,7 @@ def update(sysargs, conf):
                 f"https://api.anaconda.org/release/bioconda/{__prog__.lower()}/latest"
             )
         except Exception as e:
-            sys.stderr.write("Unable to connect to Anaconda API\n" f"{e}")
+            log.warning("Unable to connect to Anaconda API\n" f"{e}")
             return
 
         online_metadata = json.loads(online_metadata.read().decode("utf-8"))
@@ -91,7 +91,7 @@ def update(sysargs, conf):
             f"https://api.anaconda.org/release/bioconda/{__prog__.lower()}/latest"
         )
     except Exception as e:
-        sys.stderr.write("Unable to connect to Anaconda API\n" f"{e}")
+        log.error("Unable to connect to Anaconda API\n" f"{e}")
         return
 
     online_metadata = json.loads(online_metadata.read().decode("utf-8"))

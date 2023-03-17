@@ -8,10 +8,10 @@ import re
 
 from Bio import SeqIO
 
-from ViroConstrictor.functions import color
+from ViroConstrictor.logging import log
 
 
-def ContainsSpecials(seq):
+def ContainsSpecials(seq: str) -> bool:
     """It takes a string as input and returns True if the string contains any characters other than the 20
     amino acids, '-', or '*'
 
@@ -22,24 +22,21 @@ def ContainsSpecials(seq):
 
     Returns
     -------
+    bool
         True or False
 
     """
-
     chars = re.compile("[^actgumrwsykvhdbnACTGUMRWSYKVHDBN-]")
-
-    if chars.search(seq) is None:
-        return False
-    return True
+    return chars.search(seq) is not None
 
 
-def ContainsAmbiguities(seq):
+def ContainsAmbiguities(seq: str) -> bool:
     """If the sequence contains any of the characters in the string "umrwsykvhdbnUMRWSYKVHDBN" (all possible nucleotide ambiguities), then return
     True, otherwise return False
 
     Parameters
     ----------
-    seq
+    seq : str
         the sequence to be checked
 
     Returns
@@ -48,22 +45,21 @@ def ContainsAmbiguities(seq):
 
     """
     chars = re.compile("[umrwsykvhdbnUMRWSYKVHDBN]")
-    if chars.search(seq) is None:
-        return False
-    return True
+    return chars.search(seq) is not None
 
 
-def IsValidRef(inputfile):
+def IsValidRef(inputfile: str) -> bool:
     """If the input file is a valid FASTA file, and none of the sequences in the file contain ambiguous
     characters, then the file is a valid reference file
 
     Parameters
     ----------
-    inputfile
+    inputfile : str
         The path to the reference file.
 
     Returns
     -------
+    bool
         A boolean value.
 
     """
@@ -75,17 +71,18 @@ def IsValidRef(inputfile):
     return False
 
 
-def IsValidFasta(inputfile):
+def IsValidFasta(inputfile: str) -> bool:
     """Function takes a fasta file (path) as input and returns True if all sequences in the file are valid, and False if
     any sequence in given fasta is invalid
 
     Parameters
     ----------
-    inputfile
+    inputfile : str
         The input file to check.
 
     Returns
     -------
+    bool
         A boolean value.
 
     """
@@ -95,30 +92,30 @@ def IsValidFasta(inputfile):
         ContainsSpecials(str(record.seq)) for record in SeqIO.parse(inputfile, "fasta")
     ]
 
-    if any(results):
-        return False
-    return True
+    return not any(results)
 
 
-def CheckReferenceFile(referencefile, warnings_as_errors=False):
-    """Checks reference file properties to be compatible. Does not return anything.
+def CheckReferenceFile(referencefile: str, warnings_as_errors: bool = False) -> None:
+    """Checks that the reference file is in the correct format, and that it doesn't contain any
+    ambiguities
 
     Parameters
     ----------
-    referencefile
-        The reference file to check.
-    warnings_as_errors, optional
+    referencefile : str
+        The path to the reference file.
+    warnings_as_errors : bool, optional
         If True, warnings will be treated as errors.
 
     """
-    errors = []
-    warnings = []
+    errors: list[Exception] = []
+    warnings: list[str] = []
     for record in SeqIO.parse(referencefile, "fasta"):
         try:
             check_ref_header(record.id)
         except Exception as e:
             errors.append(e)
 
+        # Check whether there are stretches of ambiguities
         matches = re.split("[ACTGactg]", str(record.seq))
         if longer_than_four := [m for m in matches if len(m) > 4]:
             errors.append(
@@ -128,53 +125,47 @@ def CheckReferenceFile(referencefile, warnings_as_errors=False):
                 )
             )
 
+        # Check whether there are any ambiguous nucleotides
         if ambiguities := sum(map(len, matches)):
             unique_ambiguities = "".join(set("".join(matches)))
-            w = Warning(
-                f"{ambiguities} Ambiguous nucleotides found in file {referencefile} in record {record.id}:\n"
-                f"\t{unique_ambiguities}\n"
-                "Check whether this is intended."
-            )
+            w = f"""[cyan]{ambiguities}[/cyan] Ambiguous nucleotides found in file [magenta]{referencefile}[/magenta] in record [blue]{record.id}[/blue]:\t[bold yellow]{unique_ambiguities}[/bold yellow]\nPlease check whether this is intended."""
             if warnings_as_errors:
-                errors.append(w)
+                errors.append(Exception(w))
             else:
                 warnings.append(w)
     if warnings:
-        print(color.YELLOW)
         for w in warnings:
-            print(w.args[0])
-        print(color.END)
+            log.warning(f"{w}")
     if errors:
-        print(color.RED)
-        print("Error:")
         for e in errors:
-            print(e.args[0])
-        print(color.END)
+            log.error(f"{e}")
         exit(1)
 
 
-def check_ref_header(s):
-    """Function checks wether or not the reference header is valid.
-    Checks include blacklisted characters (e.g. characters used in system paths, or '*) and reserved windows words (e.g. 'CON' & 'AUX').
-    Returns the header if it is valid, otherwise raises an error.
+def check_ref_header(header: str) -> str | None:
+    """Checks the header of a reference fasta file to make sure there are no blacklisted or forbidden characters.
+    Returns the header if it is valid, otherwise exits the program with an error message.
 
     Parameters
     ----------
-    s
-        the string to check
+    header : str
+        The header of the reference fasta file.
 
     Returns
     -------
-        A list of tuples.
+    str
+        the fasta header.
 
     """
-    if not s:
-        raise ValueError("Reference fasta does not have a header. Please add it.")
+    if not header:
+        log.error("Reference fasta does not have a header. Please add it.")
+        exit(1)
     blacklisted_characters = {"\\", "/", ":", "*", "?", '"', "<", ">", "|", "\0"}
-    if found_in_blacklist := {c for c in s if c in blacklisted_characters}:
-        raise ValueError(
-            f"Reference fasta header\n\t{s}\ncontains invalid characters\n\t{found_in_blacklist}\nPlease change the fasta header for this reference."
+    if found_in_blacklist := {c for c in header if c in blacklisted_characters}:
+        log.error(
+            f"Reference fasta header '[bold red]{header}[/bold red]' contains the following invalid characters [bold red]{found_in_blacklist}[/bold red]\nPlease change the fasta header for this reference."
         )
+        exit(1)
     reserved_words_on_windows = {
         "CON",
         "PRN",
@@ -199,12 +190,14 @@ def check_ref_header(s):
         "LPT8",
         "LPT9",
     }
-    if s in reserved_words_on_windows:
-        raise ValueError(
-            f"Reference fasta header\n\t{s}\nis a reserved word on the windows operating system. Please change it."
+    if header in reserved_words_on_windows:
+        log.error(
+            f"Reference fasta header '[bold red]{header}[/bold red]' is a reserved word on the windows operating system.\nPlease change it as it may cause problems."
         )
-    if all(c == "." for c in s):
-        raise ValueError(
-            f"Reference fasta header\n\t{s}\nis not valid.\nPlease change the fasta header for this reference."
+        exit(1)
+    if all(c == "." for c in header):
+        log.error(
+            f"Reference fasta header '[bold red]{header}[/bold red]' is not a valid fasta header.\nPlease change the fasta header for this reference and try again."
         )
-    return s
+        exit(1)
+    return header

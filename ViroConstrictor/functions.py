@@ -6,11 +6,11 @@ Basic functions for various uses throughout ViroConstrictor
 
 import glob
 import os
-import re as _re
+import re
 import readline
 import shutil
 import textwrap
-from argparse import SUPPRESS, ArgumentParser, HelpFormatter
+from argparse import SUPPRESS, Action, ArgumentParser, HelpFormatter
 from typing import IO, Optional
 
 import rich
@@ -36,23 +36,24 @@ class FlexibleArgFormatter(HelpFormatter):
     * Changes the behaviour of the metavar to be only printed once per long AND shorthand argument, instead of printing the metavar multiple times for every possible flag.
     """
 
-    def __init__(self, prog):
+    def __init__(self, prog: str) -> None:
         term_width = shutil.get_terminal_size().columns
         max_help_position = min(max(24, term_width // 2), 80)
         super().__init__(prog, max_help_position=max_help_position)
 
-    def _get_help_string(self, action):
+    def _get_help_string(self, action: Action) -> Optional[str]:
         """ """
-        help_text = action.help
+        help_text: Optional[str] = action.help
         if (
-            action.default != SUPPRESS
+            help_text is not None
+            and action.default != SUPPRESS
             and "default" not in help_text.lower()
             and action.default is not None
         ):
             help_text += f"\n  ([underline]default: {str(action.default)}[/underline])"
         return help_text
 
-    def _format_action_invocation(self, action):
+    def _format_action_invocation(self, action: Action) -> str:
         """ """
         if not action.option_strings or action.nargs == 0:
             return super()._format_action_invocation(action)
@@ -60,35 +61,35 @@ class FlexibleArgFormatter(HelpFormatter):
         args_string = self._format_args(action, default)
         return ", ".join(action.option_strings) + " " + args_string
 
-    def _split_lines(self, text, width):
+    def _split_lines(self, text: str, width: int) -> list[str]:
         return self._para_reformat(text, width)
 
-    def _fill_text(self, text, width, indent):
+    def _fill_text(self, text: str, width: int, indent: str) -> str:
         lines = self._para_reformat(text, width)
         return "\n".join(lines)
 
-    def _indents(self, line):
+    def _indents(self, line: str) -> tuple[int, int]:
         """Return line indent level and "sub_indent" for bullet list text."""
 
-        indent = len(_re.match(r"( *)", line).group(1))
-        if list_match := _re.match(r"( *)(([*\-+>]+|\w+\)|\w+\.) +)", line):
-            sub_indent = indent + len(list_match.group(2))
+        matches = re.match(r"( *)", line)
+        indent = len(matches[1]) if matches else 0
+        if list_match := re.match(r"( *)(([*\-+>]+|\w+\)|\w+\.) +)", line):
+            sub_indent = indent + len(list_match[2])
         else:
             sub_indent = indent
-
         return (indent, sub_indent)
 
-    def _split_paragraphs(self, text):
+    def _split_paragraphs(self, text: str) -> list[str]:
         """Split text in to paragraphs of like-indented lines."""
 
         text = textwrap.dedent(text).strip()
-        text = _re.sub("\n\n[\n]+", "\n\n", text)
+        text = re.sub("\n\n[\n]+", "\n\n", text)
 
-        last_sub_indent = None
-        paragraphs = []
+        last_sub_indent: Optional[int] = None
+        paragraphs: list[str] = []
         for line in text.splitlines():
             (indent, sub_indent) = self._indents(line)
-            is_text = _re.search(r"[^\s]", line) is not None
+            is_text = re.search(r"[^\s]", line) is not None
 
             if is_text and indent == sub_indent == last_sub_indent:
                 paragraphs[-1] += f" {line}"
@@ -98,16 +99,15 @@ class FlexibleArgFormatter(HelpFormatter):
             last_sub_indent = sub_indent if is_text else None
         return paragraphs
 
-    def _para_reformat(self, text, width):
+    def _para_reformat(self, text: str, width: int) -> list[str]:
         """Reformat text, by paragraph."""
 
-        paragraphs = []
+        paragraphs: list[str] = []
         for paragraph in self._split_paragraphs(text):
-
             (indent, sub_indent) = self._indents(paragraph)
 
             paragraph = self._whitespace_matcher.sub(" ", paragraph).strip()
-            new_paragraphs = textwrap.wrap(
+            new_paragraphs: list[str] = textwrap.wrap(
                 text=paragraph,
                 width=width,
                 initial_indent=" " * indent,
@@ -130,23 +130,6 @@ class RichParser(ArgumentParser):
         return rich.print(message)
 
 
-class color:
-    """
-    define basic colors to use in the terminal
-    """
-
-    PURPLE = "\033[95m"
-    CYAN = "\033[96m"
-    DARKCYAN = "\033[36m"
-    BLUE = "\033[94m"
-    GREEN = "\033[92m"
-    YELLOW = "\033[93m"
-    RED = "\033[91m"
-    BOLD = "\033[1m"
-    UNDERLINE = "\033[4m"
-    END = "\033[0m"
-
-
 # tabCompleter Class taken from https://gist.github.com/iamatypeofwalrus/5637895
 ## this was intended for the raw_input() function of python. But that one is deprecated now
 ## However, this also seems to work for the new input() functions
@@ -159,7 +142,7 @@ class tabCompleter:
     http://stackoverflow.com/questions/5637124/tab-completion-in-pythons-raw-input
     """
 
-    def pathCompleter(self, text, state):
+    def pathCompleter(self, text: str, state: int) -> str:
         """
         This is the tab completer for systems paths.
         Only tested on *nix systems
@@ -174,9 +157,9 @@ class tabCompleter:
         if os.path.isdir(text):
             text += "/"
 
-        return [x for x in glob.glob(text + "*")][state]
+        return list(glob.glob(f"{text}*"))[state]
 
-    def createListCompleter(self, ll):
+    def createListCompleter(self, ll: list[str]) -> None:
         """
         This is a closure that creates a method that autocompletes from
         the given list.
@@ -186,12 +169,13 @@ class tabCompleter:
         from.
         """
 
-        def listCompleter(text, state):
-            line = readline.get_line_buffer()
+        def listCompleter(text: str, state: int) -> Optional[str]:
+            line: str = readline.get_line_buffer()
 
-            if not line:
-                return [c + " " for c in ll][state]
-
-            return [c + " " for c in ll if c.startswith(line)][state]
+            return (
+                [c for c in ll if c.startswith(line)][state]
+                if line
+                else [f"{c} " for c in ll][state]
+            )
 
         self.listCompleter = listCompleter

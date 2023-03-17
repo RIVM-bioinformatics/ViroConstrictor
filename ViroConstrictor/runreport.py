@@ -1,6 +1,8 @@
+import configparser
 import os
 import sys
 from datetime import datetime
+from typing import Any, Literal
 
 from fpdf import FPDF
 
@@ -8,10 +10,10 @@ from ViroConstrictor import __version__
 
 
 class PDF(FPDF):
-    def timestamp(self):
+    def timestamp(self) -> str:
         return datetime.now().strftime("%d-%m-%Y %H:%M")
 
-    def header(self):
+    def header(self) -> None:
         self.set_font("Helvetica", size=23, style="B")
         self.cell(0, 20, "ViroConstrictor", align="C", ln=1)
         self.set_font("Helvetica", size=12)
@@ -19,20 +21,24 @@ class PDF(FPDF):
         self.set_font("Helvetica", size=8)
         self.cell(0, 5, self.timestamp(), align="C", ln=1)
         self.set_font("Helvetica", size=10, style="BU")
-        self.cell(0, 15, "Version: " + __version__, align="C", ln=1)
+        self.cell(0, 15, f"Version: {__version__}", align="C", ln=1)
 
 
-def directory_sections(pdf, iteration, contents):
+def directory_sections(pdf: PDF, iteration: int, contents: dict[int, list[str]]) -> PDF:
     pdf.set_font("Helvetica", size=12, style="B")
-    pdf.cell(40, 12, contents.get(iteration)[0], align="L")
+    if outdir := contents.get(iteration):
+        pdf.cell(40, 12, outdir[0], align="L")
     pdf.set_font("Helvetica", size=10)
-    pdf.cell(0, 12, contents.get(iteration)[1], align="L", ln=1)
+    if indir := contents.get(iteration):
+        pdf.cell(0, 12, indir[1], align="L", ln=1)
     pdf.set_font("Helvetica", size=12, style="I")
-    pdf.cell(0, 5, contents.get(iteration)[2], align="L", ln=1)
+    if startdir := contents.get(iteration):
+        pdf.cell(0, 5, startdir[2], align="L", ln=1)
+    # pdf.cell(0, 5, contents.get(iteration)[2], align="L", ln=1)
     return pdf
 
 
-def analysis_details(pdf, header, text):
+def analysis_details(pdf: PDF, header: str, text: str) -> PDF:
     pdf.set_font("Helvetica", size=12, style="B")
     pdf.cell(55, 5, header, align="L")
     pdf.set_font("Helvetica", size=10)
@@ -40,13 +46,21 @@ def analysis_details(pdf, header, text):
     return pdf
 
 
-def WriteReport(workingdir, inpath, startpath, conf, sparams, sconfig, status):
+def WriteReport(
+    workingdir: str,
+    inpath: str,
+    startpath: str,
+    conf: configparser.ConfigParser,
+    sparams: dict[str, Any],
+    sconfig: dict[str, Any],
+    status: Literal["Failed", "Success"],
+) -> None:
     if os.getcwd() != workingdir:
         os.chdir(workingdir)
 
     sconfig.update(sparams)
 
-    directories = {
+    directories: dict[int, list[str]] = {
         0: [
             "Output directory:",
             "This is the directory where the output files were written as well as this summary.",
@@ -107,4 +121,4 @@ def WriteReport(workingdir, inpath, startpath, conf, sparams, sconfig, status):
     command = str(sys.argv[0]).split("/")[-1], *sys.argv[1:]
     pdf.multi_cell(0, 5, f'{" ".join(command)}')
 
-    pdf.output("Runinfomation.pdf", "F")
+    pdf.output(name="Runinfomation.pdf")
