@@ -38,7 +38,6 @@ def conc(frames):
 
 
 if __name__ == "__main__":
-
     Frame = conc(Make_frames(flags.input))
 
     Frame = Frame.fillna("NA")

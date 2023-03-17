@@ -56,7 +56,7 @@ git clone https://github.com/RIVM-bioinformatics/ViroConstrictor.git; cd ViroCon
     Use the following command to create and activate a new Conda environment named "ViroConstrictor" based on the environment-recipe we provide in the github-repository
 
     ```bash
-    conda env create -f env.yml; conda activate AmpliGone
+    conda env create -f env.yml; conda activate ViroConstrictor
     ```
     The "ViroConstrictor" conda-environment should now be active
 
