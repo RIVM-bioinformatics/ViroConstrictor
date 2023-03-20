@@ -97,6 +97,7 @@ def LogFileOverride(msg: dict[str, Any], logfile) -> None:
     if msg.get("msg") is not None:
         log.info(f"Complete log: [magenta]{logfile}[/magenta]")
 
+
 def SubmitDRMAAMessage(msg: dict[str, Any]) -> None:
     if logmessage := msg.get("msg"):
         logmessage_items = logmessage.rstrip(".").split(" ")
@@ -106,7 +107,10 @@ def SubmitDRMAAMessage(msg: dict[str, Any]) -> None:
                 identifiers.append(int(item))
             except Exception:
                 continue
-        log.info(f"Submitted JobID [cyan]{identifiers[0]}[/cyan] to the DRMAA cluster using external JobID [cyan]{identifiers[1]}[/cyan].")
+        log.info(
+            f"Submitted JobID [cyan]{identifiers[0]}[/cyan] to the DRMAA cluster using external JobID [cyan]{identifiers[1]}[/cyan]."
+        )
+
 
 def HandleJobInfoMessage(msg: dict[str, Any]) -> None:
     if not (processname := msg.get("name")):
