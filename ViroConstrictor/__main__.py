@@ -23,45 +23,50 @@ from ViroConstrictor.runreport import WriteReport
 from ViroConstrictor.update import update
 
 
-def get_preset_warning_list(
-    sample_info_df: pd.DataFrame,
-) -> tuple[list[str], list[str]]:
-    """Takes a dataframe with sample information and returns a tuple of two lists of warnings
-
+def get_preset_warning_list(sample_info_df: pd.DataFrame,) -> tuple[list[str], list[str]]:
+    """This function generates warning messages for cases where the preset used in ViroConstrictor was
+    determined with low certainty or could not be determined at all.
+    
     Parameters
     ----------
     sample_info_df : pd.DataFrame
-        pd.DataFrame
-
+        `sample_info_df` is a pandas DataFrame containing information about the samples being analyzed,
+    including the virus being targeted, the preset used for analysis, and the preset score (a measure of
+    how well the preset matches the input-target).
+    
     Returns
     -------
-        A list of warnings.
-
+        a tuple containing two lists of strings: `preset_fallback_warnings` and `preset_score_warnings`.
+    
     """
-    preset_fallback_warnings = preset_score_warnings = []
-    for s in sample_info_df.itertuples():
-        sample, preset, score, input_target = (
-            s.SAMPLE,
-            s.PRESET,
-            s.PRESET_SCORE,
-            s.VIRUS,
-        )
-        if score == 0.0:
-            warn = f"""[red]Sample '[bold underline]{sample}[/bold underline]' was given the following information as an input-target: '[bold underline]{input_target}[/bold underline]'.
-This information could however not be used to determine a preset. Because of this, the preset '[bold underline]{preset}[/bold underline]' was used instead.[/red]
-[yellow]Please check your input-target for any significant misspellings, or consider using an alias or a different abbreviation for your input-target to check whether this resolves the issue.[/yellow]
+    preset_fallback_warnings = []
+    preset_score_warnings = []
 
-It may be that your input-target does not yet have an associated preset in ViroConstrictor. 
-If your suspect this to be the case, please open an issue on the ViroConstrictor GitHub page: [magenta underline]https://github.com/RIVM-bioinformatics/ViroConstrictor[/magenta underline]"""
-            preset_fallback_warnings.append(warn)
-            continue
-        if score < 0.8:
-            warn = f"""[red]Sample '[bold underline]{sample}[/bold underline]' was given the following information as an input-target: '[bold underline]{input_target}[/bold underline]'.
-As a result, the preset '{preset}' was chosen. But this was done with less than 80% certainty.[/red]
+    p_scorewarning_df = sample_info_df.loc[(sample_info_df["PRESET_SCORE"] < 0.8) & (sample_info_df["PRESET_SCORE"] > 0.0)]
+    for _input, _preset in zip(list(set(p_scorewarning_df["VIRUS"].tolist())), list(set(p_scorewarning_df["PRESET"].tolist()))):
+        filtered_df = p_scorewarning_df.loc[(p_scorewarning_df["VIRUS"] == _input) & (p_scorewarning_df["PRESET"] == _preset)]
+        samples = [' * ' + x + '\n' for x in filtered_df["SAMPLE"].tolist()]
+        score = filtered_df["PRESET_SCORE"].tolist()[0]
+        
+        warn = f"""[red]The following information was given as an input-target: '[bold underline]{_input}[/bold underline]'.
+As a result, the preset '{_preset}' was chosen. But this was done with less than 80% certainty.[/red]
 [yellow]Certainty score: [bold]{score:.0%}[/bold][/yellow]
-Please check the input-target and try again if a different preset is required."""
-            preset_score_warnings.append(warn)
-            continue
+Please check the input-target and try again if a different preset is required.
+This applies to the following samples:\n{''.join(samples)}"""
+        preset_score_warnings.append(warn)
+    
+    p_fallbackwarning_df = sample_info_df.loc[sample_info_df["PRESET_SCORE"] == 0.0]
+    for _input, _preset in zip(list(set(p_fallbackwarning_df["VIRUS"].tolist())), list(set(p_fallbackwarning_df["PRESET"].tolist()))):
+        filtered_df = p_fallbackwarning_df.loc[(p_fallbackwarning_df["VIRUS"] == _input) & (p_fallbackwarning_df["PRESET"] == _preset)]
+        samples = [' * ' + x + '\n' for x in filtered_df["SAMPLE"].tolist()]
+
+        warn = f"""[red]The following information was given as an input-target: '[bold underline]{_input}[/bold underline]'.
+This information could however not be used to determine a preset. Because of this, the preset '[bold underline]{_preset}[/bold underline]' was used instead.[/red]
+[yellow]Please check your input-target for any significant misspellings, or consider using an alias or a different abbreviation for your input-target to check whether this resolves the issue.[/yellow]
+This applies to the following samples:\n{''.join(samples)}
+It may also be possible that your input-target does not yet have an associated preset in ViroConstrictor. 
+If your suspect this to be the case, please open an issue on the ViroConstrictor GitHub page: [magenta underline]https://github.com/RIVM-bioinformatics/ViroConstrictor[/magenta underline]"""
+        preset_fallback_warnings.append(warn)
     return preset_fallback_warnings, preset_score_warnings
 
 
