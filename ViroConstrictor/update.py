@@ -46,12 +46,14 @@ def fetch_online_metadata() -> dict[str, Any] | None:
         return None
     return json.loads(online_metadata.read().decode("utf-8"))
 
+
 def post_install(sysargs: list[str], online_version: LooseVersion) -> NoReturn:
     print(
         f"ViroConstrictor updated to version [bold yellow]{online_version}[/bold yellow]"
     )
     subprocess.run(sysargs)
     sys.exit(0)
+
 
 # TODO: split this into smaller functions
 def update(sysargs: list[str], conf: configparser.ConfigParser) -> None:
@@ -134,7 +136,7 @@ Latest version: [bold green]{online_version}[/bold green]\n""",
                         )
                 except Exception as e:
                     update_succesfull = False
-                    
+
                     log.error(
                         f"ViroConstrictpor update process to version [bold yellow]{online_version}[/bold yellow] failed at package solver stage.\nThis might indicate that a new version of ViroConstrictor is uploaded to bioconda but download-servers are not ready yet.\nPlease try again later."
                     )
