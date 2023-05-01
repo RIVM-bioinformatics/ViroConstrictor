@@ -61,7 +61,7 @@ def get_preset_warning_list(
         warn = f"""[red]The following information was given as an input-target: '[bold underline]{_input}[/bold underline]'.
 As a result, the preset '{_preset}' was chosen. But this was done with less than 80% certainty.[/red]
 [yellow]Certainty score: [bold]{score:.0%}[/bold][/yellow]
-Please check the input-target and try again if a different preset is required.
+Please check the input-target and try again if a different preset is required, or use the [italic]"--disable-presets"[/italic] flag in order to always use the default preset.
 This applies to the following samples:\n{''.join(samples)}"""
         preset_score_warnings.append(warn)
 
