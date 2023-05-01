@@ -13,6 +13,7 @@ nav:
   - Usage: 
     - manual.md
     - Formatting inputs: input-formatting.md
+    - Working with analysis presets: presets.md
     - Explanation of amplicon types: amplicons.md
 
   - Changelog: changelog.md
@@ -31,6 +32,7 @@ theme:
       - navigation.instant
       #- toc.integrate
       - navigation.top
+      - content.code.copy
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
