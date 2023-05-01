@@ -148,7 +148,7 @@ def match_preset_name(targetname: str, use_presets: bool) -> Tuple[str, float]:
     best_match = difflib.get_close_matches(query, aliases_list, cutoff=0.0, n=1)[0]
     score = difflib.SequenceMatcher(None, a=query, b=best_match).ratio()
 
-    if score < 0.35:
+    if score < 0.40:
         return "DEFAULT", 0
     if matched_preset := get_key_from_value(aliases, best_match):
         return matched_preset, score
