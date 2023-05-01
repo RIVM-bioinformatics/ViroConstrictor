@@ -3,13 +3,19 @@ import re
 from typing import Tuple
 
 aliases = {
-    "SARSCOV2": ["SARS-COV-2", "SARS2", "COVID", "COV", "SARSCOV", "SARSCOV2"],
+    "SARSCOV2": [
+        "SARS-COV-2",
+        "SARS2",
+        "COVID",
+        "COV",
+        "SARSCOV",
+        "SARSCOV2",
+        "CORONAVIRUS",
+    ],
     "INFLUENZA": [
         "FLU",
         "INFLU",
         "INFLUENZA",
-        "INFA",
-        "INFB",
         "INFLUENZA_A",
         "INFLUENZA_B",
         "INF",
