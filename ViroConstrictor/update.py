@@ -21,6 +21,9 @@ api_url = f"https://api.anaconda.org/release/bioconda/{__prog__.lower()}/latest"
 
 @contextlib.contextmanager
 def silence_stdout_stderr():
+    """
+    This function temporarily redirects stdout and stderr to a null device to silence them.
+    """
     sderr_fd = sys.stderr.fileno()
     sdout_fd = sys.stdout.fileno()
     orig_stderr_fd = os.dup(sderr_fd)
@@ -39,6 +42,14 @@ def silence_stdout_stderr():
 
 
 def fetch_online_metadata() -> dict[str, Any] | None:
+    """This function fetches online metadata from the Anaconda API URL and returns it as a dictionary, or returns
+    None if there is an exception.
+
+    Returns
+    -------
+        A dictionary with string keys and values of any type, or `None` if an exception occurs while trying to connect to the Anaconda API.
+
+    """
     try:
         online_metadata = request.urlopen(api_url)
     except Exception as e:
@@ -48,6 +59,18 @@ def fetch_online_metadata() -> dict[str, Any] | None:
 
 
 def post_install(sysargs: list[str], online_version: LooseVersion) -> NoReturn:
+    """This function prints a message indicating the updated version of ViroConstrictor and runs a
+    subprocess of the original ViroConstrictor command before exiting the system.
+
+    Parameters
+    ----------
+    sysargs : list[str]
+        A list of command-line arguments to be passed to a subprocess that will be run after the print
+    statement.
+    online_version : LooseVersion
+        The version number of the updated ViroConstrictor package that is available online.
+
+    """
     print(
         f"ViroConstrictor updated to version [bold yellow]{online_version}[/bold yellow]"
     )

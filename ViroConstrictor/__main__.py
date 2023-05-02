@@ -99,6 +99,20 @@ If your suspect this to be the case, please open an issue on the ViroConstrictor
 def show_preset_warnings(
     warnings: list[str], fallbacks: list[str], disabled: bool
 ) -> None:
+    """This function logs warning and fallback messages if they exist and if the disabled flag is not set.
+
+    Parameters
+    ----------
+    warnings : list[str]
+        A list of warning messages to be displayed.
+    fallbacks : list[str]
+        The `fallbacks` parameter is a list of strings that contains warnings about preset-fallback behavior.
+    disabled : bool
+        The "disabled" parameter is a boolean flag that indicates whether or not warning and fallback messages
+    should be displayed. If it is set to True, then no warnings or fallbacks will be shown. If it is set
+    to False, then warnings and fallbacks will be shown if there are any.
+
+    """
     if warnings and not disabled:
         for w in warnings:
             log.warn(f"{w}")
