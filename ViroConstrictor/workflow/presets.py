@@ -134,13 +134,35 @@ def get_key_from_value(d: dict, value: str) -> str | None:
 
 
 def match_preset_name(targetname: str, use_presets: bool) -> Tuple[str, float]:
+    """The function takes a target name and a boolean flag as input, and returns a tuple containing the
+    best matching preset name and a score based on string similarity, or a default value if the flag is
+    False or no match is found with a high enough similarity score.
+
+    Parameters
+    ----------
+    targetname : str
+        The name of the target that needs to be matched with a preset name.
+    use_presets : bool
+        A boolean parameter that determines whether to use preset values or not. If it is set to True, the
+    function will use preset values to match the targetname. If it is set to False, the function will
+    return a default value.
+
+    Returns
+    -------
+        A tuple containing a string and a float. The string represents the matched preset name, and the
+    float represents the similarity score between the target name and the matched preset name. If the
+    use_presets parameter is False, the function returns the string "DEFAULT" and the float 0. If no
+    match is found with a similarity score greater than or equal to 0.4, the function returns the string
+    "DEFAULT" and the float 0. If a match is found with a similarity score greater than or equal to 0.4,
+    the function returns the matched preset name and the similarity score.
+    """
     if not use_presets:
         return "DEFAULT", 0
     # regex to remove all special characters from targetname except underscores and dashes
     query = re.sub(r"[^_a-zA-Z0-9/-]+", "", targetname).upper()
 
     if query == "DEFAULT":
-        return "DEFAULT", 0
+        return "DEFAULT", 1
 
     # flatten list of lists aliases.values() into a single list
     aliases_list = [item for sublist in aliases.values() for item in sublist]
@@ -156,4 +178,21 @@ def match_preset_name(targetname: str, use_presets: bool) -> Tuple[str, float]:
 
 
 def get_preset_parameter(preset_name: str, parameter_name: str) -> str:
+    """This function takes in a preset name and a parameter name, and returns the corresponding value for
+    that parameter in the preset dictionary.
+
+    Parameters
+    ----------
+    preset_name : str
+        A string representing the name of a preset. Presets are pre-defined sets of values for certain
+    parameters.
+    parameter_name : str
+        The name of the parameter that we want to retrieve from the preset.
+
+    Returns
+    -------
+        A string value that corresponds to the parameter name of a given preset name. The value is
+    retrieved from a dictionary called "presets".
+
+    """
     return presets[preset_name][parameter_name]

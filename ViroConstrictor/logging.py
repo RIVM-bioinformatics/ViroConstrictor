@@ -14,6 +14,10 @@ richstyles = list(set(list(DEFAULT_STYLES.keys()) + list(ANSI_COLOR_NAMES.keys()
 
 
 class StripBracketsFilter(logging.Filter):
+    """
+    A class used to strip rich-style markup from log messages before they are written to a log file.
+    """
+
     def filter(self, record):
         pattern = r"\[/?\b(%s)\b[^\]]*\]" % "|".join(richstyles)
         record.msg = re.sub(pattern, "", record.msg)
@@ -26,6 +30,19 @@ log.setLevel("INFO")
 
 
 def setup_logger(workdir: str) -> str:
+    """This function sets up a logger for ViroConstrictor and returns the path to the log file.
+
+    Parameters
+    ----------
+    workdir : str
+        The `workdir` parameter is a string representing the directory path where the log file will be
+    saved.
+
+    Returns
+    -------
+        A string which is the absolute path of the log file created by the function.
+
+    """
     logging.getLogger("asyncio").setLevel(logging.CRITICAL)
     logging.getLogger("snakemake").setLevel(logging.CRITICAL)
     logging.getLogger("smart_open").setLevel(logging.CRITICAL)
@@ -84,6 +101,14 @@ def BaseSnakemakeAbortMessage(msg: dict[str, Any]) -> None:
 
 
 def ColorizeLogMessagePath(msg: dict[str, Any]) -> None:
+    """This function colorizes any file paths found in a log message with magenta color.
+
+    Parameters
+    ----------
+    msg : dict[str, Any]
+        The `msg` parameter is a dictionary that contains information about a log message.
+
+    """
     if logmessage := msg.get("msg"):
         msgparts = logmessage.split(" ")
         for word in msgparts:
@@ -94,11 +119,32 @@ def ColorizeLogMessagePath(msg: dict[str, Any]) -> None:
 
 
 def LogFileOverride(msg: dict[str, Any], logfile) -> None:
+    """This function logs a message with the name of a logfile.
+
+    Parameters
+    ----------
+    msg : dict[str, Any]
+        The `msg` parameter is a dictionary that contains the original logging dictionary from snakemake. It is expected to have
+    a key "msg" which contains the original log message retrieved from snakemake. This serves as a trigger for the function to run.
+    logfile
+        The `logfile` parameter is a variable that represents the file path or name of the log file that
+    will be used to store the log messages.
+
+    """
     if msg.get("msg") is not None:
         log.info(f"Complete log: [magenta]{logfile}[/magenta]")
 
 
 def SubmitDRMAAMessage(msg: dict[str, Any]) -> None:
+    """The function extracts job identifiers from a message dictionary and logs a message indicating that a
+    job has been submitted to a DRMAA cluster using an external job ID.
+
+    Parameters
+    ----------
+    msg : dict[str, Any]
+        The parameter `msg` is a dictionary that contains a log message.
+
+    """
     if logmessage := msg.get("msg"):
         logmessage_items = logmessage.rstrip(".").split(" ")
         identifiers = []
@@ -113,6 +159,15 @@ def SubmitDRMAAMessage(msg: dict[str, Any]) -> None:
 
 
 def HandleJobInfoMessage(msg: dict[str, Any]) -> None:
+    """The function logs information about a job being executed, including the process name, sample, input
+    target, reference ID, job ID, and log file.
+
+    Parameters
+    ----------
+    msg : dict[str, Any]
+        The `msg` parameter is a dictionary that contains information about a job to be executed.
+
+    """
     if not (processname := msg.get("name")):
         return
     wildcards = msg.get("wildcards")
@@ -132,6 +187,14 @@ def HandleJobInfoMessage(msg: dict[str, Any]) -> None:
 
 
 def HandleJobErrorMessage(msg: dict[str, Any]) -> None:
+    """This function handles error messages for a job and logs relevant information.
+
+    Parameters
+    ----------
+    msg : dict[str, Any]
+        The `msg` parameter is a dictionary containing information about a job error message.
+
+    """
     if not (processname := msg.get("name")):
         return
     wildcards = msg.get("wildcards")
@@ -180,6 +243,20 @@ logmessage_strings_warning: list[str] = [
 
 
 def snakemake_logger(logfile: str) -> object:
+    """`snakemake_logger` is a wrapper function that returns a log handler that processes different types of log messages
+    and outputs them accordingly.
+    This function has the purpose of allowing the `logfile` variable to be passed to the underlying log_handler.
+
+    Parameters
+    ----------
+    logfile : str
+        The path and filename of the log file where the log messages will be written.
+
+    Returns
+    -------
+        The function `snakemake_logger` returns a function object `log_handler`.
+
+    """
     def log_handler(msg: dict) -> None:
         loglevel = msg.get("level")
         logmessage = msg.get("msg")
