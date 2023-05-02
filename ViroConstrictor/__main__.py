@@ -78,7 +78,7 @@ This applies to the following samples:\n{''.join(samples)}"""
                 )
             )
         )
-    )
+    ) if p_fallbackwarning_df.shape[0] > 0 else ([], [])
     for _input, _preset in zip(targets, presets):
         filtered_df = p_fallbackwarning_df.loc[
             (p_fallbackwarning_df["VIRUS"] == _input)
