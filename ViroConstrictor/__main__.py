@@ -90,8 +90,7 @@ This applies to the following samples:\n{''.join(samples)}"""
 This information could however not be used to determine a preset. Because of this, the preset '[bold underline]{_preset}[/bold underline]' was used instead.[/red]
 [yellow]Please check your input-target for any significant misspellings, or consider using an alias or a different abbreviation for your input-target to check whether this resolves the issue.[/yellow]
 This applies to the following samples:\n{''.join(samples)}
-It may also be possible that your input-target does not yet have an associated preset in ViroConstrictor. 
-If your suspect this to be the case, please open an issue on the ViroConstrictor GitHub page: [magenta underline]https://github.com/RIVM-bioinformatics/ViroConstrictor[/magenta underline]"""
+It may also be possible that your input-target does not yet have an associated preset in ViroConstrictor. Please see the documentation for more information regarding the currently available presets."""
         preset_fallback_warnings.append(warn)
     return preset_fallback_warnings, preset_score_warnings
 
