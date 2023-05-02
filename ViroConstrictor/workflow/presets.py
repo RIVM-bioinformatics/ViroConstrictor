@@ -157,12 +157,12 @@ def match_preset_name(targetname: str, use_presets: bool) -> Tuple[str, float]:
     the function returns the matched preset name and the similarity score.
     """
     if not use_presets:
-        return "DEFAULT", 0
+        return "DEFAULT", float(0)
     # regex to remove all special characters from targetname except underscores and dashes
     query = re.sub(r"[^_a-zA-Z0-9/-]+", "", targetname).upper()
 
     if query == "DEFAULT":
-        return "DEFAULT", 1
+        return "DEFAULT", float(1)
 
     # flatten list of lists aliases.values() into a single list
     aliases_list = [item for sublist in aliases.values() for item in sublist]
@@ -171,10 +171,10 @@ def match_preset_name(targetname: str, use_presets: bool) -> Tuple[str, float]:
     score = difflib.SequenceMatcher(None, a=query, b=best_match).ratio()
 
     if score < 0.40:
-        return "DEFAULT", 0
+        return "DEFAULT", float(0)
     if matched_preset := get_key_from_value(aliases, best_match):
         return matched_preset, score
-    return "DEFAULT", 0
+    return "DEFAULT", float(0)
 
 
 def get_preset_parameter(preset_name: str, parameter_name: str) -> str:
