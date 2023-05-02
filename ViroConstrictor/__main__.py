@@ -9,6 +9,7 @@ https://github.com/RIVM-bioinformatics/ViroConstrictor
 # pylint: disable=C0103
 
 import sys
+from itertools import zip_longest
 from typing import Literal, NoReturn
 
 import pandas as pd
@@ -66,10 +67,19 @@ This applies to the following samples:\n{''.join(samples)}"""
         preset_score_warnings.append(warn)
 
     p_fallbackwarning_df = sample_info_df.loc[sample_info_df["PRESET_SCORE"] == 0.0]
-    for _input, _preset in zip(
-        list(set(p_fallbackwarning_df["VIRUS"].tolist())),
-        list(set(p_fallbackwarning_df["PRESET"].tolist())),
-    ):
+    targets, presets = (
+        list(x)
+        for x in (
+            zip(
+                *zip_longest(
+                    list(set(p_fallbackwarning_df["VIRUS"].tolist())),
+                    list(set(p_fallbackwarning_df["PRESET"].tolist())),
+                    fillvalue="DEFAULT",
+                )
+            )
+        )
+    )
+    for _input, _preset in zip(targets, presets):
         filtered_df = p_fallbackwarning_df.loc[
             (p_fallbackwarning_df["VIRUS"] == _input)
             & (p_fallbackwarning_df["PRESET"] == _preset)

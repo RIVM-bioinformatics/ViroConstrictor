@@ -57,7 +57,6 @@ def post_install(sysargs: list[str], online_version: LooseVersion) -> NoReturn:
 
 # TODO: split this into smaller functions
 def update(sysargs: list[str], conf: configparser.ConfigParser) -> None:
-
     local_version = LooseVersion(__version__)
     online_version = None
 
@@ -121,7 +120,6 @@ Latest version: [bold green]{online_version}[/bold green]\n""",
                 )
                 == "yes"
             ):
-
                 log.info(
                     f"Updating ViroConstrictor to latest version: [bold yellow]{online_version}[/bold yellow]"
                 )
