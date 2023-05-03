@@ -6,46 +6,45 @@ This is so a user doesn't have to give this information manually on every run
 """
 import configparser
 import os
+import pathlib
 import readline
 import subprocess
 import sys
 
-from .functions import color, tabCompleter
+from rich import print
+from rich.console import Console
+
+from ViroConstrictor.functions import tabCompleter
+from ViroConstrictor.logging import log
 
 
-def FileExists(file):
-    """Function returns a boolean value (True or False) depending on whether the file exists or not
+def FileExists(file: pathlib.Path) -> bool:
+    """Return True if the file exists, False if it doesn't.
 
-    Parameters
-    ----------
-    file
-        The file to check if it exists.
+    Args:
+        file: The file to check.
 
-    Returns
-    -------
-        True or False
-
+    Returns:
+        True if the file exists, False if it doesn't.
     """
     return bool(os.path.isfile(file))
 
 
-def FileIsPopulated(file):
-    """If the file exists and is not empty, return True. Otherwise, return False
+def FileIsPopulated(file: pathlib.Path) -> bool:
+    """Checks if the given file is populated.
 
-    Parameters
-    ----------
-    file
-        The file to check.
+    Args:
+        file: The file to check.
 
-    Returns
-    -------
-        The size of the file in bytes.
-
+    Returns:
+        True if the given file is populated, False otherwise.
     """
     return os.stat(file).st_size >= 1
 
 
-def AskPrompts(intro, prompt, options, fixedchoices=False):
+def AskPrompts(
+    intro: str, prompt: str, options: list, fixedchoices: bool = False
+) -> str | None:
     """This function is used to ask the user a question and provide a list of options to choose from.
     A free-text user reply is also possible.
 
@@ -73,7 +72,7 @@ def AskPrompts(intro, prompt, options, fixedchoices=False):
         the reply variable.
 
     """
-    if fixedchoices is True:
+    if fixedchoices:
         completer = tabCompleter()
         completer.createListCompleter(options)
 
@@ -82,10 +81,13 @@ def AskPrompts(intro, prompt, options, fixedchoices=False):
         readline.set_completer(completer.listCompleter)
 
     subprocess.call("/bin/clear", shell=False)
+
+    print(f"[bold blue]{'='*75}[/bold blue]")
     print(intro)
+    print(f"[bold blue]{'='*75}[/bold blue]")
     while "the answer is invalid":
-        if fixedchoices is True:
-            reply = input(prompt).lower().strip()
+        if fixedchoices:
+            reply = Console(soft_wrap=True).input(prompt)
             if reply in options:
                 return reply
             if reply == "quit":
@@ -95,7 +97,7 @@ def AskPrompts(intro, prompt, options, fixedchoices=False):
                 print(
                     "The given answer was invalid. Please choose one of the available options\n"
                 )
-        if fixedchoices is False:
+        if not fixedchoices:
             reply = input(prompt).strip()
             if reply == "quit":
                 sys.exit(-1)
@@ -103,7 +105,7 @@ def AskPrompts(intro, prompt, options, fixedchoices=False):
                 return reply
 
 
-def BuildConfig(file):
+def BuildConfig(file: pathlib.Path) -> None:
     """Function asks the user a series of questions and writes the answers to a config file
 
     Parameters
@@ -118,55 +120,51 @@ def BuildConfig(file):
 
     conf_object = configparser.ConfigParser()
 
-    conf_object["COMPUTING"] = {
+    conf_object["COMPUTING"] = {  # type: ignore
         "compmode": AskPrompts(
-            f"""
-ViroConstrictor can run in two computing-modes.
-{color.YELLOW + color.UNDERLINE}local{color.END} or {color.YELLOW + color.UNDERLINE}HPC/Grid{color.END}
-Please specify the computing-mode that you wish to use for ViroConstrictor.
-            """,
-            f"""Do you wish to run ViroConstrictor in {color.YELLOW}local{color.END} or {color.YELLOW}grid{color.END} mode? [local/grid] """,
+            """ViroConstrictor can run in two computing-modes.
+[yellow underline]local[/yellow underline] or [yellow underline]HPC/Grid[/yellow underline]
+Please specify the computing-mode that you wish to use for ViroConstrictor.""",
+            """Do you wish to run ViroConstrictor in [yellow]local[/yellow] or [yellow]grid[/yellow] mode? \[local/grid] """,
             ["local", "grid"],
             fixedchoices=True,
         )
     }
 
     if conf_object["COMPUTING"]["compmode"] == "grid":
-        conf_object["COMPUTING"]["queuename"] = AskPrompts(
-            f"""
-Grid mode has been chosen. Please enter the name of computing-queue that you wish to use on your grid/HPC cluster.\nThis is necessary so ViroConstrictor will send all the various tasks to the correct (remote) computers.\n\n{color.BOLD + color.UNDERLINE + color.YELLOW}Please note that this is case-sensitive{color.END}\n""",
+        conf_object["COMPUTING"]["queuename"] = AskPrompts(  # type: ignore
+            f"""Grid mode has been chosen. Please enter the name of computing-queue that you wish to use on your grid/HPC cluster.\nThis is necessary so ViroConstrictor will send all the various tasks to the correct (remote) computers.\n\n[bold underline yellow]Please note that this is case-sensitive[/bold underline yellow]\n""",
             "Please specify the name of the Queue on your grid/HPC cluster that you wish to use. [free text] ",
             [],
             fixedchoices=False,
         )
 
-    conf_object["GENERAL"] = {
+    conf_object["GENERAL"] = {  # type: ignore
         "auto_update": AskPrompts(
-            f"""
-ViroConstrictor can check and update itself everytime you run it.
-Please specify whether you wish to enable the auto-update feature.
-            """,
-            f"""Do you wish to enable the auto-update feature? [yes/no] """,
+            """ViroConstrictor can check and update itself everytime you run it.
+Please specify whether you wish to enable the auto-update feature.""",
+            f"""Do you wish to enable the auto-update feature? \[yes/no] """,
             ["yes", "no"],
             fixedchoices=True,
         )
     }
 
     if conf_object["GENERAL"]["auto_update"] == "no":
-        conf_object["GENERAL"]["ask_for_update"] = AskPrompts(
-            f"""
-ViroConstrictor will not automatically update itself, but ViroConstrictor can still check for updates and ask you if you wish to update.
-            """,
-            f"""Do you want ViroConstrictor to {color.YELLOW}ask you{color.END} to update everytime a new update is available? [yes/no] """,
+        conf_object["GENERAL"]["ask_for_update"] = AskPrompts(  # type: ignore
+            """ViroConstrictor will not automatically update itself, but ViroConstrictor can still check for updates and ask you if you wish to update.""",
+            """Do you want ViroConstrictor to [yellow underline]ask you[/yellow underline] to update everytime a new update is available? \[yes/no] """,
             ["yes", "no"],
             fixedchoices=True,
         )
 
+    subprocess.call("/bin/clear", shell=False)
+
     with open(file, "w") as conffile:
         conf_object.write(conffile)
+        log.info("[green]Successfully written global configuration settings[/green]")
 
 
-def AllOptionsGiven(config):
+def AllOptionsGiven(config: configparser.ConfigParser) -> bool:
     """Function checks if all required config options are present in the already existing config file.
     Necessary to avoid missing config options when a user updates to a new version of ViroConstrictor.
 
@@ -180,7 +178,7 @@ def AllOptionsGiven(config):
         A boolean value.
 
     """
-    all_present = True
+    all_present: bool = True
 
     if config.has_section("COMPUTING") is True:
         if (
@@ -207,7 +205,7 @@ def AllOptionsGiven(config):
     return all_present
 
 
-def ReadConfig(file):
+def ReadConfig(file: pathlib.Path) -> configparser.ConfigParser:
     """ReadConfig() reads a config file, and if it doesn't exist, it creates it.
     -> If it does exist, but is empty, the configfile is recreated.
     -> If it exists and is populated, it reads it.
@@ -235,4 +233,5 @@ def ReadConfig(file):
         BuildConfig(file)
         config = configparser.ConfigParser()
         config.read(file)
+    log.info("[green]Succesfully read global configuration file[/green]")
     return config

@@ -63,22 +63,22 @@ setup(
         "ViroConstrictor": ["workflow/envs/*", "workflow/scripts/*", "workflow/files/*"]
     },
     install_requires=[
-        "urllib3>=1.26",
-        "biopython==1.79",
+        "urllib3",
+        "biopython>=1.79",
         "drmaa==0.7.9",
-        "fpdf2==2.5.1",
-        "pandas==1.4.2",
-        "openpyxl==3.0.9",
+        "fpdf2",
+        "pandas>=1.4.2",
+        "openpyxl",
         "pyyaml==6.0",
         "rich==13.*",
-        "AminoExtract",
+        "AminoExtract>=0.2.1",
     ],
     entry_points={
         "console_scripts": [
-            "ViroConstrictor = ViroConstrictor.ViroConstrictor:main",
-            "viroconstrictor = ViroConstrictor.ViroConstrictor:main",
-            "viroConstrictor = ViroConstrictor.ViroConstrictor:main",
-            "Viroconstrictor = ViroConstrictor.ViroConstrictor:main",
+            "ViroConstrictor = ViroConstrictor.__main__:main",
+            "viroconstrictor = ViroConstrictor.__main__:main",
+            "viroConstrictor = ViroConstrictor.__main__:main",
+            "Viroconstrictor = ViroConstrictor.__main__:main",
         ]
     },
     keywords=[],
