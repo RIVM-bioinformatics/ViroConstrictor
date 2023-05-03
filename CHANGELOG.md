@@ -3,6 +3,12 @@
 ## [1.3.0](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.2.6...v1.3.0) (2023-05-03)
 
 
+### Features
+
+* addition of proper logging functionality for the ViroConstrictor package ([20a952b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc))
+* replace snakemake logging output through our own log handler for unified output ([20a952b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc))
+
+
 ### Bug Fixes
 
 * always use the absolute path of given files when parsing from the commandline options ([a5b56e5](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/a5b56e5edbae8dee65324b0d049e427a537c1fcd))
@@ -12,6 +18,8 @@
 * ensure variables for preset-warning fallbacks are properly set when no fallbackwarnings have to be logged ([d7ddf0a](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/d7ddf0a97799c260bdbabd28bdf5d79c5deadbf0))
 * print the sample key instead of dictionary contents in non-existing reference error log ([f8c7a12](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/f8c7a12707d1311986eaedd4b90187c449f6d3ee))
 * Properly show all preset-fallback warnings instead of just the first in the index ([48662db](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/48662dbe86e695b47e0bd2247defb8fc7e365a6c))
+* suppress snakemake logging output (workaround for https://github.com/snakemake/snakemake/issues/2089) ([20a952b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc))
+* ensure `samples_df` and `samples_dict` always contain the same information ([20a952b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc))
 
 
 ### Documentation
@@ -23,6 +31,17 @@
 * updated manual with links to more detailed presets functionality explanation page ([7b2a66f](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/7b2a66f60668ab1c827ba0e796add738fc2293d9))
 * updated mkdocs configuration to include new page ([7b2a66f](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/7b2a66f60668ab1c827ba0e796add738fc2293d9))
 * updated mkdocs configuration to include the direct copy-button for code blocks ([7b2a66f](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/7b2a66f60668ab1c827ba0e796add738fc2293d9))
+
+
+### Code Refactoring
+
+* Use a generic (`__main__.py`) top level entry-point instead of the named `ViroConstrictor.py` entrypoint ([20a952b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc))
+* re-structure argument parsing functionalities into its own class ([20a952b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc))
+* re-structure snakemake run-information and config functionalities into its own class ([20a952b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc))
+* remove old shell stdout-coloring method with the rich library ([20a952b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc))
+* simplify several functions to ensure a properly defined return ([20a952b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc))
+* Use f-strings more consistently for i.e. string concatenation with variables ([20a952b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc))
+* add type-hints to all functions ([20a952b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc))
 
 
 ### Miscellaneous Chores
