@@ -63,15 +63,15 @@ setup(
         "ViroConstrictor": ["workflow/envs/*", "workflow/scripts/*", "workflow/files/*"]
     },
     install_requires=[
-        "urllib3==1.26.*",
-        "biopython==1.81",
+        "urllib3",
+        "biopython>=1.79",
         "drmaa==0.7.9",
-        "fpdf2==2.5.1",
-        "pandas==2.0.*",
-        "openpyxl==3.1.*",
+        "fpdf2",
+        "pandas>=1.4.2",
+        "openpyxl",
         "pyyaml==6.0",
         "rich==13.*",
-        "AminoExtract==0.2.1",
+        "AminoExtract>=0.2.1",
     ],
     entry_points={
         "console_scripts": [
