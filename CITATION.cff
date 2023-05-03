@@ -1,6 +1,8 @@
 cff-version: 1.2.0
 title: "ViroConstrictor"
-message: "If you use ViroConstrictor for your data analysis, then please cite it as below"
+message: >-
+  If you use ViroConstrictor for your data analysis, then please cite it as:
+  Zwagemaker, F., Hajji, K., Schmitz, D., Kroneman, A., & The RIVM-IDS Bioinformatics team. ViroConstrictor [Computer software]. https://doi.org/10.5281/zenodo.7688035
 authors:
   - given-names: Florian
     family-names: Zwagemaker

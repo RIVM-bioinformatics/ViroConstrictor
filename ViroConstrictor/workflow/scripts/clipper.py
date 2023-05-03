@@ -94,7 +94,6 @@ with flags.output as fileout:
     minimal_read_length = int(reflength * flags.min_aligned_length)
 
     for read in bamfile:
-
         read_start = read.query_alignment_start
         read_end = read.query_alignment_end
 
