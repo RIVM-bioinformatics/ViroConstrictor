@@ -153,7 +153,7 @@ class CLIparser:
                 if reffile := sample.get("REFERENCE"):
                     if not os.path.isfile(reffile):
                         log.error(
-                            f"[bold red]The given reference fasta file for sample '{sample}' does not exist. Please check the reference fasta and try again. Exiting...[/bold red]"
+                            f"[bold red]The given reference fasta file for sample '{item}' does not exist. Please check the reference fasta and try again. Exiting...[/bold red]"
                         )
                         sys.exit(1)
                     reference_files.add(reffile)
