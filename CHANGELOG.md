@@ -1,5 +1,64 @@
 # Changelog
 
+## [1.3.0](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.2.6...v1.3.0) (2023-05-03)
+
+
+### Features
+
+* addition of proper logging functionality for the ViroConstrictor package ([20a952b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc))
+* replace snakemake logging output through our own log handler for unified output ([20a952b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc))
+
+
+### Bug Fixes
+
+* always use the absolute path of given files when parsing from the commandline options ([a5b56e5](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/a5b56e5edbae8dee65324b0d049e427a537c1fcd))
+* change certainty values of match_preset_name() function to be explicitly floating points to ensure correct datatypes in downstream check ([a74249c](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/a74249c0b0bd6f3c3adb37c8f45d2225b96f03ba))
+* change preset fallback certainty threshold to be slightly more conservative ([7542c46](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/7542c46cc61bd5b66c2a382a1dae122a815b73eb))
+* clean-handling of mamba solver mismatching (i.e. CDN mismatch with upstream) ([680730b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/680730b67e98f1fc1947bbe539e77f6e99630de3))
+* ensure variables for preset-warning fallbacks are properly set when no fallbackwarnings have to be logged ([d7ddf0a](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/d7ddf0a97799c260bdbabd28bdf5d79c5deadbf0))
+* print the sample key instead of dictionary contents in non-existing reference error log ([f8c7a12](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/f8c7a12707d1311986eaedd4b90187c449f6d3ee))
+* Properly show all preset-fallback warnings instead of just the first in the index ([48662db](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/48662dbe86e695b47e0bd2247defb8fc7e365a6c))
+* suppress snakemake logging output (workaround for https://github.com/snakemake/snakemake/issues/2089) ([20a952b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc))
+* ensure `samples_df` and `samples_dict` always contain the same information ([20a952b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc))
+
+
+### Documentation
+
+* add citation and DOI information to readme and documentation site ([a2cf117](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/a2cf117b906d947ea750bdf5b1125c3ad18e75ae))
+* add explanatory docstrings to various functions ([0e1a368](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/0e1a3686c7e391ec18ca55e0c6818bf8807c1d02))
+* fix typo in installation docs ([acc30d9](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/acc30d9d3118498398db3cb54dea52aa08b4ebd4))
+* update documentation with dedicated page for presets ([7b2a66f](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/7b2a66f60668ab1c827ba0e796add738fc2293d9))
+* updated manual with links to more detailed presets functionality explanation page ([7b2a66f](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/7b2a66f60668ab1c827ba0e796add738fc2293d9))
+* updated mkdocs configuration to include new page ([7b2a66f](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/7b2a66f60668ab1c827ba0e796add738fc2293d9))
+* updated mkdocs configuration to include the direct copy-button for code blocks ([7b2a66f](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/7b2a66f60668ab1c827ba0e796add738fc2293d9))
+
+
+### Code Refactoring
+
+* Use a generic (`__main__.py`) top level entry-point instead of the named `ViroConstrictor.py` entrypoint ([20a952b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc))
+* re-structure argument parsing functionalities into its own class ([20a952b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc))
+* re-structure snakemake run-information and config functionalities into its own class ([20a952b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc))
+* remove old shell stdout-coloring method with the rich library ([20a952b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc))
+* simplify several functions to ensure a properly defined return ([20a952b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc))
+* Use f-strings more consistently for i.e. string concatenation with variables ([20a952b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc))
+* add type-hints to all functions ([20a952b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc))
+
+
+### Miscellaneous Chores
+
+* empty commit ([84a34b9](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/84a34b9ea504bb0a52594803f5f5b9dbfe5665f3))
+
+
+### Dependencies
+
+* change biopython version to 1.81 ([6bd437a](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/6bd437a17c89c7248e8a8c5ccef03df32b6c4fd5))
+* change openpyxl version to 3.1.* ([6bd437a](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/6bd437a17c89c7248e8a8c5ccef03df32b6c4fd5))
+* change pandas version to 2.0.* ([6bd437a](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/6bd437a17c89c7248e8a8c5ccef03df32b6c4fd5))
+* change snakemake version to 7.25.* in base environment ([6bd437a](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/6bd437a17c89c7248e8a8c5ccef03df32b6c4fd5))
+* change urllib3 version to be more lenient (1.26.*) ([6bd437a](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/6bd437a17c89c7248e8a8c5ccef03df32b6c4fd5))
+* pin AminoExtract version to 0.2.1 ([6bd437a](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/6bd437a17c89c7248e8a8c5ccef03df32b6c4fd5))
+* use more lenient package requirements in setup.py to allow for both py3.10 and py3.11 builds ([944f39d](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/944f39d5e15c2d4c9da45c5ac7da1868d0c85535))
+
 ## [1.2.6](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.2.5...v1.2.6) (2023-03-16)
 
 
