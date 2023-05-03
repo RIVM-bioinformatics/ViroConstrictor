@@ -796,8 +796,6 @@ def check_file_extension(allowed_extensions: list[str], fname: str) -> bool:
     if not any(ext.endswith(c) for c in allowed_extensions):
         return False
     return True
-    log.error(f"'[magenta]{fname}[/magenta]' is not a file. Exiting...")
-    sys.exit(-1)
 
 
 def dir_path(arginput: str) -> bool:
@@ -865,9 +863,9 @@ def args_to_df(args: argparse.Namespace, df: pd.DataFrame) -> pd.DataFrame:
     """
     df["VIRUS"] = args.target
     df["MATCH-REF"] = args.match_ref
-    df["PRIMERS"] = args.primers
-    df["REFERENCE"] = args.reference
-    df["FEATURES"] = args.features
+    df["PRIMERS"] = os.path.abspath(args.primers) if args.primers != "NONE" else "NONE"
+    df["REFERENCE"] = os.path.abspath(args.reference)
+    df["FEATURES"] = os.path.abspath(args.features) if args.features != "NONE" else "NONE"
     df["MIN-COVERAGE"] = args.min_coverage
     df["PRIMER-MISMATCH-RATE"] = args.primer_mismatch_rate
     df[["PRESET", "PRESET_SCORE"]] = match_preset_name(args.target, args.presets)
