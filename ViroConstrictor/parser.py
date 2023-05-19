@@ -4,7 +4,7 @@ import os
 import pathlib
 import re
 import sys
-from typing import Any, Hashable
+from typing import Any, Hashable, List
 
 import numpy as np
 import pandas as pd
@@ -326,9 +326,7 @@ class CLIparser:
         )
 
         optional_args.add_argument(
-            "--skip-updates",
-            action="store_true",
-            help="Skip the update check",
+            "--skip-updates", action="store_true", help="Skip the update check",
         )
 
         if not givenargs:
@@ -360,7 +358,7 @@ class CLIparser:
             req_cols = check_samplesheet_columns(df)
             if req_cols is False:
                 sys.exit(1)
-            df =  samplesheet_enforce_absolute_paths(df)
+            df = samplesheet_enforce_absolute_paths(df)
             if df.get("PRESET") is None:
                 df[["PRESET", "PRESET_SCORE"]] = df.apply(
                     lambda x: pd.Series(
@@ -550,7 +548,9 @@ def samplesheet_enforce_absolute_paths(df: pd.DataFrame) -> pd.DataFrame:
     columns_to_enforce: List[str] = ["PRIMERS", "FEATURES", "REFERENCE"]
     for column in columns_to_enforce:
         if column in df.columns:
-            df[column] = df[column].apply(lambda x: os.path.abspath(os.path.expanduser(x)) if x != "NONE" else x)
+            df[column] = df[column].apply(
+                lambda x: os.path.abspath(os.path.expanduser(x)) if x != "NONE" else x
+            )
     return df
 
 
@@ -901,7 +901,9 @@ def args_to_df(args: argparse.Namespace, df: pd.DataFrame) -> pd.DataFrame:
     df["MATCH-REF"] = args.match_ref
     df["PRIMERS"] = os.path.abspath(args.primers) if args.primers != "NONE" else "NONE"
     df["REFERENCE"] = os.path.abspath(args.reference)
-    df["FEATURES"] = os.path.abspath(args.features) if args.features != "NONE" else "NONE"
+    df["FEATURES"] = (
+        os.path.abspath(args.features) if args.features != "NONE" else "NONE"
+    )
     df["MIN-COVERAGE"] = args.min_coverage
     df["PRIMER-MISMATCH-RATE"] = args.primer_mismatch_rate
     df[["PRESET", "PRESET_SCORE"]] = match_preset_name(args.target, args.presets)
