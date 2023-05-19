@@ -360,6 +360,7 @@ class CLIparser:
             req_cols = check_samplesheet_columns(df)
             if req_cols is False:
                 sys.exit(1)
+            df =  samplesheet_enforce_absolute_paths(df)
             if df.get("PRESET") is None:
                 df[["PRESET", "PRESET_SCORE"]] = df.apply(
                     lambda x: pd.Series(
@@ -516,6 +517,41 @@ class CLIparser:
             os.chdir(working_directory)
 
         return input_path, working_directory, exec_start_path, snakefile
+
+
+def samplesheet_enforce_absolute_paths(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Ensure the columns in the dataframe which may contain paths are always absolute paths.
+    This is necessary as the pipeline may be run from different working directories.
+    The columns are "PRIMERS", "FEATURES", "REFERENCE".
+    If the value is "NONE", it is left as is.
+    If the value is a relative path, it is converted to an absolute path.
+    If the value is an absolute path, it is left as is.
+    If there is a '~' in the path, it is expanded to the user's home directory.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The dataframe to enforce absolute paths on.
+
+    Returns
+    -------
+    pd.DataFrame
+        The modified dataframe with enforced absolute paths.
+
+    Raises
+    ------
+    TypeError
+        If the input argument is not a pandas DataFrame.
+
+    """
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("Input argument must be a pandas DataFrame.")
+    columns_to_enforce: List[str] = ["PRIMERS", "FEATURES", "REFERENCE"]
+    for column in columns_to_enforce:
+        if column in df.columns:
+            df[column] = df[column].apply(lambda x: os.path.abspath(os.path.expanduser(x)) if x != "NONE" else x)
+    return df
 
 
 def file_exists(path: str) -> bool:
