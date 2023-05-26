@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.1](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.3.0...v1.3.1) (2023-05-26)
+
+
+### Bug Fixes
+
+* enforce absolute paths for files given through the samplesheet ([40889bf](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/40889bfc3e78160ba96f54c7dc727d662120d5ea))
+
+
+### Dependencies
+
+* use only snakemake-minimal as workaround for protobuf error in py3.11 ([47c70db](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/47c70db2715bf8933f594040dbff79b74c327e1d))
+
 ## [1.3.0](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.2.6...v1.3.0) (2023-05-03)
 
 
