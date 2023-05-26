@@ -326,7 +326,9 @@ class CLIparser:
         )
 
         optional_args.add_argument(
-            "--skip-updates", action="store_true", help="Skip the update check",
+            "--skip-updates",
+            action="store_true",
+            help="Skip the update check",
         )
 
         if not givenargs:

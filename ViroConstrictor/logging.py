@@ -257,6 +257,7 @@ def snakemake_logger(logfile: str) -> object:
         The function `snakemake_logger` returns a function object `log_handler`.
 
     """
+
     def log_handler(msg: dict) -> None:
         loglevel = msg.get("level")
         logmessage = msg.get("msg")
