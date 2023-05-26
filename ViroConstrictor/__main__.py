@@ -68,17 +68,21 @@ This applies to the following samples:\n{''.join(samples)}"""
 
     p_fallbackwarning_df = sample_info_df.loc[sample_info_df["PRESET_SCORE"] == 0.0]
     targets, presets = (
-        list(x)
-        for x in (
-            zip(
-                *zip_longest(
-                    list(set(p_fallbackwarning_df["VIRUS"].tolist())),
-                    list(set(p_fallbackwarning_df["PRESET"].tolist())),
-                    fillvalue="DEFAULT",
+        (
+            list(x)
+            for x in (
+                zip(
+                    *zip_longest(
+                        list(set(p_fallbackwarning_df["VIRUS"].tolist())),
+                        list(set(p_fallbackwarning_df["PRESET"].tolist())),
+                        fillvalue="DEFAULT",
+                    )
                 )
             )
         )
-    ) if p_fallbackwarning_df.shape[0] > 0 else ([], [])
+        if p_fallbackwarning_df.shape[0] > 0
+        else ([], [])
+    )
     for _input, _preset in zip(targets, presets):
         filtered_df = p_fallbackwarning_df.loc[
             (p_fallbackwarning_df["VIRUS"] == _input)
