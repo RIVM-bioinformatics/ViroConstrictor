@@ -8,6 +8,7 @@ from typing import Any, Hashable
 
 import numpy as np
 import pandas as pd
+import rich
 
 from ViroConstrictor import __prog__, __version__
 from ViroConstrictor.functions import FlexibleArgFormatter, RichParser
@@ -258,6 +259,14 @@ class CLIparser:
             action="store_true",
             help="Match your data to the best reference available in the given reference fasta file.",
         )
+        
+        optional_args.add_argument(
+            "--segmented",
+            "-seg",
+            default=False,
+            action="store_true",
+            help="Use this flag in combination with match-ref to indicate that the match-ref process should take segmented reference information into account. Please note that specific formatting is required for the reference fasta file, see the docs for more info.",
+        )
 
         optional_args.add_argument(
             "--min-coverage",
@@ -332,7 +341,7 @@ class CLIparser:
         )
 
         if not givenargs:
-            log.error(
+            rich.print(
                 f"{parser.prog} was called but no arguments were given, please try again\nUse '[cyan]{parser.prog} -h[/cyan]' to see the help document"
             )
             sys.exit(1)
@@ -445,6 +454,10 @@ class CLIparser:
                     ),
                     axis=1,
                 )
+            if df.get("MATCH-REF") is None:
+                df["MATCH-REF"] = args.match_ref
+            if df.get("SEGMENTED") is None:
+                df["SEGMENTED"] = args.segmented
             df = pd.DataFrame.replace(df, np.nan, None)
             return df.to_dict(orient="index")
         return args_to_df(args, indirFrame).to_dict(orient="index")
@@ -672,7 +685,7 @@ def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
 
     Returns
     -------
-        A dataframe with the columns: SAMPLE, VIRUS, PRIMERS, REFERENCE, FEATURES, MATCH-REF, MIN-COVERAGE,
+        A dataframe with the columns: SAMPLE, VIRUS, PRIMERS, REFERENCE, FEATURES, MATCH-REF, SEGMENTED, MIN-COVERAGE,
     PRIMER-MISMATCH-RATE
 
     """
@@ -710,6 +723,12 @@ def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
         "MATCH-REF": {
             "dtype": bool,
             "required": True,
+            "disallowed_characters": None,
+            "path": False,
+        },
+        "SEGMENTED": {
+            "dtype": bool,
+            "required": False,
             "disallowed_characters": None,
             "path": False,
         },
@@ -863,9 +882,12 @@ def args_to_df(args: argparse.Namespace, df: pd.DataFrame) -> pd.DataFrame:
     """
     df["VIRUS"] = args.target
     df["MATCH-REF"] = args.match_ref
+    df["SEGMENTED"] = args.segmented
     df["PRIMERS"] = os.path.abspath(args.primers) if args.primers != "NONE" else "NONE"
     df["REFERENCE"] = os.path.abspath(args.reference)
-    df["FEATURES"] = os.path.abspath(args.features) if args.features != "NONE" else "NONE"
+    df["FEATURES"] = (
+        os.path.abspath(args.features) if args.features != "NONE" else "NONE"
+    )
     df["MIN-COVERAGE"] = args.min_coverage
     df["PRIMER-MISMATCH-RATE"] = args.primer_mismatch_rate
     df[["PRESET", "PRESET_SCORE"]] = match_preset_name(args.target, args.presets)
