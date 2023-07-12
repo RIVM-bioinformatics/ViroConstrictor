@@ -38,8 +38,12 @@ def WriteYaml(data: dict, filepath: str) -> str:
 
 
 class GetSnakemakeRunDetails:
-    def __init__(self, inputs_obj: CLIparser) -> None:
+    def __init__(
+        self, inputs_obj: CLIparser, samplesheetfilename: str, outdirOverride: str = ""
+    ) -> None:
         self.inputs = inputs_obj
+        self.samplesheetfilename = samplesheetfilename
+        self.outdirOverride = outdirOverride
         self._snakemake_run_config()
         self._snakemake_run_params()
 
@@ -84,12 +88,14 @@ class GetSnakemakeRunDetails:
             threads_lowcpu = 2
         self.snakemake_run_parameters = {
             "sample_sheet": WriteYaml(
-                self.inputs.samples_dict, f"{self.inputs.workdir}/samplesheet.yaml"
+                self.inputs.samples_dict,
+                f"{self.inputs.workdir}/{self.samplesheetfilename}.yaml",
             ),
             "computing_execution": configuration["COMPUTING"]["compmode"],
             "max_local_mem": self._get_max_local_mem(),
             "platform": self.inputs.flags.platform,
             "amplicon_type": self.inputs.flags.amplicon_type,
+            "outdirOverride": self.outdirOverride,
             "threads": {
                 "Alignments": threads_highcpu,
                 "QC": threads_midcpu,
