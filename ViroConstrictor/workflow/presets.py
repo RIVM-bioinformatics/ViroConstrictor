@@ -26,6 +26,8 @@ aliases = {
 
 presets = {
     "DEFAULT": {
+        "MatchRef_AdditionalAlignmentSettings": "--secondary=no",
+        "MatchRef_AdditionalBamFilters": "-q 30",
         "RawAlign_AdditionalSettings": "",
         "BaseBAMFilters": "-F 256 -F 512 -F 4 -F 2048",
         "ClipperSettings_nanopore": "",
@@ -43,6 +45,8 @@ presets = {
         "CleanAlign_AdditionalSettings_iontorrent": "",
     },
     "SARSCOV2": {
+        "MatchRef_AdditionalAlignmentSettings": "--secondary=no",
+        "MatchRef_AdditionalBamFilters": "-q 50",
         "RawAlign_AdditionalSettings": "",
         "BaseBAMFilters": "-F 256 -F 512 -F 4 -F 2048",
         "ClipperSettings_nanopore": "",
@@ -60,6 +64,8 @@ presets = {
         "CleanAlign_AdditionalSettings_iontorrent": "",
     },
     "INFLUENZA": {
+        "MatchRef_AdditionalAlignmentSettings": "--secondary=no",
+        "MatchRef_AdditionalBamFilters": "-q 50",
         "RawAlign_AdditionalSettings": "--splice --frag=no",
         "BaseBAMFilters": "-F 256 -F 512 -F 4 -F 2048",
         "ClipperSettings_nanopore": "--exclude-spliced --spliced-length-threshold 50 --min-aligned-length 0.5",
@@ -77,6 +83,8 @@ presets = {
         "CleanAlign_AdditionalSettings_iontorrent": "",
     },
     "MEASLES": {
+        "MatchRef_AdditionalAlignmentSettings": "--secondary=no",
+        "MatchRef_AdditionalBamFilters": "-q 50",
         "RawAlign_AdditionalSettings": "",
         "BaseBAMFilters": "-F 256 -F 512 -F 4 -F 2048",
         "ClipperSettings_nanopore": "",
@@ -94,6 +102,8 @@ presets = {
         "CleanAlign_AdditionalSettings_iontorrent": "",
     },
     "HPV": {
+        "MatchRef_AdditionalAlignmentSettings": "--secondary=no",
+        "MatchRef_AdditionalBamFilters": "-q 50",
         "RawAlign_AdditionalSettings": "",
         "BaseBAMFilters": "-F 256 -F 512 -F 4 -F 2048",
         "ClipperSettings_nanopore": "",
