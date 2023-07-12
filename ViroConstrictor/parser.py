@@ -58,6 +58,7 @@ class CLIparser:
             self.workdir,
             self.exec_start_path,
             self.snakefile,
+            self.match_ref_snakefile,
         ) = self._get_paths_for_workflow(self.flags)
         if not self.samples_dict:
             sys.exit(1)
@@ -259,7 +260,7 @@ class CLIparser:
             action="store_true",
             help="Match your data to the best reference available in the given reference fasta file.",
         )
-        
+
         optional_args.add_argument(
             "--segmented",
             "-seg",
@@ -502,7 +503,7 @@ class CLIparser:
 
     def _get_paths_for_workflow(
         self, flags: argparse.Namespace
-    ) -> tuple[str, str, str, str]:
+    ) -> tuple[str, str, str, str, str]:
         """Takes the input and output paths from the command line, and then creates the working directory if
         it doesn't exist. It then changes the current working directory to the working directory
 
@@ -522,13 +523,22 @@ class CLIparser:
         snakefile: str = os.path.join(
             os.path.abspath(os.path.dirname(__file__)), "workflow", "workflow.smk"
         )
+        match_ref_snakefile: str = os.path.join(
+            os.path.abspath(os.path.dirname(__file__)), "workflow", "match-ref.smk"
+        )
 
         if not os.path.exists(working_directory):
             os.makedirs(working_directory)
         if os.getcwd() != working_directory:
             os.chdir(working_directory)
 
-        return input_path, working_directory, exec_start_path, snakefile
+        return (
+            input_path,
+            working_directory,
+            exec_start_path,
+            snakefile,
+            match_ref_snakefile,
+        )
 
 
 def file_exists(path: str) -> bool:

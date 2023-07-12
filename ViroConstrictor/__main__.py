@@ -18,6 +18,7 @@ import snakemake
 import ViroConstrictor.logging
 from ViroConstrictor import __version__
 from ViroConstrictor.logging import log
+from ViroConstrictor.match_ref import process_match_ref
 from ViroConstrictor.parser import CLIparser
 from ViroConstrictor.runconfigs import GetSnakemakeRunDetails, WriteYaml
 from ViroConstrictor.runreport import WriteReport
@@ -68,17 +69,21 @@ This applies to the following samples:\n{''.join(samples)}"""
 
     p_fallbackwarning_df = sample_info_df.loc[sample_info_df["PRESET_SCORE"] == 0.0]
     targets, presets = (
-        list(x)
-        for x in (
-            zip(
-                *zip_longest(
-                    list(set(p_fallbackwarning_df["VIRUS"].tolist())),
-                    list(set(p_fallbackwarning_df["PRESET"].tolist())),
-                    fillvalue="DEFAULT",
+        (
+            list(x)
+            for x in (
+                zip(
+                    *zip_longest(
+                        list(set(p_fallbackwarning_df["VIRUS"].tolist())),
+                        list(set(p_fallbackwarning_df["PRESET"].tolist())),
+                        fillvalue="DEFAULT",
+                    )
                 )
             )
         )
-    ) if p_fallbackwarning_df.shape[0] > 0 else ([], [])
+        if p_fallbackwarning_df.shape[0] > 0
+        else ([], [])
+    )
     for _input, _preset in zip(targets, presets):
         filtered_df = p_fallbackwarning_df.loc[
             (p_fallbackwarning_df["VIRUS"] == _input)
@@ -138,11 +143,16 @@ def main() -> NoReturn:
     if not parsed_input.flags.skip_updates:
         update(sys.argv, parsed_input.user_config)
 
-    snakemake_run_details = GetSnakemakeRunDetails(inputs_obj=parsed_input)
+    # check if there's a value in the column 'MATCH-REF' set to True in the parsed_input.samples_df dataframe, if so, process the match-ref, else skip
+    if parsed_input.samples_df["MATCH-REF"].any():
+        parsed_input = process_match_ref(parsed_input)
 
-    log.info(f"{'='*20} [bold yellow] Starting Workflow [/bold yellow] {'='*20}")
+    snakemake_run_details = GetSnakemakeRunDetails(
+        inputs_obj=parsed_input, samplesheetfilename="samples_main"
+    )
+
+    log.info(f"{'='*20} [bold yellow] Starting Main Workflow [/bold yellow] {'='*20}")
     status: bool = False
-
     if parsed_input.user_config["COMPUTING"]["compmode"] == "local":
         status = snakemake.snakemake(
             snakefile=parsed_input.snakefile,
