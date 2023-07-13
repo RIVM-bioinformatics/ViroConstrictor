@@ -206,6 +206,12 @@ def Average_cov(primers, covs):
     return primers
 
 
+def pad_name(name):
+    name = name.split("_")
+    name[-1] = name[-1].zfill(3)
+    return "_".join(name)
+
+
 if __name__ == "__main__":
     covs = pd.read_csv(
         flags.coverages, sep="\t", names=["position", "cov"], index_col="position"
@@ -270,6 +276,9 @@ if __name__ == "__main__":
             "unique_end",
         ]
     ).rename(columns={"avg_cov": flags.key})
+
+    # ensure the values like "MeV_1" or "MeV_19" in column "name" are padded like 001, 002, 003, etc.
+    with_average["name"] = with_average["name"].apply(pad_name)
 
     with_average = with_average.transpose()
 
