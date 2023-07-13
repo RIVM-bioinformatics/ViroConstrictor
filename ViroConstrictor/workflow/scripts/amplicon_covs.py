@@ -125,7 +125,7 @@ def index_to_remove_starts(one, indexone, two, indextwo):
 def remove_alt_primer_l(df):
     xx = df.to_dict(orient="records")
     to_rm = []
-    lastindex = list(enumerate(xx))[-1][0]
+    lastindex = list(enumerate(xx))[-1][0] if xx else -1
     for a, x in enumerate(xx):
         if a != lastindex and xx[a].get("name") == xx[a + 1].get("name"):
             rm_indx = index_to_remove_ends(xx[a], a, xx[a + 1], a + 1)
@@ -137,7 +137,7 @@ def remove_alt_primer_l(df):
 def remove_alt_primer_r(df):
     xx = df.to_dict(orient="records")
     to_rm = []
-    lastindex = list(enumerate(xx))[-1][0]
+    lastindex = list(enumerate(xx))[-1][0] if xx else -1
     for a, x in enumerate(xx):
         if a != lastindex and xx[a].get("name") == xx[a + 1].get("name"):
             rm_indx = index_to_remove_starts(xx[a], a, xx[a + 1], a + 1)
