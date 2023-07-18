@@ -230,7 +230,6 @@ def process_match_ref(parsed_inputs: CLIparser) -> CLIparser:
         ["Reference_file", "Primer_file", "Feat_file"],
     )
 
-    parsed_inputs.samples_df.to_csv("samples_MatchRef.csv", index=False)
     parsed_inputs.samples_df.set_index("SAMPLE", inplace=True)
     parsed_inputs.samples_dict = parsed_inputs.samples_df.to_dict(orient="index")
 
