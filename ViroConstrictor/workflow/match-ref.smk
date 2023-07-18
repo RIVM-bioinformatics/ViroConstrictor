@@ -65,9 +65,10 @@ def segmented_ref_groups(df: pd.DataFrame) -> pd.DataFrame:
 
     """
     for index, row in df.iterrows():
-        # if the column "segmented" is False, then place a None in the segment column
+        # if the value in the "SEGMENTED" column is False then place a None string in the segment column. 
+        # Ensure that the value is a string and not a NoneType.
         if not row["SEGMENTED"]:
-            df.at[index, "segment"] = {None}
+            df.at[index, "segment"] = {"None"}
             continue
         refs = read_fasta(row["REFERENCE"])
         unique_groups = {x.description.split(" ")[1].split("|")[0] for x in refs}
