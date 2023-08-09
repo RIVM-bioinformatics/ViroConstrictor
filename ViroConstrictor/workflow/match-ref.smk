@@ -76,6 +76,9 @@ def segmented_ref_groups(df: pd.DataFrame) -> pd.DataFrame:
             df.drop(index, inplace=True)
             continue
         df.at[index, "segment"] = [unique_groups]
+    # ensure the segment column is a flat set of strings and not a list with a set inside.
+    df["segment"] = df["segment"].apply(lambda x: x.pop() if isinstance(x, list) else x)
+    # TODO: Check this later to see if this can be done in the first pass (when the values are being set in the first place) instead of fixing afterwards. Not entirely sure why the values are being generated as a list with a set inside one time and just as a normal set the other time.
     return df
 
 
