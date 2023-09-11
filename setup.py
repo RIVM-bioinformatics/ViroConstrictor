@@ -56,11 +56,12 @@ setup(
     python_requires=">=3.10",
     scripts=[
         "ViroConstrictor/workflow/workflow.smk",
+        "ViroConstrictor/workflow/match_ref.smk",
         "ViroConstrictor/workflow/directories.py",
         "ViroConstrictor/workflow/presets.py",
     ],
     package_data={
-        "ViroConstrictor": ["workflow/envs/*", "workflow/scripts/*", "workflow/files/*"]
+        "ViroConstrictor": ["workflow/envs/*", "workflow/scripts/*", "workflow/files/*", "workflow/scripts/match_ref/*"]
     },
     install_requires=[
         "urllib3",
