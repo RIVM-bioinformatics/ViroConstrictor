@@ -524,7 +524,7 @@ class CLIparser:
             os.path.abspath(os.path.dirname(__file__)), "workflow", "workflow.smk"
         )
         match_ref_snakefile: str = os.path.join(
-            os.path.abspath(os.path.dirname(__file__)), "workflow", "match-ref.smk"
+            os.path.abspath(os.path.dirname(__file__)), "workflow", "match_ref.smk"
         )
 
         if not os.path.exists(working_directory):
