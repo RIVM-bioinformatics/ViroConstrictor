@@ -72,7 +72,7 @@ setup(
         "openpyxl",
         "pyyaml==6.0",
         "rich==13.*",
-        "AminoExtract>=0.2.1",
+        "AminoExtract==0.3.1",
     ],
     entry_points={
         "console_scripts": [
