@@ -16,5 +16,6 @@ dependencies:
   - tqdm=4.62
   - pip
   - pip:
-    - gffpandas>=1.2
+      #this is temporary until gffpandas has a patched version released on conda/pypi or when we port the required function in TrueConsense to AminoExtract
+    - git+https://github.com/florianzwagemaker/gffpandas.git@main
     - git+https://github.com/RIVM-bioinformatics/TrueConsense.git@v0.5.1
