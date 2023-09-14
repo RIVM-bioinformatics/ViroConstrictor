@@ -61,7 +61,12 @@ setup(
         "ViroConstrictor/workflow/presets.py",
     ],
     package_data={
-        "ViroConstrictor": ["workflow/envs/*", "workflow/scripts/*", "workflow/files/*", "workflow/scripts/match_ref/*"]
+        "ViroConstrictor": [
+            "workflow/envs/*",
+            "workflow/scripts/*",
+            "workflow/files/*",
+            "workflow/scripts/match_ref/*",
+        ]
     },
     install_requires=[
         "urllib3",
