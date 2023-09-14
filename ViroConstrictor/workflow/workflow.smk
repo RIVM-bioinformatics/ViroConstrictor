@@ -647,7 +647,6 @@ rule Translate_AminoAcids:
 
 
 def group_aminoacids_inputs(wildcards):
-
     filtered_df = samples_df.loc[samples_df["AA_FEAT_NAMES"].notnull()]
     filtered_vir_list = list(filtered_df["Virus"].unique())
 
@@ -878,12 +877,20 @@ rule multiqc_report:
 
 
 onsuccess:
-    ViroConstrictor.logging.log.info("[bold green]ViroConstrictor is finished with processing all the files in the given input directory.[/bold green]")
-    ViroConstrictor.logging.log.info("[bold green]Generating reports and shutting down...[/bold green]")
+    ViroConstrictor.logging.log.info(
+        "[bold green]ViroConstrictor is finished with processing all the files in the given input directory.[/bold green]"
+    )
+    ViroConstrictor.logging.log.info(
+        "[bold green]Generating reports and shutting down...[/bold green]"
+    )
     return True
 
 
 onerror:
-    ViroConstrictor.logging.log.error("[bold red]An error occurred and ViroConstrictor had to shut down.[/bold red]")
-    ViroConstrictor.logging.log.error("[bold red]Please check the input and logfiles for any abnormalities and try again.[/bold red]")
+    ViroConstrictor.logging.log.error(
+        "[bold red]An error occurred and ViroConstrictor had to shut down.[/bold red]"
+    )
+    ViroConstrictor.logging.log.error(
+        "[bold red]Please check the input and logfiles for any abnormalities and try again.[/bold red]"
+    )
     return False
