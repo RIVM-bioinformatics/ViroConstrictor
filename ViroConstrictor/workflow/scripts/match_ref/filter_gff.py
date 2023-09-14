@@ -1,8 +1,8 @@
 import os
 import sys
 
-import pandas as pd
 import AminoExtract
+import pandas as pd
 
 refdata, gfffile, outfile, updatedstats = sys.argv[1:]
 
