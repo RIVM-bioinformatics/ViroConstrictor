@@ -1,5 +1,43 @@
 # Changelog
 
+## [1.4.0](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.3.1...v1.4.0) (2023-09-18)
+
+
+### Features
+
+* add "NONE" input for primers and gff's support to the match_ref process ([1581c78](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/1581c7807a1457fdd34b215817fa95a2110c29b5))
+* add all the match_ref analysis scripts ([1581c78](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/1581c7807a1457fdd34b215817fa95a2110c29b5))
+* add the match_ref snakemake workflow ([1581c78](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/1581c7807a1457fdd34b215817fa95a2110c29b5))
+* add the match_reference process ([1581c78](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/1581c7807a1457fdd34b215817fa95a2110c29b5))
+* only initiate the match_ref wrapping process whenever it is set on the commandline or through the samplesheet ([1581c78](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/1581c7807a1457fdd34b215817fa95a2110c29b5))
+
+
+### Bug Fixes
+
+* add fix for unformatted printed message ([98386c1](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/98386c1a70f7163a964110ac6764d3a58ea64811))
+* enforce a "None" string instead of a Nonetype used for reference prep ([f4f7490](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/f4f74901ce5584043120335b20b62c02a43362cf))
+* ensure "match-ref" and "segmented" columns are always added to samplesheet ([98386c1](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/98386c1a70f7163a964110ac6764d3a58ea64811))
+* ensure a string value like "NA" will not be interpreted as `NaN` in pandas.read_csv() ([ecaca5e](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/ecaca5ed908862eb50ef86774919f2dcdebc07b4))
+* pad the number in primer names in the amplicon_coverages script so the amplicons are sorted correctly ([cab3a8c](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/cab3a8c289223a666f2ebafc39dc2b9d8c1cab03))
+* solve index out of range bug in amplicon_coverages script ([ca95a8a](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/ca95a8a40883ac7ee0787d015a8f980d9f616e30))
+* suppress the strict-channel-priorities logmessage from snakemake ([1654891](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/165489190cf215ecb0d9344efa352327d36f94fe))
+* workaround to make sure the found segments can properly be 'exploded' in the resulting dataframe ([9db4a42](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/9db4a42b3ab40d4c4d9c4f9b78eeeb81bd3897eb))
+
+
+### Dependencies
+
+* remove anaconda channel from selfupdating method ([3db1cfb](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/3db1cfb1322135edba53991b2ecfb5216e815e33))
+* remove the `anaconda` and `defaults` channels as providers in conda environment recipes, set `nodefaults` ([08ed236](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/08ed236aca43b5aff75beb0381af382542fa30f1))
+* replace gffpandas in script to AminoExtract functions ([599da1f](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/599da1f1715d13450698215306a498f3dc67d80c))
+* update AminoExtract to version 0.3.1 ([08e4a22](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/08e4a2278a0d359f0dd48da53e030a2a17eab8b6))
+* use a forked/patched version of gffpandas instead of the pypi version (circumvent a bug in the original repo) ([08e4a22](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/08e4a2278a0d359f0dd48da53e030a2a17eab8b6))
+
+
+### Documentation
+
+* update the documentation site to represent the new match-ref and segmented arguments both on commandline and and in samplesheet ([94c5ca0](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/94c5ca07a82b9c12f76b93ab7523adfa998e4585))
+* updated docstring for function `check_samplesheet_rows()` ([98386c1](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/98386c1a70f7163a964110ac6764d3a58ea64811))
+
 ## [1.3.1](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.3.0...v1.3.1) (2023-05-26)
 
 
