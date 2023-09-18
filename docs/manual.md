@@ -28,6 +28,8 @@ Below, you can find a brief summary if all available command line options and th
 | `--primer-mismatch-rate`/<br>`-pmr` | Fraction of maximum primer mismatches | The maximum percentage mismatches that is tolerated during the primer search. Mismatches are counted in substitutions between primer and reference. Insertions and/or deletions are not taken into account.<br>Default is **0.1** (10%)<br>This means that max 10% of the length of a primer may be a mismatch, i.e. if your primer is 30nt then maximum 3 mismatches are allowed |
 | `--target` /<br>`--preset` | Name of the viral target | The basic descriptive name of the viral target that is being analysed<br>i.e. "Measles", "Sars-CoV-2", "HPV16", or "Influenza_A"<br>This viral target will be used as an analysis-preset if there is a preset available for the given viral target. If no preset is available for the given target then default settings will be used. Please also see the [information regarding presets](presets.md).<br>Disable the use of analysis-presets with the `--disable-presets` flag.
 | `--disable-presets` /<br>`-dp` | N/A | Switches off the use of analysis presets, default analysis settings will be used for all given samples/viral-targets. It is still necessary to provide the information of viral-target. |
+| `--match-ref` /<br>`-mr` | N/A | Enables the match-ref process for all samples in the analysis. |
+| `--segmented` /<br>`-seg` | N/A | Indicates that samples to be analyzed are segmented instead of a single reference genome. <br> Setting is only applicable to the match-ref process.
 | `--threads` /<br>`-t` | Amount of threads | Number of local threads that are available to use.<br>Default is the number of available threads in your system |
 | `--dryrun` | N/A | Run the ViroConstrictor workflow without actually doing anything.<br>(default: False) |
 | `--skip-updates` | N/A | Skip the check for a new version |
@@ -95,17 +97,12 @@ A single analysis with different settings for each sample can be started by prov
 
 An example table can be seen below, or download the example excel spreadsheet [here](samples.xlsx)
 
-| Sample | Virus | Match-ref | Primers | Reference | Features | min-coverage | primer-mismatch-rate |
-| ------ | ----- | --------- | ------- | --------- | -------- | ------------ | -------------------- |
-| Sample_1 | SARS-CoV-2 | FALSE | /path/to/sars_cov_2_primers.fasta | /path/to/sars_cov_2_reference.fasta | /path/to/sars_cov_2.gff | 50 | 0.1 |
-| Sample_2 | Measles | TRUE | /path/to/Measles_primers.fasta | /path/to/measles_reference.fasta | /path/to/measles.gff | 30 | 0.15 |
-| Sample_3 | Influenza_A | FALSE | /path/to/Influenza-A_primers.fasta | /path/to/Influenza-A_reference.fasta | NONE | 30 | 0.1 |
-| Sample_4 | HPV | TRUE | NONE | /path/to/HPV_reference.fasta | NONE | 10 | 0.1 | 
-
-!!! Attention
-    Currently the `Match-ref` setting as portrayed in the table above as well as in the example spreadsheet is currently not yet implemented.  
-    This is a future functionality that is still being worked on, but we decided to include it already in the samplesheet and command-line arguments as we don't want to significantly change these formats going forward (unless actually deemed necessary).  
-    Setting the `Match-ref` to `TRUE` as in the example above will therefore not do anything in the analysis as per the current version.
+| Sample | Virus | Match-ref | Segmented | Primers | Reference | Features | min-coverage | primer-mismatch-rate |
+| ------ | ----- | --------- | --------- | ------- | --------- | -------- | ------------ | -------------------- |
+| Sample_1 | SARS-CoV-2 | FALSE | FALSE | /path/to/sars_cov_2_primers.fasta | /path/to/sars_cov_2_reference.fasta | /path/to/sars_cov_2.gff | 50 | 0.1 |
+| Sample_2 | Measles | FALSE | FALSE | /path/to/Measles_primers.fasta | /path/to/measles_reference.fasta | /path/to/measles.gff | 30 | 0.15 |
+| Sample_3 | Influenza_A | TRUE | TRUE | /path/to/Influenza-A_primers.fasta | /path/to/Influenza-A_reference.fasta | NONE | 30 | 0.1 |
+| Sample_4 | HPV | TRUE | FALSE | NONE | /path/to/HPV_reference.fasta | NONE | 10 | 0.1 | 
 
 Please keep in mind that the Sample key as given in de samplesheet must correspond with the FastQ filename in your input directory. If this isn't the case then ViroConstrictor will let you know without running to ensure you won't get unexplainable data.
 
