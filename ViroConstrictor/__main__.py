@@ -18,6 +18,7 @@ import snakemake
 import ViroConstrictor.logging
 from ViroConstrictor import __version__
 from ViroConstrictor.logging import log
+from ViroConstrictor.match_ref import process_match_ref
 from ViroConstrictor.parser import CLIparser
 from ViroConstrictor.runconfigs import GetSnakemakeRunDetails, WriteYaml
 from ViroConstrictor.runreport import WriteReport
@@ -142,11 +143,16 @@ def main() -> NoReturn:
     if not parsed_input.flags.skip_updates:
         update(sys.argv, parsed_input.user_config)
 
-    snakemake_run_details = GetSnakemakeRunDetails(inputs_obj=parsed_input)
+    # check if there's a value in the column 'MATCH-REF' set to True in the parsed_input.samples_df dataframe, if so, process the match-ref, else skip
+    if parsed_input.samples_df["MATCH-REF"].any():
+        parsed_input = process_match_ref(parsed_input)
 
-    log.info(f"{'='*20} [bold yellow] Starting Workflow [/bold yellow] {'='*20}")
+    snakemake_run_details = GetSnakemakeRunDetails(
+        inputs_obj=parsed_input, samplesheetfilename="samples_main"
+    )
+
+    log.info(f"{'='*20} [bold yellow] Starting Main Workflow [/bold yellow] {'='*20}")
     status: bool = False
-
     if parsed_input.user_config["COMPUTING"]["compmode"] == "local":
         status = snakemake.snakemake(
             snakefile=parsed_input.snakefile,

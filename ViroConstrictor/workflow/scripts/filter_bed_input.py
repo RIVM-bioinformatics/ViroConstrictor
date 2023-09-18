@@ -9,6 +9,7 @@ df = pd.read_csv(
     sep="\t",
     names=["ref", "start", "stop", "name", "score", "strand"],
     index_col=False,
+    keep_default_na=False,
 )
 
 df = df[df.ref == refID]

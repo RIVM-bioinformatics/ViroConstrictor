@@ -11,6 +11,7 @@ raln = "aligned_rawdata/"
 noad = "without_adapters/"
 prdir = "without_primers/"
 qcfilt = "QC_filter/"
+matchref = "match_ref_process/"
 
 html = "html/"
 json = "json/"
