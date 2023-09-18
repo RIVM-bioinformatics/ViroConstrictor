@@ -125,7 +125,7 @@ def index_to_remove_starts(one, indexone, two, indextwo):
 def remove_alt_primer_l(df):
     xx = df.to_dict(orient="records")
     to_rm = []
-    lastindex = list(enumerate(xx))[-1][0]
+    lastindex = list(enumerate(xx))[-1][0] if xx else -1
     for a, x in enumerate(xx):
         if a != lastindex and xx[a].get("name") == xx[a + 1].get("name"):
             rm_indx = index_to_remove_ends(xx[a], a, xx[a + 1], a + 1)
@@ -137,7 +137,7 @@ def remove_alt_primer_l(df):
 def remove_alt_primer_r(df):
     xx = df.to_dict(orient="records")
     to_rm = []
-    lastindex = list(enumerate(xx))[-1][0]
+    lastindex = list(enumerate(xx))[-1][0] if xx else -1
     for a, x in enumerate(xx):
         if a != lastindex and xx[a].get("name") == xx[a + 1].get("name"):
             rm_indx = index_to_remove_starts(xx[a], a, xx[a + 1], a + 1)
@@ -206,6 +206,12 @@ def Average_cov(primers, covs):
     return primers
 
 
+def pad_name(name):
+    name = name.split("_")
+    name[-1] = name[-1].zfill(3)
+    return "_".join(name)
+
+
 if __name__ == "__main__":
     covs = pd.read_csv(
         flags.coverages, sep="\t", names=["position", "cov"], index_col="position"
@@ -270,6 +276,9 @@ if __name__ == "__main__":
             "unique_end",
         ]
     ).rename(columns={"avg_cov": flags.key})
+
+    # ensure the values like "MeV_1" or "MeV_19" in column "name" are padded like 001, 002, 003, etc.
+    with_average["name"] = with_average["name"].apply(pad_name)
 
     with_average = with_average.transpose()
 

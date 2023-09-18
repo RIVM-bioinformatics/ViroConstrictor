@@ -1,13 +1,14 @@
 import sys
 
-import gffpandas.gffpandas as gffpd
+import AminoExtract
 
 _, input, output, refID = sys.argv
 
-gff = gffpd.read_gff3(input)
+gff = AminoExtract.read_gff(input)
 
 header = gff.header
+gff.df = gff.df[gff.df.seqid == refID]
 
-gff.df = gff.df[gff.df.seq_id == refID]
-
-gff.to_gff3(output)
+with open(output, "w") as f:
+    f.write(header)
+    f.write(gff.df.to_csv(sep="\t", index=False, header=None))
