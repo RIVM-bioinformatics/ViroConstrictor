@@ -52,6 +52,7 @@ def run_snakemake(
                 ViroConstrictor.logging.snakemake_logger(logfile=inputs_obj.logfile),
             ],
             printshellcmds=False,
+            scheduler="greedy"
         )
 
     return snakemake(
@@ -78,6 +79,7 @@ def run_snakemake(
             ViroConstrictor.logging.snakemake_logger(logfile=inputs_obj.logfile),
         ],
         printshellcmds=False,
+        scheduler="greedy"
     )
 
 
