@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.4.1](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.0...v1.4.1) (2024-03-22)
+
+
+### Bug Fixes
+
+* resolve pandas FutureWarning for integer casting on a series with a single element ([bb76d06](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/bb76d0650881d3559bc323cfc87fd90ba6746c8b))
+
+
+### Dependencies
+
+* update AmpliGone to version `1.3.0` ([6f28568](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/6f285680665f3757c6e7b460c24f4cf03ad79627))
+* update python and pysam version in Consensus conda environment ([18e4ffb](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/18e4ffbfeadc1da822c8184c740bec21ec08f989))
+
 ## [1.4.0](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.3.1...v1.4.0) (2023-09-18)
 
 
