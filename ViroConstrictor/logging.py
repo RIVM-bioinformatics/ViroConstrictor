@@ -221,6 +221,7 @@ def print_jobstatistics_logmessage(msg: dict) -> None:
 
 logmessage_strings_info: dict[str, Any] = {
     "Activating conda environment": ColorizeLogMessagePath,
+    "Activating singularity image": ColorizeLogMessagePath,
     "Building DAG of jobs": BaseLogMessage,
     "Creating conda environment": ColorizeLogMessagePath,
     "Removing incomplete Conda environment": ColorizeLogMessagePath,
