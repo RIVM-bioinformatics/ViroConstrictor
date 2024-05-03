@@ -157,7 +157,8 @@ class tabCompleter:
         if os.path.isdir(text):
             text += "/"
 
-        return list(glob.glob(f"{text}*"))[state]
+        # we explicitly to a list comprehension here instead of a call to the constructor as the this would otherwise break the autocompletion functionality of paths.
+        return [x for x in glob.glob(f"{text}*")][state]
 
     def createListCompleter(self, ll: list[str]) -> None:
         """
