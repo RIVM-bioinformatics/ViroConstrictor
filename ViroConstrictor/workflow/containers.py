@@ -107,6 +107,10 @@ def containers_to_download(config: Dict[str, Any]) -> List[str]:
 
     # check if the required containers are already present in the directory listed in config["container_cache"]
     # if they are, remove them from the list
+
+    # check if the folder exists, if not create it
+    if not os.path.exists(config["container_cache"]):
+        os.makedirs(config["container_cache"], exist_ok=True)
     containers_present = os.listdir(config["container_cache"])
 
     # remove the .sif extension from the container names
