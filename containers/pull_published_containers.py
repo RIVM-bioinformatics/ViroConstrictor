@@ -18,7 +18,7 @@ if __name__ == "__main__":
                 f"{config['container_cache']}/{file}",
             )
 
-    download_status = download_containers(config)
+    download_status = download_containers(config, verbose=True)
     if download_status == 1:
         print(
             "Failed to download all necessary containers. Please check the logs for more information."
