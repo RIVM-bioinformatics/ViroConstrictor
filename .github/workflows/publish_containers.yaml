@@ -26,10 +26,6 @@ jobs:
             run: |
               mv ./containers.tar.gz ./containers/containers.tar.gz
     
-          - name: list directory contents
-            run: |
-              ls -R ./
-    
           - name: unzip built containers
             run: |
               cd ./containers/
