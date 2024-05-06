@@ -6,14 +6,18 @@ import logging
 import pandas as pd
 
 from presets import get_preset_parameter
+from containers import get_hash
 
 from Bio import SeqIO, SeqRecord
 from snakemake.utils import Paramspace, min_version
+import snakemake
 
 from directories import *
 
+from rich import print
 min_version("7.15")
 
+# print(config)
 
 logger = logging.getLogger()
 logger.handlers.clear()
@@ -188,6 +192,8 @@ if config["platform"] in ["nanopore", "iontorrent"]:
             index=temp(f"{datadir}{matchref}{wc_folder}" "{sample}.bam.bai"),
         conda:
             f"{conda_envs}Alignment.yaml"
+        container:
+            f"{config['container_cache']}/viroconstrictor_alignment_{get_hash('Alignment')}.sif"
         log:
             f"{logdir}AlignMR_" "{Virus}.{segment}.{sample}.log",
         benchmark:
@@ -236,6 +242,8 @@ if config["platform"] == "illumina":
             index=temp(f"{datadir}{matchref}{wc_folder}" "{sample}.bam.bai"),
         conda:
             f"{conda_envs}Alignment.yaml"
+        container:
+            f"{config['container_cache']}/viroconstrictor_alignment_{get_hash('Alignment')}.sif"
         log:
             f"{logdir}" "AlignMR_{Virus}.{segment}.{sample}.log",
         benchmark:
@@ -278,14 +286,16 @@ rule count_mapped_reads:
     output:
         temp(f"{datadir}{matchref}{wc_folder}" "{sample}_count.csv"),
     conda:
-        f"{conda_envs}Clean.yaml"
+        f"{conda_envs}Scripts.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     threads: 1
     resources:
         mem=low_memory_job,
     log:
         f"{logdir}CountMR_" "{Virus}.{segment}.{sample}.log",
     params:
-        script=srcdir("scripts/match_ref/count_mapped_reads.py"),
+        script=srcdir("scripts/match_ref/count_mapped_reads.py") if config["use-conda"] is True and config["use-singularity"] is False else "/scripts/match_ref/count_mapped_reads.py",
     shell:
         """
         python {params.script} {input.bam} {output} >> {log} 2>&1
@@ -300,14 +310,16 @@ rule filter_best_matching_ref:
         filtref=temp(f"{datadir}{matchref}{wc_folder}" "{sample}_best_ref.fasta"),
         filtcount=temp(f"{datadir}{matchref}{wc_folder}" "{sample}_best_ref.csv"),
     conda:
-        f"{conda_envs}Clean.yaml"
+        f"{conda_envs}Scripts.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     threads: 1
     resources:
         mem=low_memory_job,
     log:
         f"{logdir}FilterBR_" "{Virus}.{segment}.{sample}.log",
     params:
-        script=srcdir("scripts/match_ref/filter_best_matching_ref.py"),
+        script=srcdir("scripts/match_ref/filter_best_matching_ref.py") if config["use-conda"] is True and config["use-singularity"] is False else "/scripts/match_ref/filter_best_matching_ref.py",
     shell:
         """
         python {params.script} {input.stats} {input.ref} {output.filtref} {output.filtcount} >> {log} 2>&1
@@ -342,14 +354,16 @@ rule group_and_rename_refs:
         groupedrefs=f"{datadir}{matchref}" "{sample}_refs.fasta",
         groupedstats=temp(f"{datadir}{matchref}" "{sample}_refs.csv"),
     conda:
-        f"{conda_envs}Clean.yaml"
+        f"{conda_envs}Scripts.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     threads: 1
     resources:
         mem=low_memory_job,
     log:
         f"{logdir}GroupRefs_" "{sample}.log",
     params:
-        script=srcdir("scripts/match_ref/group_refs.py"),
+        script=srcdir("scripts/match_ref/group_refs.py") if config["use-conda"] is True and config["use-singularity"] is False else "/scripts/match_ref/group_refs.py",
     shell:
         """
         python {params.script} "{input.ref}" "{input.stats}" {output.groupedrefs} {output.groupedstats} {wildcards.sample} >> {log} 2>&1
@@ -368,8 +382,12 @@ rule filter_gff:
         mem=low_memory_job,
     log:
         f"{logdir}FilterGFF_" "{sample}.log",
+    conda:
+        f"{conda_envs}Scripts.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     params:
-        script=srcdir("scripts/match_ref/filter_gff.py"),
+        script=srcdir("scripts/match_ref/filter_gff.py") if config["use-conda"] is True and config["use-singularity"] is False else "/scripts/match_ref/filter_gff.py",
     shell:
         """
         python {params.script} {input.refdata} {input.gff} {output.gff} {output.groupedstats} >> {log} 2>&1
@@ -392,11 +410,42 @@ rule touch_gff:
         touch {output.gff}
         """
 
+rule filter_fasta2bed:
+    input:
+        ref=rules.group_and_rename_refs.output.groupedrefs,
+        refdata=rules.filter_gff.output.groupedstats,
+        prm=lambda wc: "" if SAMPLES[wc.sample]["PRIMERS"].endswith(".bed") else SAMPLES[wc.sample]["PRIMERS"],
+    output:
+        bed=f"{datadir}{matchref}" "{sample}_primers.bed",
+        groupedstats=temp(f"{datadir}{matchref}" "{sample}_data2.csv"),
+    conda:
+        f"{conda_envs}Clean.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_clean_{get_hash('Clean')}.sif"
+    threads: 1
+    resources:
+        mem_mb=low_memory_job,
+    log:
+        f"{logdir}Fasta2Bed_" "{sample}.log",
+    params:
+        pr_mm_rate=lambda wc: SAMPLES[wc.sample]["PRIMER-MISMATCH-RATE"],
+    shell:
+        """
+        python -m AmpliGone.fasta2bed \
+            --primers {input.prm} \
+            --reference {input.ref} \
+            --output {output.bed} \
+            --primer-mismatch-rate {params.pr_mm_rate} > {log}
+        awk -F ',' -v OFS=',' '{{ $(NF+1) = (NR==1 ? "Primer_file" : "{output.bed}"); print }}' {input.refdata} > {output.groupedstats}
+        """
+
+ruleorder: filter_fasta2bed > filter_bed > touch_primers
+
+
 rule filter_bed:
     input:
         prm=lambda wc: SAMPLES[wc.sample]["PRIMERS"],
         refdata=rules.filter_gff.output.groupedstats,
-        ref=rules.group_and_rename_refs.output.groupedrefs,
     output:
         bed=f"{datadir}{matchref}" "{sample}_primers.bed",
         groupedstats=temp(f"{datadir}{matchref}" "{sample}_data2.csv"),
@@ -406,25 +455,16 @@ rule filter_bed:
     log:
         f"{logdir}FilterBed_" "{sample}.log",
     params:
-        pr_mm_rate=lambda wc: SAMPLES[wc.sample]["PRIMER-MISMATCH-RATE"],
-        script=srcdir("scripts/match_ref/filter_bed.py"),
+        script=srcdir("scripts/match_ref/filter_bed.py") if config["use-conda"] is True and config["use-singularity"] is False else "/scripts/match_ref/filter_bed.py",
     conda:
-        f"{conda_envs}Clean.yaml"
+        f"{conda_envs}Scripts.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     shell:
         """
-        if [[ {input.prm} == *.bed ]]; then
-            python {params.script} {input.prm} {input.refdata} {output.bed} {output.groupedstats}
-        else
-            python -m AmpliGone.fasta2bed \
-                --primers {input.prm} \
-                --reference {input.ref} \
-                --output {output.bed} \
-                --primer-mismatch-rate {params.pr_mm_rate} > {log}
-            awk -F"," 'BEGIN {{ OFS = "," }} {{$6="{output.bed}"; print}}' {input.refdata} > {output.groupedstats}
-        fi
+        python {params.script} {input.prm} {input.refdata} {output.bed} {output.groupedstats}
         """
 
-ruleorder: filter_bed > touch_primers
 
 rule touch_primers:
     input:

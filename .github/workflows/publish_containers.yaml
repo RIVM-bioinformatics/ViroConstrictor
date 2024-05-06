@@ -1,0 +1,67 @@
+name: Publish containers
+
+#todo: change this to an onrelease trigger
+on:
+  push:
+    branches:
+      - dev
+
+
+jobs:
+    Upload:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v3
+    
+          - name: Download artifact
+            id: download-artifact
+            uses: dawidd6/action-download-artifact@v3
+            with:
+              github_token: ${{ secrets.GITHUB_TOKEN }}
+              workflow: build_and_test.yml
+              name: built_containers
+              skip_unpack: true
+    
+          - name: move artifact
+            run: |
+              mv ./containers.tar.gz ./containers/containers.tar.gz
+    
+          - name: list directory contents
+            run: |
+              ls -R ./
+    
+          - name: unzip built containers
+            run: |
+              cd ./containers/
+              tar -xzvf containers.tar.gz
+              cd ..
+    
+          - name: Setup Mamba
+            uses: mamba-org/setup-micromamba@v1
+            with:
+              cache-environment: true
+              post-cleanup: 'all'
+              environment-file: env.yml
+              init-shell: bash
+          
+          - name: Install local python package
+            run: |
+              pip install . --no-deps
+            shell: micromamba-shell {0}
+    
+          - name: Login to GitHub Container Registry
+            uses: docker/login-action@v3
+            with:
+              registry: ghcr.io
+              username: ${{ github.actor }}
+              password: ${{ secrets.GITHUB_TOKEN }}
+          
+          - name: Add artifacted containers to docker daemon
+            run: |
+              python containers/add_OCI_to_docker_engine.py
+            shell: micromamba-shell {0}
+          
+          - name: tag and push containers
+            run: |
+              python containers/tag_and_push_containers.py
+            shell: micromamba-shell {0}
