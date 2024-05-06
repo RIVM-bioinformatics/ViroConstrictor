@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.2](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.1...v1.4.2) (2024-04-03)
+
+
+### Dependencies
+
+* update AmpliGone to version 1.3.1 ([b6a92c8](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/b6a92c8698b69cc518f73c3d59eda76aea53fbca))
+
 ## [1.4.1](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.0...v1.4.1) (2024-03-22)
 
 
