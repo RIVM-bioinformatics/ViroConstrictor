@@ -96,5 +96,8 @@ jobs:
         run: |
           python containers/pull_published_containers.py
 
+      - name: list directory contents
+        run: |
+          ls -R ./
       
       ## rest of the testing suite here
