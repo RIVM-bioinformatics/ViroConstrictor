@@ -155,7 +155,7 @@ def main() -> NoReturn:
         inputs_obj=parsed_input, samplesheetfilename="samples_main"
     )
 
-    if download_containers(snakemake_run_details.snakemake_run_conf) != 0:
+    if snakemake_run_details.snakemake_run_conf["use-singularity"] and download_containers(snakemake_run_details.snakemake_run_conf) != 0:
         log.error("Failed to download containers required for workflow.\nPlease check the logs and your settings for more information and try again later.")
         sys.exit(1)
 

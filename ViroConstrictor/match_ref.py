@@ -205,7 +205,7 @@ def process_match_ref(parsed_inputs: CLIparser) -> CLIparser:
         f"{'='*20} [bold orange_red1] Starting Match-reference process [/bold orange_red1] {'='*20}"
     )
 
-    if download_containers(snakemakedetails.snakemake_run_conf) != 0:
+    if snakemakedetails.snakemake_run_conf['use-singularity'] is True and download_containers(snakemakedetails.snakemake_run_conf) != 0:
         log.error("Failed to download containers required for workflow.\nPlease check the logs and your settings for more information and try again later.")
         sys.exit(1)
 
