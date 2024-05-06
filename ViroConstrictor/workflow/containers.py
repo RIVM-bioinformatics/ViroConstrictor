@@ -161,7 +161,6 @@ def download_containers(config: Dict[str, Any], verbose=False) -> int:
 def construct_container_bind_args(samples_dict: Dict) -> str:
     paths = []
     for keys, nested_dict in samples_dict.items():
-        print(nested_dict)
         paths.extend(
             f"{os.path.dirname(value)}"
             for value in nested_dict.values()
