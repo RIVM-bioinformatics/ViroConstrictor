@@ -20,7 +20,7 @@ jobs:
               github_token: ${{ secrets.GITHUB_TOKEN }}
               workflow: build_and_test.yml
               name: built_containers
-              skip_unpack: true
+              skip_unpack: false
     
           - name: move artifact
             run: |
