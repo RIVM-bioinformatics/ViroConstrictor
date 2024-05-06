@@ -181,7 +181,7 @@ def main() -> NoReturn:
                 ),
                 WriteYaml(
                     snakemake_run_details.snakemake_run_conf,
-                    f"{parsed_input.workdir}/config/run_params.yaml",
+                    f"{parsed_input.workdir}/config/run_configs.yaml",
                 ),
             ],
             restart_times=snakemake_run_details.snakemake_run_conf["restart-times"],
@@ -235,7 +235,11 @@ def main() -> NoReturn:
                 WriteYaml(
                     snakemake_run_details.snakemake_run_parameters,
                     f"{parsed_input.workdir}/config/run_params.yaml",
-                )
+                ),
+                WriteYaml(
+                    snakemake_run_details.snakemake_run_conf,
+                    f"{parsed_input.workdir}/config/run_configs.yaml",
+                ),
             ],
             quiet=["all"],  # type: ignore
             log_handler=[

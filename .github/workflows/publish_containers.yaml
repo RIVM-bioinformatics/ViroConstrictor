@@ -1,10 +1,9 @@
 name: Publish containers
 
-#todo: change this to an onrelease trigger
 on:
-  push:
-    branches:
-      - dev
+  release:
+    types:
+      - published
 
 
 jobs:
