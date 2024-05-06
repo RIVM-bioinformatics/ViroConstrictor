@@ -155,11 +155,9 @@ def main() -> NoReturn:
         inputs_obj=parsed_input, samplesheetfilename="samples_main"
     )
 
-    # todo: add a proper exception here to catch the case where the containers are not downloaded
-    # should exit with status code 1 and a proper log.error message
-    container_download_status = download_containers(
-        snakemake_run_details.snakemake_run_conf
-    )
+    if download_containers(snakemake_run_details.snakemake_run_conf) != 0:
+        log.error("Failed to download containers required for workflow.\nPlease check the logs and your settings for more information and try again later.")
+        sys.exit(1)
 
     log.info(f"{'='*20} [bold yellow] Starting Main Workflow [/bold yellow] {'='*20}")
 

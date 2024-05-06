@@ -58,10 +58,6 @@ jobs:
         run: |
           mv ./containers.tar.gz ./containers/containers.tar.gz
       
-      - name: list directory contents
-        run: |
-          ls -R ./
-      
       - name: unzip built containers
         run: |
           cd ./containers/
@@ -84,27 +80,13 @@ jobs:
           pip install . --no-deps
         shell: micromamba-shell {0}
 
-      - name: list directory contents
-        run: |
-          ls -R ./
-
       - name: convert containers
         run: |
           python containers/convert_artifact_containers_for_apptainer.py
-
-      - name: list installed modules
-        run: |
-          pip list
-          mamba list
-        shell: micromamba-shell {0}
 
       - name: download existing containers
         run: |
           python containers/pull_published_containers.py
         shell: micromamba-shell {0}
-
-      - name: list directory contents
-        run: |
-          ls -R ./
       
       ## rest of the testing suite here
