@@ -2,8 +2,7 @@ import json
 import subprocess
 from typing import List
 
-# main_upstream_registry = "ghcr.io/rivm-bioinformatics"
-main_upstream_registry = "ghcr.io/florianzwagemaker"
+from ViroConstrictor.workflow.containers import upstream_registry
 
 base_path_to_container_defs = "./containers"
 
@@ -16,6 +15,6 @@ if __name__ == "__main__":
     for container in built_containers:
         print(f"Tagging and pushing {container}")
         subprocess.run(
-            f"docker tag {container} {main_upstream_registry}/{container}", shell=True
+            f"docker tag {container} {upstream_registry}/{container}", shell=True
         )
-        subprocess.run(f"docker push {main_upstream_registry}/{container}", shell=True)
+        subprocess.run(f"docker push {upstream_registry}/{container}", shell=True)
