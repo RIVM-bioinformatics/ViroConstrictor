@@ -1,9 +1,10 @@
 name: build containers and run tests
 
+#todo: change this to an on_pullrequest trigger only to main branch
 on:
   pull_request:
     branches:
-      - 'main'
+      - '*'
 
 jobs:
   Setup_and_build:
