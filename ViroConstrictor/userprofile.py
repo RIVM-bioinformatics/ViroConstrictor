@@ -16,6 +16,7 @@ from rich.console import Console
 
 from ViroConstrictor.functions import tabCompleter
 from ViroConstrictor.logging import log
+from ViroConstrictor.workflow.containers import containerization_installed
 
 
 def FileExists(file: pathlib.Path) -> bool:
@@ -43,7 +44,11 @@ def FileIsPopulated(file: pathlib.Path) -> bool:
 
 
 def AskPrompts(
-    intro: str, prompt: str, options: list, fixedchoices: bool = False
+    intro: str,
+    prompt: str,
+    options: list,
+    fixedchoices: bool = False,
+    default: str = None,
 ) -> str | None:
     """This function is used to ask the user a question and provide a list of options to choose from.
     A free-text user reply is also possible.
@@ -72,13 +77,15 @@ def AskPrompts(
         the reply variable.
 
     """
+    completer = tabCompleter()
     if fixedchoices:
-        completer = tabCompleter()
         completer.createListCompleter(options)
-
         readline.set_completer_delims("\t")
         readline.parse_and_bind("tab: complete")
         readline.set_completer(completer.listCompleter)
+    else:
+        readline.parse_and_bind("tab: complete")
+        readline.set_completer(completer.pathCompleter)
 
     subprocess.call("/bin/clear", shell=False)
 
@@ -101,8 +108,8 @@ def AskPrompts(
             reply = input(prompt).strip()
             if reply == "quit":
                 sys.exit(-1)
-            else:
-                return reply
+            # if reply is empty and a default value is given, return the default value
+            return default if not reply and default else reply
 
 
 def BuildConfig(file: pathlib.Path) -> None:
@@ -133,7 +140,7 @@ Please specify the computing-mode that you wish to use for ViroConstrictor.""",
 
     if conf_object["COMPUTING"]["compmode"] == "grid":
         conf_object["COMPUTING"]["queuename"] = AskPrompts(  # type: ignore
-            f"""Grid mode has been chosen. Please enter the name of computing-queue that you wish to use on your grid/HPC cluster.\nThis is necessary so ViroConstrictor will send all the various tasks to the correct (remote) computers.\n\n[bold underline yellow]Please note that this is case-sensitive[/bold underline yellow]\n""",
+            """Grid mode has been chosen. Please enter the name of computing-queue that you wish to use on your grid/HPC cluster.\nThis is necessary so ViroConstrictor will send all the various tasks to the correct (remote) computers.\n\n[bold underline yellow]Please note that this is case-sensitive[/bold underline yellow]\n""",
             "Please specify the name of the Queue on your grid/HPC cluster that you wish to use. [free text] ",
             [],
             fixedchoices=False,
@@ -143,7 +150,7 @@ Please specify the computing-mode that you wish to use for ViroConstrictor.""",
         "auto_update": AskPrompts(
             """ViroConstrictor can check and update itself everytime you run it.
 Please specify whether you wish to enable the auto-update feature.""",
-            f"""Do you wish to enable the auto-update feature? \[yes/no] """,
+            """Do you wish to enable the auto-update feature? \[yes/no] """,
             ["yes", "no"],
             fixedchoices=True,
         )
@@ -157,7 +164,22 @@ Please specify whether you wish to enable the auto-update feature.""",
             fixedchoices=True,
         )
 
-    subprocess.call("/bin/clear", shell=False)
+    if containerization_installed is False:
+        conf_object["REPRODUCTION"] = {
+            "repro_method": "conda",
+            "container_cache_path": None,
+        }
+    else:
+        conf_object["REPRODUCTION"] = {"repro_method": "containers"}
+        conf_object["REPRODUCTION"]["container_cache_path"] = AskPrompts(
+            f"""ViroConstrictor will use containers to run the various analysis steps in a reproducible manner.\nHowever, to speed up the workflow and to allow offline-use, ViroConstrictor will cache the containers on your local machine.\nThis directory will be used to locally store the containers.\nIf you do not provide a path, the default path will be used. ({str(pathlib.Path.home())}/.viroconstrictor/containers)""",
+            """Please specify the path to the container cache directory. [free text] """,
+            [],
+            fixedchoices=False,
+            default=f"{str(pathlib.Path.home())}/.viroconstrictor/containers",
+        )
+
+    # subprocess.call("/bin/clear", shell=False)
 
     with open(file, "w") as conffile:
         conf_object.write(conffile)
@@ -197,6 +219,17 @@ def AllOptionsGiven(config: configparser.ConfigParser) -> bool:
             and config["GENERAL"]["auto_update"] == "no"
             and config.has_option("GENERAL", "ask_for_update") is False
             or config.has_option("GENERAL", "auto_update") is not True
+        ):
+            all_present = False
+    else:
+        all_present = False
+
+    if config.has_section("REPRODUCTION") is True:
+        if (
+            config.has_option("REPRODUCTION", "repro_method") is True
+            and config["REPRODUCTION"]["repro_method"] == "containers"
+            and config.has_option("REPRODUCTION", "container_cache_path") is False
+            or config.has_option("REPRODUCTION", "repro_method") is not True
         ):
             all_present = False
     else:

@@ -1,0 +1,92 @@
+name: build containers and run tests
+
+#todo: change this to an on_pullrequest trigger only to main branch
+on:
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  Setup_and_build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Mamba
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          cache-environment: true
+          post-cleanup: 'all'
+          environment-file: env.yml
+          init-shell: bash
+      
+      - name: Install local python package
+        run: |
+          pip install . --no-deps
+        shell: micromamba-shell {0}
+
+      - name: build containers
+        run: |
+          python containers/build_containers.py
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: micromamba-shell {0}
+      
+      - name: zip built containers
+        run: |
+          cd ./containers/
+          tar -czvf containers.tar.gz builtcontainers.json $(find . -type f -name "*.tar" -printf '%f ')
+
+
+      - name: Upload container artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: built_containers
+          path: ./containers/containers.tar.gz
+  
+  Test:
+    runs-on: ubuntu-latest
+    needs: Setup_and_build
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: actions/download-artifact@v3
+        with:
+          name: built_containers
+
+      - name: move artifact
+        run: |
+          mv ./containers.tar.gz ./containers/containers.tar.gz
+      
+      - name: unzip built containers
+        run: |
+          cd ./containers/
+          tar -xzvf containers.tar.gz
+          cd ..
+
+      - name: Setup Apptainer
+        uses: eWaterCycle/setup-apptainer@v2
+
+      - name: Setup Mamba
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          cache-environment: true
+          post-cleanup: 'all'
+          environment-file: env.yml
+          init-shell: bash
+      
+      - name: Install local python package
+        run: |
+          pip install . --no-deps
+        shell: micromamba-shell {0}
+
+      - name: convert containers
+        run: |
+          python containers/convert_artifact_containers_for_apptainer.py
+
+      - name: download existing containers
+        run: |
+          python containers/pull_published_containers.py
+        shell: micromamba-shell {0}
+      
+      ## rest of the testing suite here

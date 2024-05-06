@@ -37,9 +37,9 @@ for record in seqrecords:
 # add the seqrecord information to the dataframe
 for record in renamed_seqrecords:
     df.loc[df["Reference"].str.contains(record.id), "seqrecord_id"] = record.id
-    df.loc[
-        df["Reference"].str.contains(record.id), "seqrecord_description"
-    ] = record.description
+    df.loc[df["Reference"].str.contains(record.id), "seqrecord_description"] = (
+        record.description
+    )
     df.loc[df["Reference"].str.contains(record.id), "seqrecord_name"] = record.name
     df.loc[df["Reference"].str.contains(record.id), "seqrecord_seq"] = str(record.seq)
 
