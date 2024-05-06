@@ -59,7 +59,9 @@ jobs:
           - name: Add artifacted containers to docker daemon
             run: |
               python containers/add_OCI_to_docker_engine.py
+            shell: micromamba-shell {0}
           
           - name: tag and push containers
             run: |
               python containers/tag_and_push_containers.py
+            shell: micromamba-shell {0}

@@ -3,9 +3,8 @@ import os
 import subprocess
 from typing import Any, Dict, List, Tuple
 
-from rich import print
-
 from ViroConstrictor import __prog__
+from ViroConstrictor.logging import log
 
 upstream_registry = "ghcr.io/rivm-bioinformatics"
 
@@ -143,7 +142,7 @@ def download_containers(config: Dict[str, Any], verbose=False) -> int:
     # however this has unintended consequences for the various OCI layers resulting in at least one container not being downloaded correctly.
     # Thus it's better for now to download the containers sequentially.
     for container in to_download:
-        print(f"Downloading {container}")
+        log.info(f"Downloading container: [magenta]'{container}'[/magenta] to local cache")
         executable = containerization_executable()
         status = subprocess.call(
             f"{executable} pull --dir {config['container_cache']} docker://{upstream_registry}/{container}",
@@ -152,16 +151,17 @@ def download_containers(config: Dict[str, Any], verbose=False) -> int:
             stdout=subprocess.PIPE if verbose is False else None,
         )
         if status != 0:
-            print(f"Failed to download {container}")
+            log.error(f"Failed to download container: [magenta]'{container}'[/magenta]")
             return 1
-        print(f"Successfully downloaded {container}")
+        log.info(f"Successfully downloaded container: [magenta]'{container}'[/magenta] to local cache")
 
     return 0
 
 
 def construct_container_bind_args(samples_dict: Dict) -> str:
     paths = []
-    for nested_dict in samples_dict.items():
+    for keys, nested_dict in samples_dict.items():
+        print(nested_dict)
         paths.extend(
             f"{os.path.dirname(value)}"
             for value in nested_dict.values()

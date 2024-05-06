@@ -1,4 +1,5 @@
 import copy
+import sys
 from typing import Literal
 
 import pandas as pd
@@ -204,9 +205,9 @@ def process_match_ref(parsed_inputs: CLIparser) -> CLIparser:
         f"{'='*20} [bold orange_red1] Starting Match-reference process [/bold orange_red1] {'='*20}"
     )
 
-    # todo: add a proper exception here to catch the case where the containers are not downloaded
-    # should exit with status code 1 and a proper log.error message
-    status = download_containers(snakemakedetails.snakemake_run_conf)
+    if download_containers(snakemakedetails.snakemake_run_conf) != 0:
+        log.error("Failed to download containers required for workflow.\nPlease check the logs and your settings for more information and try again later.")
+        sys.exit(1)
 
     status = run_snakemake(inputs_obj_match_ref, snakemakedetails)
 
