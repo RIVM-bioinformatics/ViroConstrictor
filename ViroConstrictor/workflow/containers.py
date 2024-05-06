@@ -135,7 +135,7 @@ def containerization_executable() -> str:
     )
 
 
-def download_containers(config: Dict[str, Any]) -> int:
+def download_containers(config: Dict[str, Any], verbose=False) -> int:
     to_download = containers_to_download(config)
     to_download = [x.rsplit("_", 1)[0] + ":" + x.rsplit("_", 1)[1] for x in to_download]
 
@@ -148,8 +148,8 @@ def download_containers(config: Dict[str, Any]) -> int:
         status = subprocess.call(
             f"{executable} pull --dir {config['container_cache']} docker://{upstream_registry}/{container}",
             shell=True,
-            stderr=subprocess.PIPE,
-            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE if verbose is False else None,
+            stdout=subprocess.PIPE if verbose is False else None,
         )
         if status != 0:
             print(f"Failed to download {container}")
