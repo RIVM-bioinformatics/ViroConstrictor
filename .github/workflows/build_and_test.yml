@@ -91,5 +91,10 @@ jobs:
         run: |
           python containers/convert_artifact_containers_for_apptainer.py
 
-      # download already built containers
+
+      - name: download existing containers
+        run: |
+          python containers/pull_published_containers.py
+
+      
       ## rest of the testing suite here
