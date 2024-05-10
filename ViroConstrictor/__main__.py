@@ -71,7 +71,13 @@ Please check the input-target and try again if a different preset is required, o
 This applies to the following samples:\n{''.join(samples)}"""
         preset_score_warnings.append(warn)
 
-    p_fallbackwarning_df = sample_info_df.loc[sample_info_df["PRESET_SCORE"] == 0.0]
+    # check if the preset score is larger or equal than 0.0 and smaller than 0.000001 (1e-6)
+    # We do this because the preset score is a float and we want to check if it is within a certain range as floating point equality checks are not reliable
+    p_fallbackwarning_df = sample_info_df.loc[
+        (sample_info_df["PRESET_SCORE"] >= 0.0)
+        & (sample_info_df["PRESET_SCORE"] < 1e-6)
+    ]
+
     targets, presets = (
         (
             list(x)
