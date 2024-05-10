@@ -161,8 +161,15 @@ def main() -> NoReturn:
         inputs_obj=parsed_input, samplesheetfilename="samples_main"
     )
 
-    if snakemake_run_details.snakemake_run_conf["use-singularity"] and download_containers(snakemake_run_details.snakemake_run_conf) != 0:
-        log.error("Failed to download containers required for workflow.\nPlease check the logs and your settings for more information and try again later.")
+    # if configured to use containers, check if they are available and download them if necessary
+    # TODO: add the verbosity flag to the download_containers function and update log message to reflect this
+    if (
+        snakemake_run_details.snakemake_run_conf["use-singularity"]
+        and download_containers(snakemake_run_details.snakemake_run_conf) != 0
+    ):
+        log.error(
+            "Failed to download containers required for workflow.\nPlease check the logs and your settings for more information and try again later."
+        )
         sys.exit(1)
 
     log.info(f"{'='*20} [bold yellow] Starting Main Workflow [/bold yellow] {'='*20}")
