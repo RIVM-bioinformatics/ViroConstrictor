@@ -52,7 +52,6 @@ if __name__ == "__main__":
         # If the container does not exist, the json response will be a dict with a message that the container does not exist.
         # You can therefore check if the json response is a list or a dict to see if the container exists or not.
         if isinstance(json_response, list):
-            # json_response = json.loads(json_response)
             tags = [
                 version["metadata"]["container"]["tags"] for version in json_response
             ]

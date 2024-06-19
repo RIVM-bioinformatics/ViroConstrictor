@@ -83,7 +83,7 @@ class FlexibleArgFormatter(HelpFormatter):
         """Split text in to paragraphs of like-indented lines."""
 
         text = textwrap.dedent(text).strip()
-        text = re.sub("\n\n[\n]+", "\n\n", text)
+        text = re.sub("\n\n\n+", "\n\n", text)
 
         last_sub_indent: Optional[int] = None
         paragraphs: list[str] = []
