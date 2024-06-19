@@ -219,7 +219,7 @@ def print_jobstatistics_logmessage(msg: dict) -> None:
         log.info(f"Job statistics:\n[yellow]{logmessage}[/yellow]")
 
 
-logmessage_strings_info: dict[str, Any] = {
+logmessage_strings_info: dict[str, Callable] = {
     "Activating conda environment": ColorizeLogMessagePath,
     "Activating singularity image": ColorizeLogMessagePath,
     "Building DAG of jobs": BaseLogMessage,
