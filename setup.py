@@ -64,8 +64,10 @@ setup(
         "ViroConstrictor": [
             "workflow/envs/*",
             "workflow/scripts/*",
+            "workflow/wrappers/*",
             "workflow/files/*",
             "workflow/scripts/match_ref/*",
+            "workflow/*",
         ]
     },
     install_requires=[
