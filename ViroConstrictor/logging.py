@@ -3,7 +3,7 @@ import logging
 import os
 import pathlib
 import re
-from typing import Any
+from typing import Any, Callable
 
 from rich.color import ANSI_COLOR_NAMES
 from rich.default_styles import DEFAULT_STYLES
@@ -263,15 +263,11 @@ def snakemake_logger(logfile: str) -> object:
         loglevel = msg.get("level")
         logmessage = msg.get("msg")
 
-        if loglevel == "dag_debug":
-            return None
-        if loglevel == "debug":
-            return None
-        if loglevel == "shellcmd":
+        if loglevel in ["dag_debug", "debug", "shellcmd"]:
             return None
 
         if logmessage is not None and any(
-            x for x in logmessage_suppressed_strings_warning if x in logmessage
+            x in logmessage for x in logmessage_suppressed_strings_warning
         ):
             return None
 
