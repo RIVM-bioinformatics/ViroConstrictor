@@ -198,13 +198,10 @@ with flags.output as fileout:
 
         if flags.exclude_spliced:
             cigartuples = split_cigar(read.cigarstring)
-            if is_spliced(cigartuples):
-                if (
-                    get_largest_spliced_len(cigartuples)
-                    > flags.spliced_length_threshold
-                ):
-
-                    continue
+            if is_spliced(cigartuples) and (
+                get_largest_spliced_len(cigartuples) > flags.spliced_length_threshold
+            ):
+                continue
 
         if read.query_alignment_length <= minimal_read_length:
             continue
