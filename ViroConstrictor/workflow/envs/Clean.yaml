@@ -2,7 +2,6 @@ name: QC_and_cleanup
 channels:
   - bioconda
   - conda-forge
-  - intel
   - nodefaults
 dependencies:
   - python>=3.8

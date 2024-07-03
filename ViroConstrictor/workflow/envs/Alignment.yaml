@@ -2,7 +2,6 @@ name: Reference_alignment
 channels:
   - bioconda
   - conda-forge
-  - intel
   - nodefaults
 dependencies:
   - python=3.7
