@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.3](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.2...v1.4.3) (2024-07-03)
+
+
+### Dependencies
+
+* Remove 'intel' channel from conda environments ([a2e918a](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/a2e918afc1a39326bb8784c2d79d3bb24731588b))
+
 ## [1.4.2](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.1...v1.4.2) (2024-04-03)
 
 
