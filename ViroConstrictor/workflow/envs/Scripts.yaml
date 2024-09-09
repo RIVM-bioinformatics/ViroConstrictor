@@ -1,4 +1,4 @@
-name: ORF_analysis
+name: Custom_scripts
 channels:
   - conda-forge
   - bioconda
@@ -6,7 +6,8 @@ channels:
 dependencies:
   - conda-forge::python>=3.10
   - conda-forge::pandas
-  - conda-forge::biopython==1.79
+  - conda-forge::biopython
 
-  - bioconda::prodigal==2.6.3
+  - bioconda::pysam
+  - bioconda::fastqc
   - bioconda::aminoextract==0.3.1
