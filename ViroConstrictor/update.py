@@ -15,7 +15,7 @@ from ViroConstrictor import __prog__, __version__
 from ViroConstrictor.logging import log
 from ViroConstrictor.userprofile import AskPrompts
 
-repo_channels = ("bioconda", "conda-forge", "intel")
+repo_channels = ("bioconda", "conda-forge")
 api_url = f"https://api.anaconda.org/release/bioconda/{__prog__.lower()}/latest"
 
 
