@@ -29,6 +29,7 @@ if "--snakefile" in sys.argv:
     logging.getLogger("snakemake.logging").setLevel(logging.CRITICAL)
 import ViroConstrictor
 
+VC_STAGE="MATCHREF"
 
 SAMPLES = {}
 with open(config["sample_sheet"]) as sample_sheet_file:
@@ -179,7 +180,7 @@ rule filter_references:
 
 
 if config["platform"] in ["nanopore", "iontorrent"]:
-    base_mapping_settings = (
+    base_mm2_preset = (
         "-ax sr" if config["platform"] == "iontorrent" else "-ax map-ont"
     )
 
@@ -204,34 +205,38 @@ if config["platform"] in ["nanopore", "iontorrent"]:
 
         params:
             mapthreads=config["threads"]["Alignments"] - 1,
-            mapping_base_settings=base_mapping_settings,
-            mapping_additionalsettings=lambda wc: get_preset_parameter(
+            mm2_alignment_preset=base_mm2_preset,
+            minimap2_base_setting=lambda wc: get_preset_parameter(
                 preset_name=SAMPLES[wc.sample]["PRESET"],
-                parameter_name="RawAlign_AdditionalSettings",
+                parameter_name="Minimap2_Settings_Base",
             ),
-            MappingMatchRefExtraSetting=lambda wc: get_preset_parameter(
+            minimap2_extra_setting=lambda wc: get_preset_parameter(
                 preset_name=SAMPLES[wc.sample]["PRESET"],
-                parameter_name="MatchRef_AdditionalAlignmentSettings",
+                parameter_name="Minimap2_Settings",
             ),
-            BAMfilters=lambda wc: get_preset_parameter(
+            minimap2_alignmentparams=lambda wc: get_preset_parameter(
                 preset_name=SAMPLES[wc.sample]["PRESET"],
-                parameter_name="BaseBAMFilters",
+                parameter_name=f"Minimap2_AlignmentParams_{config['platform']}",
             ),
-            AdditionalBamFilter=lambda wc: get_preset_parameter(
+            samtools_standard_filters=lambda wc: get_preset_parameter(
                 preset_name=SAMPLES[wc.sample]["PRESET"],
-                parameter_name="MatchRef_AdditionalBamFilters",
+                parameter_name="Samtools_Filters_Base",
+            ),
+            samtools_extra_filters=lambda wc: get_preset_parameter(
+                preset_name=SAMPLES[wc.sample]["PRESET"],
+                parameter_name="Samtools_Filters",
             ),
         shell:
             """
-            minimap2 {params.mapping_base_settings} {params.mapping_additionalsettings} {params.MappingMatchRefExtraSetting} -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
-            samtools view -@ {threads} {params.BAMfilters} {params.AdditionalBamFilter} -uS 2>> {log} |\
+            minimap2 {params.mm2_alignment_preset} {params.minimap2_base_setting} {params.minimap2_extra_setting} {params.minimap2_alignmentparams} -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
+            samtools view -@ {threads} {params.samtools_standard_filters} {params.samtools_extra_filters} -uS 2>> {log} |\
             samtools sort -o {output.bam} >> {log} 2>&1
             samtools index {output.bam} >> {log} 2>&1
             """
 
 
 if config["platform"] == "illumina":
-
+    base_mm2_preset = "-ax sr"
     rule align_to_refs:
         input:
             ref=rules.filter_references.output,
@@ -254,26 +259,31 @@ if config["platform"] == "illumina":
 
         params:
             mapthreads=config["threads"]["Alignments"] - 1,
-            mapping_additionalsettings=lambda wc: get_preset_parameter(
+            mm2_alignment_preset=base_mm2_preset,
+            minimap2_base_setting=lambda wc: get_preset_parameter(
                 preset_name=SAMPLES[wc.sample]["PRESET"],
-                parameter_name="RawAlign_AdditionalSettings",
+                parameter_name="Minimap2_Settings_Base",
             ),
-            MappingMatchRefExtraSetting=lambda wc: get_preset_parameter(
+            minimap2_extra_setting=lambda wc: get_preset_parameter(
                 preset_name=SAMPLES[wc.sample]["PRESET"],
-                parameter_name="MatchRef_AdditionalAlignmentSettings",
+                parameter_name="Minimap2_Settings",
             ),
-            BAMfilters=lambda wc: get_preset_parameter(
+            minimap2_alignmentparams=lambda wc: get_preset_parameter(
                 preset_name=SAMPLES[wc.sample]["PRESET"],
-                parameter_name="BaseBAMFilters",
+                parameter_name=f"Minimap2_AlignmentParams_{config['platform']}",
             ),
-            AdditionalBamFilter=lambda wc: get_preset_parameter(
+            samtools_standard_filters=lambda wc: get_preset_parameter(
                 preset_name=SAMPLES[wc.sample]["PRESET"],
-                parameter_name="MatchRef_AdditionalBamFilters",
+                parameter_name="Samtools_Filters_Base",
+            ),
+            samtools_extra_filters=lambda wc: get_preset_parameter(
+                preset_name=SAMPLES[wc.sample]["PRESET"],
+                parameter_name="Samtools_Filters",
             ),
         shell:
             """
-            minimap2 -ax sr {params.mapping_additionalsettings} {params.MappingMatchRefExtraSetting} -t {params.mapthreads} {input.ref} {input.fq1} {input.fq2} 2>> {log} |\
-            samtools view -@ {threads} {params.BAMfilters} {params.AdditionalBamFilter} -uS 2>> {log} |\
+            minimap2 {params.mm2_alignment_preset} {params.minimap2_base_setting} {params.minimap2_extra_setting} {params.minimap2_alignmentparams} -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
+            samtools view -@ {threads} {params.samtools_standard_filters} {params.samtools_extra_filters} -uS 2>> {log} |\
             samtools sort -o {output.bam} >> {log} 2>&1
             samtools index {output.bam} >> {log} 2>&1
             """

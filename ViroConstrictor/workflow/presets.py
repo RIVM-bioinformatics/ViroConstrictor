@@ -2,31 +2,18 @@ import difflib
 import json
 import os
 import re
-from typing import Tuple
+from typing import List, Tuple, Any
+from rich import print
+import inspect
+from collections import defaultdict
+from ViroConstrictor.logging import log
 
-aliases = {
-    "SARSCOV2": [
-        "SARS-COV-2",
-        "SARS2",
-        "COVID",
-        "COV",
-        "SARSCOV",
-        "SARSCOV2",
-        "CORONAVIRUS",
-    ],
-    "INFLUENZA": [
-        "FLU",
-        "INFLU",
-        "INFLUENZA",
-        "INFLUENZA_A",
-        "INFLUENZA_B",
-        "INF",
-    ],
-    # "MEASLES": ["MEASLES", "MEV", "MEASLES_VIRUS"],
-    # "HPV": ["PAPILLOMA_VIRUS", "HPV"]
-}
+# Load the preset aliases from a JSON file (preset_aliases.json)
+aliases = json.load(
+    open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "preset_aliases.json"))
+)
 
-# Load the preset parameters from a JSON file (preset_params.json) instead of having a giant dict here
+# Load the preset parameters from a JSON file (preset_params.json)
 presets = json.load(
     open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "preset_params.json"))
 )
@@ -96,6 +83,39 @@ def match_preset_name(targetname: str, use_presets: bool) -> Tuple[str, float]:
     return "DEFAULT", float(0)
 
 
+def collapse_preset_group(preset_name: str, stages: List[str], stage_identifier: str) -> dict[str, str]:
+    """
+    Collapse one or more preset groups into a single dictionary.
+
+    Parameters:
+        preset_name (str): The name of the preset group.
+        stages (List[str]): The list of stages, or subgroups, to include in the collapsed dictionary.
+        stage_identifier (str): The identifier to prepend to the keys in the collapsed dictionary.
+
+    Returns:
+        dict[str, str]: The collapsed dictionary.
+
+    Example:
+        >>> presets = {
+        ...     "group1": {
+        ...         "stage1": {"key1": "value1", "key2": "value2"},
+        ...         "stage2": {"key3": "value3", "key4": "value4"}
+        ...     },
+        ...     "group2": {
+        ...         "stage1": {"key5": "value5", "key6": "value6"},
+        ...         "stage2": {"key7": "value7", "key8": "value8"}
+        ...     }
+        ... }
+        >>> collapse_preset_group("group1", ["stage1", "stage2"], "prefix")
+        {'prefix_key1': 'value1', 'prefix_key2': 'value2', 'prefix_key3': 'value3', 'prefix_key4': 'value4'}
+    """
+    temp_dict: dict[str, str] = {}
+    for k,v in presets[preset_name].items():
+        if k in stages:
+            for nk, nv in v.items():
+                temp_dict[f"{stage_identifier}_{nk}"] = nv
+    return temp_dict
+
 def get_preset_parameter(preset_name: str, parameter_name: str) -> str:
     """This function takes in a preset name and a parameter name, and returns the corresponding value for
     that parameter in the preset dictionary.
@@ -114,4 +134,31 @@ def get_preset_parameter(preset_name: str, parameter_name: str) -> str:
     retrieved from a dictionary called "presets".
 
     """
-    return presets[preset_name][parameter_name]
+    
+    # Using an inspect here to have a dynamic stage identifier that cannot be changed.
+    # Additionally, this allows for the function to be used in any stage without needing to pass the stage identifier at every function call.
+    _stage_identifier = inspect.stack()[1][0].f_globals["VC_STAGE"]
+    
+
+    # collapse the preset groups into dictionaries for the main and matchref stages
+    # This results in the dictionaries with only the override values for the specific stage that is being called.
+    presets_main = collapse_preset_group(preset_name, ["STAGE_MAIN", "STAGE_GLOBAL"], _stage_identifier)
+    presets_matchref = collapse_preset_group(preset_name, ["STAGE_MATCHREF", "STAGE_GLOBAL"], _stage_identifier)
+    
+    # merge the two dictionaries together, with the main stage taking precedence over the matchref stage
+    # this results in one dictionary with the override values with the stage prepended to the key
+    # We're using a defaultdict here to allow for the default value to be None if the key is not found, thus indicating that there is no override value and the default value should be used.
+    preset = defaultdict(dict[str, str], presets_matchref | presets_main, default=None)
+    
+    # fetch the desired parameter, returns either the override value or None if the key does not exist.
+    parameter: Any = preset[f'{_stage_identifier}_{parameter_name}']
+
+    # if the parameter is a dictionary, it means that the parameter is not found in the specific preset group
+    if isinstance(parameter, dict):
+        # fetch the parameter from the default preset
+        preset_params = collapse_preset_group("DEFAULT", ["STAGE_MAIN", "STAGE_GLOBAL"], _stage_identifier)
+        log.debug(f"{preset_name} specific parameter '[yellow]{_stage_identifier}_{parameter_name}[/yellow]' not found, fetching parameter value from 'DEFAULT'.")
+
+        return preset_params[f"{_stage_identifier}_{parameter_name}"]
+    
+    return parameter

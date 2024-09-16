@@ -1,0 +1,19 @@
+{
+    "SARSCOV2": [
+        "SARS-COV-2",
+        "SARS2",
+        "COVID",
+        "COV",
+        "SARSCOV",
+        "SARSCOV2",
+        "CORONAVIRUS"
+    ],
+    "INFLUENZA": [
+        "FLU",
+        "INFLU",
+        "INFLUENZA",
+        "INFLUENZA_A",
+        "INFLUENZA_B",
+        "INF"
+    ]
+}
