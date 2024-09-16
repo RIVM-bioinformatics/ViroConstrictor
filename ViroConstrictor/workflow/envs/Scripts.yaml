@@ -2,7 +2,6 @@ name: Custom_scripts
 channels:
   - bioconda
   - conda-forge
-  - intel
   - nodefaults
 dependencies:
   - python>=3.10
