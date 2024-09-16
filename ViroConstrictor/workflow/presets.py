@@ -93,27 +93,34 @@ def collapse_preset_group(
     """
     Collapse one or more preset groups into a single dictionary.
 
-    Parameters:
-        preset_name (str): The name of the preset group.
-        stages (List[str]): The list of stages, or subgroups, to include in the collapsed dictionary.
-        stage_identifier (str): The identifier to prepend to the keys in the collapsed dictionary.
+    Parameters
+    ----------
+    preset_name : str
+        The name of the preset group.
+    stages : list of str
+        The list of stages, or subgroups, to include in the collapsed dictionary.
+    stage_identifier : str
+        The identifier to prepend to the keys in the collapsed dictionary.
 
-    Returns:
-        dict[str, str]: The collapsed dictionary.
+    Returns
+    -------
+    collapsed_dict : dict[str, str]
+        The collapsed dictionary.
 
-    Example:
-        >>> presets = {
-        ...     "group1": {
-        ...         "stage1": {"key1": "value1", "key2": "value2"},
-        ...         "stage2": {"key3": "value3", "key4": "value4"}
-        ...     },
-        ...     "group2": {
-        ...         "stage1": {"key5": "value5", "key6": "value6"},
-        ...         "stage2": {"key7": "value7", "key8": "value8"}
-        ...     }
-        ... }
-        >>> collapse_preset_group("group1", ["stage1", "stage2"], "prefix")
-        {'prefix_key1': 'value1', 'prefix_key2': 'value2', 'prefix_key3': 'value3', 'prefix_key4': 'value4'}
+    Examples
+    --------
+    >>> presets = {
+    ...     "group1": {
+    ...         "stage1": {"key1": "value1", "key2": "value2"},
+    ...         "stage2": {"key3": "value3", "key4": "value4"}
+    ...     },
+    ...     "group2": {
+    ...         "stage1": {"key5": "value5", "key6": "value6"},
+    ...         "stage2": {"key7": "value7", "key8": "value8"}
+    ...     }
+    ... }
+    >>> collapse_preset_group("group1", ["stage1", "stage2"], "prefix")
+    {'prefix_key1': 'value1', 'prefix_key2': 'value2', 'prefix_key3': 'value3', 'prefix_key4': 'value4'}
     """
     temp_dict: dict[str, str] = {}
     for k, v in presets[preset_name].items():
@@ -124,21 +131,44 @@ def collapse_preset_group(
 
 
 def get_preset_parameter(preset_name: str, parameter_name: str) -> str:
-    """This function takes in a preset name and a parameter name, and returns the corresponding value for
-    that parameter in the preset dictionary.
+    """
+    Flexibly get predefined tool-parameters from one or more presets.
 
     Parameters
     ----------
     preset_name : str
-        A string representing the name of a preset. Presets are pre-defined sets of values for certain
-    parameters.
+        The name of the preset.
     parameter_name : str
-        The name of the parameter that we want to retrieve from the preset.
+        The name of the parameter.
 
     Returns
     -------
-        A string value that corresponds to the parameter name of a given preset name. The value is
-    retrieved from a dictionary called "presets".
+    str
+        The value of the parameter.
+
+    Raises
+    ------
+    KeyError
+        If the preset or parameter is not found.
+
+    Notes
+    -----
+    This function retrieves the value of a parameter from a preset. The preset can have different values for different stages of execution. The stages are identified by a stage identifier, which is obtained dynamically using the `inspect` module. The stage identifier is stored in the global variable `VC_STAGE`.
+
+    The function first collapses the preset groups into dictionaries for the main and matchref stages. This results in dictionaries with only the override values for the specific stage that is being called.
+
+    The dictionaries for the main and matchref stages are then merged together, with the main stage taking precedence over the matchref stage. This results in one dictionary with the override values, where the stage identifier is prepended to the key.
+
+    The function uses a `defaultdict` to allow for a default value of `None` if the key is not found in the dictionary. This indicates that there is no override value and the default value should be used.
+
+    If the parameter is a dictionary, it means that the parameter is not found in the specific preset group. In this case, the function fetches the parameter from the default preset. The default preset is obtained by collapsing the preset group for the "DEFAULT" stage.
+
+    Examples
+    --------
+    >>> get_preset_parameter("preset1", "parameter1")
+    'value1'
+    >>> get_preset_parameter("preset2", "parameter2")
+    'value2'
 
     """
 
