@@ -1,19 +1,19 @@
 name: QC_and_cleanup
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
   - nodefaults
 dependencies:
-  - python>=3.8
-  - ampligone==1.3.1
-  - pandas>=1.3
-  - minimap2==2.24
-  - mappy==2.24
-  - samtools==1.14
-  - biopython==1.79
-  - bedtools==2.30.0
-  - openjdk==11.0.8
-  - fastqc==0.11.9
-  - fastp==0.23.2
-  - multiqc==1.11
-  - pip
+  - conda-forge::python>=3.8
+  - conda-forge::pandas>=1.3
+  - conda-forge::openjdk==11.0.8
+  - conda-forge::biopython==1.79
+
+  - bioconda::fastp==0.23.2
+  - bioconda::mappy==2.24
+  - bioconda::fastqc==0.11.9
+  - bioconda::multiqc==1.11
+  - bioconda::samtools==1.14
+  - bioconda::bedtools==2.30.0
+  - bioconda::minimap2==2.24
+  - bioconda::ampligone==1.3.1

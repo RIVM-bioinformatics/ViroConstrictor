@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.4](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.3...v1.4.4) (2024-09-16)
+
+
+### Bug Fixes
+
+* remove `intel` channel from selfupdater repositories ([43fe508](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/43fe50812ecb90d693892735431c3fe725159e50))
+
+
+### Dependencies
+
+* reorder and add details to the conda dependency files for compatibility with strict_channel_priority in conda config ([dc9b993](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/dc9b993fecb3d8840de72cebe82061692ce47269))
+
 ## [1.4.3](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.2...v1.4.3) (2024-07-03)
 
 
