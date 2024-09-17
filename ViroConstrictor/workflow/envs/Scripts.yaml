@@ -1,13 +1,13 @@
 name: Custom_scripts
 channels:
-  - bioconda
   - conda-forge
-  - intel
+  - bioconda
   - nodefaults
 dependencies:
-  - python>=3.10
-  - pandas
-  - pysam
-  - biopython
-  - fastqc
-  - aminoextract==0.3.1
+  - conda-forge::python>=3.10
+  - conda-forge::pandas
+  - conda-forge::biopython
+
+  - bioconda::pysam
+  - bioconda::fastqc
+  - bioconda::aminoextract==0.3.1
