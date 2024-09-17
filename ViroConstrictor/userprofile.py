@@ -10,6 +10,7 @@ import pathlib
 import readline
 import subprocess
 import sys
+from typing import Any
 
 from rich import print
 from rich.console import Console
@@ -48,7 +49,7 @@ def AskPrompts(
     prompt: str,
     options: list,
     fixedchoices: bool = False,
-    default: str = None,
+    default: Any = None,
 ) -> str | None:
     """This function is used to ask the user a question and provide a list of options to choose from.
     A free-text user reply is also possible.
