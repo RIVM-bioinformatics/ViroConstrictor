@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.5](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.4...v1.4.5) (2024-09-25)
+
+
+### Bug Fixes
+
+* incorrect renaming of matched references in non-segmented mode ([c42740e](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/c42740e8a3893f5bd682cbef0edb9a47eefb19fd))
+
 ## [1.4.4](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.3...v1.4.4) (2024-09-16)
 
 
