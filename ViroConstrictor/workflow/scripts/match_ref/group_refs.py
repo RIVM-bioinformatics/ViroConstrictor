@@ -25,21 +25,31 @@ for file in input_stats:
 
 df["sample"] = sample
 
-# rename the seqrecords where record.id becomes the first item in the record.description (split on "|")
+#TODO: refactor this to a more future-proof method. This is a temporary fix for the current issue and should be replaced with a method that doesn't have short-cut assumptions.
 renamed_seqrecords = []
-for record in seqrecords:
-    record.id = record.description.split()[1].split("|")[0]
-    record.description = " ".join(
-        [record.name, " ".join(record.description.split(" ")[1:])]
-    )
-    renamed_seqrecords.append(record)
+if len(seqrecords) > 1:
+    # more than 1 secrecord assumes segmented mode.
+    # We will therefore assume the reference headers are formatted to the segment-mode format on docs-site.
+    # we also now have to rename the records for proper future processing of all segments
+    # rename the seqrecords where record.id becomes the first item in the record.description (split on "|")
+    for record in seqrecords:
+        record.id = record.description.split()[1].split("|")[0]
+        record.description = " ".join(
+            [record.name, " ".join(record.description.split(" ")[1:])]
+        )
+        renamed_seqrecords.append(record)
+else:
+    # only 1 seqrecord assumes non-segmented mode
+    # we will however then assume the reference is formatted like an NCBI nuccore accession
+    # > record.id = nuccore accession || record.description = pathogen description
+    renamed_seqrecords.append(seqrecords[0])
 
 # add the seqrecord information to the dataframe
 for record in renamed_seqrecords:
     df.loc[df["Reference"].str.contains(record.id), "seqrecord_id"] = record.id
-    df.loc[
-        df["Reference"].str.contains(record.id), "seqrecord_description"
-    ] = record.description
+    df.loc[df["Reference"].str.contains(record.id), "seqrecord_description"] = (
+        record.description
+    )
     df.loc[df["Reference"].str.contains(record.id), "seqrecord_name"] = record.name
     df.loc[df["Reference"].str.contains(record.id), "seqrecord_seq"] = str(record.seq)
 
