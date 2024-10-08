@@ -702,11 +702,21 @@ def group_aminoacids_inputs(wildcards):
         select_samples = list(
             samples_df.loc[samples_df["Virus"] == i]["sample"].unique()
         )
-        select_refIDs = list(samples_df.loc[samples_df["Virus"] == i]["RefID"].unique())
+        # for x in select_samples:
+        #     y = samples_df.loc[(samples_df["Virus"] == i) & (samples_df["sample"] == x)]["RefID"].unique()
+        #     print(y)
+        # select_refIDs = list(samples_df.loc[samples_df["Virus"] == i]["RefID"].unique())
+        # print(select_refIDs)
 
         # create a dictionary of dictionaries for each virus, with 'i' as the primary key and sample as the secondary key having a list of refIDs as the value
-        struct[i] = {sample: select_refIDs for sample in select_samples}
-
+        struct[i] = {
+            sample: list(
+                samples_df.loc[
+                    (samples_df["Virus"] == i) & (samples_df["sample"] == sample)
+                ]["RefID"].unique()
+            )
+            for sample in select_samples
+        }
     file_list = []
     for virus, sample in struct.items():
         for sample, refid in sample.items():
@@ -714,7 +724,6 @@ def group_aminoacids_inputs(wildcards):
                 file_list.append(
                     f"{datadir}Virus~{virus}/RefID~{ref}/{amino}{sample}/aa.faa"
                 )
-
     return file_list
 
 
@@ -823,7 +832,7 @@ rule concat_boc:
 
 rule calculate_amplicon_cov:
     input:
-        pr=f"{datadir}{wc_folder}{prim}" "{sample}_removedprimers.bed",
+        pr=f"{datadir}{wc_folder}{prim}" "{sample}_primers.bed",
         cov=rules.trueconsense.output.cov,
     output:
         f"{datadir}{wc_folder}{prim}" "{sample}_ampliconcoverage.csv",
