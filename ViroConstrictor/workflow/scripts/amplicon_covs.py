@@ -147,37 +147,39 @@ def remove_alt_primer_r(df):
 
 
 def Find_NonOverlap(df):
-    dd = df.to_dict(orient="records")
-    startingpoint = {}
-    endingpoint = {}
-    lastindex = list(enumerate(dd))[-1][0]
-    firstindex = list(enumerate(dd))[0][0]
-    for x, v in enumerate(dd):
-        t_end = v.get("rightstart")
-        s = dd[x - 1].get("rightstart") if x != firstindex else v.get("leftend")
-        end_override = dd[x + 1].get("leftend") if x != lastindex else None
-        primerstart = s
-        if end_override is not None and end_override in range(primerstart, t_end):
-            primerend = end_override
-        else:
-            primerend = t_end
-        startingpoint[primerstart] = v.get("name")
-        endingpoint[primerend] = v.get("name")
+    if not df.empty:
+        dd = df.to_dict(orient="records")
+        startingpoint = {}
+        endingpoint = {}
+        lastindex = list(enumerate(dd))[-1][0]
+        firstindex = list(enumerate(dd))[0][0]
+        for x, v in enumerate(dd):
+            t_end = v.get("rightstart")
+            s = dd[x - 1].get("rightstart") if x != firstindex else v.get("leftend")
+            end_override = dd[x + 1].get("leftend") if x != lastindex else None
+            primerstart = s
+            if end_override is not None and end_override in range(primerstart, t_end):
+                primerend = end_override
+            else:
+                primerend = t_end
+            startingpoint[primerstart] = v.get("name")
+            endingpoint[primerend] = v.get("name")
 
-    startdf = (
-        pd.DataFrame.from_dict(startingpoint, orient="index")
-        .reset_index()
-        .rename(columns={0: "name", "index": "unique_start"})
-    )
-    enddf = (
-        pd.DataFrame.from_dict(endingpoint, orient="index")
-        .reset_index()
-        .rename(columns={0: "name", "index": "unique_end"})
-    )
-    df = pd.merge(df, startdf, on="name", how="inner")
-    df = pd.merge(df, enddf, on="name", how="inner")
-
-    return df
+        startdf = (
+            pd.DataFrame.from_dict(startingpoint, orient="index")
+            .reset_index()
+            .rename(columns={0: "name", "index": "unique_start"})
+        )
+        enddf = (
+            pd.DataFrame.from_dict(endingpoint, orient="index")
+            .reset_index()
+            .rename(columns={0: "name", "index": "unique_end"})
+        )
+        df = pd.merge(df, startdf, on="name", how="inner")
+        df = pd.merge(df, enddf, on="name", how="inner")
+        return df
+    else:
+        return pd.DataFrame(columns=["name", "leftstart", "leftend", "rightstart", "rightend", "unique_start", "unique_end"])
 
 
 def avg(lst):
@@ -250,6 +252,14 @@ if __name__ == "__main__":
 
     lf = remove_alt_primer_l(remove_alt_keyword(lf))
     rf = remove_alt_primer_r(remove_alt_keyword(rf))
+
+    # if either lf or rf is empty, write empty csv and exit
+    # csv will have one row with index "flags.key" and an empty value, no column name
+    if len(lf) == 0 or len(rf) == 0:
+        df = pd.DataFrame({flags.key: [None]})
+        print(df)
+        df.to_csv(flags.output, sep=",", index=False, header=False)
+        sys.exit(0)
 
     non_overlapping_points = Find_NonOverlap(
         pd.merge(lf, rf, on="name", how="inner")
