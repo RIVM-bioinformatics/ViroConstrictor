@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.6](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.5...v1.4.6) (2024-10-08)
+
+
+### Bug Fixes
+
+* properly solve DAG workflow for nonsegmented matched-ref samples ([02a821a](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/02a821a44c3ed3741c65825789ef25ad3e2093c1))
+
 ## [1.4.5](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.4...v1.4.5) (2024-09-25)
 
 
