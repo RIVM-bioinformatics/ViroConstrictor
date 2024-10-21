@@ -253,6 +253,11 @@ def download_containers(config: Dict[str, Any], verbose=False) -> int:
     to_download = containers_to_download(config)
     to_download = [x.rsplit("_", 1)[0] + ":" + x.rsplit("_", 1)[1] for x in to_download]
 
+    if config["dryrun"]:
+        log.info(
+            f"Container(s) [magenta]{', '.join(to_download)}[/magenta] will be downloaded"
+        )
+        return 0
     # I thought this would be a great place to use concurrent.futures to download the containers in parallel
     # however this has unintended consequences for the various OCI layers resulting in at least one container not being downloaded correctly.
     # Thus it's better for now to download the containers sequentially.
