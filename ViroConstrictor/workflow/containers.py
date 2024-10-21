@@ -75,6 +75,26 @@ def fetch_files(file_folder: str) -> List[str]:
     ]
 
 
+def calculate_hashes(file_list: List[str]) -> Dict[str, str]:
+    """
+        Parameters
+        ----------
+        file_list : List[str]
+            A list of file paths for which to calculate the hashes.
+
+        Returns
+        -------
+        Dict[str, str]
+            A dictionary where the keys are file paths and the values are the first 6 characters of the SHA-256 hash of the file contents.
+    """
+    hashdict = {}
+    for file in file_list:
+        with open(file, "rb") as f:
+            file_hash = hashlib.sha256(f.read()).hexdigest()[:6]
+            hashdict[file] = file_hash
+    return hashdict
+
+
 def fetch_hashes() -> Dict[str, str]:
     """
     Fetches and returns the hashes of recipe files, script files, and config files.
@@ -96,18 +116,10 @@ def fetch_hashes() -> Dict[str, str]:
     )
 
     # Calculate hashes for script files
-    script_hashes = {}
-    for script_file in script_files:
-        with open(script_file, "rb") as f:
-            file_hash = hashlib.sha256(f.read()).hexdigest()[:6]
-            script_hashes[script_file] = file_hash
+    script_hashes = calculate_hashes(script_files)
 
     # Calculate hashes for config files
-    config_hashes = {}
-    for config_file in config_files:
-        with open(config_file, "rb") as f:
-            file_hash = hashlib.sha256(f.read()).hexdigest()[:6]
-            config_hashes[config_file] = file_hash
+    config_hashes = calculate_hashes(config_files)
 
     # Sort the hashes of the scripts and the configs
     script_hashes = dict(sorted(script_hashes.items()))

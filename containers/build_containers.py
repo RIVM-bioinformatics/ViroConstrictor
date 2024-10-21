@@ -22,6 +22,7 @@ upstream_api_headers = {
 }
 
 
+#TODO: break up this script into smaller functions
 if __name__ == "__main__":
     print("Start of container building process for ViroConstrictor")
     recipe_hashes = fetch_hashes()
