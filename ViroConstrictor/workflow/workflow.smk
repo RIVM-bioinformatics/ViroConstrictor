@@ -527,6 +527,7 @@ rule move_fastq:
     output:
         fq=f"{datadir}{wc_folder}{cln}{prdir}" "{sample}.fastq",
         ep=touch(f"{datadir}{wc_folder}{prim}" "{sample}_removedprimers.bed"),
+        pr=touch(f"{datadir}{wc_folder}{prim}" "{sample}_primers.bed"),
     resources:
         mem_mb=low_memory_job,
     shell:
