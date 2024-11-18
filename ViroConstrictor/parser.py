@@ -530,8 +530,6 @@ class CLIparser:
 
         if not os.path.exists(working_directory):
             os.makedirs(working_directory)
-        if os.getcwd() != working_directory:
-            os.chdir(working_directory)
 
         return (
             input_path,
