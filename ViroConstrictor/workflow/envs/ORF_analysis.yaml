@@ -5,7 +5,7 @@ channels:
   - nodefaults
 dependencies:
   - conda-forge::python>=3.10
-  - conda-forge::pandas
+  - conda-forge::pandas==2.0.*
   - conda-forge::biopython==1.79
 
   - bioconda::prodigal==2.6.3

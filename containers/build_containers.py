@@ -58,7 +58,6 @@ if __name__ == "__main__":
             ]
             # flatten the list of tags
             tags = [tag for sublist in tags for tag in sublist]
-            print(tags)
 
         if VersionHash in tags:
             print(
