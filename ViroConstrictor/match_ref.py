@@ -46,6 +46,7 @@ def run_snakemake(
             jobname=snakemakedetails.snakemake_run_conf["jobname"],
             latency_wait=snakemakedetails.snakemake_run_conf["latency-wait"],
             dryrun=snakemakedetails.snakemake_run_conf["dryrun"],
+            force_incomplete=snakemakedetails.snakemake_run_conf["force-incomplete"],
             configfiles=[
                 WriteYaml(
                     snakemakedetails.snakemake_run_parameters,
@@ -79,6 +80,7 @@ def run_snakemake(
         drmaa=snakemakedetails.snakemake_run_conf["drmaa"],
         drmaa_log_dir=snakemakedetails.snakemake_run_conf["drmaa-log-dir"],
         dryrun=snakemakedetails.snakemake_run_conf["dryrun"],
+        force_incomplete=snakemakedetails.snakemake_run_conf["force-incomplete"],
         configfiles=[
             WriteYaml(
                 snakemakedetails.snakemake_run_parameters,

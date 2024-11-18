@@ -187,6 +187,7 @@ def main() -> NoReturn:
             jobname=snakemake_run_details.snakemake_run_conf["jobname"],
             latency_wait=snakemake_run_details.snakemake_run_conf["latency-wait"],
             dryrun=snakemake_run_details.snakemake_run_conf["dryrun"],
+            force_incomplete=snakemake_run_details.snakemake_run_conf["force-incomplete"],
             configfiles=[
                 WriteYaml(
                     snakemake_run_details.snakemake_run_parameters,
@@ -220,6 +221,7 @@ def main() -> NoReturn:
             drmaa=snakemake_run_details.snakemake_run_conf["drmaa"],
             drmaa_log_dir=snakemake_run_details.snakemake_run_conf["drmaa-log-dir"],
             dryrun=snakemake_run_details.snakemake_run_conf["dryrun"],
+            force_incomplete=snakemake_run_details.snakemake_run_conf["force-incomplete"],
             configfiles=[
                 WriteYaml(
                     snakemake_run_details.snakemake_run_parameters,
