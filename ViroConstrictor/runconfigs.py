@@ -66,6 +66,7 @@ class GetSnakemakeRunDetails:
             "keep-going": True,
             "printshellcmds": False,
             "scheduler": "greedy",
+            "force-incomplete": True,
         }
 
         if compmode == "grid":
