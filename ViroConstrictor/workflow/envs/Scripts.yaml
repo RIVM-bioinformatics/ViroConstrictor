@@ -9,6 +9,6 @@ dependencies:
   - conda-forge::numpy>=2.0
   - conda-forge::biopython==1.79
 
-  - bioconda::pysam==0.16
+  - bioconda::pysam==0.21
   - bioconda::fastqc==0.11.9
   - bioconda::aminoextract==0.3.1

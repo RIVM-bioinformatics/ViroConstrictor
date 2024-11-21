@@ -71,12 +71,12 @@ setup(
         ]
     },
     install_requires=[
-        "urllib3",
-        "biopython>=1.79",
+        "urllib3==1.26.*",
+        "biopython==1.81",
         "drmaa==0.7.9",
-        "fpdf2",
+        "fpdf2==2.5.1",
         "pandas>=1.4.2",
-        "openpyxl",
+        "openpyxl==3.1.*",
         "pyyaml==6.0",
         "rich==13.*",
         "AminoExtract==0.3.1",
