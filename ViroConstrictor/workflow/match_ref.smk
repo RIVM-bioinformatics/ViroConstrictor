@@ -17,7 +17,7 @@ from directories import *
 from rich import print
 min_version("7.15")
 
-# print(config)
+
 
 logger = logging.getLogger()
 logger.handlers.clear()
@@ -161,21 +161,21 @@ rule filter_references:
         temp(f"{datadir}{matchref}{wc_folder}" "{sample}_refs.fasta"),
     resources:
         mem=low_memory_job,
+    threads: 1
     log:
         f"{logdir}prepare_refs" "{Virus}.{segment}.{sample}.log",
-    run:
-        from Bio import SeqIO
-
-        records_to_keep = []
-        for record in SeqIO.parse(str(input), "fasta"):
-            if (
-                wildcards.segment != "None"
-            ):  # wildcards.segment is a string instead of a NoneType
-                if record.description.split(" ")[1].split("|")[0] == wildcards.segment:
-                    records_to_keep.append(record)
-            else:
-                records_to_keep.append(record)
-        SeqIO.write(records_to_keep, str(output), "fasta")
+    benchmark:
+        f"{logdir}{bench}MR_prepare_refs" "{Virus}.{segment}.{sample}.txt"
+    conda:
+        f"{conda_envs}Scripts.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
+    params:
+        script=srcdir("scripts/match_ref/filter_references.py") if config["use-conda"] is True and config["use-singularity"] is False else "/scripts/match_ref/filter_references.py",
+    shell:
+        """
+        python {params.script} {input} {output} {wildcards.segment} >> {log} 2>&1
+        """
 
 
 if config["platform"] in ["nanopore", "iontorrent"]:
