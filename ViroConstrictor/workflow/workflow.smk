@@ -162,13 +162,23 @@ rule prepare_refs:
         lambda wc: SAMPLES[wc.sample]["REFERENCE"],
     output:
         f"{datadir}{wc_folder}" "{sample}_reference.fasta",
-    run:
-        from Bio import SeqIO
-
-        for record in SeqIO.parse(str(input), "fasta"):
-            if wildcards.RefID in record.id:
-                record.seq = record.seq.upper()
-                SeqIO.write(record, str(output), "fasta")
+    resources: 
+        mem_mb=low_memory_job,
+    threads: 1
+    log:
+        f"{logdir}prepare_refs_" "{Virus}.{RefID}.{sample}.log",
+    benchmark:
+        f"{logdir}{bench}prepare_refs_" "{Virus}.{RefID}.{sample}.txt"
+    conda:
+        f"{conda_envs}Scripts.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
+    params:
+        script=srcdir("scripts/prepare_refs.py") if config["use-conda"] is True and config["use-singularity"] is False else "/scripts/prepare_refs.py",
+    shell:
+        """
+        python {params.script} {input} {output} {wildcards.RefID} > {log}
+        """
 
 
 rule prepare_primers:
@@ -728,6 +738,7 @@ def group_aminoacids_inputs(wildcards):
     return file_list
 
 
+# this rule cannot and should not run in a separate environment/container as the sole purpose is to transfer data of the paramspace into something that can then be used in a later rule.
 rule make_pickle:
     output:
         temp(f"{datadir}sampleinfo.pkl"),
@@ -798,7 +809,7 @@ rule concat_tsv_coverages:
         cat {input} >> {output}
         """
 
-#todo: this should be in an environment, why isn't it?
+
 rule get_breadth_of_coverage:
     input:
         reference=rules.prepare_refs.output,
@@ -807,6 +818,10 @@ rule get_breadth_of_coverage:
         temp(f"{datadir}{wc_folder}{boc}" "{sample}.tsv"),
     resources:
         mem_mb=low_memory_job,
+    conda:
+        f"{conda_envs}Scripts.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     params:
         script=srcdir("scripts/boc.py"),
     shell:
