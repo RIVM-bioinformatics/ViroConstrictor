@@ -173,12 +173,18 @@ def replacement_merge_dataframe_on_cols(
     pd.DataFrame
         The merged dataframe with updated values from the override dataframe.
     """
-    for i in zip(cols_left, cols_right):
-        original_df[i[0]] = original_df.apply(
-            lambda x: (
-                override_df[i[1]][override_df["sample"] == x["SAMPLE"]].values[0]
-                if x["SAMPLE"] in override_df["sample"].values and x[i[0]] != "NONE"
-                else x[i[0]]
+    
+    # set sample columns to str type to avoid issues with merging
+    original_df["SAMPLE"] = original_df["SAMPLE"].astype(str)
+    override_df["sample"] = override_df["sample"].astype(str)
+    
+    
+    for replacement_columns in zip(cols_left, cols_right):
+        original_df[replacement_columns[0]] = original_df.apply(
+            lambda x, replacement_columns=replacement_columns: (
+                override_df[replacement_columns[1]][override_df["sample"] == x["SAMPLE"]].values[0]
+                if x["SAMPLE"] in override_df["sample"].values and x[replacement_columns[0]] != "NONE"
+                else x[replacement_columns[0]]
             ),
             axis=1,
         )
