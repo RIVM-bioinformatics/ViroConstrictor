@@ -7,7 +7,7 @@ from ViroConstrictor.workflow.containers import download_containers
 base_path_to_container_defs = "./containers"
 
 if __name__ == "__main__":
-    config = {"container_cache": f"{os.getcwd()}/test_containers"}
+    config = {"container_cache": f"{os.getcwd()}/test_containers", "dryrun": False}
     os.makedirs(config["container_cache"], exist_ok=True)
 
     # move .sif files from ./containers to ./test_containers
