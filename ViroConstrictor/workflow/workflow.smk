@@ -823,7 +823,7 @@ rule get_breadth_of_coverage:
     container:
         f"{config['container_cache']}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     params:
-        script=srcdir("scripts/boc.py"),
+        script=srcdir("scripts/boc.py") if config["use-conda"] is True and config["use-singularity"] is False else "/scripts/boc.py",
     shell:
         """
         python {params.script} {input.reference} {wildcards.sample} {input.coverage} {output}
