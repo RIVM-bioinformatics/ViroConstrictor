@@ -6,7 +6,8 @@ These settings are used every time you execute ViroConstrictor and tell the appl
 There's two main sections of global configuration that need to be set up:
 
 1. The [computing settings](#setting-up-computing-settings) which ViroConstrictor will use when running the analysis.
-2. The [updating-behavior](#updating-settings) of the ViroConstrictor application.
+2. The [reproducibility settings](#setting-up-reproducibility-settings) which ViroConstrictor will use to ensure the analysis is reproducible.
+3. The [updating-behavior](#updating-settings) of the ViroConstrictor application.
 
 ViroConstrictor will store the information you provide during this first setup so you won't have to provide this information every time you run an analysis.
 
@@ -29,6 +30,17 @@ High Performance Computing infrastructures are often set up with task-queues for
 You will therefore be asked to provide the name of the computing-queue that you wish to use during analysis with ViroConstrictor.  
 If you don't know the computing-queue then please check with your system administrator beforehand.
 
+
+## Setting up reproducibility settings
+
+ViroConstrictor will try to automatically detect if the use of containers is possible on your system, the use of containers is the preferred method for ensuring reproducibility of the analysis.  
+If ViroConstrictor detects that the use of containers is possible then it will automatically configure this method to be preferred. However, you will still be asked to provide a path where the containers can be stored on your system.  
+It is recommended to use a dedicated folder for this purpose. If no path is provided then ViroConstrictor will create and use default path which is the `~/.viroconstrictor/containers` folder.
+
+!!! info "Specifying a path on a shared system"
+    If you're using a shared system, like is common in High Performance Computing environments, then it is recommended to use a path that is shared between all users.  
+    This way, containers can be re-used and all users can benefit from the same containers resulting in the analysis being reproducible for all users.  
+    Additionally, please make sure that the path you provide is accessible by all users and that the path is not cleaned up automatically by the system.
 
 ## Updating settings
 
