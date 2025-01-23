@@ -15,7 +15,7 @@ jobs:
     
           - name: Download artifact
             id: download-artifact
-            uses: dawidd6/action-download-artifact@v3
+            uses: dawidd6/action-download-artifact@v8
             with:
               github_token: ${{ secrets.GITHUB_TOKEN }}
               workflow: build_and_test.yml
