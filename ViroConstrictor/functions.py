@@ -83,7 +83,7 @@ class FlexibleArgFormatter(HelpFormatter):
         """Split text in to paragraphs of like-indented lines."""
 
         text = textwrap.dedent(text).strip()
-        text = re.sub("\n\n[\n]+", "\n\n", text)
+        text = re.sub("\n\n\n+", "\n\n", text)
 
         last_sub_indent: Optional[int] = None
         paragraphs: list[str] = []
@@ -157,7 +157,8 @@ class tabCompleter:
         if os.path.isdir(text):
             text += "/"
 
-        return list(glob.glob(f"{text}*"))[state]
+        # we explicitly to a list comprehension here instead of a call to the constructor as the this would otherwise break the autocompletion functionality of paths.
+        return [x for x in glob.glob(f"{text}*")][state]
 
     def createListCompleter(self, ll: list[str]) -> None:
         """

@@ -52,28 +52,40 @@ class GetSnakemakeRunDetails:
         cores = self._set_cores(self.inputs.flags.threads)
         configuration = self.inputs.user_config
         compmode = configuration["COMPUTING"]["compmode"]
+        reproduction_mode = configuration["REPRODUCTION"]["repro_method"]
+        reproduction_cache_path = configuration["REPRODUCTION"]["container_cache_path"]
+
+        base_config = {
+            "latency-wait": 60,
+            "dryrun": self.inputs.flags.dryrun,
+            "jobname": "ViroConstrictor_{name}.jobid{jobid}",
+            "use-conda": reproduction_mode == "conda",
+            "use-singularity": reproduction_mode == "containers",
+            "container_cache": reproduction_cache_path,
+            "restart-times": 3,
+            "keep-going": True,
+            "printshellcmds": False,
+            "scheduler": "greedy",
+            "force-incomplete": True,
+        }
 
         if compmode == "grid":
             queuename = configuration["COMPUTING"]["queuename"]
-            # threads = "{threads}"
-            # mem = "{resources.mem_mb}"
-            self.snakemake_run_conf = {
-                "cores": 300,
-                "latency-wait": 60,
-                "use-conda": True,
-                "dryrun": self.inputs.flags.dryrun,
-                "jobname": "ViroConstrictor_{name}.jobid{jobid}",
-                "drmaa": f' -q {queuename} -n {{threads}} -R "span[hosts=1]" -M {{resources.mem_mb}}',
-                "drmaa-log-dir": "logs/drmaa",
-            }
+            base_config.update(
+                {
+                    "cores": 300,
+                    "drmaa": f' -q {queuename} -n {{threads}} -R "span[hosts=1]" -M {{resources.mem_mb}}',
+                    "drmaa-log-dir": "logs/drmaa",
+                }
+            )
+            self.snakemake_run_conf = base_config
             return self.snakemake_run_conf
-        self.snakemake_run_conf = {
-            "cores": cores,
-            "latency-wait": 60,
-            "use-conda": True,
-            "dryrun": self.inputs.flags.dryrun,
-            "jobname": "ViroConstrictor_{name}.jobid{jobid}",
-        }
+        base_config.update(
+            {
+                "cores": cores,
+            }
+        )
+        self.snakemake_run_conf = base_config
         return self.snakemake_run_conf
 
     def _snakemake_run_params(self) -> dict[str, Any]:

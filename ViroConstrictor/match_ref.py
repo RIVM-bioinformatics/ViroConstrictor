@@ -1,4 +1,5 @@
 import copy
+import sys
 from typing import Literal
 
 import pandas as pd
@@ -9,6 +10,10 @@ from ViroConstrictor.logging import log
 from ViroConstrictor.parser import CLIparser
 from ViroConstrictor.runconfigs import GetSnakemakeRunDetails, WriteYaml
 from ViroConstrictor.runreport import WriteReport
+from ViroConstrictor.workflow.containers import (
+    construct_container_bind_args,
+    download_containers,
+)
 
 
 def run_snakemake(
@@ -36,23 +41,30 @@ def run_snakemake(
             cores=snakemakedetails.snakemake_run_conf["cores"],
             use_conda=snakemakedetails.snakemake_run_conf["use-conda"],
             conda_frontend="mamba",
+            use_singularity=snakemakedetails.snakemake_run_conf["use-singularity"],
+            singularity_args=construct_container_bind_args(inputs_obj.samples_dict),
             jobname=snakemakedetails.snakemake_run_conf["jobname"],
             latency_wait=snakemakedetails.snakemake_run_conf["latency-wait"],
             dryrun=snakemakedetails.snakemake_run_conf["dryrun"],
+            force_incomplete=snakemakedetails.snakemake_run_conf["force-incomplete"],
             configfiles=[
                 WriteYaml(
                     snakemakedetails.snakemake_run_parameters,
                     f"{inputs_obj.workdir}/config/run_params_MR.yaml",
-                )
+                ),
+                WriteYaml(
+                    snakemakedetails.snakemake_run_conf,
+                    f"{inputs_obj.workdir}/config/run_configs_MR.yaml",
+                ),
             ],
-            restart_times=3,
-            keepgoing=True,
+            restart_times=snakemakedetails.snakemake_run_conf["restart-times"],
+            keepgoing=snakemakedetails.snakemake_run_conf["keep-going"],
             quiet=["all"],  # type: ignore
             log_handler=[
                 ViroConstrictor.logging.snakemake_logger(logfile=inputs_obj.logfile),
             ],
-            printshellcmds=False,
-            scheduler="greedy",
+            printshellcmds=snakemakedetails.snakemake_run_conf["printshellcmds"],
+            scheduler=snakemakedetails.snakemake_run_conf["scheduler"],
         )
 
     return snakemake(
@@ -61,25 +73,32 @@ def run_snakemake(
         cores=snakemakedetails.snakemake_run_conf["cores"],
         use_conda=snakemakedetails.snakemake_run_conf["use-conda"],
         conda_frontend="mamba",
+        use_singularity=snakemakedetails.snakemake_run_conf["use-singularity"],
+        singularity_args=construct_container_bind_args(inputs_obj.samples_dict),
         jobname=snakemakedetails.snakemake_run_conf["jobname"],
         latency_wait=snakemakedetails.snakemake_run_conf["latency-wait"],
         drmaa=snakemakedetails.snakemake_run_conf["drmaa"],
         drmaa_log_dir=snakemakedetails.snakemake_run_conf["drmaa-log-dir"],
         dryrun=snakemakedetails.snakemake_run_conf["dryrun"],
+        force_incomplete=snakemakedetails.snakemake_run_conf["force-incomplete"],
         configfiles=[
             WriteYaml(
                 snakemakedetails.snakemake_run_parameters,
                 f"{inputs_obj.workdir}/config/run_params_MR.yaml",
-            )
+            ),
+            WriteYaml(
+                snakemakedetails.snakemake_run_conf,
+                f"{inputs_obj.workdir}/config/run_configs_MR.yaml",
+            ),
         ],
-        restart_times=3,
-        keepgoing=True,
+        restart_times=snakemakedetails.snakemake_run_conf["restart-times"],
+        keepgoing=snakemakedetails.snakemake_run_conf["keep-going"],
         quiet=["all"],  # type: ignore
         log_handler=[
             ViroConstrictor.logging.snakemake_logger(logfile=inputs_obj.logfile),
         ],
-        printshellcmds=False,
-        scheduler="greedy",
+        printshellcmds=snakemakedetails.snakemake_run_conf["printshellcmds"],
+        scheduler=snakemakedetails.snakemake_run_conf["scheduler"],
     )
 
 
@@ -154,11 +173,19 @@ def replacement_merge_dataframe_on_cols(
     pd.DataFrame
         The merged dataframe with updated values from the override dataframe.
     """
-    for i in zip(cols_left, cols_right):
-        original_df[i[0]] = original_df.apply(
-            lambda x: override_df[i[1]][override_df["sample"] == x["SAMPLE"]].values[0]
-            if x["SAMPLE"] in override_df["sample"].values and x[i[0]] != "NONE"
-            else x[i[0]],
+    
+    # set sample columns to str type to avoid issues with merging
+    original_df["SAMPLE"] = original_df["SAMPLE"].astype(str)
+    override_df["sample"] = override_df["sample"].astype(str)
+    
+    
+    for replacement_columns in zip(cols_left, cols_right):
+        original_df[replacement_columns[0]] = original_df.apply(
+            lambda x, replacement_columns=replacement_columns: (
+                override_df[replacement_columns[1]][override_df["sample"] == x["SAMPLE"]].values[0]
+                if x["SAMPLE"] in override_df["sample"].values and x[replacement_columns[0]] != "NONE"
+                else x[replacement_columns[0]]
+            ),
             axis=1,
         )
     return original_df
@@ -185,6 +212,16 @@ def process_match_ref(parsed_inputs: CLIparser) -> CLIparser:
     log.info(
         f"{'='*20} [bold orange_red1] Starting Match-reference process [/bold orange_red1] {'='*20}"
     )
+
+    if (
+        snakemakedetails.snakemake_run_conf["use-singularity"] is True
+        and download_containers(snakemakedetails.snakemake_run_conf) != 0
+    ):
+        log.error(
+            "Failed to download containers required for workflow.\nPlease check the logs and your settings for more information and try again later."
+        )
+        sys.exit(1)
+
     status = run_snakemake(inputs_obj_match_ref, snakemakedetails)
 
     workflow_state: Literal["Failed", "Success"] = (
