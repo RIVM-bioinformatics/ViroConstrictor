@@ -9,6 +9,7 @@ import numpy as np
 
 from directories import *
 from presets import get_preset_parameter
+from containers import get_hash
 from Bio import SeqIO
 import AminoExtract
 from snakemake.utils import Paramspace, min_version
@@ -161,18 +162,28 @@ rule prepare_refs:
         lambda wc: SAMPLES[wc.sample]["REFERENCE"],
     output:
         f"{datadir}{wc_folder}" "{sample}_reference.fasta",
-    run:
-        from Bio import SeqIO
-
-        for record in SeqIO.parse(str(input), "fasta"):
-            if wildcards.RefID in record.id:
-                record.seq = record.seq.upper()
-                SeqIO.write(record, str(output), "fasta")
+    resources: 
+        mem_mb=low_memory_job,
+    threads: 1
+    log:
+        f"{logdir}prepare_refs_" "{Virus}.{RefID}.{sample}.log",
+    benchmark:
+        f"{logdir}{bench}prepare_refs_" "{Virus}.{RefID}.{sample}.txt"
+    conda:
+        f"{conda_envs}Scripts.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
+    params:
+        script=srcdir("scripts/prepare_refs.py") if config["use-conda"] is True and config["use-singularity"] is False else "/scripts/prepare_refs.py",
+    shell:
+        """
+        python {params.script} {input} {output} {wildcards.RefID} > {log}
+        """
 
 
 rule prepare_primers:
     input:
-        prm=lambda wc: SAMPLES[wc.sample]["PRIMERS"],
+        prm=lambda wc: "" if SAMPLES[wc.sample]["PRIMERS"].endswith(".bed") else SAMPLES[wc.sample]["PRIMERS"],
         ref=rules.prepare_refs.output,
     output:
         bed=f"{datadir}{wc_folder}{prim}" "{sample}_primers.bed",
@@ -184,22 +195,42 @@ rule prepare_primers:
         f"{logdir}{bench}prepare_primers_" "{Virus}.{RefID}.{sample}.txt"
     params:
         pr_mm_rate=lambda wc: SAMPLES[wc.sample]["PRIMER-MISMATCH-RATE"],
-        script=srcdir("scripts/filter_bed_input.py"),
     conda:
         f"{conda_envs}Clean.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_clean_{get_hash('Clean')}.sif"
     shell:
         """
-        if [[ {input.prm} == *.bed ]]; then
-            python {params.script} {input.prm} {output.bed} {wildcards.RefID}
-        else
-            python -m AmpliGone.fasta2bed \
-                --primers {input.prm} \
-                --reference {input.ref} \
-                --output {output.bed} \
-                --primer-mismatch-rate {params.pr_mm_rate} > {log}
-        fi
+        python -m AmpliGone.fasta2bed \
+            --primers {input.prm} \
+            --reference {input.ref} \
+            --output {output.bed} \
+            --primer-mismatch-rate {params.pr_mm_rate} > {log}
         """
 
+ruleorder: prepare_primers > filter_primer_bed
+
+rule filter_primer_bed:
+    input:
+        prm=lambda wc: SAMPLES[wc.sample]["PRIMERS"],
+    output:
+        bed=f"{datadir}{wc_folder}{prim}" "{sample}_primers.bed",
+    resources:
+        mem_mb=low_memory_job,
+    log:
+        f"{logdir}prepare_primers_" "{Virus}.{RefID}.{sample}.log",
+    benchmark:
+        f"{logdir}{bench}prepare_primers_" "{Virus}.{RefID}.{sample}.txt"
+    params:
+        script=srcdir("scripts/filter_bed_input.py") if config["use-conda"] is True and config["use-singularity"] is False else "/scripts/filter_bed_input.py",
+    conda:
+        f"{conda_envs}Scripts.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
+    shell:
+        """
+        python {params.script} {input.prm} {output.bed} {wildcards.RefID}
+        """
 
 rule prepare_gffs:
     input:
@@ -212,11 +243,13 @@ rule prepare_gffs:
     benchmark:
         f"{logdir}{bench}prepare_gffs_" "{Virus}.{RefID}.{sample}.txt"
     conda:
-        f"{conda_envs}ORF_analysis.yaml"
+        f"{conda_envs}Scripts.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     resources:
         mem_mb=low_memory_job,
     params:
-        script=srcdir("scripts/extract_gff.py"),
+        script=srcdir("scripts/extract_gff.py") if config["use-conda"] is True and config["use-singularity"] is False else "/scripts/extract_gff.py",
     shell:
         """
         python {params.script} {input.feats} {output.gff} {wildcards.RefID}
@@ -240,6 +273,8 @@ rule prodigal:
     threads: config["threads"]["Index"]
     conda:
         f"{conda_envs}ORF_analysis.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_orf_analysis_{get_hash('ORF_analysis')}.sif"
     resources:
         mem_mb=medium_memory_job,
     params:
@@ -268,7 +303,9 @@ if config["platform"] in ["nanopore", "iontorrent"]:
             html=f"{datadir}{qc_pre}" "{sample}_fastqc.html",
             zip=f"{datadir}{qc_pre}" "{sample}_fastqc.zip",
         conda:
-            f"{conda_envs}Clean.yaml"
+            f"{conda_envs}Scripts.yaml"
+        container:
+            f"{config['container_cache']}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
         log:
             f"{logdir}QC_raw_data_" "{sample}.log",
         benchmark:
@@ -278,7 +315,7 @@ if config["platform"] in ["nanopore", "iontorrent"]:
             mem_mb=low_memory_job,
         params:
             output_dir=f"{datadir}{qc_pre}",
-            script=srcdir("scripts/fastqc_wrapper.sh"),
+            script=srcdir("wrappers/fastqc_wrapper.sh") if config["use-conda"] is True and config["use-singularity"] is False else "/wrappers/fastqc_wrapper.sh",
         shell:
             """
             bash {params.script} {input} {params.output_dir} {output.html} {output.zip} {log}
@@ -293,6 +330,8 @@ if config["platform"] in ["nanopore", "iontorrent"]:
             index=f"{datadir}{wc_folder}{cln}{raln}" "{sample}.bam.bai",
         conda:
             f"{conda_envs}Alignment.yaml"
+        container:
+            f"{config['container_cache']}/viroconstrictor_alignment_{get_hash('Alignment')}.sif"
         log:
             f"{logdir}RemoveAdapters_p1_" "{Virus}.{RefID}.{sample}.log",
         benchmark:
@@ -329,7 +368,9 @@ if config["platform"] == "illumina":
             html=f"{datadir}{qc_pre}" "{sample}_{read}_fastqc.html",
             zip=f"{datadir}{qc_pre}" "{sample}_{read}_fastqc.zip",
         conda:
-            f"{conda_envs}Clean.yaml"
+            f"{conda_envs}Scripts.yaml"
+        container:
+            f"{config['container_cache']}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
         log:
             f"{logdir}" "QC_raw_data_{sample}_{read}.log",
         benchmark:
@@ -339,7 +380,7 @@ if config["platform"] == "illumina":
             mem_mb=low_memory_job,
         params:
             output_dir=f"{datadir}{qc_pre}",
-            script=srcdir("scripts/fastqc_wrapper.sh"),
+            script=srcdir("wrappers/fastqc_wrapper.sh") if config["use-conda"] is True and config["use-singularity"] is False else "/wrappers/fastqc_wrapper.sh",
         shell:
             """
             bash {params.script} {input} {params.output_dir} {output.html} {output.zip} {log}
@@ -355,6 +396,8 @@ if config["platform"] == "illumina":
             index=f"{datadir}{wc_folder}{cln}{raln}" "{sample}.bam.bai",
         conda:
             f"{conda_envs}Alignment.yaml"
+        container:
+            f"{config['container_cache']}/viroconstrictor_alignment_{get_hash('Alignment')}.sif"
         log:
             f"{logdir}" "RemoveAdapters_p1_{Virus}.{RefID}.{sample}.log",
         benchmark:
@@ -387,12 +430,14 @@ rule remove_adapters_p2:
     output:
         f"{datadir}{wc_folder}{cln}{noad}" "{sample}.fastq",
     conda:
-        f"{conda_envs}Clean.yaml"
+        f"{conda_envs}Scripts.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     threads: config["threads"]["AdapterRemoval"]
     resources:
         mem_mb=low_memory_job,
     params:
-        script=srcdir("scripts/clipper.py"),
+        script=srcdir("scripts/clipper.py") if config["use-conda"] is True and config["use-singularity"] is False else "/scripts/clipper.py",
         clipper_settings=lambda wc: get_preset_parameter(
             preset_name=SAMPLES[wc.sample]["PRESET"],
             parameter_name=f"ClipperSettings_{config['platform']}",
@@ -412,6 +457,8 @@ rule qc_filter:
         json=f"{datadir}{wc_folder}{cln}{qcfilt}{json}" "{sample}_fastp.json",
     conda:
         f"{conda_envs}Clean.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_clean_{get_hash('Clean')}.sif"
     log:
         f"{logdir}QC_filter_" "{Virus}.{RefID}.{sample}.log",
     benchmark:
@@ -453,6 +500,8 @@ rule ampligone:
         ep=f"{datadir}{wc_folder}{prim}" "{sample}_removedprimers.bed",
     conda:
         f"{conda_envs}Clean.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_clean_{get_hash('Clean')}.sif"
     log:
         f"{logdir}" "AmpliGone_{Virus}.{RefID}.{sample}.log",
     benchmark:
@@ -488,6 +537,7 @@ rule move_fastq:
     output:
         fq=f"{datadir}{wc_folder}{cln}{prdir}" "{sample}.fastq",
         ep=touch(f"{datadir}{wc_folder}{prim}" "{sample}_removedprimers.bed"),
+        # pr=touch(f"{datadir}{wc_folder}{prim}" "{sample}_primers.bed"),
     resources:
         mem_mb=low_memory_job,
     shell:
@@ -503,7 +553,9 @@ rule qc_clean:
         html=f"{datadir}{wc_folder}{qc_post}" "{sample}_fastqc.html",
         zip=f"{datadir}{wc_folder}{qc_post}" "{sample}_fastqc.zip",
     conda:
-        f"{conda_envs}Clean.yaml"
+        f"{conda_envs}Scripts.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     log:
         f"{logdir}QC_clean_" "{Virus}.{RefID}.{sample}.log",
     benchmark:
@@ -513,7 +565,7 @@ rule qc_clean:
         mem_mb=low_memory_job,
     params:
         outdir=f"{datadir}{wc_folder}{qc_post}",
-        script=srcdir("scripts/fastqc_wrapper.sh"),
+        script=srcdir("wrappers/fastqc_wrapper.sh") if config["use-conda"] is True and config["use-singularity"] is False else "/wrappers/fastqc_wrapper.sh",
     shell:
         """
         bash {params.script} {input} {params.outdir} {output.html} {output.zip} {log}
@@ -538,6 +590,8 @@ rule align_before_trueconsense:
         index=f"{datadir}{wc_folder}{aln}{bf}" "{sample}.bam.bai",
     conda:
         f"{conda_envs}Alignment.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_alignment_{get_hash('Alignment')}.sif"
     log:
         f"{logdir}Alignment_" "{Virus}.{RefID}.{sample}.log",
     benchmark:
@@ -579,6 +633,8 @@ rule trueconsense:
         mincov=lambda wc: SAMPLES[wc.sample]["MIN-COVERAGE"],
     conda:
         f"{conda_envs}Consensus.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_consensus_{get_hash('Consensus')}.sif"
     log:
         f"{logdir}Consensus_" "{Virus}.{RefID}.{sample}.log",
     benchmark:
@@ -632,6 +688,8 @@ rule Translate_AminoAcids:
         f"{datadir}{wc_folder}{amino}" "{sample}/aa.faa",
     conda:
         f"{conda_envs}ORF_analysis.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_orf_analysis_{get_hash('ORF_analysis')}.sif"
     resources:
         mem_mb=low_memory_job,
     log:
@@ -680,6 +738,7 @@ def group_aminoacids_inputs(wildcards):
     return file_list
 
 
+# this rule cannot and should not run in a separate environment/container as the sole purpose is to transfer data of the paramspace into something that can then be used in a later rule.
 rule make_pickle:
     output:
         temp(f"{datadir}sampleinfo.pkl"),
@@ -703,10 +762,12 @@ rule concat_aminoacids:
     resources:
         mem_mb=low_memory_job,
     conda:
-        f"{conda_envs}ORF_analysis.yaml"
+        f"{conda_envs}Scripts.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     threads: 1
     params:
-        script=srcdir("scripts/group_aminoacids.py"),
+        script=srcdir("scripts/group_aminoacids.py") if config["use-conda"] is True and config["use-singularity"] is False else "/scripts/group_aminoacids.py",
     shell:
         'python {params.script} "{input.files}" "{output}" {input.sampleinfo}'
 
@@ -717,14 +778,16 @@ rule vcf_to_tsv:
     output:
         tsv=temp(f"{datadir}{wc_folder}{aln}{vf}" "{sample}.tsv"),
     conda:
-        f"{conda_envs}Consensus.yaml"
+        f"{conda_envs}Scripts.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     threads: config["threads"]["Index"]
     resources:
         mem_mb=low_memory_job,
     log:
         f"{logdir}" "vcf_to_tsv_{Virus}.{RefID}.{sample}.log",
     params:
-        script=srcdir("scripts/vcf_to_tsv.py"),
+        script=srcdir("scripts/vcf_to_tsv.py") if config["use-conda"] is True and config["use-singularity"] is False else "/scripts/vcf_to_tsv.py",
     shell:
         """
         python {params.script} {input.vcf} {output.tsv} {wildcards.sample} >> {log} 2>&1
@@ -755,8 +818,12 @@ rule get_breadth_of_coverage:
         temp(f"{datadir}{wc_folder}{boc}" "{sample}.tsv"),
     resources:
         mem_mb=low_memory_job,
+    conda:
+        f"{conda_envs}Scripts.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     params:
-        script=srcdir("scripts/boc.py"),
+        script=srcdir("scripts/boc.py") if config["use-conda"] is True and config["use-singularity"] is False else "/scripts/boc.py",
     shell:
         """
         python {params.script} {input.reference} {wildcards.sample} {input.coverage} {output}
@@ -792,9 +859,11 @@ rule calculate_amplicon_cov:
     resources:
         mem_mb=low_memory_job,
     conda:
-        f"{conda_envs}Clean.yaml"
+        f"{conda_envs}Scripts.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     params:
-        script=srcdir("scripts/amplicon_covs.py"),
+        script=srcdir("scripts/amplicon_covs.py") if config["use-conda"] is True and config["use-singularity"] is False else "/scripts/amplicon_covs.py",
     shell:
         """
         python {params.script} \
@@ -817,9 +886,11 @@ rule concat_amplicon_cov:
     resources:
         mem_mb=low_memory_job,
     conda:
-        f"{conda_envs}Clean.yaml"
+        f"{conda_envs}Scripts.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"	
     params:
-        script=srcdir("scripts/concat_amplicon_covs.py"),
+        script=srcdir("scripts/concat_amplicon_covs.py") if config["use-conda"] is True and config["use-singularity"] is False else "/scripts/concat_amplicon_covs.py",
     shell:
         """
         python {params.script} --output {output} --input {input}
@@ -870,6 +941,8 @@ rule multiqc_report:
         expand(f"{res}{mqc_data}multiqc_" "{program}.txt", program="fastqc"),
     conda:
         f"{conda_envs}Clean.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_clean_{get_hash('Clean')}.sif"
     log:
         f"{logdir}MultiQC_report.log",
     benchmark:
@@ -877,7 +950,7 @@ rule multiqc_report:
     resources:
         mem_mb=high_memory_job,
     params:
-        conffile=srcdir("files/multiqc_config.yaml"),
+        conffile=srcdir("files/multiqc_config.yaml") if config["use-conda"] is True and config["use-singularity"] is False else "/files/multiqc_config.yaml",
         outdir=res,
     shell:
         """

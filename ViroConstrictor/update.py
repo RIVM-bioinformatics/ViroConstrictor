@@ -84,7 +84,11 @@ def update(sysargs: list[str], conf: configparser.ConfigParser) -> None:
     online_version = None
 
     autocontinue = conf["GENERAL"]["auto_update"] == "yes"
-    ask_prompt = conf["GENERAL"]["ask_for_update"] == "yes"
+
+    ask_prompt = None
+    if autocontinue == False:
+        ask_prompt = conf["GENERAL"]["ask_for_update"] == "yes"
+
 
     if autocontinue:
         online_metadata = fetch_online_metadata()
