@@ -1,0 +1,3288 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../multi-reference/">
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.50">
+    
+    
+      
+        <title>Changelog - ViroConstrictor</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.a40c8224.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="light-blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#changelog" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ViroConstrictor" class="md-header__button md-logo" aria-label="ViroConstrictor" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 2h2v2c0 1.44.68 2.61 1.88 3.78.86.83 2.01 1.63 3.21 2.42l-1.83 1.19C8.27 10.72 7.31 10 6.5 9.21 5.07 7.82 4 6.1 4 4zm14 0h2v2c0 2.1-1.07 3.82-2.5 5.21-1.41 1.38-3.21 2.52-4.96 3.63-1.75 1.12-3.45 2.21-4.66 3.38C6.68 17.39 6 18.56 6 20v2H4v-2c0-2.1 1.07-3.82 2.5-5.21 1.41-1.38 3.21-2.52 4.96-3.63 1.75-1.12 3.45-2.21 4.66-3.38C17.32 6.61 18 5.44 18 4zm-3.26 10.61c.99.67 1.95 1.39 2.76 2.18C18.93 16.18 20 17.9 20 20v2h-2v-2c0-1.44-.68-2.61-1.88-3.78-.86-.83-2.01-1.63-3.21-2.42zM7 3h10v1l-.06.5H7.06L7 4zm.68 3h8.64c-.24.34-.52.69-.9 1.06l-.51.44H9.07l-.49-.44c-.38-.37-.66-.72-.9-1.06m1.41 10.5h5.84l.49.44c.38.37.66.72.9 1.06H7.68c.24-.34.52-.69.9-1.06zm-2.03 3h9.88l.06.5v1H7v-1z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ViroConstrictor
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Changelog
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="light-blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="orange"  aria-label="Switch light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/RIVM-bioinformatics/ViroConstrictor" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    RIVM-bioinformatics/ViroConstrictor
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../installation/" class="md-tabs__link">
+          
+  
+  Getting started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../manual/" class="md-tabs__link">
+          
+  
+  Usage
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ViroConstrictor" class="md-nav__button md-logo" aria-label="ViroConstrictor" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 2h2v2c0 1.44.68 2.61 1.88 3.78.86.83 2.01 1.63 3.21 2.42l-1.83 1.19C8.27 10.72 7.31 10 6.5 9.21 5.07 7.82 4 6.1 4 4zm14 0h2v2c0 2.1-1.07 3.82-2.5 5.21-1.41 1.38-3.21 2.52-4.96 3.63-1.75 1.12-3.45 2.21-4.66 3.38C6.68 17.39 6 18.56 6 20v2H4v-2c0-2.1 1.07-3.82 2.5-5.21 1.41-1.38 3.21-2.52 4.96-3.63 1.75-1.12 3.45-2.21 4.66-3.38C17.32 6.61 18 5.44 18 4zm-3.26 10.61c.99.67 1.95 1.39 2.76 2.18C18.93 16.18 20 17.9 20 20v2h-2v-2c0-1.44-.68-2.61-1.88-3.78-.86-.83-2.01-1.63-3.21-2.42zM7 3h10v1l-.06.5H7.06L7 4zm.68 3h8.64c-.24.34-.52.69-.9 1.06l-.51.44H9.07l-.49-.44c-.38-.37-.66-.72-.9-1.06m1.41 10.5h5.84l.49.44c.38.37.66.72.9 1.06H7.68c.24-.34.52-.69.9-1.06zm-2.03 3h9.88l.06.5v1H7v-1z"/></svg>
+
+    </a>
+    ViroConstrictor
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/RIVM-bioinformatics/ViroConstrictor" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    RIVM-bioinformatics/ViroConstrictor
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Getting started
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Getting started
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Download & installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../global-config/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Global configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Usage
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Usage
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Starting an analysis
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../input-formatting/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Formatting inputs
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../presets/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Working with analysis presets
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../amplicons/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Explanation of amplicon types
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../multi-reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Working with multiple references
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#150-2025-01-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.5.0 (2025-01-24)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.5.0 (2025-01-24)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#continuous-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Continuous Integration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#146-2024-10-08" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4.6 (2024-10-08)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4.6 (2024-10-08)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#145-2024-09-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4.5 (2024-09-25)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4.5 (2024-09-25)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#144-2024-09-16" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4.4 (2024-09-16)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4.4 (2024-09-16)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#143-2024-07-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4.3 (2024-07-03)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4.3 (2024-07-03)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#142-2024-04-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4.2 (2024-04-03)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4.2 (2024-04-03)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#141-2024-03-22" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4.1 (2024-03-22)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4.1 (2024-03-22)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#140-2023-09-18" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4.0 (2023-09-18)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4.0 (2023-09-18)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#131-2023-05-26" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.3.1 (2023-05-26)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.3.1 (2023-05-26)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#130-2023-05-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.3.0 (2023-05-03)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.3.0 (2023-05-03)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-refactoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Refactoring
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#miscellaneous-chores" class="md-nav__link">
+    <span class="md-ellipsis">
+      Miscellaneous Chores
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#126-2023-03-16" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.6 (2023-03-16)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2.6 (2023-03-16)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#125-2023-03-14" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.5 (2023-03-14)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2.5 (2023-03-14)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#124-2023-03-02" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.4 (2023-03-02)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2.4 (2023-03-02)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#123-2023-03-01" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.3 (2023-03-01)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2.3 (2023-03-01)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#122-2023-01-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.2 (2023-01-24)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2.2 (2023-01-24)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#121-2023-01-19" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.1 (2023-01-19)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2.1 (2023-01-19)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#120-2023-01-18" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.0 (2023-01-18)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2.0 (2023-01-18)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-improvements" class="md-nav__link">
+    <span class="md-ellipsis">
+      Performance Improvements
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#110-2022-12-06" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.1.0 (2022-12-06)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.1.0 (2022-12-06)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#104-2022-11-01" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.4 (2022-11-01)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.4 (2022-11-01)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#103-2022-10-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.3 (2022-10-12)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.3 (2022-10-12)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#102-2022-08-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.2 (2022-08-15)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.2 (2022-08-15)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#101-2022-04-26" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.1 (2022-04-26)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#100-2022-04-14" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.0 (2022-04-14)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.0 (2022-04-14)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      ⚠ BREAKING CHANGES
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#features_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-refactoring_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Refactoring
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#042-2022-04-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.2 (2022-04-12)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#041-2022-03-08" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.1 (2022-03-08)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#040-2022-02-04" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.0 (2022-02-04)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.4.0 (2022-02-04)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-improvements_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Performance Improvements
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#030-2021-11-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.0 (2021-11-15)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.3.0 (2021-11-15)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#023-2021-11-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.3 (2021-11-03)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#022-2021-11-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.2 (2021-11-03)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#150-2025-01-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.5.0 (2025-01-24)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.5.0 (2025-01-24)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#continuous-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Continuous Integration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#146-2024-10-08" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4.6 (2024-10-08)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4.6 (2024-10-08)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#145-2024-09-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4.5 (2024-09-25)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4.5 (2024-09-25)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#144-2024-09-16" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4.4 (2024-09-16)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4.4 (2024-09-16)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#143-2024-07-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4.3 (2024-07-03)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4.3 (2024-07-03)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#142-2024-04-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4.2 (2024-04-03)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4.2 (2024-04-03)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#141-2024-03-22" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4.1 (2024-03-22)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4.1 (2024-03-22)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#140-2023-09-18" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4.0 (2023-09-18)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4.0 (2023-09-18)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#131-2023-05-26" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.3.1 (2023-05-26)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.3.1 (2023-05-26)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#130-2023-05-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.3.0 (2023-05-03)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.3.0 (2023-05-03)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-refactoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Refactoring
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#miscellaneous-chores" class="md-nav__link">
+    <span class="md-ellipsis">
+      Miscellaneous Chores
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#126-2023-03-16" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.6 (2023-03-16)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2.6 (2023-03-16)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#125-2023-03-14" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.5 (2023-03-14)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2.5 (2023-03-14)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#124-2023-03-02" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.4 (2023-03-02)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2.4 (2023-03-02)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#123-2023-03-01" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.3 (2023-03-01)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2.3 (2023-03-01)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#122-2023-01-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.2 (2023-01-24)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2.2 (2023-01-24)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#121-2023-01-19" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.1 (2023-01-19)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2.1 (2023-01-19)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#120-2023-01-18" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.0 (2023-01-18)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2.0 (2023-01-18)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-improvements" class="md-nav__link">
+    <span class="md-ellipsis">
+      Performance Improvements
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#110-2022-12-06" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.1.0 (2022-12-06)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.1.0 (2022-12-06)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#104-2022-11-01" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.4 (2022-11-01)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.4 (2022-11-01)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#103-2022-10-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.3 (2022-10-12)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.3 (2022-10-12)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#102-2022-08-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.2 (2022-08-15)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.2 (2022-08-15)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#101-2022-04-26" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.1 (2022-04-26)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#100-2022-04-14" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.0 (2022-04-14)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.0 (2022-04-14)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      ⚠ BREAKING CHANGES
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#features_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-refactoring_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Refactoring
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#042-2022-04-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.2 (2022-04-12)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#041-2022-03-08" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.1 (2022-03-08)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#040-2022-02-04" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.4.0 (2022-02-04)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.4.0 (2022-02-04)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-improvements_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Performance Improvements
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#030-2021-11-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.3.0 (2021-11-15)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.3.0 (2021-11-15)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#023-2021-11-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.3 (2021-11-03)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentation_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#022-2021-11-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      0.2.2 (2021-11-03)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+<h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="150-2025-01-24"><a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.6...v1.5.0">1.5.0</a> (2025-01-24)<a class="headerlink" href="#150-2025-01-24" title="Permanent link">&para;</a></h2>
+<h3 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Add container support to main workflow (f455445)</li>
+<li>Add containerization support to workflow (c29495f)</li>
+<li>Add new global userprofile section for reproducibility method (conda or containers) (e67bb27)</li>
+</ul>
+<h3 id="bug-fixes">Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Properly handle the floating point comparison to check the PRESET_SCORE (f4410bf)</li>
+<li>Create an empty {sample}_primers.bed file when no input primers were given (f7c90e3)</li>
+<li>Do not download containers in dryrun mode (4f6e45d)</li>
+<li>Resolve snakemake AmbiguousRuleException for certain combinations of primer inputs (5cf5fbd)</li>
+</ul>
+<h3 id="build">Build<a class="headerlink" href="#build" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Add base container definitions (836daa3)</li>
+</ul>
+<h3 id="continuous-integration">Continuous Integration<a class="headerlink" href="#continuous-integration" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Add GitHub actions workflow for automatic building of containers (41bd864)</li>
+<li>Change upstream registry (ac8a3ac)</li>
+<li>Update GitHub Actions workflows for container publishing (9341f95)</li>
+<li>Add listing of pip modules as a test (b5fed9f)</li>
+<li>Update workflow rules due to deprecation (30be0df)</li>
+</ul>
+<h3 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Ensure conda strict channel compatibility (527ad85)</li>
+<li>Limit mamba version to &lt;2.0.0 (941c19b)</li>
+<li>Set flexible pyopenssl dependency to version 24.x.x (0dc3d58)</li>
+</ul>
+<h3 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Add docstrings to all functions in containers.py (8a5fdfe)</li>
+<li>Enhance documentation with reproducibility settings and multi-reference analysis guidance (71b39ea)</li>
+</ul>
+<h2 id="146-2024-10-08"><a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.5...v1.4.6">1.4.6</a> (2024-10-08)<a class="headerlink" href="#146-2024-10-08" title="Permanent link">&para;</a></h2>
+<h3 id="bug-fixes_1">Bug Fixes<a class="headerlink" href="#bug-fixes_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>properly solve DAG workflow for nonsegmented matched-ref samples (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/02a821a44c3ed3741c65825789ef25ad3e2093c1">02a821a</a>)</li>
+</ul>
+<h2 id="145-2024-09-25"><a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.4...v1.4.5">1.4.5</a> (2024-09-25)<a class="headerlink" href="#145-2024-09-25" title="Permanent link">&para;</a></h2>
+<h3 id="bug-fixes_2">Bug Fixes<a class="headerlink" href="#bug-fixes_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>incorrect renaming of matched references in non-segmented mode (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/c42740e8a3893f5bd682cbef0edb9a47eefb19fd">c42740e</a>)</li>
+</ul>
+<h2 id="144-2024-09-16"><a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.3...v1.4.4">1.4.4</a> (2024-09-16)<a class="headerlink" href="#144-2024-09-16" title="Permanent link">&para;</a></h2>
+<h3 id="bug-fixes_3">Bug Fixes<a class="headerlink" href="#bug-fixes_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li>remove <code>intel</code> channel from selfupdater repositories (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/43fe50812ecb90d693892735431c3fe725159e50">43fe508</a>)</li>
+</ul>
+<h3 id="dependencies_1">Dependencies<a class="headerlink" href="#dependencies_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>reorder and add details to the conda dependency files for compatibility with strict_channel_priority in conda config (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/dc9b993fecb3d8840de72cebe82061692ce47269">dc9b993</a>)</li>
+</ul>
+<h2 id="143-2024-07-03"><a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.2...v1.4.3">1.4.3</a> (2024-07-03)<a class="headerlink" href="#143-2024-07-03" title="Permanent link">&para;</a></h2>
+<h3 id="dependencies_2">Dependencies<a class="headerlink" href="#dependencies_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Remove 'intel' channel from conda environments (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/a2e918afc1a39326bb8784c2d79d3bb24731588b">a2e918a</a>)</li>
+</ul>
+<h2 id="142-2024-04-03"><a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.1...v1.4.2">1.4.2</a> (2024-04-03)<a class="headerlink" href="#142-2024-04-03" title="Permanent link">&para;</a></h2>
+<h3 id="dependencies_3">Dependencies<a class="headerlink" href="#dependencies_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li>update AmpliGone to version 1.3.1 (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/b6a92c8698b69cc518f73c3d59eda76aea53fbca">b6a92c8</a>)</li>
+</ul>
+<h2 id="141-2024-03-22"><a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.0...v1.4.1">1.4.1</a> (2024-03-22)<a class="headerlink" href="#141-2024-03-22" title="Permanent link">&para;</a></h2>
+<h3 id="bug-fixes_4">Bug Fixes<a class="headerlink" href="#bug-fixes_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li>resolve pandas FutureWarning for integer casting on a series with a single element (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/bb76d0650881d3559bc323cfc87fd90ba6746c8b">bb76d06</a>)</li>
+</ul>
+<h3 id="dependencies_4">Dependencies<a class="headerlink" href="#dependencies_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li>update AmpliGone to version <code>1.3.0</code> (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/6f285680665f3757c6e7b460c24f4cf03ad79627">6f28568</a>)</li>
+<li>update python and pysam version in Consensus conda environment (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/18e4ffbfeadc1da822c8184c740bec21ec08f989">18e4ffb</a>)</li>
+</ul>
+<h2 id="140-2023-09-18"><a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.3.1...v1.4.0">1.4.0</a> (2023-09-18)<a class="headerlink" href="#140-2023-09-18" title="Permanent link">&para;</a></h2>
+<h3 id="features_1">Features<a class="headerlink" href="#features_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>add "NONE" input for primers and gff's support to the match_ref process (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/1581c7807a1457fdd34b215817fa95a2110c29b5">1581c78</a>)</li>
+<li>add all the match_ref analysis scripts (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/1581c7807a1457fdd34b215817fa95a2110c29b5">1581c78</a>)</li>
+<li>add the match_ref snakemake workflow (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/1581c7807a1457fdd34b215817fa95a2110c29b5">1581c78</a>)</li>
+<li>add the match_reference process (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/1581c7807a1457fdd34b215817fa95a2110c29b5">1581c78</a>)</li>
+<li>only initiate the match_ref wrapping process whenever it is set on the commandline or through the samplesheet (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/1581c7807a1457fdd34b215817fa95a2110c29b5">1581c78</a>)</li>
+</ul>
+<h3 id="bug-fixes_5">Bug Fixes<a class="headerlink" href="#bug-fixes_5" title="Permanent link">&para;</a></h3>
+<ul>
+<li>add fix for unformatted printed message (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/98386c1a70f7163a964110ac6764d3a58ea64811">98386c1</a>)</li>
+<li>enforce a "None" string instead of a Nonetype used for reference prep (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/f4f74901ce5584043120335b20b62c02a43362cf">f4f7490</a>)</li>
+<li>ensure "match-ref" and "segmented" columns are always added to samplesheet (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/98386c1a70f7163a964110ac6764d3a58ea64811">98386c1</a>)</li>
+<li>ensure a string value like "NA" will not be interpreted as <code>NaN</code> in pandas.read_csv() (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/ecaca5ed908862eb50ef86774919f2dcdebc07b4">ecaca5e</a>)</li>
+<li>pad the number in primer names in the amplicon_coverages script so the amplicons are sorted correctly (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/cab3a8c289223a666f2ebafc39dc2b9d8c1cab03">cab3a8c</a>)</li>
+<li>solve index out of range bug in amplicon_coverages script (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/ca95a8a40883ac7ee0787d015a8f980d9f616e30">ca95a8a</a>)</li>
+<li>suppress the strict-channel-priorities logmessage from snakemake (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/165489190cf215ecb0d9344efa352327d36f94fe">1654891</a>)</li>
+<li>workaround to make sure the found segments can properly be 'exploded' in the resulting dataframe (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/9db4a42b3ab40d4c4d9c4f9b78eeeb81bd3897eb">9db4a42</a>)</li>
+</ul>
+<h3 id="dependencies_5">Dependencies<a class="headerlink" href="#dependencies_5" title="Permanent link">&para;</a></h3>
+<ul>
+<li>remove anaconda channel from selfupdating method (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/3db1cfb1322135edba53991b2ecfb5216e815e33">3db1cfb</a>)</li>
+<li>remove the <code>anaconda</code> and <code>defaults</code> channels as providers in conda environment recipes, set <code>nodefaults</code> (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/08ed236aca43b5aff75beb0381af382542fa30f1">08ed236</a>)</li>
+<li>replace gffpandas in script to AminoExtract functions (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/599da1f1715d13450698215306a498f3dc67d80c">599da1f</a>)</li>
+<li>update AminoExtract to version 0.3.1 (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/08e4a2278a0d359f0dd48da53e030a2a17eab8b6">08e4a22</a>)</li>
+<li>use a forked/patched version of gffpandas instead of the pypi version (circumvent a bug in the original repo) (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/08e4a2278a0d359f0dd48da53e030a2a17eab8b6">08e4a22</a>)</li>
+</ul>
+<h3 id="documentation_1">Documentation<a class="headerlink" href="#documentation_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>update the documentation site to represent the new match-ref and segmented arguments both on commandline and and in samplesheet (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/94c5ca07a82b9c12f76b93ab7523adfa998e4585">94c5ca0</a>)</li>
+<li>updated docstring for function <code>check_samplesheet_rows()</code> (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/98386c1a70f7163a964110ac6764d3a58ea64811">98386c1</a>)</li>
+</ul>
+<h2 id="131-2023-05-26"><a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.3.0...v1.3.1">1.3.1</a> (2023-05-26)<a class="headerlink" href="#131-2023-05-26" title="Permanent link">&para;</a></h2>
+<h3 id="bug-fixes_6">Bug Fixes<a class="headerlink" href="#bug-fixes_6" title="Permanent link">&para;</a></h3>
+<ul>
+<li>enforce absolute paths for files given through the samplesheet (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/40889bfc3e78160ba96f54c7dc727d662120d5ea">40889bf</a>)</li>
+</ul>
+<h3 id="dependencies_6">Dependencies<a class="headerlink" href="#dependencies_6" title="Permanent link">&para;</a></h3>
+<ul>
+<li>use only snakemake-minimal as workaround for protobuf error in py3.11 (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/47c70db2715bf8933f594040dbff79b74c327e1d">47c70db</a>)</li>
+</ul>
+<h2 id="130-2023-05-03"><a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.2.6...v1.3.0">1.3.0</a> (2023-05-03)<a class="headerlink" href="#130-2023-05-03" title="Permanent link">&para;</a></h2>
+<h3 id="features_2">Features<a class="headerlink" href="#features_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>addition of proper logging functionality for the ViroConstrictor package (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc">20a952b</a>)</li>
+<li>replace snakemake logging output through our own log handler for unified output (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc">20a952b</a>)</li>
+</ul>
+<h3 id="bug-fixes_7">Bug Fixes<a class="headerlink" href="#bug-fixes_7" title="Permanent link">&para;</a></h3>
+<ul>
+<li>always use the absolute path of given files when parsing from the commandline options (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/a5b56e5edbae8dee65324b0d049e427a537c1fcd">a5b56e5</a>)</li>
+<li>change certainty values of match_preset_name() function to be explicitly floating points to ensure correct datatypes in downstream check (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/a74249c0b0bd6f3c3adb37c8f45d2225b96f03ba">a74249c</a>)</li>
+<li>change preset fallback certainty threshold to be slightly more conservative (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/7542c46cc61bd5b66c2a382a1dae122a815b73eb">7542c46</a>)</li>
+<li>clean-handling of mamba solver mismatching (i.e. CDN mismatch with upstream) (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/680730b67e98f1fc1947bbe539e77f6e99630de3">680730b</a>)</li>
+<li>ensure variables for preset-warning fallbacks are properly set when no fallbackwarnings have to be logged (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/d7ddf0a97799c260bdbabd28bdf5d79c5deadbf0">d7ddf0a</a>)</li>
+<li>print the sample key instead of dictionary contents in non-existing reference error log (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/f8c7a12707d1311986eaedd4b90187c449f6d3ee">f8c7a12</a>)</li>
+<li>Properly show all preset-fallback warnings instead of just the first in the index (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/48662dbe86e695b47e0bd2247defb8fc7e365a6c">48662db</a>)</li>
+<li>suppress snakemake logging output (workaround for <a href="https://github.com/snakemake/snakemake/issues/2089">https://github.com/snakemake/snakemake/issues/2089</a>) (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc">20a952b</a>)</li>
+<li>ensure <code>samples_df</code> and <code>samples_dict</code> always contain the same information (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc">20a952b</a>)</li>
+</ul>
+<h3 id="documentation_2">Documentation<a class="headerlink" href="#documentation_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>add citation and DOI information to readme and documentation site (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/a2cf117b906d947ea750bdf5b1125c3ad18e75ae">a2cf117</a>)</li>
+<li>add explanatory docstrings to various functions (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/0e1a3686c7e391ec18ca55e0c6818bf8807c1d02">0e1a368</a>)</li>
+<li>fix typo in installation docs (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/acc30d9d3118498398db3cb54dea52aa08b4ebd4">acc30d9</a>)</li>
+<li>update documentation with dedicated page for presets (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/7b2a66f60668ab1c827ba0e796add738fc2293d9">7b2a66f</a>)</li>
+<li>updated manual with links to more detailed presets functionality explanation page (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/7b2a66f60668ab1c827ba0e796add738fc2293d9">7b2a66f</a>)</li>
+<li>updated mkdocs configuration to include new page (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/7b2a66f60668ab1c827ba0e796add738fc2293d9">7b2a66f</a>)</li>
+<li>updated mkdocs configuration to include the direct copy-button for code blocks (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/7b2a66f60668ab1c827ba0e796add738fc2293d9">7b2a66f</a>)</li>
+</ul>
+<h3 id="code-refactoring">Code Refactoring<a class="headerlink" href="#code-refactoring" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use a generic (<code>__main__.py</code>) top level entry-point instead of the named <code>ViroConstrictor.py</code> entrypoint (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc">20a952b</a>)</li>
+<li>re-structure argument parsing functionalities into its own class (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc">20a952b</a>)</li>
+<li>re-structure snakemake run-information and config functionalities into its own class (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc">20a952b</a>)</li>
+<li>remove old shell stdout-coloring method with the rich library (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc">20a952b</a>)</li>
+<li>simplify several functions to ensure a properly defined return (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc">20a952b</a>)</li>
+<li>Use f-strings more consistently for i.e. string concatenation with variables (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc">20a952b</a>)</li>
+<li>add type-hints to all functions (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20a952b0a087c55fda3611e72e4b413cc07a16dc">20a952b</a>)</li>
+</ul>
+<h3 id="miscellaneous-chores">Miscellaneous Chores<a class="headerlink" href="#miscellaneous-chores" title="Permanent link">&para;</a></h3>
+<ul>
+<li>empty commit (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/84a34b9ea504bb0a52594803f5f5b9dbfe5665f3">84a34b9</a>)</li>
+</ul>
+<h3 id="dependencies_7">Dependencies<a class="headerlink" href="#dependencies_7" title="Permanent link">&para;</a></h3>
+<ul>
+<li>change biopython version to 1.81 (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/6bd437a17c89c7248e8a8c5ccef03df32b6c4fd5">6bd437a</a>)</li>
+<li>change openpyxl version to 3.1.* (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/6bd437a17c89c7248e8a8c5ccef03df32b6c4fd5">6bd437a</a>)</li>
+<li>change pandas version to 2.0.* (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/6bd437a17c89c7248e8a8c5ccef03df32b6c4fd5">6bd437a</a>)</li>
+<li>change snakemake version to 7.25.* in base environment (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/6bd437a17c89c7248e8a8c5ccef03df32b6c4fd5">6bd437a</a>)</li>
+<li>change urllib3 version to be more lenient (1.26.*) (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/6bd437a17c89c7248e8a8c5ccef03df32b6c4fd5">6bd437a</a>)</li>
+<li>pin AminoExtract version to 0.2.1 (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/6bd437a17c89c7248e8a8c5ccef03df32b6c4fd5">6bd437a</a>)</li>
+<li>use more lenient package requirements in setup.py to allow for both py3.10 and py3.11 builds (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/944f39d5e15c2d4c9da45c5ac7da1868d0c85535">944f39d</a>)</li>
+</ul>
+<h2 id="126-2023-03-16"><a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.2.5...v1.2.6">1.2.6</a> (2023-03-16)<a class="headerlink" href="#126-2023-03-16" title="Permanent link">&para;</a></h2>
+<h3 id="bug-fixes_8">Bug Fixes<a class="headerlink" href="#bug-fixes_8" title="Permanent link">&para;</a></h3>
+<ul>
+<li>add amino-acid names as a tuple to allow for hashing (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/9f002c7b2814fa15ac47be8f040ee77621adba71">9f002c7</a>)</li>
+</ul>
+<h3 id="dependencies_8">Dependencies<a class="headerlink" href="#dependencies_8" title="Permanent link">&para;</a></h3>
+<ul>
+<li>allow for more lenient snakemake versioning &gt;=7.15.2 in base environment (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/adc6051d83e856c89c6e253f984bb9ebec77b83c">adc6051</a>)</li>
+</ul>
+<h2 id="125-2023-03-14"><a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.2.4...v1.2.5">1.2.5</a> (2023-03-14)<a class="headerlink" href="#125-2023-03-14" title="Permanent link">&para;</a></h2>
+<h3 id="dependencies_9">Dependencies<a class="headerlink" href="#dependencies_9" title="Permanent link">&para;</a></h3>
+<ul>
+<li>update AmpliGone to version 1.2.1 (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/7abaedd244db5b19362eb5e6b0ec4ba917cb1a42">7abaedd</a>)</li>
+<li>update minimal mamba version to 1.0.0 (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/7ad5fe852945de7a7abc0be1c80f5a02e032523f">7ad5fe8</a>)</li>
+</ul>
+<h3 id="documentation_3">Documentation<a class="headerlink" href="#documentation_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li>add information badges to readme (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/53e818f85eb9b5e08ced64ae3cc6a97b370b822a">53e818f</a>)</li>
+<li>update installation instructions in docs (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/da57e82ad40d65619d26a91fd4d10d173a9a54a5">da57e82</a>)</li>
+</ul>
+<h2 id="124-2023-03-02"><a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.2.3...v1.2.4">1.2.4</a> (2023-03-02)<a class="headerlink" href="#124-2023-03-02" title="Permanent link">&para;</a></h2>
+<h3 id="dependencies_10">Dependencies<a class="headerlink" href="#dependencies_10" title="Permanent link">&para;</a></h3>
+<ul>
+<li>use conda for installing aminoextract instead of pip (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/1855470c2ead4510e785ec0f81526259281fe73a">1855470</a>)</li>
+</ul>
+<h2 id="123-2023-03-01"><a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.2.2...v1.2.3">1.2.3</a> (2023-03-01)<a class="headerlink" href="#123-2023-03-01" title="Permanent link">&para;</a></h2>
+<h3 id="bug-fixes_9">Bug Fixes<a class="headerlink" href="#bug-fixes_9" title="Permanent link">&para;</a></h3>
+<ul>
+<li>allow input fastq files that contain multiple dots (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/07994a2d5caec1fef067fcef3ba19390bbf3f92a">07994a2</a>)</li>
+<li>ensure compability between the Influenza preset and illumina short read data (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/9a9f1d985d28064e28cc729d75f8e8039c30b8e9">9a9f1d9</a>)</li>
+<li>ensure match_preset_name() actually returns all required values (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/d49f2381f430b0f3730ba2991c9360179cac2ff3">d49f238</a>)</li>
+<li>update permissions for GH-actions workflows (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/1f760bacf71b069b0e1b07bd043e9d4af0857640">1f760ba</a>)</li>
+</ul>
+<h3 id="documentation_4">Documentation<a class="headerlink" href="#documentation_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li>add citations file (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/1f760bacf71b069b0e1b07bd043e9d4af0857640">1f760ba</a>)</li>
+<li>update installation instructions for new environment file and environment creation with Mamba (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/84183a79c4c21543eb69cb0ede0a7923eb54459c">84183a7</a>)</li>
+</ul>
+<h3 id="dependencies_11">Dependencies<a class="headerlink" href="#dependencies_11" title="Permanent link">&para;</a></h3>
+<ul>
+<li>add python-magic version 0.4.27 to environment (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/84183a79c4c21543eb69cb0ede0a7923eb54459c">84183a7</a>)</li>
+<li>pin version of AminoExtract to 0.2.1 (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/84183a79c4c21543eb69cb0ede0a7923eb54459c">84183a7</a>)</li>
+</ul>
+<h2 id="122-2023-01-24"><a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.2.1...v1.2.2">1.2.2</a> (2023-01-24)<a class="headerlink" href="#122-2023-01-24" title="Permanent link">&para;</a></h2>
+<h3 id="bug-fixes_10">Bug Fixes<a class="headerlink" href="#bug-fixes_10" title="Permanent link">&para;</a></h3>
+<ul>
+<li>correctly parse presets when using  a samplesheet (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/2ca21493986cf7480e14f6ada6cdada6cdcf0ba1">2ca2149</a>)</li>
+<li>make the ViroConstrictor main entrypoint less case sensitive (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/43b27aaa1d8cd95caf01781e964f910649d374fe">43b27aa</a>)</li>
+</ul>
+<h2 id="121-2023-01-19"><a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.2.0...v1.2.1">1.2.1</a> (2023-01-19)<a class="headerlink" href="#121-2023-01-19" title="Permanent link">&para;</a></h2>
+<h3 id="bug-fixes_11">Bug Fixes<a class="headerlink" href="#bug-fixes_11" title="Permanent link">&para;</a></h3>
+<ul>
+<li>correction in argument parser to avoid a NoneType AttributeError when all required information is passed through commandline options (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/f2acedfb610f87d754fe38303609b528f1afacfc">f2acedf</a>)</li>
+</ul>
+<h3 id="dependencies_12">Dependencies<a class="headerlink" href="#dependencies_12" title="Permanent link">&para;</a></h3>
+<ul>
+<li>correct the <code>rich</code> version in all base environment files (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/f2acedfb610f87d754fe38303609b528f1afacfc">f2acedf</a>)</li>
+</ul>
+<h2 id="120-2023-01-18"><a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.1.0...v1.2.0">1.2.0</a> (2023-01-18)<a class="headerlink" href="#120-2023-01-18" title="Permanent link">&para;</a></h2>
+<h3 id="features_3">Features<a class="headerlink" href="#features_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li>add option to filted for minimum aligned length in <code>clipper.py</code> (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/d06caf5bdb89c39605639df39ee698d54d842a83">d06caf5</a>)</li>
+<li>add option to filter spliced reads in <code>clipper.py</code> (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/d06caf5bdb89c39605639df39ee698d54d842a83">d06caf5</a>)</li>
+<li>add support for working with presets for specific viral targets (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/29bfa3c5a1ff0a03ebace707b1c87e298ff1451c">29bfa3c</a>)</li>
+</ul>
+<h3 id="bug-fixes_12">Bug Fixes<a class="headerlink" href="#bug-fixes_12" title="Permanent link">&para;</a></h3>
+<ul>
+<li>add <code>.gff3</code> file extension as allowed to features flag (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/b4fdf5dc3cae26639b600adc3a6b7b9a0026240f">b4fdf5d</a>)</li>
+<li>change Clipper settings to a per-platform config per preset (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/3d952bb004cea064d67e583a87d72a2a8fa38781">3d952bb</a>)</li>
+<li>change the minimal alignment length in <code>clipper.py</code> to be a percentage of the reference length (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/68597e8a5f36e4efc1efaf652563d6e5c4960363">68597e8</a>)</li>
+<li>correct minimum aligned read length default value (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/60b9230621f0744eaa643aa352d57fed7d96d532">60b9230</a>)</li>
+<li>Fix extension checking for input files (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/6c4f91e812fd1a5c46919413656fa49308dd8ea3">6c4f91e</a>)</li>
+<li>set snakemake <code>keepgoing</code> to True as a default (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/0076d52c463ba0ad76eb9cdd1d87254e1ffec0c6">0076d52</a>)</li>
+<li>use the correct columns of input BED file when there are more columns given than necessary (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/56b5259a3fa1803b0b19fb5e9206527bb0b4143c">56b5259</a>)</li>
+<li>workaround for <code>Argument list too long</code> error when parsing complex workflows (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/2835c44de75da7bf59143aeb617ac761ccc8ae56">2835c44</a>)</li>
+</ul>
+<h3 id="performance-improvements">Performance Improvements<a class="headerlink" href="#performance-improvements" title="Permanent link">&para;</a></h3>
+<ul>
+<li>change <code>make_pickle</code> rule to localrule (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/f41cc018d79477b6c9733f6b148ff508b5acb481">f41cc01</a>)</li>
+<li>change threads in local execution mode to improve parallel performance (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/869c81a27c6db56667f56fdaedd3b82f1debaada">869c81a</a>)</li>
+</ul>
+<h3 id="dependencies_13">Dependencies<a class="headerlink" href="#dependencies_13" title="Permanent link">&para;</a></h3>
+<ul>
+<li>add <code>Rich</code> as a dependency with version 13.<em>.</em> (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/e63cac778dd4f75c89677eb660bc209fefc3c4da">e63cac7</a>)</li>
+<li>update AmpliGone to version 1.2.0 (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/dfb22f10369fa9c4b3b2d89888c70fe101cf0fdf">dfb22f1</a>)</li>
+</ul>
+<h3 id="documentation_5">Documentation<a class="headerlink" href="#documentation_5" title="Permanent link">&para;</a></h3>
+<ul>
+<li>update documentation to include presets functionalities (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/adc526541406363b3cf3afdbf225b71616c9d3a5">adc5265</a>)</li>
+</ul>
+<h2 id="110-2022-12-06"><a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.0.4...v1.1.0">1.1.0</a> (2022-12-06)<a class="headerlink" href="#110-2022-12-06" title="Permanent link">&para;</a></h2>
+<h3 id="features_4">Features<a class="headerlink" href="#features_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li>add base of functionality to translate and write amino acid sequences (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/25884b7085d6c4eed616968b749c500494b15e9b">25884b7</a>)</li>
+<li>translate and extract aminoacids sequences for multiple targets (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/657aaff0928014c7b73826a2392a9b1b49993a80">657aaff</a>)</li>
+</ul>
+<h3 id="bug-fixes_13">Bug Fixes<a class="headerlink" href="#bug-fixes_13" title="Permanent link">&para;</a></h3>
+<ul>
+<li>add the missing "FORWARD" and "REVERSE" primer keywords (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/74b92c648a357059376ba202d7b7d4f0c83ef485">74b92c6</a>)</li>
+<li>change found features to <code>np.nan</code> if input reference and features file don't match (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/3e812e41360e00a176456f1b01895f4084933358">3e812e4</a>)</li>
+<li>circumvent issue where null values cause problems in data translation steps (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/6007fca6f424e8f4499a692d204551b0fc08ca69">6007fca</a>)</li>
+<li>correctly parse amino acids that have a name with a dot in it (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/3e14dd525a75d5a5efe6d59e0b20df6e07cbd53b">3e14dd5</a>)</li>
+<li>make sure all required info is present when no gff files are given (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/d5899894a9a6b8f2d6cf3e1c0356caa4646bc5d2">d589989</a>)</li>
+</ul>
+<h3 id="documentation_6">Documentation<a class="headerlink" href="#documentation_6" title="Permanent link">&para;</a></h3>
+<ul>
+<li>clarify some sections in the docs (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/9bc417105773250aa41d6f77ae9517a5545997bd">9bc4171</a>)</li>
+<li>fix broken links (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/9bc417105773250aa41d6f77ae9517a5545997bd">9bc4171</a>)</li>
+<li>update documentation to match new functionality (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/9bc417105773250aa41d6f77ae9517a5545997bd">9bc4171</a>)</li>
+</ul>
+<h3 id="dependencies_14">Dependencies<a class="headerlink" href="#dependencies_14" title="Permanent link">&para;</a></h3>
+<ul>
+<li>add AminoExtract to dependency list (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/acb378ecb68043d817101d548408636cbfe8adf8">acb378e</a>)</li>
+<li>change minimal python version to 3.10 (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/acb378ecb68043d817101d548408636cbfe8adf8">acb378e</a>)</li>
+<li>pin AminoExtract version to v0.2.0 (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/cce1cf9fdf71c096dc7d5ca1be5f90be8459c158">cce1cf9</a>)</li>
+<li>pin AminoExtract version to v0.2.1 (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/c0e869f844a1f0c4dfb22cf1ef903a8cf45d10dd">c0e869f</a>)</li>
+<li>update TrueConsense to v0.5.0 and change rules accordingly (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/af15b9c477540337cf1222c72eaa692e1956798a">af15b9c</a>)</li>
+<li>update TrueConsense version to 0.5.1 (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/b1a61e452b219d75948bfbd246e1f7baaa0873a1">b1a61e4</a>)</li>
+</ul>
+<h2 id="104-2022-11-01"><a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.0.3...v1.0.4">1.0.4</a> (2022-11-01)<a class="headerlink" href="#104-2022-11-01" title="Permanent link">&para;</a></h2>
+<h3 id="bug-fixes_14">Bug Fixes<a class="headerlink" href="#bug-fixes_14" title="Permanent link">&para;</a></h3>
+<ul>
+<li>cleanly exit vcf_to_tsv.py script when vcf is empty after filtering (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/037467b5fa213cffdc45b1f04bd71d83f4a358b9">037467b</a>)</li>
+<li>replace bcftools with python script to avoid bcftools shared libraries error (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/eefaeadb07008d00412aafac36579ae3bd30ffaf">eefaead</a>)</li>
+</ul>
+<h3 id="dependencies_15">Dependencies<a class="headerlink" href="#dependencies_15" title="Permanent link">&para;</a></h3>
+<ul>
+<li>remove bcftools as a dependency (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/eefaeadb07008d00412aafac36579ae3bd30ffaf">eefaead</a>)</li>
+<li>remove the entire Mutations environment as it is no longer necessary (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/eefaeadb07008d00412aafac36579ae3bd30ffaf">eefaead</a>)</li>
+</ul>
+<h2 id="103-2022-10-12"><a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.0.2...v1.0.3">1.0.3</a> (2022-10-12)<a class="headerlink" href="#103-2022-10-12" title="Permanent link">&para;</a></h2>
+<h3 id="dependencies_16">Dependencies<a class="headerlink" href="#dependencies_16" title="Permanent link">&para;</a></h3>
+<ul>
+<li>pin snakemake to version 7.15.2 for dependency compatibility (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/0914b561913a0a84c181b9c646d15d34c8409502">0914b56</a>)</li>
+<li>set snakemake 7.15.2 as a minimal version in setup.py (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/0914b561913a0a84c181b9c646d15d34c8409502">0914b56</a>)</li>
+</ul>
+<h2 id="102-2022-08-15"><a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.0.1...v1.0.2">1.0.2</a> (2022-08-15)<a class="headerlink" href="#102-2022-08-15" title="Permanent link">&para;</a></h2>
+<h3 id="dependencies_17">Dependencies<a class="headerlink" href="#dependencies_17" title="Permanent link">&para;</a></h3>
+<ul>
+<li>update AmpliGone to version 1.1.0 (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/153719d0aa10862b26024aca4408d1894ab2c552">153719d</a>)</li>
+<li>update included snakemake version to 7.12.x (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/e59edf99de0deeffaf770c3f97883f1b4f1c358a">e59edf9</a>)</li>
+<li>use the bioconda channel to install AmpliGone instead of pip (<a href="https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/0f1fd65728c1c6ae473f690374a00eda18b6d37a">0f1fd65</a>)</li>
+</ul>
+<h3 id="101-2022-04-26"><a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.0.0...v1.0.1">1.0.1</a> (2022-04-26)<a class="headerlink" href="#101-2022-04-26" title="Permanent link">&para;</a></h3>
+<h3 id="bug-fixes_15">Bug Fixes<a class="headerlink" href="#bug-fixes_15" title="Permanent link">&para;</a></h3>
+<ul>
+<li>correctly exit amplicon_coverage calc when only one side of an amplicon could be found combined with low coverage samples (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/aa77006992cef2c9f34e7514f3d2c17b73b9526c">aa77006</a>)</li>
+<li>ensure the split reference sequences are always in uppercase (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/fcf034ce2bae75731b3e27e69a5e4499a56345b9">fcf034c</a>)</li>
+</ul>
+<h2 id="100-2022-04-14"><a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v0.4.2...v1.0.0">1.0.0</a> (2022-04-14)<a class="headerlink" href="#100-2022-04-14" title="Permanent link">&para;</a></h2>
+<h3 id="breaking-changes">⚠ BREAKING CHANGES<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use a single coverage level during analysis, defaults to 30 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/6d6fc016741cf818817790f66ab85df1ddcd6e63">6d6fc01</a>)</li>
+<li>add support for per-sample analysis settings with an input samplesheet in Excel, TSV or CSV format (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/a0b726d544cab9bb61918037e6e0cf04470e0029">a0b726</a>)</li>
+<li>Add support for BED files in amplicon_covs (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/ece3dfa359d1937453a729209a4fbbc8dee1aa44">ece3dfa</a>)</li>
+<li>Use BED files as output of AmpliGone (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/79fd2382a60e78000600997b750e703a5c89acc0">79fd23</a>)</li>
+<li>Update to python version 3.10 in base environments. (minimal required version = 3.8) (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/18432840a8ec3b2edfebfd101ffe13fb36103cd6">184328</a>)</li>
+<li>Use a single coverage level for TrueConsense (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e5701b9acc50204dec87f5224b9c4193ad57b815">e5701b9a</a>)</li>
+</ul>
+<h3 id="features_5">Features<a class="headerlink" href="#features_5" title="Permanent link">&para;</a></h3>
+<ul>
+<li>flexible snakemake rule_all based on samplesheet inputs (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/93ad0cfc55ae46023a1b81129d0f7894aa036703">93ad0c</a>)</li>
+<li>use the snakemake Paramspace for wildcard generation (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/94d1738c1d0a47958f9301261f57338ea544fed8">94d1738</a>)</li>
+<li>Add remove_adapters_p1 to all (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/64c906939259c43eaaaff3adb2e1c5f8f981e28d">64c9069</a>)</li>
+<li>Add remove_adapters_p2 and qc_filter to all (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/a8956089455320236b328132061f0c5818a77519">a89560</a>)</li>
+<li>Add prepare_primers (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/6dc7c9321cfbfcd3b92c1f652580573fd2c47e31">6dc7c9</a>)</li>
+<li>Add prepare_gff rule (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/a0bc0fb7a00271aaa30c320a62b58f8a0f3e021b">a0bc0fb</a>)</li>
+<li>Re-add ampligone (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/89cc2a0ad9167e1932cf0313a7e309e73971f821">89cc2a0</a>)</li>
+<li>Re-add qc_post to multiqc (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/45c0d124dd993041be49a8433bc0d1f1c6dfbbc0">45c0d12</a>)</li>
+<li>Re-add TrueConsense (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/44f36c1b922e0da53589c2ac10984f710553d4e3">44f36c1</a>)</li>
+<li>Re-add concat_seq (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/ab229dedb2588f145791da5a72c723301237e8e3">ab229de</a>)</li>
+<li>Re-add tsv output (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/5bf10aa8a14b74f37c7b94c7438f12f2a1bfedf6">5bf10aa</a>)</li>
+<li>Re-add breadth of coverage to snakefile (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/003b2f45e5604ed6c8282b0369f243409ba790f1">003b2f</a>)</li>
+<li>Re-add amplicon_cov (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/6f608826eca77d36abdcc148a0f1d2adea39df34">6f6088</a>)</li>
+<li>Correctly handle missing inputs in samplesheet (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/aa69950d4e1f3cbec00242ab63ca0ac46226339b">aa6995</a>)</li>
+<li>re-add illumina support in new workflow structure (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/8eb400bb6712028d6b26c651c251717af8ba60bc">8eb400</a>)</li>
+<li>add fastP stats to multiqc report (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/19627f672473d8214e1ca1502df8dd9cea76271e">19627f</a>)</li>
+</ul>
+<h3 id="bug-fixes_16">Bug Fixes<a class="headerlink" href="#bug-fixes_16" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Add option to not give primers on cli (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab">e4c054c</a>)</li>
+<li>Check combination of samplesheet and cli args (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab">e4c054c</a>)</li>
+<li>Fix broken snakefile (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/a704c5e1ff1bc9fb816d8e5a7f5e56c2663ee3c2">a704c5e</a>)</li>
+<li>Add .bed as filetype for primers (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/f165564010da178ff8de86a18792e6f7cc5f5707">f16556</a>)</li>
+<li>Make prodigal and prepare_gff unique (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/7613376599ca116c6b2696898ecf03f635b33124">761337</a>)</li>
+<li>Fix aggregation outputs to rule all (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/2269340d95bbb5c821070e22831c56d7118bfff4">2269340</a>)</li>
+<li>Fix restructuring of results folder (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/76fda4679c7ee00b258c169573f05a37d1bb6a2d">76fda46</a>)</li>
+<li>group concatenated files in correct results subfolders (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/f3f1d9e50f65f15b1ea3b5b1f356710eb140f9b7">f3f1d9e</a>)</li>
+<li>Make sure all post_qc is added in multiqc (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/b51f0ceab0460bab1cd5420810dead3699d21b16">b51f0ce</a>)</li>
+<li>Remove excess bracket in various log&amp;bench rules (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/4a5e96c883fa2e068d5d939a75c9f28aa958510c">4a5e96c</a>)</li>
+<li>add logs for calculate_amplicon_cov rule (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/fbd2c1cf5e281375d2c1109443c8cd7d502f862f">fbd2c1c</a>)</li>
+<li>always use absolute path for input reference, primer and features files (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/fa68a7a56c95117915351fa5b101f99c1bdcb3ef">fa68a7a</a>)</li>
+<li>always provide absolute path for input fastq files (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/030324495165f3e587f5b14da55f633bd7a613fa">0303244</a>)</li>
+<li>Raise error if fasta contains invalid char (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/5209a7b2d385b4779403f8781fe6ab4dd0a3051f">5209a7b</a>)</li>
+<li>Bump minimum snakemake version (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/a31b50332551b4ab767703cc4c0e796e98b752d1">a31b503</a>)</li>
+<li>change multiqc memory requirements to 'high' (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/05b9db33e8b26807f9f2c6cf515d7332ca654bd8">05b9db3</a>)</li>
+<li>filter input primer bedfile to only output matching refID bedfile (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/c2b9c0ce3f59d998d6a6dff1520e17cf78fd5efc">c2b9c0c</a>)</li>
+</ul>
+<h3 id="code-refactoring_1">Code Refactoring<a class="headerlink" href="#code-refactoring_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>move version to <strong>init</strong> file (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab">e4c054c</a>)</li>
+<li>Remove empty.primers (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/bfe0044978aa71c871fe74a57cf8f8b7ae1c70fc">bfe0044</a>)</li>
+<li>use the snakemake Paramspace wildcards in the multiQC aggregation (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/1204b09fafb67802caf938353ba9fd79c8e4b1a9">1204b09</a>)</li>
+<li>add the "extract_refs.py" script to repo (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/5a7ea4023a9a8a70ad656c007b9ce90478b2a339">5a7ea4</a>)</li>
+<li>move multiqc input function to top of snakefile (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/1134bbf67d6fcb34829bf8b8ad54f5507e8aa3a5">1134bb</a>)</li>
+<li>use new prepare_primers rule in new structure (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/4d06939eca1c4b76e40ed84ef8906af2bed46d75">4d06939</a>)</li>
+<li>use new prepare_gffs rule with the new structure (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/537d09b596fdf2211a0e02df02b3416e8dbf7305">537d09</a>)</li>
+<li>add basic gff filter script (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/09ada979a36765ff2d24b3cd5a2f3af31d8b9838">09ada9</a>)</li>
+<li>Refactor with bottum up approach (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/682cafa93f74efe137e6de2a0af745dc6e5a226d">682cafa</a>)</li>
+<li>Rename Sample to sample (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/a6c0e4821b48e916c311c8576b330c812fe42784">a6c0e48</a>)</li>
+<li>Change to wc_pattern (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/214e216c0921f6d069b2b75d4994924d87c8e656">214e21</a>)</li>
+<li>Switch wc_pattern to wc_folder (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/40d4d2e9aee8edb241cdd646a35170cd9b97dc7b">40d4d2e</a>)</li>
+<li>Remove threads: 1 as it is default (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/5cd6ca6b51dab55b6f860648524d3a4b95c6be32">5cd6ca6</a>)</li>
+<li>Make wildcard notation consistent (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/8fe4f7e3a2eaf057a40d57f44692d14b961455b3">8fe4f7e</a>)</li>
+<li>Re-ordering of code (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/b3d891be0d53530bfa51a547118061bc3a572c92">b3d891</a>)</li>
+<li>Remove mincov variable in snakefile (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/5bb47a945b33d75cc920c947e59f83eec12aca94">5bb47a9</a>)</li>
+<li>change used fonts in the generated report to accomodate fpdf2 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/5bb91d161d28973ac7d61441c78aad066d1d2831">5bb91d1</a>)</li>
+<li>merge if statement blocks to singular condition (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/7b2882fe51a8a87d9e86f72d534745a19a46edc4">7b2882f</a>)</li>
+<li>simplify boolean returns (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/615d2cf9ad6e84e35d74a6b5bf6437b6cd9461b6">615d2cf</a>)</li>
+<li>use new expression for conditional in samplesheet generator (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/8ca585a0b4bacb87cc23961457bb5fe3d6b62236">8ca585a</a>)</li>
+</ul>
+<h3 id="dependencies_18">Dependencies<a class="headerlink" href="#dependencies_18" title="Permanent link">&para;</a></h3>
+<ul>
+<li>update AmpliGone to version 1.0.1 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab">e4c054c</a>)</li>
+<li>update TrueConsense version to v0.4.0 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab">e4c054c</a>)</li>
+<li>use Pypi for AmpliGone installation instead of building from source (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab">e4c054c</a>)</li>
+<li>add python3.7 to the Alignment env for improved env-stability (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/d87c7462af624a01a79acc182db66ec6d0bf719c">d87c746</a>)</li>
+<li>update snakemake to lenient version 7.3 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/56d8fe01f5c872261cd83e8288e2f854af66b579">56d8fe</a>)</li>
+</ul>
+<h3 id="documentation_7">Documentation<a class="headerlink" href="#documentation_7" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Add information for primer bed support (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab">e4c054c</a>)</li>
+<li>update docs for multi-target analysis (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab">e4c054c</a>)</li>
+<li>update documentation for new ViroConstrictor functions (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab">e4c054c</a>)</li>
+<li>update installation command for python3.10 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab">e4c054c</a>)</li>
+<li>update documentation index page with correct required snakemake version (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/e4c054c570f670db6ce47bbfea788c4f937cc9ab">e4c054c</a>)</li>
+<li>Add explanatory docstring to <code>CheckSampleProperties</code> function (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/4a552ad1ab1e2c3385da904fc760c356c709b1d7">4a552ad</a>)</li>
+<li>Add explanatory docstrings to all functions in <code>ViroConstrictor.parser</code> (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/b09f4dc0d3e7f3db301c871bfd5f924ce91b3b82">b09f4d</a>)</li>
+<li>Add explanatory docstrings to all functions in <code>ViroConstrictor.runconfigs</code> (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/2ff818572565595fedb7124cdac084fbde8c273d">2ff8185</a>)</li>
+<li>Add explanatory docstrings to all functions in <code>ViroConstrictor.samplesheet</code> (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/a1e7093ff58a1b077131d5b898a7d4e7b85e38e5">a1e7093</a>)</li>
+<li>Add explanatory docstrings to all functions in <code>ViroConstrictor.userprofile</code> (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/30ec8af8cc2a2493df786e28c35de481460e2cf8">30ec8af8</a>)</li>
+<li>Add explanatory docstrings to all functions in <code>ViroConstrictor.validatefasta</code> (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/c199d7c9b6104cddedce1dff105e9ab713d134cb">c199d7c9</a>)</li>
+<li>Add error message for samplesheet duplicates (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/efa0761538a257202a30c0832f3979b790ccb91d">efa0761</a>)</li>
+</ul>
+<h3 id="042-2022-04-12"><a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v0.4.1...v0.4.2">0.4.2</a> (2022-04-12)<a class="headerlink" href="#042-2022-04-12" title="Permanent link">&para;</a></h3>
+<h3 id="bug-fixes_17">Bug Fixes<a class="headerlink" href="#bug-fixes_17" title="Permanent link">&para;</a></h3>
+<ul>
+<li>limit the self-updater to only update minor and patch versions (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/f864f55ab65e45c297a52e0f1cb9fa295c34a08f">f864f55</a>)</li>
+</ul>
+<h3 id="041-2022-03-08"><a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v0.4.0...v0.4.1">0.4.1</a> (2022-03-08)<a class="headerlink" href="#041-2022-03-08" title="Permanent link">&para;</a></h3>
+<h3 id="bug-fixes_18">Bug Fixes<a class="headerlink" href="#bug-fixes_18" title="Permanent link">&para;</a></h3>
+<ul>
+<li>correct the memory assignment and threads for RemovePrimers job when no primers are given (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/a9ebe02cdc7995219d1a3c06fa9be6020881e43a">a9ebe02</a>)</li>
+</ul>
+<h2 id="040-2022-02-04"><a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v0.3.0...v0.4.0">0.4.0</a> (2022-02-04)<a class="headerlink" href="#040-2022-02-04" title="Permanent link">&para;</a></h2>
+<h3 id="features_6">Features<a class="headerlink" href="#features_6" title="Permanent link">&para;</a></h3>
+<ul>
+<li>add an adjustable mismatch rate for the primer search (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/7fc42651ac9bf9e926a93528a92cb9d6f58a9448">7fc4265</a>)</li>
+<li>dynamically set usable cpus/threads in local execution mode (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/1ec85bb79c600d96c70bd4755451b174f25b0e80">1ec85bb</a>)</li>
+<li>Write a short report with the used/configured settings of the analysis (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/0c46366f72a8d1cd1a1ff87ad5e89234a59be9a5">0c46366</a>)</li>
+</ul>
+<h3 id="bug-fixes_19">Bug Fixes<a class="headerlink" href="#bug-fixes_19" title="Permanent link">&para;</a></h3>
+<ul>
+<li>add missing --skip-updates flag (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/f3601613b4bc007727239e03af5bf74feff8be65">f360161</a>)</li>
+<li>corrected update function parameters (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/7f37d90e310fde5767c3ef808f7ee5290d0fe6f6">7f37d90</a>)</li>
+<li>finish an analysis when empty input fastq files are given (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/d1785875d6e2b75f452003011d9b93554c69ccd1">d178587</a>)</li>
+<li>properly exit with right exit codes and print closing message (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/f1bbe130c2ab00cad9d562a4e01113a4e33bc753">f1bbe13</a>)</li>
+</ul>
+<h3 id="performance-improvements_1">Performance Improvements<a class="headerlink" href="#performance-improvements_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>tweak read qc filtering settings (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/b3aab5a095881668bf165be8c1eed0fb9a9c8a17">b3aab5a</a>)</li>
+<li>use adjusted mm2 mapping settings in nanopore-mode (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/c027daa31b37edff09ad285b9f0659b62a0328a7">c027daa</a>)</li>
+</ul>
+<h3 id="dependencies_19">Dependencies<a class="headerlink" href="#dependencies_19" title="Permanent link">&para;</a></h3>
+<ul>
+<li>add FPDF version 1.7.2 to dependency lists (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/cfcd9ee2863e923923cacbee19209f2f79fa6d43">cfcd9ee</a>)</li>
+<li>add lenient version requirements to mamba (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/07ebfcc5cadf930a16f4f910ca990458e55043fd">07ebfcc</a>)</li>
+<li>add urllib3 v1.26 to dependency list for the auto-updater (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/cfcd9ee2863e923923cacbee19209f2f79fa6d43">cfcd9ee</a>)</li>
+<li>change biopython version in python setupfile (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/07ebfcc5cadf930a16f4f910ca990458e55043fd">07ebfcc</a>)</li>
+<li>change pysam to lenient versioning (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/cfcd9ee2863e923923cacbee19209f2f79fa6d43">cfcd9ee</a>)</li>
+<li>inlcude conda (lenient) version 4.11.x in main env for compatibility (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/cfcd9ee2863e923923cacbee19209f2f79fa6d43">cfcd9ee</a>)</li>
+<li>pin pysamstats version to 1.1.2 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/cfcd9ee2863e923923cacbee19209f2f79fa6d43">cfcd9ee</a>)</li>
+<li>pin tqdm (lenient) version to 4.62.x (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/cfcd9ee2863e923923cacbee19209f2f79fa6d43">cfcd9ee</a>)</li>
+<li>pin TrueConsense to version 0.3.0 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/cfcd9ee2863e923923cacbee19209f2f79fa6d43">cfcd9ee</a>)</li>
+<li>remove pysamstats from 'clean' environment (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/cfcd9ee2863e923923cacbee19209f2f79fa6d43">cfcd9ee</a>)</li>
+<li>update AmpliGone 0.4.0 &rarr; 0.4.1 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/ea06728c3e2c05e5adba4320683d75c59a1d3a16">ea06728</a>)</li>
+<li>update AmpliGone 0.4.1 &rarr; 0.4.3 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/af62d2294d48249a8108ce03bdaae72f626cdb51">af62d22</a>)</li>
+<li>update AmpliGone version 0.2.3 &rarr; 0.4.0 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/cfcd9ee2863e923923cacbee19209f2f79fa6d43">cfcd9ee</a>)</li>
+<li>update bcftools 1.12 &rarr; 1.14 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/cfcd9ee2863e923923cacbee19209f2f79fa6d43">cfcd9ee</a>)</li>
+<li>update bedtools 2.29.2 &rarr; 2.30.0 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/cfcd9ee2863e923923cacbee19209f2f79fa6d43">cfcd9ee</a>)</li>
+<li>update biopython 1.78 &rarr; 1.79 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/cfcd9ee2863e923923cacbee19209f2f79fa6d43">cfcd9ee</a>)</li>
+<li>update fastp 0.20.1 &rarr; 0.23.2 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/cfcd9ee2863e923923cacbee19209f2f79fa6d43">cfcd9ee</a>)</li>
+<li>update fastqc 0.11.8 &rarr; 0.11.9 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/cfcd9ee2863e923923cacbee19209f2f79fa6d43">cfcd9ee</a>)</li>
+<li>update minimap2 &amp; mappy 2.17 &rarr; 2.24 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/cfcd9ee2863e923923cacbee19209f2f79fa6d43">cfcd9ee</a>)</li>
+<li>update multiqc 1.9 &rarr; 1.11 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/cfcd9ee2863e923923cacbee19209f2f79fa6d43">cfcd9ee</a>)</li>
+<li>update pandas 1.2.3 &rarr; 1.3.5 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/cfcd9ee2863e923923cacbee19209f2f79fa6d43">cfcd9ee</a>)</li>
+<li>update parmap 1.5.2 &rarr; 1.5.3 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/cfcd9ee2863e923923cacbee19209f2f79fa6d43">cfcd9ee</a>)</li>
+<li>update PyYaml 5.4.1 &rarr; 6.0 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/cfcd9ee2863e923923cacbee19209f2f79fa6d43">cfcd9ee</a>)</li>
+<li>update samtools 1.11 &rarr; 1.14 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/cfcd9ee2863e923923cacbee19209f2f79fa6d43">cfcd9ee</a>)</li>
+<li>update seqkit 0.14.0 &rarr; 2.1.0 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/cfcd9ee2863e923923cacbee19209f2f79fa6d43">cfcd9ee</a>)</li>
+<li>update snakemake 6.4.1 &rarr; 6.13.1 (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/cfcd9ee2863e923923cacbee19209f2f79fa6d43">cfcd9ee</a>)</li>
+</ul>
+<h3 id="documentation_8">Documentation<a class="headerlink" href="#documentation_8" title="Permanent link">&para;</a></h3>
+<ul>
+<li>add importance of primer name and number to docs (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/7107398833b1082b4d5c188bf6edbed47ee73996">7107398</a>)</li>
+<li>include primer mismatch rate flag to documentation (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/531f5262dcad16ad9386c59992dc2f64d3f869c9">531f526</a>)</li>
+<li>update installation instructions (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/5944d225361797ef2c12b8cb2e5dc3c0cbd12c85">5944d22</a>)</li>
+</ul>
+<h2 id="030-2021-11-15"><a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v0.2.3...v0.3.0">0.3.0</a> (2021-11-15)<a class="headerlink" href="#030-2021-11-15" title="Permanent link">&para;</a></h2>
+<h3 id="features_7">Features<a class="headerlink" href="#features_7" title="Permanent link">&para;</a></h3>
+<ul>
+<li>allow ViroConstrictor to update itself to latest release (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/11ad6160f7748556598e7447b35975b9dfb378fd">11ad616</a>)</li>
+<li>flexible memory requirements per workflow job (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/7c189cdac758f49fcc578ec228abb21c2f5af1ad">7c189cd</a>)</li>
+</ul>
+<h3 id="bug-fixes_20">Bug Fixes<a class="headerlink" href="#bug-fixes_20" title="Permanent link">&para;</a></h3>
+<ul>
+<li>change consensus calling to a 'mid' cpu-task (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/3094b78bbce88f9df5b71e8de8ac2c5ce737374a">3094b78</a>)</li>
+</ul>
+<h3 id="023-2021-11-03"><a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v0.2.2...v0.2.3">0.2.3</a> (2021-11-03)<a class="headerlink" href="#023-2021-11-03" title="Permanent link">&para;</a></h3>
+<h3 id="documentation_9">Documentation<a class="headerlink" href="#documentation_9" title="Permanent link">&para;</a></h3>
+<ul>
+<li>add explanatory comments to docs config (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/f3e05ecbc47e7f68edefa8829ce95876b147241e">f3e05ec</a>)</li>
+</ul>
+<h3 id="022-2021-11-03"><a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/compare/v0.2.1...v0.2.2">0.2.2</a> (2021-11-03)<a class="headerlink" href="#022-2021-11-03" title="Permanent link">&para;</a></h3>
+<h3 id="bug-fixes_21">Bug Fixes<a class="headerlink" href="#bug-fixes_21" title="Permanent link">&para;</a></h3>
+<ul>
+<li>change amplicon covs script to complete with empty input <a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/issues/5">#5</a> (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/6900638375ad95b96771de15bbb2ea7fa9d3ba14">6900638</a>)</li>
+<li>complete workflow with primers set to NONE (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/47becf85eba7c92f70df27fe93ccffdf27efae1c">47becf8</a>)</li>
+<li>use 'map-ont' mm2 preset in nanopore workflow (<a href="https://www.github.com/RIVM-bioinformatics/ViroConstrictor/commit/f89d5cf7154c139eab1ce361fc4107c4cd568217">f89d5cf</a>)</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright © 2021 RIVM
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.instant", "navigation.top", "content.code.copy"], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.60a45f97.min.js"></script>
+      
+    
+  </body>
+</html>
