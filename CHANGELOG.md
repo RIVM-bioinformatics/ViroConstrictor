@@ -2,36 +2,46 @@
 
 ## [1.5.0](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.6...v1.5.0) (2025-01-24)
 
+### Features
+
+* Add container support to main workflow (f455445)
+* Add containerization support to workflow (c29495f)
+* Add new global userprofile section for reproducibility method (conda or containers) (e67bb27)
+
 
 ### Bug Fixes
 
-* [#111](https://github.com/RIVM-bioinformatics/ViroConstrictor/issues/111) - Do not change python working dir to requested output directory as this is no longer necessary ([8180c56](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/8180c56fcb97acd14fb95e34e9e451241de4961b))
-* add required dryrun option to container cache configuration for github workflow ([df8b9ee](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/df8b9ee0ab2623ed417151a335a2685a2664555d))
-* always regenerate incomplete files when a previous analysis was shut down unexpectedly (i.e. sigterm or power loss) ([bb3b16f](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/bb3b16f0a9d08ef8d7d3f4c688f55da335ed5435))
-* create an empty {sample}_primers.bed file when no input primers were given (--primers NONE) to ensure workflow completion ([f7c90e3](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/f7c90e3a7fab57c2e46695349d433bb5ac20b9d3))
-* do not download containers in dryrun mode ([4f6e45d](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/4f6e45db26ebf4dbb9687a419d59499989ae79a0))
-* ensure proper parsing and assigning of input data when handling an integer sampleID ([253a601](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/253a601cbd6672023ecef7fc5a3179561c1edd9d))
-* modify ask_prompt variable assignment based on auto_update configuration ([5fab54f](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/5fab54fbe2c2d84dcc72c703d9183a64c6042734))
-* resolve snakemake AmbiguousRuleException for certain combinations of primer inputs ([5cf5fbd](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/5cf5fbdaec2145a8e8aea5a511e7effbb7e38aed))
-* update script path handling for breadth of coverage rule based on conda and singularity configuration ([c8b4cc9](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/c8b4cc94bc03d3bd28c945616f4c589cb8fbce74))
+* Properly handle the floating point comparison to check the PRESET_SCORE (f4410bf)
+* Create an empty {sample}_primers.bed file when no input primers were given (f7c90e3)
+* Do not download containers in dryrun mode (4f6e45d)
+* Resolve snakemake AmbiguousRuleException for certain combinations of primer inputs (5cf5fbd)
 
 
-### Dependencies
+### Build
 
-* limit mamba version to &lt;2.0.0 ([941c19b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/941c19bbc605172c34a9336b2fd547b2fa99ab97))
-* pin package versions in child conda environments ([941c19b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/941c19bbc605172c34a9336b2fd547b2fa99ab97))
-* set flexible pyopenssl dependency to version 24.x.x ([0dc3d58](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/0dc3d588416b5f0f3c1afad7bcff8bc4ebd28506))
-* update pysam to version 0.21 in downstream env and pin package versions in setup.py ([5140811](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/5140811e7a6d23fbf09dc40e3e72c187a40e7404))
-
-
-### Documentation
-
-* enhance documentation with reproducibility settings and multi-reference analysis guidance ([71b39ea](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/71b39ea499e882131dc326312fe067be2c307471))
+* Add base container definitions (836daa3)
 
 
 ### Continuous Integration
 
-* avoid triggering the entire workflow for markdown and docs files ([533a971](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/533a971864f642c57274a28b2c820638bedb286b))
+* Add GitHub actions workflow for automatic building of containers (41bd864)
+* Change upstream registry (ac8a3ac)
+* Update GitHub Actions workflows for container publishing (9341f95)
+* Add listing of pip modules as a test (b5fed9f)
+* Update workflow rules due to deprecation (30be0df)
+
+
+### Dependencies
+
+* Ensure conda strict channel compatibility (527ad85)
+* Limit mamba version to <2.0.0 (941c19b)
+* Set flexible pyopenssl dependency to version 24.x.x (0dc3d58)
+
+
+### Documentation
+
+* Add docstrings to all functions in containers.py (8a5fdfe)
+* Enhance documentation with reproducibility settings and multi-reference analysis guidance (71b39ea)
 
 ## [1.4.6](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.5...v1.4.6) (2024-10-08)
 
