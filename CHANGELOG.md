@@ -1,5 +1,48 @@
 # Changelog
 
+## [1.5.0](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.6...v1.5.0) (2025-01-24)
+
+### Features
+
+* Add container support to main workflow (f455445)
+* Add containerization support to workflow (c29495f)
+* Add new global userprofile section for reproducibility method (conda or containers) (e67bb27)
+
+
+### Bug Fixes
+
+* Properly handle the floating point comparison to check the PRESET_SCORE (f4410bf)
+* Create an empty {sample}_primers.bed file when no input primers were given (f7c90e3)
+* Do not download containers in dryrun mode (4f6e45d)
+* Resolve snakemake AmbiguousRuleException for certain combinations of primer inputs (5cf5fbd)
+
+
+### Build
+
+* Add base container definitions (836daa3)
+
+
+### Continuous Integration
+
+* Add GitHub actions workflow for automatic building of containers (41bd864)
+* Change upstream registry (ac8a3ac)
+* Update GitHub Actions workflows for container publishing (9341f95)
+* Add listing of pip modules as a test (b5fed9f)
+* Update workflow rules due to deprecation (30be0df)
+
+
+### Dependencies
+
+* Ensure conda strict channel compatibility (527ad85)
+* Limit mamba version to <2.0.0 (941c19b)
+* Set flexible pyopenssl dependency to version 24.x.x (0dc3d58)
+
+
+### Documentation
+
+* Add docstrings to all functions in containers.py (8a5fdfe)
+* Enhance documentation with reproducibility settings and multi-reference analysis guidance (71b39ea)
+
 ## [1.4.6](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.5...v1.4.6) (2024-10-08)
 
 
