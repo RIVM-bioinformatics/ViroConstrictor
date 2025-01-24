@@ -2,8 +2,12 @@ name: build containers and run tests
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened]
     branches:
       - 'main'
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
   workflow_dispatch:
     
 
