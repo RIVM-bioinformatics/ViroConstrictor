@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.1](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.5.0...v1.5.1) (2025-03-06)
+
+
+### Bug Fixes
+
+* clipper filter minimum aligned read length should be a fraction of the reflength instead of a direct input ([3942d99](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/3942d99d607281b85cda29cac6395b57f1d06070))
+* suppress snakemake 7 html report licence download error ([5efd010](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/5efd010da8185bd7b2a7b4f9a8050838e739891b))
+
 ## [1.5.0](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.6...v1.5.0) (2025-01-24)
 
 ### Features
