@@ -33,6 +33,8 @@ subprocess.run(
 )
 
 for file in glob.glob("./containers/*.sif"):
+    if os.path.exists(containerpath + "/" + file.split("/")[-1]):
+        os.remove(containerpath + "/" + file.split("/")[-1])
     print(file)
     shutil.move(file, containerpath) if containerpath else None
 for file in glob.glob("./containers/*.tar"):

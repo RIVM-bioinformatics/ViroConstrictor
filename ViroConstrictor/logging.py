@@ -239,7 +239,8 @@ logmessage_strings_info: dict[str, Callable] = {
     "Nothing to be done (all requested files are present and up to date).": BaseLogMessage,
 }
 logmessage_suppressed_strings_warning: list[str] = [
-    "Your conda installation is not configured to use strict channel priorities."
+    "Your conda installation is not configured to use strict channel priorities.",
+    "Failed to download resource needed for report:"
 ]
 
 
