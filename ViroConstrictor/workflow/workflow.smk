@@ -205,7 +205,8 @@ rule prepare_primers:
             --primers {input.prm} \
             --reference {input.ref} \
             --output {output.bed} \
-            --primer-mismatch-rate {params.pr_mm_rate} > {log}
+            --primer-mismatch-rate {params.pr_mm_rate} \
+            --verbose > {log}
         """
 
 ruleorder: prepare_primers > filter_primer_bed
@@ -512,6 +513,18 @@ rule ampligone:
     params:
         amplicontype=config["amplicon_type"],
         primer_mismatch_rate=lambda wc: SAMPLES[wc.sample]["PRIMER-MISMATCH-RATE"],
+        alignmentpreset=lambda wc: get_preset_parameter(
+            preset_name=SAMPLES[wc.sample]["PRESET"],
+            parameter_name=f"AmpliGone_AlignmentPreset_{config['platform']}",
+        ),
+        alignmentmatrix=lambda wc: get_preset_parameter(
+            preset_name=SAMPLES[wc.sample]["PRESET"],
+            parameter_name=f"AmpliGone_AlignmentMatrix_{config['platform']}",
+        ),
+        extrasettings=lambda wc: get_preset_parameter(
+            preset_name=SAMPLES[wc.sample]["PRESET"],
+            parameter_name=f"AmpliGone_ExtraSettings",
+        ),
     shell:
         """
         echo {input.pr} > {log}
@@ -522,6 +535,7 @@ rule ampligone:
             -at {params.amplicontype} \
             --error-rate {params.primer_mismatch_rate} \
             --export-primers {output.ep} \
+            {params.alignmentpreset} {params.alignmentmatrix} {params.extrasettings} \
             -to \
             -t {threads} >> {log} 2>&1
         """
