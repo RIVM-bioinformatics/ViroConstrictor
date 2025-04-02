@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.5.2](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.5.1...v1.5.2) (2025-04-02)
+
+
+### Dependencies
+
+* update AmpliGone to version 2.0.1 ([af85890](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/af85890925d667c14fa469800396e47d19a4a781))
+* update biopython to version 1.84 ([af85890](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/af85890925d667c14fa469800396e47d19a4a781))
+* update fastqc to version 0.12.1 ([af85890](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/af85890925d667c14fa469800396e47d19a4a781))
+* update mappy/minimap to version 2.28 ([af85890](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/af85890925d667c14fa469800396e47d19a4a781))
+* update openjdk to version 11.0.23 ([af85890](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/af85890925d667c14fa469800396e47d19a4a781))
+* update pandas to lenient version 2.2 ([af85890](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/af85890925d667c14fa469800396e47d19a4a781))
+* update samtools to version 1.21 ([af85890](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/af85890925d667c14fa469800396e47d19a4a781))
+
 ## [1.5.1](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.5.0...v1.5.1) (2025-03-06)
 
 
