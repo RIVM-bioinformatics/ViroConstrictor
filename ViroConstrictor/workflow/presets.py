@@ -34,6 +34,16 @@ aliases = {
         "RUBULAVIRINAE",
         "ORTHORUBULAVIRUS",
     ],
+    "HEPATOVIRIDAE": [
+        "HEPATITIS_A",
+        "HEPATITIS_E",
+        "HEPATITIS_C",
+        "HEPATOVIRUS",
+        "HAV",
+        "HEV",
+        "HCV",
+        "HEPATITIS_VIRUS"
+    ],
     # "HPV": ["PAPILLOMA_VIRUS", "HPV"]
 }
 
