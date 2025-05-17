@@ -1,16 +1,13 @@
 # Explanation of Amplicon Types
 
-The "amplicon type" is basically a description of a PCR amplicon, and which part of said amplicon is actually sequenced.  
-This information is important because given primers will be removed from the reads during the analysis.
+The term "amplicon type" describes a PCR amplicon and specifies which part of that amplicon is actually sequenced. This information is crucial because primers will be removed from the reads during analysis.
 
-In the ViroConstrictor pipeline the primer-removal is done by our tool [AmpliGone](https://rivm-bioinformatics.github.io/AmpliGone/).
+In the ViroConstrictor pipeline, primer removal is performed using our tool [AmpliGone](https://rivm-bioinformatics.github.io/AmpliGone/).
 
-The information regarding the "amplicon type" is required because it tells te pipeline, and therefore also AmpliGone, from which side(s) of a read the primer-sequence has to be removed.
+The information about the "amplicon type" is required because it tells the pipeline—and therefore AmpliGone—from which side(s) of a read the primer sequence should be removed.
 
-Currently there are two options: "End-to-End" or "End-to-Mid".  
+Currently, there are two options: **"End-to-End"** and **"End-to-Mid."**
 
-In short: "End-to-End" means that the sequenced read covers the full length of an amplicon. Meaning that the primer-sequence is present at both ends of a read.  
-"End-to-Mid" means that the sequences read only *partially* covers the length of the amplicon. Meaning that the primer-sequence is present at only one end of a read.
+In short, **"End-to-End"** means that the sequenced read covers the full length of an amplicon, with the primer sequence present at both ends. In contrast, **"End-to-Mid"** means that the sequenced read only partially covers the length of the amplicon, so the primer sequence is present at only one end.
 
-Also see the [AmpliGone documentation regarding amplicon-types](https://rivm-bioinformatics.github.io/AmpliGone/latest/amplicon-types/) where we go into more detail regarding these types and what these terms mean.  
-Please check your sequencing and laboratory setup for the amplicon type to match your analysis to ensure the best results.
+For more details, please refer to the [AmpliGone documentation regarding amplicon types](https://rivm-bioinformatics.github.io/AmpliGone/latest/amplicon-types/). Also, ensure that your sequencing and laboratory setup is configured for the correct amplicon type to achieve the best analysis results.
