@@ -82,7 +82,7 @@
         "MatchRef_AdditionalBamFilters": "-q 10",
         "RawAlign_AdditionalSettings": "--splice --frag=no",
         "BaseBAMFilters": "-F 256 -F 512 -F 4 -F 2048",
-        "ClipperSettings_nanopore": "--exclude-spliced --spliced-length-threshold 200",
+        "ClipperSettings_nanopore": "--exclude-spliced --spliced-length-threshold 21",
         "ClipperSettings_illumina": "",
         "ClipperSettings_iontorrent": "",
         "Fastp_PhredScore_cutoff_illumina": 20,
@@ -103,12 +103,12 @@
         "CleanAlign_AdditionalSettings_illumina": "",
         "CleanAlign_AdditionalSettings_iontorrent": ""
     },
-    "HEPATOVIRIDAE": {
+    "HEPATOVIRUS": {
         "MatchRef_AdditionalAlignmentSettings": "--secondary=no",
         "MatchRef_AdditionalBamFilters": "-q 10",
         "RawAlign_AdditionalSettings": "--splice --frag=no",
         "BaseBAMFilters": "-F 256 -F 512 -F 4 -F 2048",
-        "ClipperSettings_nanopore": "--exclude-spliced --spliced-length-threshold 21",
+        "ClipperSettings_nanopore": "--exclude-spliced --spliced-length-threshold 200",
         "ClipperSettings_illumina": "",
         "ClipperSettings_iontorrent": "",
         "Fastp_PhredScore_cutoff_illumina": 20,
