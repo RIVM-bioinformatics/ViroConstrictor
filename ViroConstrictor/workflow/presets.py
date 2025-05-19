@@ -27,6 +27,7 @@ aliases = {
         "MEV",
         "MEASLES_VIRUS",
         "MUMPS",
+        "MUV",
         "MUMPS_VIRUS",
         "PARAMYXOVIRUS",
         "PARAMYXOVIRIDAE",
@@ -34,15 +35,11 @@ aliases = {
         "RUBULAVIRINAE",
         "ORTHORUBULAVIRUS",
     ],
-    "HEPATOVIRIDAE": [
-        "HEPATITIS_A",
-        "HEPATITIS_E",
-        "HEPATITIS_C",
+    "HEPATOVIRUS": [
         "HEPATOVIRUS",
+        "HEPATITIS_A",
+        "HEPATITIS_A_VIRUS",
         "HAV",
-        "HEV",
-        "HCV",
-        "HEPATITIS_VIRUS"
     ],
     # "HPV": ["PAPILLOMA_VIRUS", "HPV"]
 }
