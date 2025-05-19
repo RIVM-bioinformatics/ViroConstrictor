@@ -33,8 +33,8 @@ If you don't know the computing queue, please check with your system administrat
 ## Setting up reproducibility settings
 
 ViroConstrictor will attempt to automatically detect whether the use of containers is possible on your system; using containers is the preferred method for ensuring reproducibility of the analysis.  
-If ViroConstrictor detects that containers can be used, it will automatically configure this method as the preferred approach. However, you will still be asked to provide a path where the containers can be stored on your system.  
-It is recommended to use a dedicated folder for this purpose. If no path is provided, then ViroConstrictor will create and use the default path, which is the `~/.viroconstrictor/containers` folder.
+If ViroConstrictor detects that containers can be used through Apptainer, it will automatically configure this method as the preferred approach. However, you will still be asked to provide a path where the downloaded containers can be stored on your system.  
+It is recommended to use a dedicated directory for this purpose. If no path is provided, then ViroConstrictor will create and use the default path, which is the `~/.viroconstrictor/containers` directory.
 
 !!! info "Specifying a path on a shared system"
     If you're using a shared system, as is common in high-performance computing environments, it is recommended to choose a path that is shared between all users.  
