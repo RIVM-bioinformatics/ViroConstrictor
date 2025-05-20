@@ -22,7 +22,25 @@ aliases = {
         "INFLUENZA_B",
         "INF",
     ],
-    # "MEASLES": ["MEASLES", "MEV", "MEASLES_VIRUS"],
+    "PARAMYXOVIRIDAE": [
+        "MEASLES",
+        "MEV",
+        "MEASLES_VIRUS",
+        "MUMPS",
+        "MUV",
+        "MUMPS_VIRUS",
+        "PARAMYXOVIRUS",
+        "PARAMYXOVIRIDAE",
+        "MORBILLIVIRUS",
+        "RUBULAVIRINAE",
+        "ORTHORUBULAVIRUS",
+    ],
+    "HEPATOVIRUS": [
+        "HEPATOVIRUS",
+        "HEPATITIS_A",
+        "HEPATITIS_A_VIRUS",
+        "HAV",
+    ],
     # "HPV": ["PAPILLOMA_VIRUS", "HPV"]
 }
 
