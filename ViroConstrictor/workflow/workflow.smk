@@ -180,6 +180,18 @@ rule prepare_refs:
         python {params.script} {input} {output} {wildcards.RefID} > {log}
         """
 
+rule create_empty_primers:
+    output:
+        bed=f"{datadir}{wc_folder}{prim}" "{sample}_primers.bed",
+    resources:
+        mem_mb=low_memory_job,
+    log:
+        f"{logdir}prepare_primers_" "{Virus}.{RefID}.{sample}.log",
+    shell:
+        """
+        touch {output.bed}
+        echo "Created empty primer bed file for NONE primers" > {log}
+        """
 
 rule prepare_primers:
     input:
@@ -232,6 +244,16 @@ rule filter_primer_bed:
         """
         python {params.script} {input.prm} {output.bed} {wildcards.RefID}
         """
+
+def get_primers_output(wildcards):
+    sample_primers = SAMPLES[wildcards.sample]["PRIMERS"]
+    if sample_primers in ["None", "NONE"]:
+        return rules.create_empty_primers.output.bed
+    elif sample_primers.endswith(".bed"):
+        return rules.filter_primer_bed.output.bed
+    else:
+        return rules.prepare_primers_fasta.output.bed
+
 
 rule prepare_gffs:
     input:
@@ -490,11 +512,22 @@ rule qc_filter:
             -h {output.html} -j {output.json} > {log} 2>&1
         """
 
+def is_empty_file(filename):
+    if filename.upper() == "NONE":
+
+        return True
+    elif filename.endswith(".bed"):
+        bed_file = f"{datadir}{wc_folder}{prim}" "{sample}_primers.bed"
+        return os.path.getsize(filename) == 0
+    else:
+        raise ValueError(
+            f"Unexpected file type for primer file: {filename}. Expected .bed file."
+        )
 
 rule ampligone:
     input:
         fq=rules.qc_filter.output.fq,
-        pr=rules.prepare_primers.output.bed,
+        pr=lambda wc: get_primers_output(wc),
         ref=rules.prepare_refs.output,
     output:
         fq=f"{datadir}{wc_folder}{cln}{prdir}" "{sample}.fastq",
@@ -525,19 +558,28 @@ rule ampligone:
             preset_name=SAMPLES[wc.sample]["PRESET"],
             parameter_name=f"AmpliGone_ExtraSettings",
         ),
+        is_empty_bed=lambda wc: is_empty_file(SAMPLES[wc.sample]["PRIMERS"]),
     shell:
         """
-        echo {input.pr} > {log}
-        AmpliGone \
-            -i {input.fq} \
-            -ref {input.ref} -pr {input.pr} \
-            -o {output.fq} \
-            -at {params.amplicontype} \
-            --error-rate {params.primer_mismatch_rate} \
-            --export-primers {output.ep} \
-            {params.alignmentpreset} {params.alignmentmatrix} {params.extrasettings} \
-            -to \
-            -t {threads} >> {log} 2>&1
+        if [ "{params.is_empty_bed}" = "True" ]; then
+            # Skip AmpliGone for empty primer BED files
+            echo "Primer BED file is empty. Skipping AmpliGone." > {log}
+            cp {input.fq} {output.fq}
+            touch {output.ep}
+        else
+            # Run AmpliGone as usual
+            echo "Running AmpliGone with primer file: {input.pr}" > {log}
+            AmpliGone \
+                -i {input.fq} \
+                -ref {input.ref} -pr {input.pr} \
+                -o {output.fq} \
+                -at {params.amplicontype} \
+                --error-rate {params.primer_mismatch_rate} \
+                --export-primers {output.ep} \
+                {params.alignmentpreset} {params.alignmentmatrix} {params.extrasettings} \
+                -to \
+                -t {threads} >> {log} 2>&1
+        fi
         """
 
 
