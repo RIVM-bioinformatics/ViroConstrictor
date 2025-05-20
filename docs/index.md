@@ -32,6 +32,8 @@ ViroConstrictor is available under the [AGPLv3 licence](https://www.gnu.org/lice
 * Florian Zwagemaker
 * Dennis Schmitz
 * Karim Hajji
+* Gino Raaijmakers
+* Iveta Krskova
 * Annelies Kroneman
 
 
