@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.5.3](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.5.2...v1.5.3) (2025-05-20)
+
+
+### Features
+
+* add optimized preset for Paramyxoviridae virus family. Combined Measles and Mumps into single preset ([043e6c1](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/043e6c1e50245b5c9427f59c91812c61eb7ed22e))
+* add preset for hepatoviridae analysis ([b6ef384](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/b6ef3842f02128bd48611872aa3f81e6520b9edf))
+
+
+### Bug Fixes
+
+* correction of swapped setting in paramyxoviridae & hepatovirus presets ([de2db8a](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/de2db8a9ed0c168cf32f74f62987a771ecdeb267))
+
+
+### Documentation
+
+* add "fragmented" mode to documentation ([f6e9bba](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/f6e9bbaf2748b97bfcbddf97db955b29a81c554e))
+* add apptainer to the container config doc ([1977437](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/19774375c4c0306f1ada9b8047821ef1700b3af3))
+* add authors :) ([1977437](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/19774375c4c0306f1ada9b8047821ef1700b3af3))
+* Add the Paramyxoviridae and Hepatovirus presets to the documentation including aliases ([de2db8a](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/de2db8a9ed0c168cf32f74f62987a771ecdeb267))
+* spell and grammar checked all docs. ([e431d80](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/e431d8020815dc92fc30aa27819fc4cdd14ddd27))
+
+
+### Miscellaneous Chores
+
+* empty commit ([8d62c92](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/8d62c92e7ed99d919658265a727d7733ec110ead))
+
 ## [1.5.2](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.5.1...v1.5.2) (2025-04-02)
 
 
