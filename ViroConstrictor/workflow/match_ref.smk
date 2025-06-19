@@ -122,12 +122,12 @@ wildcard_constraints:
 
 localrules:
     all,
-    filter_references,
-    concat_frames,
-    group_and_rename_refs,
-    count_mapped_reads,
-    filter_bed,
-    filter_gff,
+    # filter_references,
+    # concat_frames,
+    # group_and_rename_refs,
+    # count_mapped_reads,
+    # filter_bed,
+    # filter_gff,
 
 
 rule all:
@@ -153,7 +153,7 @@ rule filter_references:
     output:
         temp(f"{datadir}{matchref}{wc_folder}" "{sample}_refs.fasta"),
     resources:
-        mem=low_memory_job,
+        mem_mb=low_memory_job,
     threads: 1
     log:
         f"{logdir}prepare_refs" "{Virus}.{segment}.{sample}.log",
@@ -193,7 +193,7 @@ if config["platform"] in ["nanopore", "iontorrent"]:
             f"{logdir}{bench}AlignMR_" "{Virus}.{segment}.{sample}.txt"
         threads: config["threads"]["Alignments"]
         resources:
-            mem=medium_memory_job,
+            mem_mb=medium_memory_job,
 
         params:
             mapthreads=config["threads"]["Alignments"] - 1,
@@ -243,7 +243,7 @@ if config["platform"] == "illumina":
             f"{logdir}{bench}" "AlignMR_{Virus}.{segment}.{sample}.log"
         threads: config["threads"]["Alignments"]
         resources:
-            mem=medium_memory_job,
+            mem_mb=medium_memory_job,
 
         params:
             mapthreads=config["threads"]["Alignments"] - 1,
@@ -284,7 +284,7 @@ rule count_mapped_reads:
         f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     threads: 1
     resources:
-        mem=low_memory_job,
+        mem_mb=low_memory_job,
     log:
         f"{logdir}CountMR_" "{Virus}.{segment}.{sample}.log",
     params:
@@ -308,7 +308,7 @@ rule filter_best_matching_ref:
         f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     threads: 1
     resources:
-        mem=low_memory_job,
+        mem_mb=low_memory_job,
     log:
         f"{logdir}FilterBR_" "{Virus}.{segment}.{sample}.log",
     params:
@@ -352,7 +352,7 @@ rule group_and_rename_refs:
         f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     threads: 1
     resources:
-        mem=low_memory_job,
+        mem_mb=low_memory_job,
     log:
         f"{logdir}GroupRefs_" "{sample}.log",
     params:
@@ -372,7 +372,7 @@ rule filter_gff:
         groupedstats=temp(f"{datadir}{matchref}" "{sample}_data1.csv"),
     threads: 1
     resources:
-        mem=low_memory_job,
+        mem_mb=low_memory_job,
     log:
         f"{logdir}FilterGFF_" "{sample}.log",
     conda:
@@ -396,7 +396,7 @@ rule touch_gff:
         groupedstats=temp(f"{datadir}{matchref}" "{sample}_data1.csv"),
     threads:1
     resources:
-        mem=low_memory_job,
+        mem_mb=low_memory_job,
     shell:
         """
         cp {input.refdata} {output.groupedstats}
@@ -487,7 +487,7 @@ rule concat_frames:
         f"{datadir}" "match_ref_results.pkl",
     threads: 1
     resources:
-        mem=low_memory_job,
+        mem_mb=low_memory_job,
     run:
         import pandas as pd
 
