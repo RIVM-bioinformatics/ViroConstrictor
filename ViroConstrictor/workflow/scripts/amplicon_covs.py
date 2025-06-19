@@ -179,7 +179,17 @@ def Find_NonOverlap(df):
         df = pd.merge(df, enddf, on="name", how="inner")
         return df
     else:
-        return pd.DataFrame(columns=["name", "leftstart", "leftend", "rightstart", "rightend", "unique_start", "unique_end"])
+        return pd.DataFrame(
+            columns=[
+                "name",
+                "leftstart",
+                "leftend",
+                "rightstart",
+                "rightend",
+                "unique_start",
+                "unique_end",
+            ]
+        )
 
 
 def avg(lst):
