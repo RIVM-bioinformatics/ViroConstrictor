@@ -3,7 +3,6 @@ import sys
 
 import pandas as pd
 from Bio import SeqIO
-from rich import print
 
 input_refs, input_stats, output_ref, output_stats, sample = sys.argv[1:]
 
@@ -25,7 +24,7 @@ for file in input_stats:
 
 df["sample"] = sample
 
-#TODO: refactor this to a more future-proof method. This is a temporary fix for the current issue and should be replaced with a method that doesn't have short-cut assumptions.
+# TODO: refactor this to a more future-proof method. This is a temporary fix for the current issue and should be replaced with a method that doesn't have short-cut assumptions.
 renamed_seqrecords = []
 if len(seqrecords) > 1:
     # more than 1 secrecord assumes segmented mode.
