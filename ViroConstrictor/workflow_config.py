@@ -128,6 +128,7 @@ class WorkflowConfig:
                 else self._set_cores(self.inputs.flags.threads)
             ),
             resources={"max_local_mem": self._get_max_local_mem()},
+            nodes=200 if self.configuration["COMPUTING"]["compmode"] == "grid" else 1,
         )
 
         self.storage_settings = StorageSettings()
@@ -143,8 +144,7 @@ class WorkflowConfig:
             conda_base_path=None,
             apptainer_prefix=(
                 Path(self.configuration["REPRODUCTION"]["container_cache_path"])
-                if self.configuration["REPRODUCTION"]["container_cache_path"]
-                is not None
+                if self.configuration["REPRODUCTION"]["repro_method"] == "containers"
                 else None
             ),
             apptainer_args=construct_container_bind_args(self.inputs.samples_dict),
@@ -212,14 +212,13 @@ class WorkflowConfig:
             force_incomplete=True,
         )
 
-        if (
-            self.deployment_settings.apptainer_prefix is not None
-            and download_containers(self.deployment_settings, self.output_settings) != 0
-        ):
-            log.error(
-                "Failed to download containers required for workflow.\nPlease check the logs and your settings for more information and try again later."
-            )
-            sys.exit(1)
+
+        if self.deployment_settings.apptainer_prefix is not None:
+            if download_containers(self.deployment_settings, self.output_settings) != 0:
+                log.error(
+                    "Failed to download containers required for workflow.\nPlease check the logs and your settings for more information and try again later."
+                )
+                sys.exit(1)
 
     def _set_cores(self, cores: int) -> int:
         available: int = multiprocessing.cpu_count()
