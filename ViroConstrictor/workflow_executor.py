@@ -7,7 +7,6 @@ from snakemake_interface_common.exceptions import WorkflowError
 from ViroConstrictor.logging import log
 from ViroConstrictor.parser import CLIparser
 from ViroConstrictor.workflow_config import WorkflowConfig
-from snakemake_interface_executor_plugins.settings import ExecutorSettingsBase
 
 
 # TODO: Modify this method to re-add remote execution settings if they are set in the CLIparser or config file.
@@ -90,7 +89,6 @@ class WorkflowExecutor:
                 execution_settings=self.workflow_config.execution_settings,
                 remote_execution_settings=self.workflow_config.remote_execution_settings,
                 scheduling_settings=self.workflow_config.scheduling_settings,
-                executor_settings=ExecutorSettingsBase()
             )
 
         # 'Forcefully' stop snakemake's logger manager
