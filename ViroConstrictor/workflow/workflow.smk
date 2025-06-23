@@ -105,6 +105,8 @@ localrules:
     concat_tsv_coverages,
     concat_amplicon_cov,
     make_pickle,
+    move_fastq,
+    create_empty_primers,
 
 
 def list_aa_result_outputs():
@@ -180,7 +182,6 @@ rule prepare_refs:
         python {params.script} {input} {output} {wildcards.RefID} > {log}
         """
 
-
 rule prepare_primers:
     input:
         prm=lambda wc: "" if SAMPLES[wc.sample]["PRIMERS"].endswith(".bed") else SAMPLES[wc.sample]["PRIMERS"],
@@ -209,7 +210,7 @@ rule prepare_primers:
             --verbose > {log}
         """
 
-ruleorder: prepare_primers > filter_primer_bed
+ruleorder: prepare_primers > filter_primer_bed > create_empty_primers
 
 rule filter_primer_bed:
     input:
@@ -232,6 +233,19 @@ rule filter_primer_bed:
         """
         python {params.script} {input.prm} {output.bed} {wildcards.RefID}
         """
+
+rule create_empty_primers:
+    output:
+        bed=touch(f"{datadir}{wc_folder}{prim}" "{sample}_primers.bed"),
+    resources:
+        mem_mb=low_memory_job,
+    log:
+        f"{logdir}prepare_primers_" "{Virus}.{RefID}.{sample}.log",
+    shell:
+        """
+        echo "Created empty primer bed file for NONE primers" > {log}
+        """
+
 
 rule prepare_gffs:
     input:
@@ -490,11 +504,19 @@ rule qc_filter:
             -h {output.html} -j {output.json} > {log} 2>&1
         """
 
+def get_primers_output(wildcards):
+    sample_primers = SAMPLES[wildcards.sample]["PRIMERS"]
+    if sample_primers == "NONE":
+        return ""
+    elif sample_primers.endswith(".bed"):
+        return rules.filter_primer_bed.output.bed
+    else:
+        return rules.prepare_primers_fasta.output.bed
 
 rule ampligone:
     input:
         fq=rules.qc_filter.output.fq,
-        pr=rules.prepare_primers.output.bed,
+        pr=lambda wc: get_primers_output(wc),
         ref=rules.prepare_refs.output,
     output:
         fq=f"{datadir}{wc_folder}{cln}{prdir}" "{sample}.fastq",
@@ -524,10 +546,10 @@ rule ampligone:
         extrasettings=lambda wc: get_preset_parameter(
             preset_name=SAMPLES[wc.sample]["PRESET"],
             parameter_name=f"AmpliGone_ExtraSettings",
-        ),
+        )
     shell:
         """
-        echo {input.pr} > {log}
+        echo "Running AmpliGone with primer file: {input.pr}" > {log}
         AmpliGone \
             -i {input.fq} \
             -ref {input.ref} -pr {input.pr} \
