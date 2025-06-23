@@ -18,6 +18,7 @@ from snakemake.api import (
     StorageSettings,
     WorkflowSettings,
 )
+from snakemake.resources import DefaultResources
 from snakemake.settings.enums import Quietness
 from snakemake_interface_executor_plugins.settings import ExecMode
 from snakemake_interface_logger_plugins.settings import (
@@ -121,6 +122,14 @@ class WorkflowConfig:
             quiet={Quietness.ALL},
         )
 
+        # TODO: set resources dynamically based on the user configuration and the possible grid flags (remote executor plugins, like LSF, SLURM or other)
+        # NOTE: current resource settings are just an example for LSF but this should be lifted to a separate function
+        default_resource_setting = DefaultResources()
+        default_resource_setting.set_resource(
+            "lsf_queue", "bio"
+        )  # this should be set dynamically based on the user config
+        # default_resource_setting.set_resource("lsf_project", "PROJECT HERE") # this should be set dynamically as well, or be left empty if no default project can be found.
+
         self.resource_settings = ResourceSettings(
             cores=(
                 300
@@ -129,6 +138,7 @@ class WorkflowConfig:
             ),
             resources={"max_local_mem": self._get_max_local_mem()},
             nodes=200 if self.configuration["COMPUTING"]["compmode"] == "grid" else 1,
+            default_resources=default_resource_setting,
         )
 
         self.storage_settings = StorageSettings()
@@ -211,7 +221,6 @@ class WorkflowConfig:
         self.dag_settings = DAGSettings(
             force_incomplete=True,
         )
-
 
         if self.deployment_settings.apptainer_prefix is not None:
             if download_containers(self.deployment_settings, self.output_settings) != 0:

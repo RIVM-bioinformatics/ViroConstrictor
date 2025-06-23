@@ -1,4 +1,3 @@
-
 from rich.console import Console
 from snakemake_interface_logger_plugins.settings import OutputSettingsLoggerInterface
 
