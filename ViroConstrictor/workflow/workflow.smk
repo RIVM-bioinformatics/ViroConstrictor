@@ -155,6 +155,7 @@ rule prepare_refs:
         f"{datadir}{wc_folder}" "{sample}_reference.fasta",
     resources: 
         mem_mb=low_memory_job,
+        runtime=55
     threads: 1
     log:
         f"{logdir}prepare_refs_" "{Virus}.{RefID}.{sample}.log",
@@ -180,6 +181,7 @@ rule prepare_primers:
         bed=f"{datadir}{wc_folder}{prim}" "{sample}_primers.bed",
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     log:
         f"{logdir}prepare_primers_" "{Virus}.{RefID}.{sample}.log",
     benchmark:
@@ -209,6 +211,7 @@ rule filter_primer_bed:
         bed=f"{datadir}{wc_folder}{prim}" "{sample}_primers.bed",
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     log:
         f"{logdir}prepare_primers_" "{Virus}.{RefID}.{sample}.log",
     benchmark:
@@ -240,6 +243,7 @@ rule prepare_gffs:
         f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     params:
         script=workflow.source_path("scripts/extract_gff.py") if (DeploymentMethod.CONDA in workflow.deployment_settings.deployment_method) is True else "/scripts/extract_gff.py",
     shell:
@@ -269,6 +273,7 @@ rule prodigal:
         f"{container_base_path}/viroconstrictor_orf_analysis_{get_hash('ORF_analysis')}.sif"
     resources:
         mem_mb=medium_memory_job,
+        runtime=55
     params:
         prodigal_method="meta",
         prodigal_outformat="gff",
@@ -305,6 +310,7 @@ if config["platform"] in ["nanopore", "iontorrent"]:
         threads: config["threads"]["QC"]
         resources:
             mem_mb=low_memory_job,
+            runtime=55
         params:
             output_dir=f"{datadir}{qc_pre}",
             script=workflow.source_path("wrappers/fastqc_wrapper.sh") if (DeploymentMethod.CONDA in workflow.deployment_settings.deployment_method) is True else "/wrappers/fastqc_wrapper.sh",
@@ -331,6 +337,7 @@ if config["platform"] in ["nanopore", "iontorrent"]:
         threads: config["threads"]["Alignments"]
         resources:
             mem_mb=medium_memory_job,
+            runtime=55
         params:
             mapthreads=config["threads"]["Alignments"] - 1,
             mapping_base_settings=p1_mapping_settings,
@@ -370,6 +377,7 @@ if config["platform"] == "illumina":
         threads: config["threads"]["QC"]
         resources:
             mem_mb=low_memory_job,
+            runtime=55
         params:
             output_dir=f"{datadir}{qc_pre}",
             script=workflow.source_path("wrappers/fastqc_wrapper.sh") if (DeploymentMethod.CONDA in workflow.deployment_settings.deployment_method) is True else "/wrappers/fastqc_wrapper.sh",
@@ -397,6 +405,7 @@ if config["platform"] == "illumina":
         threads: config["threads"]["Alignments"]
         resources:
             mem_mb=medium_memory_job,
+            runtime=55
         params:
             mapthreads=config["threads"]["Alignments"] - 1,
             mapping_additionalsettings=lambda wc: get_preset_parameter(
@@ -428,6 +437,7 @@ rule remove_adapters_p2:
     threads: config["threads"]["AdapterRemoval"]
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     params:
         script=workflow.source_path("scripts/clipper.py") if (DeploymentMethod.CONDA in workflow.deployment_settings.deployment_method) is True else "/scripts/clipper.py",
         clipper_settings=lambda wc: get_preset_parameter(
@@ -458,6 +468,7 @@ rule qc_filter:
     threads: config["threads"]["QC"]
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     params:
         score=lambda wc: get_preset_parameter(
             preset_name=SAMPLES[wc.sample]["PRESET"],
@@ -501,6 +512,7 @@ rule ampligone:
     threads: config["threads"]["PrimerRemoval"]
     resources:
         mem_mb=high_memory_job,
+        runtime=55
     params:
         amplicontype=config["amplicon_type"],
         primer_mismatch_rate=lambda wc: SAMPLES[wc.sample]["PRIMER-MISMATCH-RATE"],
@@ -545,6 +557,7 @@ rule move_fastq:
         # pr=touch(f"{datadir}{wc_folder}{prim}" "{sample}_primers.bed"),
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     shell:
         """
         cp {input} {output.fq}
@@ -568,6 +581,7 @@ rule qc_clean:
     threads: config["threads"]["QC"]
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     params:
         outdir=f"{datadir}{wc_folder}{qc_post}",
         script=workflow.source_path("wrappers/fastqc_wrapper.sh") if (DeploymentMethod.CONDA in workflow.deployment_settings.deployment_method) is True else "/wrappers/fastqc_wrapper.sh",
@@ -604,6 +618,7 @@ rule align_before_trueconsense:
     threads: config["threads"]["Alignments"]
     resources:
         mem_mb=medium_memory_job,
+        runtime=55
     params:
         mapthreads=config["threads"]["Alignments"] - 1,
         alignment_base_settings=get_alignment_flags,
@@ -647,6 +662,7 @@ rule trueconsense:
     threads: config["threads"]["Consensus"]
     resources:
         mem_mb=medium_memory_job,
+        runtime=55
     shell:
         """
         TrueConsense --input {input.bam} \
@@ -681,6 +697,7 @@ rule concat_sequences:
         f"{res}{wc_folder}consensus.fasta",
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     shell:
         "cat {input} >> {output}"
 
@@ -697,6 +714,7 @@ rule Translate_AminoAcids:
         f"{container_base_path}/viroconstrictor_orf_analysis_{get_hash('ORF_analysis')}.sif"
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     log:
         f"{logdir}Translate_AA_" "{Virus}.{RefID}.{sample}.log",
     benchmark:
@@ -749,6 +767,7 @@ rule make_pickle:
         temp(f"{datadir}sampleinfo.pkl"),
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     threads: 1
     params:
         space=lambda wc: __import__("codecs").encode(
@@ -771,6 +790,7 @@ rule concat_aminoacids:
         list_aa_result_outputs(),
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     conda:
         f"{conda_envs}Scripts.yaml"
     container:
@@ -794,6 +814,7 @@ rule vcf_to_tsv:
     threads: config["threads"]["Index"]
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     log:
         f"{logdir}" "vcf_to_tsv_{Virus}.{RefID}.{sample}.log",
     params:
@@ -813,6 +834,7 @@ rule concat_tsv_coverages:
         f"{res}{wc_folder}mutations.tsv",
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     shell:
         """
         echo -e 'Sample\tReference_ID\tPosition\tReference_Base\tVariant_Base\tDepth' > {output}
@@ -828,6 +850,7 @@ rule get_breadth_of_coverage:
         temp(f"{datadir}{wc_folder}{boc}" "{sample}.tsv"),
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     conda:
         f"{conda_envs}Scripts.yaml"
     container:
@@ -849,6 +872,7 @@ rule concat_boc:
         f"{res}{wc_folder}Width_of_coverage.tsv",
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     shell:
         """
         echo -e "Sample_name\tWidth_at_mincov_1\tWidth_at_mincov_5\tWidth_at_mincov_10\tWidth_at_mincov_50\tWidth_at_mincov_100" > {output}
@@ -868,6 +892,7 @@ rule calculate_amplicon_cov:
         f"{logdir}{bench}" "calculate_amplicon_cov_{Virus}.{RefID}.{sample}.txt"
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     conda:
         f"{conda_envs}Scripts.yaml"
     container:
@@ -895,6 +920,7 @@ rule concat_amplicon_cov:
         f"{res}{wc_folder}Amplicon_coverage.csv",
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     conda:
         f"{conda_envs}Scripts.yaml"
     container:
@@ -959,6 +985,7 @@ rule multiqc_report:
         f"{logdir}{bench}MultiQC_report.txt"
     resources:
         mem_mb=high_memory_job,
+        runtime=55
     params:
         conffile=workflow.source_path("files/multiqc_config.yaml") if (DeploymentMethod.CONDA in workflow.deployment_settings.deployment_method) is True else "/files/multiqc_config.yaml",
         outdir=res,

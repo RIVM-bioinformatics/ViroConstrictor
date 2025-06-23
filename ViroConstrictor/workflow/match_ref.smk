@@ -154,6 +154,7 @@ rule filter_references:
         temp(f"{datadir}{matchref}{wc_folder}" "{sample}_refs.fasta"),
     resources:
         mem_mb=low_memory_job,
+        runtime=55 # TODO: this just sets a default runtime of 55 minutes. However this should be dynamic just like the memory.
     threads: 1
     log:
         f"{logdir}prepare_refs" "{Virus}.{segment}.{sample}.log",
@@ -194,6 +195,7 @@ if config["platform"] in ["nanopore", "iontorrent"]:
         threads: config["threads"]["Alignments"]
         resources:
             mem_mb=medium_memory_job,
+            runtime=55
 
         params:
             mapthreads=config["threads"]["Alignments"] - 1,
@@ -244,6 +246,7 @@ if config["platform"] == "illumina":
         threads: config["threads"]["Alignments"]
         resources:
             mem_mb=medium_memory_job,
+            runtime=55
 
         params:
             mapthreads=config["threads"]["Alignments"] - 1,
@@ -285,6 +288,7 @@ rule count_mapped_reads:
     threads: 1
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     log:
         f"{logdir}CountMR_" "{Virus}.{segment}.{sample}.log",
     params:
@@ -309,6 +313,7 @@ rule filter_best_matching_ref:
     threads: 1
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     log:
         f"{logdir}FilterBR_" "{Virus}.{segment}.{sample}.log",
     params:
@@ -353,6 +358,7 @@ rule group_and_rename_refs:
     threads: 1
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     log:
         f"{logdir}GroupRefs_" "{sample}.log",
     params:
@@ -373,6 +379,7 @@ rule filter_gff:
     threads: 1
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     log:
         f"{logdir}FilterGFF_" "{sample}.log",
     conda:
@@ -397,6 +404,7 @@ rule touch_gff:
     threads:1
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     shell:
         """
         cp {input.refdata} {output.groupedstats}
@@ -418,6 +426,7 @@ rule filter_fasta2bed:
     threads: 1
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     log:
         f"{logdir}Fasta2Bed_" "{sample}.log",
     params:
@@ -445,6 +454,7 @@ rule filter_bed:
     threads: 1
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     log:
         f"{logdir}FilterBed_" "{sample}.log",
     params:
@@ -468,6 +478,7 @@ rule touch_primers:
     threads: 1
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     shell:
         """
         cp {input.refdata} {output.groupedstats}
@@ -488,6 +499,7 @@ rule concat_frames:
     threads: 1
     resources:
         mem_mb=low_memory_job,
+        runtime=55
     run:
         import pandas as pd
 
