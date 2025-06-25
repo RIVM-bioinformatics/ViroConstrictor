@@ -158,7 +158,9 @@ def main() -> NoReturn:
         parsed_input = process_match_ref(parsed_input)
 
     snakemake_run_details = GetSnakemakeRunDetails(
-        inputs_obj=parsed_input, samplesheetfilename="samples_main"
+        inputs_obj=parsed_input,
+        samplesheetfilename="samples_main",
+        scheduler=parsed_input.scheduler,
     )
 
     # if configured to use containers, check if they are available and download them if necessary
@@ -187,7 +189,9 @@ def main() -> NoReturn:
             jobname=snakemake_run_details.snakemake_run_conf["jobname"],
             latency_wait=snakemake_run_details.snakemake_run_conf["latency-wait"],
             dryrun=snakemake_run_details.snakemake_run_conf["dryrun"],
-            force_incomplete=snakemake_run_details.snakemake_run_conf["force-incomplete"],
+            force_incomplete=snakemake_run_details.snakemake_run_conf[
+                "force-incomplete"
+            ],
             configfiles=[
                 WriteYaml(
                     snakemake_run_details.snakemake_run_parameters,
@@ -221,7 +225,9 @@ def main() -> NoReturn:
             drmaa=snakemake_run_details.snakemake_run_conf["drmaa"],
             drmaa_log_dir=snakemake_run_details.snakemake_run_conf["drmaa-log-dir"],
             dryrun=snakemake_run_details.snakemake_run_conf["dryrun"],
-            force_incomplete=snakemake_run_details.snakemake_run_conf["force-incomplete"],
+            force_incomplete=snakemake_run_details.snakemake_run_conf[
+                "force-incomplete"
+            ],
             configfiles=[
                 WriteYaml(
                     snakemake_run_details.snakemake_run_parameters,
