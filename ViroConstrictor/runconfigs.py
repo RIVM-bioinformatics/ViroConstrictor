@@ -10,6 +10,7 @@ from typing import Any
 
 import yaml
 
+from ViroConstrictor.check_scheduler import Scheduler
 from ViroConstrictor.parser import CLIparser
 
 
@@ -39,10 +40,15 @@ def WriteYaml(data: dict, filepath: str) -> str:
 
 class GetSnakemakeRunDetails:
     def __init__(
-        self, inputs_obj: CLIparser, samplesheetfilename: str, outdirOverride: str = ""
+        self,
+        inputs_obj: CLIparser,
+        samplesheetfilename: str,
+        scheduler: Scheduler,
+        outdirOverride: str = "",
     ) -> None:
         self.inputs = inputs_obj
         self.samplesheetfilename = samplesheetfilename
+        self.scheduler = scheduler
         self.outdirOverride = outdirOverride
         self._snakemake_run_config()
         self._snakemake_run_params()
@@ -71,10 +77,14 @@ class GetSnakemakeRunDetails:
 
         if compmode == "grid":
             queuename = configuration["COMPUTING"]["queuename"]
+            drmaa_cmds = {
+                Scheduler.LSF: f' -q {queuename} -n {{threads}} -R "span[hosts=1]" -M {{resources.mem_mb}}',
+                Scheduler.SLURM: f" -p {queuename} -c {{threads}} --mem={{resources.mem_mb}}",
+            }
             base_config.update(
                 {
                     "cores": 300,
-                    "drmaa": f' -q {queuename} -n {{threads}} -R "span[hosts=1]" -M {{resources.mem_mb}}',
+                    "drmaa": drmaa_cmds[self.scheduler],
                     "drmaa-log-dir": "logs/drmaa",
                 }
             )

@@ -3,6 +3,7 @@ import multiprocessing
 import os
 import pathlib
 import re
+import shutil
 import sys
 from typing import Any, Hashable, List
 
@@ -11,6 +12,7 @@ import pandas as pd
 import rich
 
 from ViroConstrictor import __prog__, __version__
+from ViroConstrictor.check_scheduler import Scheduler, determine_scheduler
 from ViroConstrictor.functions import FlexibleArgFormatter, RichParser
 from ViroConstrictor.logging import log, setup_logger
 from ViroConstrictor.samplesheet import GetSamples
@@ -32,6 +34,7 @@ class CLIparser:
         self.user_config = ReadConfig(
             pathlib.Path("~/.ViroConstrictor_defaultprofile.ini").expanduser()
         )
+        self.scheduler = self._determine_scheduler(self.flags.get("scheduler", "none"))
         self.flags.presets = self.flags.disable_presets is False
         self.samples_df = pd.DataFrame()
         self.samples_dict: dict[Hashable, Any] = {}
@@ -538,6 +541,76 @@ class CLIparser:
             snakefile,
             match_ref_snakefile,
         )
+
+    def _determine_scheduler(self, scheduler_str: str = "") -> Scheduler:
+        """
+        Determine the scheduler type from a string.
+        It handles four options:
+        1. If a string is provided, it converts it to a Scheduler enum member.
+        2. It checks the user configuration for the scheduler.
+        3. It checks the environment variables for the scheduler.
+        4. If no string or environment variables is found, it checks using drmaa (if available).
+        If no scheduler is found, it returns Scheduler.NONE.
+        """
+        log.debug("Determining scheduler...")
+        # non_valid_warning =  "[yellow]Invalid scheduler string provided: %s, using non-grid mode[/yellow]", x
+
+        def scheduler_by_env() -> Scheduler | None:
+            """
+            Determine the scheduler type from the environment variable.
+            """
+            if shutil.which("sbatch") or "SLURM_JOB_ID" in os.environ:
+                return Scheduler.SLURM
+            elif shutil.which("bsub") or "LSB_JOBID" in os.environ:
+                return Scheduler.LSF
+            else:  # This should not return Scheduler.NONE, because then the 3rd option in determine_scheduler would never be used.
+                return None
+
+        # 1. From argument
+        if scheduler_str:
+            if not Scheduler.is_valid(scheduler_str):
+                log.warning(
+                    "Invalid scheduler string: '%s', using non-grid mode", scheduler_str
+                )
+                return Scheduler.NONE
+            log.debug("Scheduler determined from string: '%s'", scheduler_str)
+            return Scheduler.from_string(scheduler_str)
+
+        # 2. From user configuration
+        config_scheduler = self.user_config.get("scheduler", "")
+        if config_scheduler:
+            if not Scheduler.is_valid(config_scheduler):
+                log.warning(
+                    "Invalid scheduler in config: '%s', using non-grid mode",
+                    config_scheduler,
+                )
+                return Scheduler.NONE
+            log.debug("Scheduler determined from config: '%s'", config_scheduler)
+            return Scheduler.from_string(config_scheduler)
+
+        # 3. from environment variables
+        scheduler = scheduler_by_env()
+        if scheduler is not None:
+            log.debug("Scheduler determined from environment: '%s'", scheduler.name)
+            return scheduler
+
+        # 4. from drmaa (if available)
+        try:
+            # The DRMAA library is a wrapper, and fails to import if the C library is not installed (libdrmaa.so).
+            import drmaa
+
+            with drmaa.Session() as session:
+                scheduler_name = session.drmsInfo
+                log.debug("Scheduler determined from DRMAA: '%s'", scheduler_name)
+                return Scheduler.from_string(scheduler_name)
+
+        except Exception as e:  # pylint: disable=broad-except
+            log.debug(f"DRMAA not available: {e}")
+
+        log.info(
+            "[yellow]No scheduler detected, running in non-grid mode. Please check your configuration or environment variables.[/yellow]"
+        )
+        return Scheduler.NONE
 
 
 def samplesheet_enforce_absolute_paths(df: pd.DataFrame) -> pd.DataFrame:
