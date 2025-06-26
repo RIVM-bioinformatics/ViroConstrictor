@@ -1,4 +1,5 @@
 import sys
+
 from Bio import SeqIO
 
 _, input, output, reference_id = sys.argv

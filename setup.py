@@ -29,13 +29,13 @@ Please make sure SnakeMake is installed properly before installing ViroConstrict
 """
     )
 
-if vv.parse(snakemake.__version__) < vv.parse("7.15.2"):
+if vv.parse(snakemake.__version__) < vv.parse("9.5.0"):
     sys.exit(
         f"""
 The installed SnakeMake version is older than the minimally required version:
 
 Installed SnakeMake version: {snakemake.__version__}
-Required SnakeMake version: 7.15.2 or later
+Required SnakeMake version: 9.5.0 or later
 
 Please update SnakeMake to a supported version and try again
 """
@@ -68,7 +68,8 @@ setup(
             "workflow/files/*",
             "workflow/scripts/match_ref/*",
             "workflow/*",
-        ]
+        ],
+        "snakemake_logger_plugin_viroconstrictor": ["*.py"],
     },
     install_requires=[
         "urllib3==1.26.*",
@@ -100,3 +101,24 @@ setup(
         "Intended Audience :: Science/Research",
     ],
 )
+
+
+# setup(
+#     name="ViroConstrictor-logger-plugin-rich",
+#     description="Rich logger plugin for ViroConstrictor",
+#     author="Florian Zwagemaker",
+#     author_email="ids-bioinformatics@rivm.nl",
+#     license="AGPLv3",
+#     version=__version__,
+#     packages=find_packages(),
+#     python_requires=">=3.10",
+#     package_data={"snakemake-logger-plugin-viroconstrictor": ["*.py"]},
+#     install_requires=[
+#         "snakemake-interface-logger-plugins==1.2.*",
+#         "rich==13.*",
+#     ],
+#     keywords=[],
+#     include_package_data=True,
+#     zip_safe=False,
+
+# )
