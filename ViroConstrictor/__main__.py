@@ -129,7 +129,7 @@ def show_preset_warnings(
             log.warn(f"{w}")
 
 
-def main() -> NoReturn:
+def main(args: list[str] | None = None, settings: str | None = None) -> NoReturn:
     """
     ViroConstrictor starting point
     --> Fetch and parse arguments
@@ -138,8 +138,12 @@ def main() -> NoReturn:
     --> Change working directories and make necessary local files for snakemake
     --> Run snakemake with appropriate settings
     """
+    if args is None:
+        args = sys.argv[1:]
 
-    parsed_input = CLIparser(input_args=sys.argv[1:])
+    if settings is None:
+        settings = "~/.ViroConstrictor_defaultprofile.ini"
+    parsed_input = CLIparser(input_args=args, settings_path=settings)
 
     preset_fallback_warnings, preset_score_warnings = get_preset_warning_list(
         parsed_input.samples_df
