@@ -135,7 +135,7 @@ def show_preset_warnings(
             log.warn(f"{w}")
 
 
-def main() -> NoReturn:
+def main(args: list[str] | None = None, settings: str | None = None) -> NoReturn:
     """
     ViroConstrictor starting point
     --> Fetch and parse arguments
@@ -144,8 +144,12 @@ def main() -> NoReturn:
     --> Change working directories and make necessary local files for snakemake
     --> Run snakemake with appropriate settings
     """
+    if args is None:
+        args = sys.argv[1:]
 
-    parsed_input = CLIparser(input_args=sys.argv[1:])
+    if settings is None:
+        settings = "~/.ViroConstrictor_defaultprofile.ini"
+    parsed_input = CLIparser(input_args=args, settings_path=settings)
 
     preset_fallback_warnings, preset_score_warnings = get_preset_warning_list(
         parsed_input.samples_df
@@ -187,7 +191,9 @@ def main() -> NoReturn:
             jobname=snakemake_run_details.snakemake_run_conf["jobname"],
             latency_wait=snakemake_run_details.snakemake_run_conf["latency-wait"],
             dryrun=snakemake_run_details.snakemake_run_conf["dryrun"],
-            force_incomplete=snakemake_run_details.snakemake_run_conf["force-incomplete"],
+            force_incomplete=snakemake_run_details.snakemake_run_conf[
+                "force-incomplete"
+            ],
             configfiles=[
                 WriteYaml(
                     snakemake_run_details.snakemake_run_parameters,
@@ -221,7 +227,9 @@ def main() -> NoReturn:
             drmaa=snakemake_run_details.snakemake_run_conf["drmaa"],
             drmaa_log_dir=snakemake_run_details.snakemake_run_conf["drmaa-log-dir"],
             dryrun=snakemake_run_details.snakemake_run_conf["dryrun"],
-            force_incomplete=snakemake_run_details.snakemake_run_conf["force-incomplete"],
+            force_incomplete=snakemake_run_details.snakemake_run_conf[
+                "force-incomplete"
+            ],
             configfiles=[
                 WriteYaml(
                     snakemake_run_details.snakemake_run_parameters,
