@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.4](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.5.3...v1.5.4) (2025-06-26)
+
+
+### Bug Fixes
+
+* correctly handle situation when --primers NONE is given in combination with --match-ref ([fa64ada](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/fa64ada024ff43fcbe5fe1606d2a32440c3917c8))
+
 ## [1.5.3](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.5.2...v1.5.3) (2025-05-20)
 
 
