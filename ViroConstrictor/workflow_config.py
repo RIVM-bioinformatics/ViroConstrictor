@@ -223,7 +223,7 @@ class WorkflowConfig:
         )
 
         if self.deployment_settings.apptainer_prefix is not None:
-            if download_containers(self.deployment_settings, self.output_settings) != 0:
+            if download_containers(self.deployment_settings.apptainer_prefix, self.output_settings.dryrun) != 0:
                 log.error(
                     "Failed to download containers required for workflow.\nPlease check the logs and your settings for more information and try again later."
                 )
