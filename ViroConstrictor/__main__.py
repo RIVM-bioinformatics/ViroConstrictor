@@ -11,6 +11,7 @@ https://github.com/RIVM-bioinformatics/ViroConstrictor
 import sys
 from itertools import zip_longest
 from typing import Literal, NoReturn
+import logging
 
 import pandas as pd
 
@@ -123,10 +124,10 @@ def show_preset_warnings(
     """
     if warnings and not disabled:
         for w in warnings:
-            log.warn(f"{w}")
+            logging.warning(f"{w}")
     if fallbacks and not disabled:
         for w in fallbacks:
-            log.warn(f"{w}")
+            logging.warning(f"{w}")
 
 
 def main(args: list[str] | None = None, settings: str | None = None) -> NoReturn:
