@@ -2,8 +2,8 @@ import hashlib
 import os
 import subprocess
 from typing import Dict, List
+from pathlib import Path
 
-from snakemake.api import DeploymentSettings, OutputSettings
 
 from ViroConstrictor import __prog__
 from ViroConstrictor.logging import log
@@ -186,14 +186,14 @@ def containerization_installed() -> bool:
     return os.system("which singularity") == 0
 
 
-def containers_to_download(config: DeploymentSettings) -> List[str]:
+def containers_to_download(apptainer_path: Path) -> List[str]:
     """
     Returns a list of containers that need to be downloaded for the workflow.
 
     Parameters
     ----------
-    config : Dict[str, Any]
-        A dictionary containing the configuration parameters.
+    apptainer_path : Path
+        The path to the Apptainer container directory.
 
     Returns
     -------
@@ -210,11 +210,11 @@ def containers_to_download(config: DeploymentSettings) -> List[str]:
         required_containers.append(f"{__prog__}_{recipe_basename}_{val}".lower())
 
     # check if the folder exists, if not create it
-    if config.apptainer_prefix is not None and not os.path.exists(
-        config.apptainer_prefix
+    if apptainer_path is not None and not os.path.exists(
+        apptainer_path
     ):
-        os.makedirs(config.apptainer_prefix, exist_ok=True)
-    containers_present = os.listdir(config.apptainer_prefix)
+        os.makedirs(apptainer_path, exist_ok=True)
+    containers_present = os.listdir(apptainer_path)
 
     # remove the .sif extension from the container names
     containers_present = [item.split(".")[0] for item in containers_present]
@@ -251,15 +251,17 @@ def containerization_executable() -> str:
 
 
 def download_containers(
-    config: DeploymentSettings, output_settings: OutputSettings, verbose=False
+    apptainer_path: Path, dryrun: bool = False, verbose=False
 ) -> int:
     """
     Download containers specified in the configuration.
 
     Parameters
     ----------
-    config : Dict[str, Any]
-        The configuration containing container information.
+    apptainer_path : Path
+        The path to the Apptainer container directory.
+    dryrun : bool, optional
+        If True, only simulate the download without actually performing it. Defaults to False.
     verbose : bool, optional
         Whether to display verbose output. Defaults to False.
 
@@ -268,10 +270,10 @@ def download_containers(
     int
         0 if all containers were downloaded successfully, 1 otherwise.
     """
-    to_download = containers_to_download(config)
+    to_download = containers_to_download(apptainer_path)
     to_download = [x.rsplit("_", 1)[0] + ":" + x.rsplit("_", 1)[1] for x in to_download]
 
-    if output_settings.dryrun:
+    if dryrun:
         log.info(
             f"Container(s) [magenta]{', '.join(to_download)}[/magenta] will be downloaded"
         )
@@ -285,7 +287,7 @@ def download_containers(
         )
         executable = containerization_executable()
         status = subprocess.call(
-            f"{executable} pull --dir {config.apptainer_prefix} docker://{upstream_registry}/{container}",
+            f"{executable} pull --dir {apptainer_path} docker://{upstream_registry}/{container}",
             shell=True,
             stderr=subprocess.PIPE if verbose is False else None,
             stdout=subprocess.PIPE if verbose is False else None,
