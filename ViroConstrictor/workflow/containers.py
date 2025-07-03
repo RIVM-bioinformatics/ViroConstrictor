@@ -1,9 +1,8 @@
 import hashlib
 import os
 import subprocess
-from typing import Dict, List
 from pathlib import Path
-
+from typing import Dict, List
 
 from ViroConstrictor import __prog__
 from ViroConstrictor.logging import log
@@ -210,9 +209,7 @@ def containers_to_download(apptainer_path: Path) -> List[str]:
         required_containers.append(f"{__prog__}_{recipe_basename}_{val}".lower())
 
     # check if the folder exists, if not create it
-    if apptainer_path is not None and not os.path.exists(
-        apptainer_path
-    ):
+    if apptainer_path is not None and not os.path.exists(apptainer_path):
         os.makedirs(apptainer_path, exist_ok=True)
     containers_present = os.listdir(apptainer_path)
 

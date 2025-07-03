@@ -8,10 +8,10 @@ https://github.com/RIVM-bioinformatics/ViroConstrictor
 
 # pylint: disable=C0103
 
+import logging
 import sys
 from itertools import zip_longest
 from typing import Literal, NoReturn
-import logging
 
 import pandas as pd
 
