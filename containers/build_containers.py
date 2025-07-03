@@ -78,9 +78,10 @@ if __name__ == "__main__":
         # after the container is built, the built container will be saved in the docker artifact database (local).
         # This is necessary to transform the container from docker format to apptainer format in a separate script.
         # the container file will not be pushed to the upstream registry yet, this will be done in a separate script after all containers have been built and tested.
-        with tempfile.NamedTemporaryFile(
-            mode="w", delete=False
-        ) as tmp, tempfile.TemporaryDirectory() as tmpdir:
+        with (
+            tempfile.NamedTemporaryFile(mode="w", delete=False) as tmp,
+            tempfile.TemporaryDirectory() as tmpdir,
+        ):
             with open(associated_container_dock_file, "r") as f:
                 tmp.write(f.read())
                 tmp.write(
