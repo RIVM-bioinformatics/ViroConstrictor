@@ -218,7 +218,7 @@ if config["platform"] in ["nanopore", "iontorrent"]:
             ),
             samtools_extra_filters=lambda wc: get_preset_parameter(
                 preset_name=SAMPLES[wc.sample]["PRESET"],
-                parameter_name="Samtools_Filters",
+                parameter_name=f"Samtools_Filters_{config['platform']}",
             ),
         shell:
             """
