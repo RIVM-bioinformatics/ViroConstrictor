@@ -161,7 +161,7 @@ with flags.output as fileout:
     bamfile = pysam.AlignmentFile(flags.input, "rb", threads=flags.threads)
 
     reflength = bamfile.lengths[0]
-    minimal_read_length = int(flags.min_aligned_length)
+    minimal_read_length = int(reflength * flags.min_aligned_length)
     maximum_read_length = int(
         reflength if flags.max_aligned_length == 0 else flags.max_aligned_length
     )

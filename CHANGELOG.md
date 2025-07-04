@@ -1,5 +1,129 @@
 # Changelog
 
+## [1.5.4](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.5.3...v1.5.4) (2025-06-26)
+
+
+### Bug Fixes
+
+* correctly handle situation when --primers NONE is given in combination with --match-ref ([fa64ada](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/fa64ada024ff43fcbe5fe1606d2a32440c3917c8))
+
+## [1.5.3](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.5.2...v1.5.3) (2025-05-20)
+
+
+### Features
+
+* add optimized preset for Paramyxoviridae virus family. Combined Measles and Mumps into single preset ([043e6c1](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/043e6c1e50245b5c9427f59c91812c61eb7ed22e))
+* add preset for hepatoviridae analysis ([b6ef384](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/b6ef3842f02128bd48611872aa3f81e6520b9edf))
+
+
+### Bug Fixes
+
+* correction of swapped setting in paramyxoviridae & hepatovirus presets ([de2db8a](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/de2db8a9ed0c168cf32f74f62987a771ecdeb267))
+
+
+### Documentation
+
+* add "fragmented" mode to documentation ([f6e9bba](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/f6e9bbaf2748b97bfcbddf97db955b29a81c554e))
+* add apptainer to the container config doc ([1977437](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/19774375c4c0306f1ada9b8047821ef1700b3af3))
+* add authors :) ([1977437](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/19774375c4c0306f1ada9b8047821ef1700b3af3))
+* Add the Paramyxoviridae and Hepatovirus presets to the documentation including aliases ([de2db8a](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/de2db8a9ed0c168cf32f74f62987a771ecdeb267))
+* spell and grammar checked all docs. ([e431d80](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/e431d8020815dc92fc30aa27819fc4cdd14ddd27))
+
+
+### Miscellaneous Chores
+
+* empty commit ([8d62c92](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/8d62c92e7ed99d919658265a727d7733ec110ead))
+
+## [1.5.2](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.5.1...v1.5.2) (2025-04-02)
+
+
+### Dependencies
+
+* update AmpliGone to version 2.0.1 ([af85890](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/af85890925d667c14fa469800396e47d19a4a781))
+* update biopython to version 1.84 ([af85890](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/af85890925d667c14fa469800396e47d19a4a781))
+* update fastqc to version 0.12.1 ([af85890](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/af85890925d667c14fa469800396e47d19a4a781))
+* update mappy/minimap to version 2.28 ([af85890](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/af85890925d667c14fa469800396e47d19a4a781))
+* update openjdk to version 11.0.23 ([af85890](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/af85890925d667c14fa469800396e47d19a4a781))
+* update pandas to lenient version 2.2 ([af85890](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/af85890925d667c14fa469800396e47d19a4a781))
+* update samtools to version 1.21 ([af85890](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/af85890925d667c14fa469800396e47d19a4a781))
+
+## [1.5.1](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.5.0...v1.5.1) (2025-03-06)
+
+
+### Bug Fixes
+
+* clipper filter minimum aligned read length should be a fraction of the reflength instead of a direct input ([3942d99](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/3942d99d607281b85cda29cac6395b57f1d06070))
+* suppress snakemake 7 html report licence download error ([5efd010](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/5efd010da8185bd7b2a7b4f9a8050838e739891b))
+
+## [1.5.0](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.6...v1.5.0) (2025-01-24)
+
+### Features
+
+* Add container support to main workflow (f455445)
+* Add containerization support to workflow (c29495f)
+* Add new global userprofile section for reproducibility method (conda or containers) (e67bb27)
+
+
+### Bug Fixes
+
+* Properly handle the floating point comparison to check the PRESET_SCORE (f4410bf)
+* Create an empty {sample}_primers.bed file when no input primers were given (f7c90e3)
+* Do not download containers in dryrun mode (4f6e45d)
+* Resolve snakemake AmbiguousRuleException for certain combinations of primer inputs (5cf5fbd)
+
+
+### Build
+
+* Add base container definitions (836daa3)
+
+
+### Continuous Integration
+
+* Add GitHub actions workflow for automatic building of containers (41bd864)
+* Change upstream registry (ac8a3ac)
+* Update GitHub Actions workflows for container publishing (9341f95)
+* Add listing of pip modules as a test (b5fed9f)
+* Update workflow rules due to deprecation (30be0df)
+
+
+### Dependencies
+
+* Ensure conda strict channel compatibility (527ad85)
+* Limit mamba version to <2.0.0 (941c19b)
+* Set flexible pyopenssl dependency to version 24.x.x (0dc3d58)
+
+
+### Documentation
+
+* Add docstrings to all functions in containers.py (8a5fdfe)
+* Enhance documentation with reproducibility settings and multi-reference analysis guidance (71b39ea)
+
+## [1.4.6](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.5...v1.4.6) (2024-10-08)
+
+
+### Bug Fixes
+
+* properly solve DAG workflow for nonsegmented matched-ref samples ([02a821a](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/02a821a44c3ed3741c65825789ef25ad3e2093c1))
+
+## [1.4.5](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.4...v1.4.5) (2024-09-25)
+
+
+### Bug Fixes
+
+* incorrect renaming of matched references in non-segmented mode ([c42740e](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/c42740e8a3893f5bd682cbef0edb9a47eefb19fd))
+
+## [1.4.4](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.3...v1.4.4) (2024-09-16)
+
+
+### Bug Fixes
+
+* remove `intel` channel from selfupdater repositories ([43fe508](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/43fe50812ecb90d693892735431c3fe725159e50))
+
+
+### Dependencies
+
+* reorder and add details to the conda dependency files for compatibility with strict_channel_priority in conda config ([dc9b993](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/dc9b993fecb3d8840de72cebe82061692ce47269))
+
 ## [1.4.3](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.4.2...v1.4.3) (2024-07-03)
 
 

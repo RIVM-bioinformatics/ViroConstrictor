@@ -1,10 +1,12 @@
 name: ORF_analysis
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
   - nodefaults
 dependencies:
-  - prodigal==2.6.3
-  - python>=3.10
-  - pandas
-  - aminoextract==0.3.1
+  - conda-forge::python>=3.10
+  - conda-forge::pandas==2.0.*
+  - conda-forge::biopython==1.79
+
+  - bioconda::prodigal==2.6.3
+  - bioconda::aminoextract==0.3.1

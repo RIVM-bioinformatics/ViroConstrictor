@@ -22,6 +22,7 @@ upstream_api_headers = {
 }
 
 
+# TODO: break up this script into smaller functions
 if __name__ == "__main__":
     print("Start of container building process for ViroConstrictor")
     recipe_hashes = fetch_hashes()
@@ -32,7 +33,7 @@ if __name__ == "__main__":
         recipe_basename = os.path.basename(recipe).replace(".yaml", "")
         container_basename = f"{__prog__}_{recipe_basename}".lower()
 
-        associated_container_def_file = os.path.join(
+        associated_container_dock_file = os.path.join(
             base_path_to_container_defs, f"{recipe_basename}.dockerfile"
         )
         upstream_registry_url = f"{upstream_registry}/{recipe_basename}:{VersionHash}"
@@ -57,7 +58,6 @@ if __name__ == "__main__":
             ]
             # flatten the list of tags
             tags = [tag for sublist in tags for tag in sublist]
-            print(tags)
 
         if VersionHash in tags:
             print(
@@ -69,18 +69,20 @@ if __name__ == "__main__":
             f"Container '{container_basename}' with hash '{VersionHash}' does not exist in the upstream registry"
         )
         print(
-            f"Starting Apptainer build process for container '{container_basename}:{VersionHash}'"
+            f"Starting Docker build process for container '{container_basename}:{VersionHash}'"
         )
 
-        # create a temporary file to write the container definition to, copy the contents of {recipe_basename}.def to it and then append the labels section to it including the version hash
-        # then use the temporary file as the container definition file for the apptainer build process
-        # the apptainer build process will build the .sif container file also in a temporary directory
-        # after the container is built, the built container file will be moved to the current working directory and the temporary directory will be deleted.
+        # create a temporary file to write the container definition to, copy the contents of {recipe_basename}.dockerfile to it and then append the labels section to it including the version hash
+        # then use the temporary file as the container definition file for the docker build process
+        # the docker build process will build the container file also in a temporary directory
+        # after the container is built, the built container will be saved in the docker artifact database (local).
+        # This is necessary to transform the container from docker format to apptainer format in a separate script.
         # the container file will not be pushed to the upstream registry yet, this will be done in a separate script after all containers have been built and tested.
-        with tempfile.NamedTemporaryFile(
-            mode="w", delete=False
-        ) as tmp, tempfile.TemporaryDirectory() as tmpdir:
-            with open(associated_container_def_file, "r") as f:
+        with (
+            tempfile.NamedTemporaryFile(mode="w", delete=False) as tmp,
+            tempfile.TemporaryDirectory() as tmpdir,
+        ):
+            with open(associated_container_dock_file, "r") as f:
                 tmp.write(f.read())
                 tmp.write(
                     f"""
