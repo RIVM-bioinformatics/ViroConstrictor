@@ -28,7 +28,7 @@ def Make_frames(files):
     frames = []
     for i in files:
         df = pd.read_csv(i, sep=",")
-        df.set_index("name", inplace=True)
+        df.set_index("amplicon_names", inplace=True)
         frames.append(df)
     return frames
 

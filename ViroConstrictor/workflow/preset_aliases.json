@@ -15,5 +15,24 @@
         "INFLUENZA_A",
         "INFLUENZA_B",
         "INF"
+    ],
+    "PARAMYXOVIRIDAE": [
+        "MEASLES",
+        "MEV",
+        "MEASLES_VIRUS",
+        "MUMPS",
+        "MUV",
+        "MUMPS_VIRUS",
+        "PARAMYXOVIRUS",
+        "PARAMYXOVIRIDAE",
+        "MORBILLIVIRUS",
+        "RUBULAVIRINAE",
+        "ORTHORUBULAVIRUS",
+    ],
+    "HEPATOVIRUS": [
+        "HEPATOVIRUS",
+        "HEPATITIS_A",
+        "HEPATITIS_A_VIRUS",
+        "HAV"
     ]
 }

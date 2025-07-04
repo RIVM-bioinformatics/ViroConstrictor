@@ -1,31 +1,29 @@
 # Formatting your inputs
 
-For optimal results and the best analysis of your data, it is important that the various inputs you may provide are formatted correctly.  
-Formatting of the input is particularly of importance for the input primers file, the reference fasta, and the GFF file.
+For optimal results and accurate data analysis, it is important that the various inputs you provide are formatted correctly. Input formatting is particularly crucial for the primer file, the reference FASTA, and the GFF file.
 
-When formatting the inputs please note that ViroConstrictor does not support circular reference information (and related information). Analysing a circular virus, such as HPV, is possible as long as the analysis itself happens with a 'linear' input reference and matching primers/GFF.
+Please note that ViroConstrictor does not support circular reference data. Analysing a circular virus, such as HPV, is possible as long as the analysis uses a linear input reference with matching primers and GFF.
 
 ---
 
 ## Formatting your input primers
 
-ViroConstrictor has two options for primer input: [BED](https://en.wikipedia.org/wiki/BED_(file_format)) and [fasta](https://en.wikipedia.org/wiki/FASTA_format).  
-The formatting of the input primer names may directly impact your analysis results.
+ViroConstrictor accepts two primer input formats: [BED](https://en.wikipedia.org/wiki/BED_(file_format)) and [FASTA](https://en.wikipedia.org/wiki/FASTA_format). The formatting of primer names directly impacts your analysis results.
 
-### Primers in Fasta format
+### Primers in FASTA format
 
-In order to get optimal results, please make sure the fasta headers in your fasta file with primers are formatted properly.  
+For optimal results, ensure that the FASTA headers in your primer file are formatted correctly.
 
-Please make sure the fasta headers for your primers are formatted according the following format:  
+The FASTA headers for your primers should follow this format:  
 `>{primer-name}_{primer-number}_{orientation}`
 
-It's important that the primers which together form a single amplicon have the same primer-name and number.  
+It is important that primers forming a single amplicon share the same primer name and number.
 
-Orientation keywords for forward primers are: *"LEFT"*/*"PLUS"*/*"POSITIVE"*/*"FORWARD"*  
-Orientation keywords for reverse primers are: *"RIGHT"*/*"MINUS"*/*"NEGATIVE"*/*"REVERSE"*
+Orientation keywords for forward primers include: *"LEFT"*, *"PLUS"*, *"POSITIVE"*, and *"FORWARD"*.  
+Orientation keywords for reverse primers include: *"RIGHT"*, *"MINUS"*, *"NEGATIVE"*, and *"REVERSE"*.
 
 !!! example "Example of formatted primer names from the ArticV3 SARS-CoV-2 sequencing protocol"
-    ```Markdown
+    ```markdown
     >nCoV-2019_1_LEFT  
     ACCAACCAACTTTCGATCTCTTGT  
     >nCoV-2019_1_RIGHT  
@@ -36,14 +34,14 @@ Orientation keywords for reverse primers are: *"RIGHT"*/*"MINUS"*/*"NEGATIVE"*/*
     TAAGGATCAGTGCCAAGCTCGT
     ```
 
-If your protocol has alternative primers then make sure the fasta header contains the "alt" keyword in the following format:
+If your protocol includes alternative primers, ensure the FASTA header contains the "alt" keyword in the following format:
 
 `>{primer-name}_{primer-number}_alt_{orientation}`  
 
-Please make sure the "alt" keyword is in the middle and not at the end of the fasta header.
+The "alt" keyword must appear in the middle and not at the end of the header.
 
 !!! example "Example of formatted primer names from the ArticV3 SARS-CoV-2 sequencing protocol with alternative primers included"
-    ```Markdown
+    ```markdown
     >nCoV-2019_13_LEFT  
     TCGCACAAATGTCTACTTAGCTGT  
     >nCoV-2019_13_RIGHT  
@@ -66,55 +64,48 @@ Please make sure the "alt" keyword is in the middle and not at the end of the fa
     ACTGTAGCTGGCACTTTGAGAGA
     ```
 
-
 ### Primers in BED format
 
-As with the primers in fasta format, it is important the primer name is formatted properly in the given BED file. This is mainly important for determining which primers together form a single amplicon.  
-When using a BED file, the 'strand' column is leading in determining the orientation of the primer.
+As with FASTA, it is important that the primer name in the BED file is formatted properly to determine which primers form a single amplicon. The 'strand' column is used to determine the orientation of the primer.
 
-Please make sure of the following:
+Please ensure the following:
 
-* The content of first column, described as the reference ID column underneath, must contain the identifier matching the identifier of your reference fasta.
+* The first column (the reference ID column) must contain the identifier that matches the identifier in your reference FASTA.
 
-* The fourth column, being the primer name, follows the following format:  
-`{primer-name}_{primer-number}_{orientation}`  
+* The fourth column, which contains the primer name, should follow this format:  
+  `{primer-name}_{primer-number}_{orientation}`  
     
     !!! info ""
-        if your protocol has alternative primers then make sure the primer name contains the "alt" keyword as follows:  
+        If your protocol includes alternative primers, ensure the primer name includes the "alt" keyword as follows:  
         `{primer-name}_{primer-number}_alt_{orientation}`
 
-* The sixth colum, being the "strand" column, indicates the orientation of the primer.  
-`+` being forward and `-` being reverse, relative to the reference.
+* The sixth column (the strand column) indicates the primer orientation:  
+  `+` for forward and `-` for reverse, relative to the reference.
 
-The table below gives you an impression what your BED file with primer information should look like, please note however that a real BED file does not have headers. 
+The table below illustrates what your BED file with primer information should look like (note that a real BED file does not include headers):
 
-| Reference ID 	| start coordinate  	| stop coordinate  	| primer name  	        | score | strand    |
-|------------	|-----	                |-----	            |-------------------	|----	|-------    |
-| MN908947.3 	| 25  	                | 50  	            | ncov-2019_1_LEFT  	| . 	| + 	    |
-| MN908947.3 	| 324 	                | 344 	            | ncov-2019_2_LEFT  	| . 	| + 	    |
-| MN908947.3 	| 408 	                | 431 	            | ncov-2019_1_RIGHT 	| . 	| - 	    |
-| MN908947.3 	| 644 	                | 666 	            | ncov-2019_3_LEFT  	| . 	| + 	    |
-| MN908947.3 	| 705 	                | 727 	            | ncov-2019_2_RIGHT 	| . 	| - 	    |
+| Reference ID | start coordinate | stop coordinate | primer name        | score | strand |
+|--------------|------------------|-----------------|--------------------|-------|--------|
+| MN908947.3   | 25               | 50              | ncov-2019_1_LEFT   | .     | +      |
+| MN908947.3   | 324              | 344             | ncov-2019_2_LEFT   | .     | +      |
+| MN908947.3   | 408              | 431             | ncov-2019_1_RIGHT  | .     | -      |
+| MN908947.3   | 644              | 666             | ncov-2019_3_LEFT   | .     | +      |
+| MN908947.3   | 705              | 727             | ncov-2019_2_RIGHT  | .     | -      |
 
+## Formatting your input reference FASTA
 
-## Formatting your input reference fasta
+The formatting of your reference FASTA is straightforward, with no strict formatting requirements. However, ensure that your reference sequence has a proper identifier in the FASTA header, as this identifier is used during analysis.
 
-The formatting of your reference fasta is pretty straightforward, and there are no breaking requirements.  
+Nucleotide ambiguity codes in your reference FASTA are supported but generally discouraged, as they can negatively affect the primer removal process. You will receive a warning during pre-processing if ambiguous nucleotides are detected in your reference sequence.
 
-Make sure however that your reference sequence has a proper identifier in the fasta header as this will be used during analysis.
-
-Nucleotide ambiguity codes in your reference fasta are supported but generally discouraged as this can have a negative effect on the primer removal process. You will get a warning during pre-processing if ambiguity nucleotides were found in your reference sequence.  
-
-If you provide a reference fasta containing multiple sequences then analysis will be performed for every individual sequence in your input reference fasta, this will be split based on the reference identifier.  
-This can be used in analysis of (for example) segmented viruses such as Influenza.
-
+If your reference FASTA contains multiple sequences, analysis will be performed for each individual sequence, split based on the reference identifier. This feature can be useful for analysing segmented viruses such as Influenza.
 
 ## Formatting your input GFF
 
-Formatting of your input GFF is usually optional and very minimal.  
+Formatting the input GFF is usually optional and minimal.
 
-If you wish to have proper extraction and translation of aminoacids from the generated consensus sequence, then please make sure the input GFF has either a "Name" or an "ID" value in the attributes column of your input GFF.
+If you want proper extraction and translation of amino acids from the generated consensus sequence, ensure that the input GFF includes either a "Name" or an "ID" attribute in the attributes column.
 
-For example: `Name="Nucleocapsid"` or `ID="N"` in the attributes column of your input GFF.
+For example: `Name="Nucleocapsid"` or `ID="N"` in the GFF attributes column.
 
-This information will be used to group the extracted aminoacid sequences of samples together during analysis.
+This information is used to group the extracted amino acid sequences from samples during analysis.
