@@ -9,7 +9,9 @@
             "Minimap2_AlignmentParams_nanopore": "",
             "Minimap2_AlignmentParams_illumina": "",
             "Minimap2_AlignmentParams_iontorrent": "",
-            "Samtools_Filters": "-q 10"
+            "Samtools_Filters_nanopore": "-q 10",
+            "Samtools_Filters_illumina": "-q 10",
+            "Samtools_Filters_iontorrent": "-q 10"
         },
         "STAGE_MAIN": {
             "Minimap2_Settings": "",
@@ -25,12 +27,12 @@
             "AmpliGone_AlignmentPreset_nanopore": "-ap map-ont",
             "AmpliGone_AlignmentPreset_illumina": "-ap sr",
             "AmpliGone_AlignmentPreset_iontorrent": "-ap sr",
-            "Ampligone_AlignmentMatrix_nanopore": "",
-            "Ampligone_AlignmentMatrix_illumina": "",
-            "Ampligone_AlignmentMatrix_iontorrent": "",
-            "AmpliGone_Settings_nanopore": "",
-            "AmpliGone_Settings_illumina": "",
-            "AmpliGone_Settings_iontorrent": "",
+            "AmpliGone_AlignmentMatrix_nanopore": "",
+            "AmpliGone_AlignmentMatrix_illumina": "",
+            "AmpliGone_AlignmentMatrix_iontorrent": "",
+            "AmpliGone_ExtraSettings_nanopore": "",
+            "AmpliGone_ExtraSettings_illumina": "",
+            "AmpliGone_ExtraSettings_iontorrent": "",
             "Clipper_FilterParams_nanopore": "",
             "Clipper_FilterParams_illumina": "",
             "Clipper_FilterParams_iontorrent": "",
@@ -59,13 +61,20 @@
         "STAGE_MATCHREF": {
         },
         "STAGE_MAIN": {
-            "Minimap2_AlignmentParams_nanopore": "-E2,0 -O8,24 -A4 -B4"
+            "Minimap2_AlignmentParams_nanopore": "-E2,0 -O8,24 -A4 -B4",
+            "AmpliGone_AlignmentMatrix_nanopore": "-as match=4 mismatch=4 gap_o1=8 gap_e1=2 gap_o2=24 gap_e2=0",
+            "AmpliGone_ExtraSettings_nanopore": "--virtual-primers",
+            "AmpliGone_ExtraSettings_illumina": "--virtual-primers",
+            "AmpliGone_ExtraSettings_iontorrent": "--virtual-primers"
         }
     },
     "INFLUENZA": {
         "STAGE_GLOBAL": {
         },
         "STAGE_MATCHREF": {
+            "Samtools_Filters_nanopore": "-q 5",
+            "Samtools_Filters_illumina": "-q 5",
+            "Samtools_Filters_iontorrent": "-q 5"
         },
         "STAGE_MAIN": {
             "Minimap2_Settings": "--frag=no",
@@ -75,6 +84,42 @@
             "Clipper_FilterParams_nanopore": "--exclude-spliced --spliced-length-threshold 50 --min-aligned-length 0.5",
             "Clipper_FilterParams_illumina": "--exclude-spliced --spliced-length-threshold 50",
             "Clipper_FilterParams_iontorrent": "--exclude-spliced --spliced-length-threshold 50 --min-aligned-length 0.5"
+        }
+    },
+    "PARAMYXOVIRIDAE": {
+        "STAGE_GLOBAL": {
+        },
+        "STAGE_MATCHREF": {
+        },
+        "STAGE_MAIN": {
+            "Minimap2_Settings": "--frag=no",
+            "Minimap2_RawAlignParams_nanopore": "--splice",
+            "Minimap2_RawAlignParams_illumina": "--splice",
+            "Minimap2_RawAlignParams_iontorrent": "--splice",
+            "Clipper_FilterParams_nanopore": "--exclude-spliced --spliced-length-threshold 21",
+            "Clipper_FilterParams_illumina": "--exclude-spliced --spliced-length-threshold 21",
+            "Clipper_FilterParams_iontorrent": "--exclude-spliced --spliced-length-threshold 21",
+            "AmpliGone_ExtraSettings_nanopore": "--virtual-primers",
+            "AmpliGone_ExtraSettings_illumina": "--virtual-primers",
+            "AmpliGone_ExtraSettings_iontorrent": "--virtual-primers"
+        }
+    },
+    "HEPATOVIRUS": {
+        "STAGE_GLOBAL": {
+        },
+        "STAGE_MATCHREF": {
+        },
+        "STAGE_MAIN": {
+            "Minimap2_Settings": "--frag=no",
+            "Minimap2_RawAlignParams_nanopore": "--splice",
+            "Minimap2_RawAlignParams_illumina": "--splice",
+            "Minimap2_RawAlignParams_iontorrent": "--splice",
+            "Clipper_FilterParams_nanopore": "--exclude-spliced --spliced-length-threshold 200",
+            "Clipper_FilterParams_illumina": "--exclude-spliced --spliced-length-threshold 200",
+            "Clipper_FilterParams_iontorrent": "--exclude-spliced --spliced-length-threshold 200",
+            "AmpliGone_ExtraSettings_nanopore": "--virtual-primers",
+            "AmpliGone_ExtraSettings_illumina": "--virtual-primers",
+            "AmpliGone_ExtraSettings_iontorrent": "--virtual-primers"
         }
     }
 }

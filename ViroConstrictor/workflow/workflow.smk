@@ -547,7 +547,7 @@ def get_primers_output(wildcards):
     elif sample_primers.endswith(".bed"):
         return rules.filter_primer_bed.output.bed
     else:
-        return rules.prepare_primers_fasta.output.bed
+        return rules.prepare_primers.output.bed
 
 rule ampligone:
     input:
@@ -582,7 +582,7 @@ rule ampligone:
         ),
         extrasettings=lambda wc: get_preset_parameter(
             preset_name=SAMPLES[wc.sample]["PRESET"],
-            parameter_name=f"AmpliGone_ExtraSettings",
+            parameter_name=f"AmpliGone_ExtraSettings_{config['platform']}",
         )
     shell:
         """
@@ -788,7 +788,7 @@ rule Translate_AminoAcids:
     benchmark:
         f"{logdir}{bench}Translate_AA_" "{Virus}.{RefID}.{sample}.txt"
     params:
-        feature_type=lambda wcc: get_preset_parameter(
+        feature_type=lambda wc: get_preset_parameter(
             preset_name=SAMPLES[wc.sample]["PRESET"],
             parameter_name="AminoExtract_FeatureType"
         ),
