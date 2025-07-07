@@ -22,6 +22,8 @@ if "--snakefile" in sys.argv:
 import ViroConstrictor
 
 
+VC_STAGE='MAIN'
+
 SAMPLES = {}
 with open(config["sample_sheet"]) as sample_sheet_file:
     SAMPLES = yaml.safe_load(sample_sheet_file)
@@ -301,7 +303,7 @@ rule prodigal:
 
 
 if config["platform"] in ["nanopore", "iontorrent"]:
-    p1_mapping_settings = (
+    base_mm2_preset = (
         "-ax sr" if config["platform"] == "iontorrent" else "-ax map-ont"
     )
 
@@ -352,26 +354,38 @@ if config["platform"] in ["nanopore", "iontorrent"]:
             runtime=55
         params:
             mapthreads=config["threads"]["Alignments"] - 1,
-            mapping_base_settings=p1_mapping_settings,
-            mapping_additionalsettings=lambda wc: get_preset_parameter(
+            mm2_alignment_preset=base_mm2_preset,
+            minimap2_base_setting=lambda wc: get_preset_parameter(
                 preset_name=SAMPLES[wc.sample]["PRESET"],
-                parameter_name="RawAlign_AdditionalSettings",
+                parameter_name="Minimap2_Settings_Base",
             ),
-            BAMfilters=lambda wc: get_preset_parameter(
+            minimap2_extra_setting=lambda wc: get_preset_parameter(
                 preset_name=SAMPLES[wc.sample]["PRESET"],
-                parameter_name="BaseBAMFilters",
+                parameter_name="Minimap2_Settings",
+            ),
+            minimap2_alignmentparams=lambda wc: get_preset_parameter(
+                preset_name=SAMPLES[wc.sample]["PRESET"],
+                parameter_name=f"Minimap2_RawAlignParams_{config['platform']}",
+            ),
+            samtools_standard_filters=lambda wc: get_preset_parameter(
+                preset_name=SAMPLES[wc.sample]["PRESET"],
+                parameter_name="Samtools_Filters_Base",
+            ),
+            samtools_extra_filters=lambda wc: get_preset_parameter(
+                preset_name=SAMPLES[wc.sample]["PRESET"],
+                parameter_name=f"Samtools_Filters_{config['platform']}",
             ),
         shell:
             """
-            minimap2 {params.mapping_base_settings} {params.mapping_additionalsettings} -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
-            samtools view -@ {threads} {params.BAMfilters} -uS 2>> {log} |\
+            minimap2 {params.mm2_alignment_preset} {params.minimap2_base_setting} {params.minimap2_extra_setting} {params.minimap2_alignmentparams} -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
+            samtools view -@ {threads} {params.samtools_standard_filters} {params.samtools_extra_filters} -uS 2>> {log} |\
             samtools sort -o {output.bam} >> {log} 2>&1
             samtools index {output.bam} >> {log} 2>&1
             """
 
 
 if config["platform"] == "illumina":
-
+    base_mm2_preset = "-ax sr"
     rule qc_raw:
         input:
             lambda wildcards: SAMPLES[wildcards.sample][wildcards.read],
@@ -420,18 +434,31 @@ if config["platform"] == "illumina":
             runtime=55
         params:
             mapthreads=config["threads"]["Alignments"] - 1,
-            mapping_additionalsettings=lambda wc: get_preset_parameter(
+            mm2_alignment_preset=base_mm2_preset,
+            minimap2_base_setting=lambda wc: get_preset_parameter(
                 preset_name=SAMPLES[wc.sample]["PRESET"],
-                parameter_name="RawAlign_AdditionalSettings",
+                parameter_name="Minimap2_Settings_Base",
             ),
-            BAMfilters=lambda wc: get_preset_parameter(
+            minimap2_extra_setting=lambda wc: get_preset_parameter(
                 preset_name=SAMPLES[wc.sample]["PRESET"],
-                parameter_name="BaseBAMFilters",
+                parameter_name="Minimap2_Settings",
+            ),
+            minimap2_alignmentparams=lambda wc: get_preset_parameter(
+                preset_name=SAMPLES[wc.sample]["PRESET"],
+                parameter_name=f"Minimap2_RawAlignParams_{config['platform']}",
+            ),
+            samtools_standard_filters=lambda wc: get_preset_parameter(
+                preset_name=SAMPLES[wc.sample]["PRESET"],
+                parameter_name="Samtools_Filters_Base",
+            ),
+            samtools_extra_filters=lambda wc: get_preset_parameter(
+                preset_name=SAMPLES[wc.sample]["PRESET"],
+                parameter_name=f"Samtools_Filters_{config['platform']}",
             ),
         shell:
             """
-            minimap2 -ax sr {params.mapping_additionalsettings} -t {params.mapthreads} {input.ref} {input.fq1} {input.fq2} 2>> {log} |\
-            samtools view -@ {threads} {params.BAMfilters} -uS 2>> {log} |\
+            minimap2 {params.mm2_alignment_preset} {params.minimap2_base_setting} {params.minimap2_extra_setting} {params.minimap2_alignmentparams} -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
+            samtools view -@ {threads} {params.samtools_standard_filters} {params.samtools_extra_filters} -uS 2>> {log} |\
             samtools sort -o {output.bam} >> {log} 2>&1
             samtools index {output.bam} >> {log} 2>&1
             """
@@ -452,13 +479,13 @@ rule remove_adapters_p2:
         runtime=55
     params:
         script=workflow.source_path("scripts/clipper.py") if (DeploymentMethod.CONDA in workflow.deployment_settings.deployment_method) is True else "/scripts/clipper.py",
-        clipper_settings=lambda wc: get_preset_parameter(
+        clipper_filterparams=lambda wc: get_preset_parameter(
             preset_name=SAMPLES[wc.sample]["PRESET"],
-            parameter_name=f"ClipperSettings_{config['platform']}",
+            parameter_name=f"Clipper_FilterParams_{config['platform']}",
         ),
     shell:
         """
-        python {params.script} --input {input} --output {output} {params.clipper_settings} --threads {threads}
+        python {params.script} --input {input} --output {output} {params.clipper_filterparams} --threads {threads}
         """
 
 
@@ -482,26 +509,35 @@ rule qc_filter:
         mem_mb=low_memory_job,
         runtime=55
     params:
-        score=lambda wc: get_preset_parameter(
+        adapter_removal_settings=lambda wc: get_preset_parameter(
             preset_name=SAMPLES[wc.sample]["PRESET"],
-            parameter_name=f"Fastp_PhredScore_cutoff_{config['platform']}",
+            parameter_name=f"FastP_AdapterRemoval_Settings_{config['platform']}",
         ),
-        size=lambda wc: get_preset_parameter(
+        per_read_qc_settings=lambda wc: get_preset_parameter(
             preset_name=SAMPLES[wc.sample]["PRESET"],
-            parameter_name=f"Fastp_WindowSize_{config['platform']}",
+            parameter_name=f"Fastp_PerReadQC_Settings_{config['platform']}",
         ),
-        length=lambda wc: get_preset_parameter(
+        slidingwindow_qc_settings=lambda wc: get_preset_parameter(
             preset_name=SAMPLES[wc.sample]["PRESET"],
-            parameter_name="Fastp_MinReadLength",
+            parameter_name=f"Fastp_QC_SlidingWindow_Settings_{config['platform']}",
         ),
+        lowcomplexity_filter_settings=lambda wc: get_preset_parameter(
+            preset_name=SAMPLES[wc.sample]["PRESET"],
+            parameter_name=f"Fastp_LowComplexityFilter_Settings_{config['platform']}",
+        ),
+        minlength_filter_settings=lambda wc: get_preset_parameter(
+            preset_name=SAMPLES[wc.sample]["PRESET"],
+            parameter_name=f"Fastp_MinReadLength_Settings_{config['platform']}",
+        )
     shell:
         """
         fastp --thread {threads} -i {input} \
-            -A -Q --cut_right \
-            --cut_right_mean_quality {params.score} \
-            --cut_right_window_size {params.size} \
-            -l {params.length} -o {output.fq} \
-            -h {output.html} -j {output.json} > {log} 2>&1
+            {params.adapter_removal_settings} \
+            {params.per_read_qc_settings} \
+            {params.slidingwindow_qc_settings} \
+            {params.lowcomplexity_filter_settings} \
+            {params.minlength_filter_settings} \
+            -o {output.fq} -h {output.html} -j {output.json} > {log} 2>&1
         """
 
 def get_primers_output(wildcards):
@@ -511,7 +547,7 @@ def get_primers_output(wildcards):
     elif sample_primers.endswith(".bed"):
         return rules.filter_primer_bed.output.bed
     else:
-        return rules.prepare_primers_fasta.output.bed
+        return rules.prepare_primers.output.bed
 
 rule ampligone:
     input:
@@ -546,7 +582,7 @@ rule ampligone:
         ),
         extrasettings=lambda wc: get_preset_parameter(
             preset_name=SAMPLES[wc.sample]["PRESET"],
-            parameter_name=f"AmpliGone_ExtraSettings",
+            parameter_name=f"AmpliGone_ExtraSettings_{config['platform']}",
         )
     shell:
         """
@@ -641,19 +677,31 @@ rule align_before_trueconsense:
         runtime=55
     params:
         mapthreads=config["threads"]["Alignments"] - 1,
-        alignment_base_settings=get_alignment_flags,
-        alignment_additional_settings=lambda wc: get_preset_parameter(
+        mm2_alignment_preset=get_alignment_flags,
+        minimap2_base_setting=lambda wc: get_preset_parameter(
             preset_name=SAMPLES[wc.sample]["PRESET"],
-            parameter_name=f"CleanAlign_AdditionalSettings_{config['platform']}",
+            parameter_name="Minimap2_Settings_Base",
         ),
-        BAMfilters=lambda wc: get_preset_parameter(
+        minimap2_extra_setting=lambda wc: get_preset_parameter(
             preset_name=SAMPLES[wc.sample]["PRESET"],
-            parameter_name=f"BaseBAMFilters",
+            parameter_name="Minimap2_Settings",
+        ),
+        minimap2_alignmentparams=lambda wc: get_preset_parameter(
+            preset_name=SAMPLES[wc.sample]["PRESET"],
+            parameter_name=f"Minimap2_AlignmentParams_{config['platform']}",
+        ),
+        samtools_standard_filters=lambda wc: get_preset_parameter(
+            preset_name=SAMPLES[wc.sample]["PRESET"],
+            parameter_name="Samtools_Filters_Base",
+        ),
+        samtools_extra_filters=lambda wc: get_preset_parameter(
+            preset_name=SAMPLES[wc.sample]["PRESET"],
+            parameter_name=f"Samtools_Filters_{config['platform']}",
         ),
     shell:
         """
-        minimap2 {params.alignment_base_settings} {params.alignment_additional_settings} -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
-        samtools view -@ {threads} {params.BAMfilters} -uS 2>> {log} |\
+        minimap2 {params.mm2_alignment_preset} {params.minimap2_base_setting} {params.minimap2_extra_setting} {params.minimap2_alignmentparams} -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
+        samtools view -@ {threads} {params.samtools_standard_filters} {params.samtools_extra_filters} -uS 2>> {log} |\
         samtools sort -o {output.bam} >> {log} 2>&1
         samtools index {output.bam} >> {log} 2>&1
         """
@@ -740,10 +788,17 @@ rule Translate_AminoAcids:
     benchmark:
         f"{logdir}{bench}Translate_AA_" "{Virus}.{RefID}.{sample}.txt"
     params:
-        feature_type="all",
+        feature_type=lambda wc: get_preset_parameter(
+            preset_name=SAMPLES[wc.sample]["PRESET"],
+            parameter_name="AminoExtract_FeatureType"
+        ),
+        aminoextract_settings=lambda wc: get_preset_parameter(
+            preset_name=SAMPLES[wc.sample]["PRESET"],
+            parameter_name=f"AminoExtract_Settings",
+        ),
     shell:
         """
-        AminoExtract -i {input.seq} -gff {input.gff} -o {output} -ft {params.feature_type} -n {wildcards.sample} --keep-gaps >> {log} 2>&1
+        AminoExtract -i {input.seq} -gff {input.gff} -o {output} -ft {params.feature_type} -n {wildcards.sample} {params.aminoextract_settings} >> {log} 2>&1
         """
 
 
