@@ -188,6 +188,7 @@ class WorkflowConfig:
             "computing_execution": self.configuration["COMPUTING"]["compmode"],
             "max_local_mem": self._get_max_local_mem(),
             "platform": self.inputs.flags.platform,
+            'unidirectional': self.inputs.flags.unidirectional if self.inputs.flags.platform == "illumina" else True,
             "amplicon_type": self.inputs.flags.amplicon_type,
             "outdirOverride": self.outdir_override,
             "threads": {

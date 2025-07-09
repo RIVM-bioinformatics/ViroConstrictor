@@ -302,9 +302,10 @@ rule prodigal:
         """
 
 
-if config["platform"] in ["nanopore", "iontorrent"]:
+if config["platform"] in ["nanopore", "iontorrent"] or (
+    config["platform"] == "illumina" and config["unidirectional"] is True):
     base_mm2_preset = (
-        "-ax sr" if config["platform"] == "iontorrent" else "-ax map-ont"
+        "-ax sr" if config["platform"] in ["iontorrent", "illumina"] else "-ax map-ont"
     )
 
     rule qc_raw:
@@ -384,7 +385,7 @@ if config["platform"] in ["nanopore", "iontorrent"]:
             """
 
 
-if config["platform"] == "illumina":
+if config["platform"] == "illumina" and config["unidirectional"] is False:
     base_mm2_preset = "-ax sr"
     rule qc_raw:
         input:
@@ -1009,17 +1010,22 @@ rule concat_amplicon_cov:
 
 
 def construct_MultiQC_input(_wildcards):
-    if config["platform"] == "nanopore" or config["platform"] == "iontorrent":
-        pre = expand(
-            f"{datadir}{qc_pre}" "{sample}_fastqc.zip",
-            sample=SAMPLES,
-        )
+    pre = []
+    if config["platform"] in ["nanopore", "iontorrent"]:
+        pre = expand(f"{datadir}{qc_pre}" "{sample}_fastqc.zip", sample=SAMPLES)
     elif config["platform"] == "illumina":
-        pre = expand(
-            f"{datadir}{qc_pre}" "{sample}_{read}_fastqc.zip",
-            sample=SAMPLES,
-            read="R1 R2".split(),
-        )
+        if config["unidirectional"] is True:
+            pre.extend(
+                expand(f"{datadir}{qc_pre}" "{sample}_fastqc.zip", sample=SAMPLES)
+            )
+        else:
+            pre.extend(
+                expand(
+                    f"{datadir}{qc_pre}" "{sample}_{read}_fastqc.zip",
+                    sample=SAMPLES,
+                    read=["R1", "R2"],
+                )
+            )
     else:
         raise ValueError(
             f"Platform {config['platform']} not recognised. Choose one of [illumina, nanopore, iontorrent]."

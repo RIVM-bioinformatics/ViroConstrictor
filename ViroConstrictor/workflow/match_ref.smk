@@ -172,9 +172,10 @@ rule filter_references:
         """
 
 
-if config["platform"] in ["nanopore", "iontorrent"]:
+if config["platform"] in ["nanopore", "iontorrent"] or (
+    config["platform"] == "illumina" and config["unidirectional"] is True):
     base_mm2_preset = (
-        "-ax sr" if config["platform"] == "iontorrent" else "-ax map-ont"
+        "-ax sr" if config["platform"] in ["iontorrent", "illumina"] else "-ax map-ont"
     )
 
     rule align_to_refs:
@@ -229,7 +230,7 @@ if config["platform"] in ["nanopore", "iontorrent"]:
             """
 
 
-if config["platform"] == "illumina":
+if config["platform"] == "illumina" and config["unidirectional"] is False:
     base_mm2_preset = "-ax sr"
     rule align_to_refs:
         input:

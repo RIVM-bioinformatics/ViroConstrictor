@@ -293,6 +293,14 @@ class CLIparser:
             metavar="N",
             help="Maximum number of mismatches allowed in the primer sequences during primer coordinate search. Use 0 for exact primer matches\nDefault is 3.",
         )
+        
+        optional_args.add_argument(
+            "--unidirectional",
+            "-uni",
+            action="store_true",
+            default=False,
+            help="Use this flag to indicate that the (illumina) sequencing data is unidirectional (i.e. only R1 reads are available). This will cause the pipeline to not consider R2 reads for the analysis.\nCan only be combined with the illumina platform.",
+        )
 
         optional_args.add_argument(
             "--disable-presets",
@@ -973,6 +981,9 @@ def sampledir_to_df(
     frame = pd.DataFrame.from_dict(sampledict, orient="index")
     if platform == "illumina":
         frame.index.rename("SAMPLE", inplace=True)
+        # If only R1 exists, rename it to INPUTFILE
+        if set(frame.columns) == {"R1"}:
+            frame.rename(columns={"R1": "INPUTFILE"}, inplace=True)
         return frame
     if platform in {"nanopore", "iontorrent"}:
         frame.index.rename("SAMPLE", inplace=True)
