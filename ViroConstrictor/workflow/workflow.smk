@@ -458,7 +458,7 @@ if config["platform"] == "illumina" and config["unidirectional"] is False:
             ),
         shell:
             """
-            minimap2 {params.mm2_alignment_preset} {params.minimap2_base_setting} {params.minimap2_extra_setting} {params.minimap2_alignmentparams} -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
+            minimap2 {params.mm2_alignment_preset} {params.minimap2_base_setting} {params.minimap2_extra_setting} {params.minimap2_alignmentparams} -t {params.mapthreads} {input.ref} {input.fq1} {input.fq2} 2>> {log} |\
             samtools view -@ {threads} {params.samtools_standard_filters} {params.samtools_extra_filters} -uS 2>> {log} |\
             samtools sort -o {output.bam} >> {log} 2>&1
             samtools index {output.bam} >> {log} 2>&1

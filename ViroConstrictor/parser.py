@@ -293,7 +293,7 @@ class CLIparser:
             metavar="N",
             help="Maximum number of mismatches allowed in the primer sequences during primer coordinate search. Use 0 for exact primer matches\nDefault is 3.",
         )
-        
+
         optional_args.add_argument(
             "--unidirectional",
             "-uni",
