@@ -161,7 +161,7 @@ def main(args: list[str] | None = None, settings: str | None = None) -> NoReturn
     status: bool = False
 
     status, used_workflow_config = run_snakemake_workflow(
-        inputs_obj=parsed_input, stage="MAIN"
+        inputs_obj=parsed_input, stage="MAIN", scheduler=parsed_input.scheduler
     )
 
     # if used_workflow_config.output_settings.dryrun is False and status is True:
