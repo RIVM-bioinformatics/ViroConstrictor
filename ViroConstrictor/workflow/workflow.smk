@@ -233,6 +233,30 @@ rule filter_primer_bed:
         python {params.script} {input.prm} {output.bed} {wildcards.RefID}
         """
 
+rule split_genbank:
+    input:
+        genbank=lambda wc: SAMPLES[wc.sample]["GENBANK"],
+    output:
+        ref=f"{datadir}{wc_folder}" "{sample}_reference.fasta",
+        gff=f"{datadir}{wc_folder}" "{sample}_features.gff",
+    resources:
+        mem_mb=low_memory_job,
+    log:
+        f"{logdir}split_genbank_" "{Virus}.{RefID}.{sample}.log",
+    benchmark:
+        f"{logdir}{bench}split_genbank_" "{Virus}.{RefID}.{sample}.txt"
+    conda:
+        f"{conda_envs}genbank.yaml"
+    container:
+        f"{config['container_cache']}/viroconstrictor_genbank_{get_hash('genbank')}.sif"
+    params:
+        script=srcdir("scripts/genbank.py") if config["use-conda"] is True and config["use-singularity"] is False else "/scripts/genbank.py",
+    shell:
+        """
+        python {params.script} {input.genbank} 
+        """
+
+
 rule prepare_gffs:
     input:
         feats=lambda wc: file if (file := SAMPLES[wc.sample]["FEATURES"]) else "",
