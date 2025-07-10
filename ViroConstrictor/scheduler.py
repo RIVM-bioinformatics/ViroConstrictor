@@ -38,7 +38,9 @@ class Scheduler(Enum):
     @classmethod
     def is_valid(cls, scheduler_str: str) -> bool:
         """Check if the given string is a valid scheduler."""
-        return any(scheduler_str.lower() in scheduler.value for scheduler in cls)
+        return any(
+            scheduler_str.lower().strip() in scheduler.value for scheduler in cls
+        )
 
     @classmethod
     def _scheduler_from_argument(
@@ -76,7 +78,7 @@ class Scheduler(Enum):
         return None
 
     @classmethod
-    def _from_env(cls, log: Logger) -> Optional["Scheduler"]:
+    def _scheduler_from_environment(cls, log: Logger) -> Optional["Scheduler"]:
         if shutil.which("sbatch") or "SLURM_JOB_ID" in os.environ:
             log.debug("Scheduler found in environment: SLURM")
             return cls.SLURM
@@ -87,7 +89,7 @@ class Scheduler(Enum):
         return None
 
     @classmethod
-    def _from_drmaa(cls, log: Logger) -> Optional["Scheduler"]:
+    def _scheduler_from_drmaa(cls, log: Logger) -> Optional["Scheduler"]:
         try:
             import drmaa  # pylint: disable=import-outside-toplevel
 
@@ -119,12 +121,12 @@ class Scheduler(Enum):
                 log.debug("Scheduler selected from config: '%s'", scheduler.name)
                 return scheduler
 
-        scheduler = cls._from_env(log)
+        scheduler = cls._scheduler_from_environment(log)
         if scheduler is not None:
             log.debug("Scheduler selected from environment: '%s'", scheduler.name)
             return scheduler
 
-        scheduler = cls._from_drmaa(log)
+        scheduler = cls._scheduler_from_drmaa(log)
         if scheduler is not None:
             log.debug("Scheduler selected from DRMAA: '%s'", scheduler.name)
             return scheduler
