@@ -5,6 +5,7 @@ import shutil
 from configparser import ConfigParser
 from enum import Enum
 from logging import Logger
+from typing import Optional
 
 
 class Scheduler(Enum):
@@ -40,80 +41,96 @@ class Scheduler(Enum):
         return any(scheduler_str.lower() in scheduler.value for scheduler in cls)
 
     @classmethod
-    def determine_scheduler(
-        cls, scheduler_str: str, user_config: ConfigParser, log: Logger
-    ) -> "Scheduler":
-        """
-        Determine the scheduler type from a string.
-        It handles four options:
-        1. If a string is provided, it converts it to a Scheduler enum member.
-        2. It checks the user configuration for the scheduler. (if provided)
-        3. It checks the environment variables for the scheduler.
-        4. If no string or environment variables is found, it checks using drmaa (if available).
-        If no scheduler is found, it returns Scheduler.LOCAL.
-        """
-
-        def _scheduler_by_env() -> Scheduler | None:
-            """
-            Determine the scheduler type from the environment variable.
-            """
-            if shutil.which("sbatch") or "SLURM_JOB_ID" in os.environ:
-                return Scheduler.SLURM
-            if shutil.which("bsub") or "LSB_JOBID" in os.environ:
-                return Scheduler.LSF
-            else:  # This should not return Scheduler.NONE, because then the 3rd option in determine_scheduler would never be used.
-                return None
-
-        log.debug("Determining scheduler...")
-        scheduler: Scheduler | None
-
-        # 1. From argument
+    def _scheduler_from_argument(
+        cls, scheduler_str: str, log: Logger
+    ) -> Optional["Scheduler"]:
         if scheduler_str:
-            if not Scheduler.is_valid(scheduler_str):
+            if not cls.is_valid(scheduler_str):
                 log.warning(
-                    "Invalid scheduler string: '%s', using non-grid mode", scheduler_str
+                    "Invalid scheduler string: '%s', using non-grid mode",
+                    scheduler_str,
                 )
-                return Scheduler.LOCAL
-            log.debug("Scheduler determined from string: '%s'", scheduler_str)
-            scheduler = Scheduler.from_string(scheduler_str)
-            if scheduler == Scheduler.AUTO:
+                return cls.LOCAL
+            scheduler = cls.from_string(scheduler_str)
+            if scheduler == cls.AUTO:
                 log.debug("Scheduler set to AUTO, trying to determine automatically")
-            else:
-                log.debug("Scheduler set to '%s'", scheduler.name)
-                return scheduler
+                return None
+            log.debug("Scheduler determined from string: '%s'", scheduler_str)
+            return scheduler
+        return None
 
-        # 2. From user configuration
+    @classmethod
+    def _scheduler_from_config(
+        cls, user_config: ConfigParser, log: Logger
+    ) -> Optional["Scheduler"]:
         config_scheduler = user_config["COMPUTING"].get("scheduler", "")
         if config_scheduler:
-            if not Scheduler.is_valid(config_scheduler):
+            if not cls.is_valid(config_scheduler):
                 log.warning(
                     "Invalid scheduler in config: '%s', using non-grid mode",
                     config_scheduler,
                 )
-                return Scheduler.LOCAL
+                return cls.LOCAL
             log.debug("Scheduler determined from config: '%s'", config_scheduler)
-            return Scheduler.from_string(config_scheduler)
+            return cls.from_string(config_scheduler)
+        return None
 
-        # 3. from environment variables
-        scheduler = _scheduler_by_env()
-        if scheduler is not None:
-            log.debug("Scheduler determined from environment: '%s'", scheduler.name)
-            return scheduler
+    @classmethod
+    def _from_env(cls, log: Logger) -> Optional["Scheduler"]:
+        if shutil.which("sbatch") or "SLURM_JOB_ID" in os.environ:
+            log.debug("Scheduler found in environment: SLURM")
+            return cls.SLURM
+        if shutil.which("bsub") or "LSB_JOBID" in os.environ:
+            log.debug("Scheduler found in environment: LSF")
+            return cls.LSF
+        log.debug("No scheduler found in environment variables or executables.")
+        return None
 
-        # 4. from drmaa (if available)
+    @classmethod
+    def _from_drmaa(cls, log: Logger) -> Optional["Scheduler"]:
         try:
-            # The DRMAA library is a wrapper, and fails to import if the C library is not installed (libdrmaa.so).
             import drmaa  # pylint: disable=import-outside-toplevel
 
             with drmaa.Session() as session:
                 scheduler_name = session.drmsInfo
                 log.debug("Scheduler determined from DRMAA: '%s'", scheduler_name)
-                return Scheduler.from_string(scheduler_name)
-
-        except Exception as e:  # pylint: disable=broad-except
+                return cls.from_string(scheduler_name)
+        except RuntimeError as e:
             log.debug(f"DRMAA not available: {e}")
+        return None
+
+    @classmethod
+    def determine_scheduler(
+        cls, scheduler_str: str, user_config: ConfigParser, log: Logger
+    ) -> "Scheduler":
+        """Determine the scheduler type from argument, config, env, or DRMAA."""
+
+        log.debug("Determining scheduler...")
+
+        if scheduler_str:
+            scheduler = cls._scheduler_from_argument(scheduler_str, log)
+            if scheduler is not None:
+                log.debug("Scheduler selected from argument: '%s'", scheduler.name)
+                return scheduler
+
+        if user_config:
+            scheduler = cls._scheduler_from_config(user_config, log)
+            if scheduler is not None:
+                log.debug("Scheduler selected from config: '%s'", scheduler.name)
+                return scheduler
+
+        scheduler = cls._from_env(log)
+        if scheduler is not None:
+            log.debug("Scheduler selected from environment: '%s'", scheduler.name)
+            return scheduler
+
+        scheduler = cls._from_drmaa(log)
+        if scheduler is not None:
+            log.debug("Scheduler selected from DRMAA: '%s'", scheduler.name)
+            return scheduler
 
         log.info(
-            "[yellow]No scheduler detected, running in non-grid mode. Please check your configuration or environment variables.[/yellow]"
+            "[yellow]No scheduler detected, running in non-grid mode. "
+            "Please check your configuration or environment variables.[/yellow]"
         )
-        return Scheduler.LOCAL
+        return cls.LOCAL
