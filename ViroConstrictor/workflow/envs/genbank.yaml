@@ -1,0 +1,9 @@
+name: genbank
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - conda-forge::python=3.7
+  - bioconda::biopython==1.78
+  - bioconda::bcbio-nextgen==1.2.0
