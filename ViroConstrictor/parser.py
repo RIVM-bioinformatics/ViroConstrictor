@@ -22,7 +22,7 @@ from ViroConstrictor.workflow.presets import match_preset_name
 
 
 class CLIparser:
-    def __init__(self, input_args: list[str]) -> None:
+    def __init__(self, input_args: list[str], settings_path: str) -> None:
         self.flags: argparse.Namespace = self._get_args(input_args)
         self.logfile = setup_logger(self.flags.output)
         log.info(f"ViroConstrictor version: [blue]{__version__}[/blue]")
@@ -31,10 +31,7 @@ class CLIparser:
             for err in self.cli_errors:
                 log.error(err)
             sys.exit(1)
-        self.user_config = ReadConfig(
-            pathlib.Path("~/.ViroConstrictor_defaultprofile.ini").expanduser()
-        )
-        self.scheduler = self._determine_scheduler(self.flags.get("scheduler", "none"))
+        self.user_config = ReadConfig(pathlib.Path(settings_path).expanduser())
         self.flags.presets = self.flags.disable_presets is False
         self.samples_df = pd.DataFrame()
         self.samples_dict: dict[Hashable, Any] = {}
@@ -984,7 +981,7 @@ def CheckInputFiles(indir: str) -> bool:
     )
 
 
-def args_to_df(args: argparse.Namespace, df: pd.DataFrame) -> pd.DataFrame:
+def args_to_df(args: argparse.Namespace, existing_df: pd.DataFrame) -> pd.DataFrame:
     """It takes the arguments from the command line and places them into a dataframe
 
     Parameters
@@ -999,19 +996,32 @@ def args_to_df(args: argparse.Namespace, df: pd.DataFrame) -> pd.DataFrame:
         A dataframe with the arguments as columns.
 
     """
-    df["VIRUS"] = args.target
-    df["MATCH-REF"] = args.match_ref
-    df["SEGMENTED"] = args.segmented
-    df["PRIMERS"] = os.path.abspath(args.primers) if args.primers != "NONE" else "NONE"
-    df["REFERENCE"] = os.path.abspath(args.reference)
-    df["FEATURES"] = (
-        os.path.abspath(args.features) if args.features != "NONE" else "NONE"
+    df = pd.DataFrame(
+        [
+            {
+                "VIRUS": args.target,
+                "MATCH-REF": args.match_ref,
+                "SEGMENTED": args.segmented,
+                "PRIMERS": (
+                    os.path.abspath(args.primers) if args.primers != "NONE" else "NONE"
+                ),
+                "REFERENCE": os.path.abspath(args.reference),
+                "FEATURES": (
+                    os.path.abspath(args.features)
+                    if args.features != "NONE"
+                    else "NONE"
+                ),
+                "MIN-COVERAGE": args.min_coverage,
+                "PRIMER-MISMATCH-RATE": args.primer_mismatch_rate,
+                "PRESET": match_preset_name(args.target, args.presets)[0],
+                "PRESET_SCORE": match_preset_name(args.target, args.presets)[1],
+            }
+        ]
     )
-    df["MIN-COVERAGE"] = args.min_coverage
-    df["PRIMER-MISMATCH-RATE"] = args.primer_mismatch_rate
-    df[["PRESET", "PRESET_SCORE"]] = match_preset_name(args.target, args.presets)
-    df = pd.DataFrame.replace(df, np.nan, None)
-    return df
+    for col in df.columns:
+        existing_df[col] = df.iloc[0][col]
+    existing_df = pd.DataFrame.replace(existing_df, np.nan, None)
+    return existing_df
 
 
 def sampledir_to_df(

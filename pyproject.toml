@@ -1,0 +1,67 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ViroConstrictor"
+dynamic = ["version"]
+description = "Analysis of (targeted) Viral NGS data"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "AGPL-3.0"
+authors = [
+    { name = "Florian Zwagemaker" },
+    { name = "Karim Hajji" },
+    { name = "Gino Raaijmakers" },
+    { name = "Dennis Schmitz" },
+    { name = "Annelies Kroneman" },
+    { email = "ids-bioinformatics@rivm.nl" },
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python :: 3.10",
+    "License :: OSI Approved :: GNU Affero General Public License v3",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Intended Audience :: Science/Research",
+]
+dependencies = [
+    "urllib3==1.26.*",
+    "biopython==1.81",
+    "drmaa==0.7.9",
+    "fpdf2==2.5.1",
+    "pandas>=1.4.2",
+    "openpyxl==3.1.*",
+    "pyyaml==6.0",
+    "rich==13.*",
+    "AminoExtract==0.3.1",
+]
+
+[project.scripts]
+ViroConstrictor = "ViroConstrictor.__main__:main"
+viroconstrictor = "ViroConstrictor.__main__:main"
+viroConstrictor = "ViroConstrictor.__main__:main"
+Viroconstrictor = "ViroConstrictor.__main__:main"
+
+[project.urls]
+homepage = "https://rivm-bioinformatics.github.io/ViroConstrictor/"
+source-code = "https://github.com/RIVM-bioinformatics/ViroConstrictor"
+
+[tool.hatch.version]
+path = "ViroConstrictor/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/ViroConstrictor",
+    "/snakemake_logger_plugin_viroconstrictor",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "ViroConstrictor",
+    "snakemake_logger_plugin_viroconstrictor",
+]
+
+[tool.hatch.build.targets.wheel.shared-data]
+"ViroConstrictor/workflow" = "ViroConstrictor/workflow"
+"snakemake_logger_plugin_viroconstrictor" = "snakemake_logger_plugin_viroconstrictor"
+
