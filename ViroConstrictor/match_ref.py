@@ -6,6 +6,7 @@ import pandas as pd
 from ViroConstrictor.logging import log
 from ViroConstrictor.parser import CLIparser
 from ViroConstrictor.runreport import WriteReport
+from ViroConstrictor.scheduler import Scheduler
 from ViroConstrictor.workflow_executor import run_snakemake_workflow
 
 
@@ -75,7 +76,7 @@ def replacement_merge_dataframe_on_cols(
     return original_df
 
 
-def process_match_ref(parsed_inputs: CLIparser) -> CLIparser:
+def process_match_ref(parsed_inputs: CLIparser, scheduler: Scheduler) -> CLIparser:
     """
     Process the match_ref step of the ViroConstrictor pipeline.
 
@@ -99,7 +100,7 @@ def process_match_ref(parsed_inputs: CLIparser) -> CLIparser:
 
     # TODO: re-add the functionality to correctly work with remote execution (a HPC), such as DRMAA, SLURM, or LSF
     status, used_workflow_config = run_snakemake_workflow(
-        inputs_obj_match_ref, stage="MR"
+        inputs_obj_match_ref, stage="MR", scheduler=scheduler
     )
 
     workflow_state: Literal["Failed", "Success"] = (
