@@ -18,6 +18,7 @@ class Scheduler(Enum):
     LOCAL = ("local", "none", "")
     SLURM = ("slurm",)
     LSF = ("lsf",)
+    DRYRUN = ("dryrun",)
     AUTO = ("auto",)
 
     @classmethod
@@ -103,11 +104,14 @@ class Scheduler(Enum):
 
     @classmethod
     def determine_scheduler(
-        cls, scheduler_str: str, user_config: ConfigParser, log: Logger
+        cls, scheduler_str: str, user_config: ConfigParser, dryrun_arg: bool, log: Logger
     ) -> "Scheduler":
         """Determine the scheduler type from argument, config, env, or DRMAA."""
 
         log.debug("Determining scheduler...")
+        if dryrun_arg:
+            log.debug("Dry-run mode set on the commandline, using DRYRUN scheduler.")
+            return cls.DRYRUN
 
         if scheduler_str:
             scheduler = cls._scheduler_from_argument(scheduler_str, log)

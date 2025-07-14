@@ -113,6 +113,7 @@ class WorkflowConfig:
         self.outdir_override = outdir_override
         self.configuration = self.inputs.user_config
         self.vc_stage = vc_stage
+        self.dryrun = self.inputs.flags.dryrun
 
         # check if VC_stage is set to either "MR" or "MAIN", these are the only two valid stages. Exit if None
         if self.vc_stage not in ["MR", "MAIN"]:
@@ -129,7 +130,7 @@ class WorkflowConfig:
         # TODO: dryrun only seems to work if outputsettings.dryrun is set to True, the executor is set to "dryrun" and the quietness is set to "SUBPROCESS"
         # Quite convoluted, but this is the only combination of settings that seems to actually run the workflow in true dryrun mode.
         self.output_settings = OutputSettings(
-            dryrun=parsed_inputs.flags.dryrun,  # this doesn't seem to actually work all that much? if dryrun is set to True, it will still run the workflow and actually execute the tasks.
+            dryrun=self.dryrun,  # this doesn't seem to actually work all that much? if dryrun is set to True, it will still run the workflow and actually execute the tasks.
             printshellcmds=False,
             nocolor=False,
             debug_dag=False,
@@ -197,7 +198,7 @@ class WorkflowConfig:
             scheduler="greedy",
         )
 
-        self.workflow_settings = WorkflowSettings(exec_mode=ExecMode.DEFAULT)
+        self.workflow_settings = WorkflowSettings(exec_mode=ExecMode.SUBPROCESS if self.dryrun else ExecMode.DEFAULT)
 
         unidirectional = correct_unidirectional_flag(
             self.inputs.samples_dict, self.inputs.flags
