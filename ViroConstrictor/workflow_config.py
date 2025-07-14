@@ -1,9 +1,11 @@
 import multiprocessing
 import os
 import sys
+from argparse import Namespace
 from configparser import ConfigParser
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, Hashable
 
 from snakemake.api import (
     ConfigSettings,
@@ -32,6 +34,24 @@ from ViroConstrictor.workflow.containers import (
     construct_container_bind_args,
     download_containers,
 )
+
+
+def correct_unidirectional_flag(
+    samples_dict: dict[Hashable, Any], flags: Namespace
+) -> bool:
+    """Corrects the unidirectional flag based on the platform and samples dictionary."""
+    if flags.platform == "illumina" and flags.unidirectional is True:
+        # check if the samples_dict has the INPUTFILE key, if it does, set the unidirectional flag to True
+        if any("INPUTFILE" in sample for sample in samples_dict.values()):
+            return True
+        # check if the samples_dict has both R1 and R2 keys, if it does, set the unidirectional flag to False
+        elif any("R1" in sample and "R2" in sample for sample in samples_dict.values()):
+            log.warning(
+                "Unidirectional flag is set to True, but both illumina R1 and R2 inputfiles were found. "
+                "This may lead to unexpected behavior. Setting unidirectional flag to False."
+            )
+            return False
+    return True  # Default to True if no specific conditions are met
 
 
 class WorkflowConfig:
@@ -179,6 +199,10 @@ class WorkflowConfig:
 
         self.workflow_settings = WorkflowSettings(exec_mode=ExecMode.DEFAULT)
 
+        unidirectional = correct_unidirectional_flag(
+            self.inputs.samples_dict, self.inputs.flags
+        )
+
         self.snakemake_base_params = {
             "sample_sheet": WriteYaml(
                 self.inputs.samples_dict,
@@ -188,6 +212,7 @@ class WorkflowConfig:
             "computing_execution": self.configuration["COMPUTING"]["compmode"],
             "max_local_mem": self._get_max_local_mem(),
             "platform": self.inputs.flags.platform,
+            "unidirectional": unidirectional,
             "amplicon_type": self.inputs.flags.amplicon_type,
             "outdirOverride": self.outdir_override,
             "threads": {

@@ -172,9 +172,10 @@ rule filter_references:
         """
 
 
-if config["platform"] in ["nanopore", "iontorrent"]:
+if config["platform"] in ["nanopore", "iontorrent"] or (
+    config["platform"] == "illumina" and config["unidirectional"] is True):
     base_mm2_preset = (
-        "-ax sr" if config["platform"] == "iontorrent" else "-ax map-ont"
+        "-ax sr" if config["platform"] in ["iontorrent", "illumina"] else "-ax map-ont"
     )
 
     rule align_to_refs:
@@ -229,7 +230,7 @@ if config["platform"] in ["nanopore", "iontorrent"]:
             """
 
 
-if config["platform"] == "illumina":
+if config["platform"] == "illumina" and config["unidirectional"] is False:
     base_mm2_preset = "-ax sr"
     rule align_to_refs:
         input:
@@ -273,11 +274,11 @@ if config["platform"] == "illumina":
             ),
             samtools_extra_filters=lambda wc: get_preset_parameter(
                 preset_name=SAMPLES[wc.sample]["PRESET"],
-                parameter_name="Samtools_Filters",
+                parameter_name=f"Samtools_Filters_{config['platform']}",
             ),
         shell:
             """
-            minimap2 {params.mm2_alignment_preset} {params.minimap2_base_setting} {params.minimap2_extra_setting} {params.minimap2_alignmentparams} -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
+            minimap2 {params.mm2_alignment_preset} {params.minimap2_base_setting} {params.minimap2_extra_setting} {params.minimap2_alignmentparams} -t {params.mapthreads} {input.ref} {input.fq1} {input.fq2} 2>> {log} |\
             samtools view -@ {threads} {params.samtools_standard_filters} {params.samtools_extra_filters} -uS 2>> {log} |\
             samtools sort -o {output.bam} >> {log} 2>&1
             samtools index {output.bam} >> {log} 2>&1
