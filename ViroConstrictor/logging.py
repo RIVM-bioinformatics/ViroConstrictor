@@ -9,6 +9,7 @@ from rich.color import ANSI_COLOR_NAMES
 from rich.default_styles import DEFAULT_STYLES
 from rich.highlighter import NullHighlighter
 from rich.logging import RichHandler
+from ViroConstrictor import __prog__
 
 richstyles = list(set(list(DEFAULT_STYLES.keys()) + list(ANSI_COLOR_NAMES.keys())))
 
@@ -54,10 +55,6 @@ class StripBracketsFilter(logging.Filter):
         record.msg = re.sub(pattern, "", record.msg)
         record.msg = record.msg.replace("\n", "\n\t\t\t\t\t\t\t")
         return record
-
-
-log = logging.getLogger("ViroConstrictor")
-log.setLevel("INFO")
 
 
 class ViroConstrictorBaseLogHandler(logging.Handler):
@@ -117,9 +114,7 @@ class ViroConstrictorBaseLogHandler(logging.Handler):
         for handler in log.handlers[:]:
             log.removeHandler(handler)
 
-        # Set the level for this handler (affects both console and file if not overridden)
-        self.setLevel(logging.INFO)
-
+        # Configure the console handler to use rich formatting
         self.shell_handler = RichHandler(
             show_path=False,
             omit_repeated_times=False,
@@ -127,7 +122,6 @@ class ViroConstrictorBaseLogHandler(logging.Handler):
             rich_tracebacks=True,
             highlighter=NullHighlighter(),  # Use NullHighlighter to avoid colorization in the console
         )
-        self.shell_handler.setLevel(logging.INFO)  # Set level for console output
         log.addHandler(self.shell_handler)
 
         # Setup a FileHandler specific to this instance for writing to the log file
@@ -135,7 +129,6 @@ class ViroConstrictorBaseLogHandler(logging.Handler):
         self.instance_file_handler.addFilter(
             self._strip_brackets_filter_instance
         )  # Add the filter to the file handler
-        self.instance_file_handler.setLevel(logging.INFO)  # Set level for file output
 
         # Define formatter for the file log
         format_file = "%(asctime)s\t%(levelname)s\t%(message)s"
@@ -503,3 +496,7 @@ def print_jobstatistics_logmessage(msg: str) -> str:
     # if logmessage := msg.get("msg"):
     logmessage = msg.split("\n", 1)[1]
     return f"Workflow statistics:\n[yellow]{logmessage}[/yellow]"
+
+log = logging.getLogger(__prog__)
+log.propagate = False
+log.setLevel(logging.INFO)

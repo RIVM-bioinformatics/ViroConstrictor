@@ -8,7 +8,6 @@ https://github.com/RIVM-bioinformatics/ViroConstrictor
 
 # pylint: disable=C0103
 
-import logging
 import sys
 from itertools import zip_longest
 from typing import Literal, NoReturn
@@ -124,10 +123,10 @@ def show_preset_warnings(
     """
     if warnings and not disabled:
         for w in warnings:
-            logging.warning(f"{w}")
+            log.warning(f"{w}")
     if fallbacks and not disabled:
         for w in fallbacks:
-            logging.warning(f"{w}")
+            log.warning(f"{w}")
 
 
 def main(args: list[str] | None = None, settings: str | None = None) -> NoReturn:
