@@ -3,6 +3,7 @@ import multiprocessing
 import os
 import pathlib
 import re
+import shutil
 import sys
 from typing import Any, Hashable, List
 
@@ -14,6 +15,7 @@ from ViroConstrictor import __prog__, __version__
 from ViroConstrictor.functions import FlexibleArgFormatter, RichParser
 from ViroConstrictor.logging import log, setup_logger
 from ViroConstrictor.samplesheet import GetSamples
+from ViroConstrictor.scheduler import Scheduler
 from ViroConstrictor.userprofile import ReadConfig
 from ViroConstrictor.validatefasta import CheckReferenceFile
 from ViroConstrictor.workflow.presets import match_preset_name
@@ -30,6 +32,9 @@ class CLIparser:
                 log.error(err)
             sys.exit(1)
         self.user_config = ReadConfig(pathlib.Path(settings_path).expanduser())
+        self.scheduler = Scheduler.determine_scheduler(
+            self.flags.scheduler, self.user_config, log
+        )
         self.flags.presets = self.flags.disable_presets is False
         self.samples_df = pd.DataFrame()
         self.samples_dict: dict[Hashable, Any] = {}
@@ -135,6 +140,11 @@ class CLIparser:
                 arg_errors.append(
                     f"'[magenta]{self.flags.features}[/magenta]' does not have a valid file extension.\nAllowed file extenstions for the features: {' '.join([f'[blue]{x}[/blue]' for x in allowed_extensions])}"
                 )
+        if self.flags.scheduler is not None:
+            if not Scheduler.is_valid(self.flags.scheduler):
+                arg_errors.append(
+                    f"'[magenta]{self.flags.scheduler}[/magenta]' is not a valid scheduler. Please use one of the following: {Scheduler.supported_schedulers()}"
+                )
         return arg_errors
 
     def _check_sample_properties(self, sampleinfo: dict[Hashable, Any]) -> None:
@@ -167,7 +177,7 @@ class CLIparser:
         """
         parser: argparse.ArgumentParser = RichParser(
             prog=f"[bold]{__prog__}[/bold]",
-            usage="%(prog)s \[required arguments] \[optional arguments]",
+            usage=r"%(prog)s \[required arguments] \[optional arguments]",
             description="%(prog)s: a pipeline for analysing Viral targeted (amplicon) sequencing data in order to generate a biologically valid consensus sequence.",
             formatter_class=FlexibleArgFormatter,
             add_help=False,
@@ -309,6 +319,18 @@ class CLIparser:
             metavar="N",
             type=int,
             help=f"Number of local threads that are available to use.\nDefault is the number of available threads in your system ({min(multiprocessing.cpu_count(), 128)})",
+        )
+
+        optional_args.add_argument(
+            "--scheduler",
+            "-s",
+            default="auto",
+            metavar="Str",
+            type=str,
+            help=(
+                f"The scheduler to use for the workflow, either 'auto', 'none', or any in the following list: {Scheduler.supported_schedulers()}.\n"
+                "Default is 'auto', which will try to determine the scheduler automatically."
+            ),
         )
 
         optional_args.add_argument(
@@ -737,13 +759,13 @@ def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
         "SAMPLE": {
             "dtype": str,
             "required": True,
-            "disallowed_characters": "[ @!#$%^&*()+=|\]\[{}':;,/?<>~`]",
+            "disallowed_characters": r"[ @!#$%^&*()+=|\]\[{}':;,/?<>~`]",
             "path": False,
         },
         "VIRUS": {
             "dtype": str,
             "required": True,
-            "disallowed_characters": "[ @!#$%^&*()+=|\]\[{}':;,/?<>~`]",
+            "disallowed_characters": r"[ @!#$%^&*()+=|\]\[{}':;,/?<>~`]",
             "path": False,
         },
         "PRIMERS": {

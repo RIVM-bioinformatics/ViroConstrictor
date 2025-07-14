@@ -6,12 +6,13 @@ from snakemake_interface_common.exceptions import WorkflowError
 
 from ViroConstrictor.logging import log
 from ViroConstrictor.parser import CLIparser
+from ViroConstrictor.scheduler import Scheduler
 from ViroConstrictor.workflow_config import WorkflowConfig
 
 
 # TODO: Modify this method to re-add remote execution settings if they are set in the CLIparser or config file.
 def run_snakemake_workflow(
-    inputs_obj: CLIparser, stage: str
+    inputs_obj: CLIparser, stage: str, scheduler: Scheduler
 ) -> tuple[bool, WorkflowConfig]:
     """
     Run the snakemake workflow for the specified stage.
@@ -33,7 +34,9 @@ def run_snakemake_workflow(
     )
     try:
         WorkflowExecutor(
-            parsed_input=inputs_obj, workflow_config=workflow_configuration
+            parsed_input=inputs_obj,
+            workflow_config=workflow_configuration,
+            scheduler=scheduler,
         )
     except WorkflowError as e:
         log.error(
@@ -64,7 +67,10 @@ class WorkflowExecutor:
     """
 
     def __init__(
-        self, parsed_input: CLIparser, workflow_config: WorkflowConfig
+        self,
+        parsed_input: CLIparser,
+        workflow_config: WorkflowConfig,
+        scheduler: Scheduler = Scheduler.LOCAL,
     ) -> None:
         self.parsed_input = parsed_input
         self.workflow_config = workflow_config
@@ -85,7 +91,7 @@ class WorkflowExecutor:
             self.dag_api = self.workflow_api.dag(self.workflow_config.dag_settings)
 
             self.dag_api.execute_workflow(
-                executor="local",  # this is the executor plugin, stick to local for now but this should be dynamic
+                executor=scheduler.value[0],
                 execution_settings=self.workflow_config.execution_settings,
                 remote_execution_settings=self.workflow_config.remote_execution_settings,
                 scheduling_settings=self.workflow_config.scheduling_settings,
