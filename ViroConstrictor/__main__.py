@@ -154,14 +154,14 @@ def main(args: list[str] | None = None, settings: str | None = None) -> NoReturn
 
     # check if there's a value in the column 'MATCH-REF' set to True in the parsed_input.samples_df dataframe, if so, process the match-ref, else skip
     if parsed_input.samples_df["MATCH-REF"].any():
-        parsed_input = process_match_ref(parsed_input)
+        parsed_input = process_match_ref(parsed_input, scheduler=parsed_input.scheduler)
 
     log.info(f"{'='*20} [bold yellow] Starting Main Workflow [/bold yellow] {'='*20}")
 
     status: bool = False
 
     status, used_workflow_config = run_snakemake_workflow(
-        inputs_obj=parsed_input, stage="MAIN"
+        inputs_obj=parsed_input, stage="MAIN", scheduler=parsed_input.scheduler
     )
 
     # if used_workflow_config.output_settings.dryrun is False and status is True:
