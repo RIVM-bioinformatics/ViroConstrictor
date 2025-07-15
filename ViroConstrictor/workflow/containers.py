@@ -1,7 +1,8 @@
 import hashlib
 import os
 import subprocess
-from typing import Any, Dict, List, Tuple
+from pathlib import Path
+from typing import Dict, List
 
 from ViroConstrictor import __prog__
 from ViroConstrictor.logging import log
@@ -77,15 +78,15 @@ def fetch_files(file_folder: str) -> List[str]:
 
 def calculate_hashes(file_list: List[str]) -> Dict[str, str]:
     """
-        Parameters
-        ----------
-        file_list : List[str]
-            A list of file paths for which to calculate the hashes.
+    Parameters
+    ----------
+    file_list : List[str]
+        A list of file paths for which to calculate the hashes.
 
-        Returns
-        -------
-        Dict[str, str]
-            A dictionary where the keys are file paths and the values are the first 6 characters of the SHA-256 hash of the file contents.
+    Returns
+    -------
+    Dict[str, str]
+        A dictionary where the keys are file paths and the values are the first 6 characters of the SHA-256 hash of the file contents.
     """
     hashdict = {}
     for file in file_list:
@@ -184,14 +185,14 @@ def containerization_installed() -> bool:
     return os.system("which singularity") == 0
 
 
-def containers_to_download(config: Dict[str, Any]) -> List[str]:
+def containers_to_download(apptainer_path: Path) -> List[str]:
     """
     Returns a list of containers that need to be downloaded for the workflow.
 
     Parameters
     ----------
-    config : Dict[str, Any]
-        A dictionary containing the configuration parameters.
+    apptainer_path : Path
+        The path to the Apptainer container directory.
 
     Returns
     -------
@@ -208,9 +209,9 @@ def containers_to_download(config: Dict[str, Any]) -> List[str]:
         required_containers.append(f"{__prog__}_{recipe_basename}_{val}".lower())
 
     # check if the folder exists, if not create it
-    if not os.path.exists(config["container_cache"]):
-        os.makedirs(config["container_cache"], exist_ok=True)
-    containers_present = os.listdir(config["container_cache"])
+    if apptainer_path is not None and not os.path.exists(apptainer_path):
+        os.makedirs(apptainer_path, exist_ok=True)
+    containers_present = os.listdir(apptainer_path)
 
     # remove the .sif extension from the container names
     containers_present = [item.split(".")[0] for item in containers_present]
@@ -246,14 +247,18 @@ def containerization_executable() -> str:
     )
 
 
-def download_containers(config: Dict[str, Any], verbose=False) -> int:
+def download_containers(
+    apptainer_path: Path, dryrun: bool = False, verbose=False
+) -> int:
     """
     Download containers specified in the configuration.
 
     Parameters
     ----------
-    config : Dict[str, Any]
-        The configuration containing container information.
+    apptainer_path : Path
+        The path to the Apptainer container directory.
+    dryrun : bool, optional
+        If True, only simulate the download without actually performing it. Defaults to False.
     verbose : bool, optional
         Whether to display verbose output. Defaults to False.
 
@@ -262,10 +267,10 @@ def download_containers(config: Dict[str, Any], verbose=False) -> int:
     int
         0 if all containers were downloaded successfully, 1 otherwise.
     """
-    to_download = containers_to_download(config)
+    to_download = containers_to_download(apptainer_path)
     to_download = [x.rsplit("_", 1)[0] + ":" + x.rsplit("_", 1)[1] for x in to_download]
 
-    if config["dryrun"]:
+    if dryrun:
         log.info(
             f"Container(s) [magenta]{', '.join(to_download)}[/magenta] will be downloaded"
         )
@@ -279,7 +284,7 @@ def download_containers(config: Dict[str, Any], verbose=False) -> int:
         )
         executable = containerization_executable()
         status = subprocess.call(
-            f"{executable} pull --dir {config['container_cache']} docker://{upstream_registry}/{container}",
+            f"{executable} pull --dir {apptainer_path} docker://{upstream_registry}/{container}",
             shell=True,
             stderr=subprocess.PIPE if verbose is False else None,
             stdout=subprocess.PIPE if verbose is False else None,

@@ -11,11 +11,11 @@ jobs:
     Upload:
         runs-on: ubuntu-latest
         steps:
-          - uses: actions/checkout@v3
+          - uses: actions/checkout@v4
     
           - name: Download artifact
             id: download-artifact
-            uses: dawidd6/action-download-artifact@v8
+            uses: dawidd6/action-download-artifact@v11
             with:
               github_token: ${{ secrets.GITHUB_TOKEN }}
               workflow: build_and_test.yml
@@ -33,7 +33,7 @@ jobs:
               cd ..
     
           - name: Setup Mamba
-            uses: mamba-org/setup-micromamba@v1
+            uses: mamba-org/setup-micromamba@v2
             with:
               cache-environment: true
               post-cleanup: 'all'
