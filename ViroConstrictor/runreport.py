@@ -2,11 +2,13 @@ import configparser
 import os
 import sys
 from datetime import datetime
-from typing import Any, Literal
+from typing import Literal
 
 from fpdf import FPDF
+from snakemake.api import OutputSettings, ResourceSettings
 
 from ViroConstrictor import __version__
+from ViroConstrictor.parser import CLIparser
 
 
 class PDF(FPDF):
@@ -51,14 +53,15 @@ def WriteReport(
     inpath: str,
     startpath: str,
     conf: configparser.ConfigParser,
-    sparams: dict[str, Any],
-    sconfig: dict[str, Any],
+    snakemake_resource_settings: ResourceSettings,
+    snakemake_output_conf: OutputSettings,
+    inputs_config: CLIparser,
     status: Literal["Failed", "Success"],
 ) -> None:
     if os.getcwd() != workingdir:
         os.chdir(workingdir)
 
-    sconfig.update(sparams)
+    # sconfig.update(sparams)
 
     directories: dict[int, list[str]] = {
         0: [
@@ -87,7 +90,7 @@ def WriteReport(
 
     pdf.ln(10)
 
-    if sconfig["dryrun"] is True:
+    if snakemake_output_conf.dryrun is True:
         pdf = analysis_details(pdf, "Workflow status:", "Dry-run")
     else:
         pdf = analysis_details(pdf, "Workflow status:", status)
@@ -99,8 +102,10 @@ def WriteReport(
     # pdf = analysis_details(pdf, "Reference file:", sconfig["reference_file"])
     # pdf = analysis_details(pdf, "Primer file:", sconfig["primer_file"])
     # pdf = analysis_details(pdf, "GFF file:", sconfig["features_file"])
-    pdf = analysis_details(pdf, "Sequencing platform:", sconfig["platform"])
-    pdf = analysis_details(pdf, "Selected amplicon type:", sconfig["amplicon_type"])
+    pdf = analysis_details(pdf, "Sequencing platform:", inputs_config.flags.platform)
+    pdf = analysis_details(
+        pdf, "Selected amplicon type:", inputs_config.flags.amplicon_type
+    )
     # if sconfig["primer_file"] != "None":
     #     pdf = analysis_details(
     #         pdf, "Primer mismatch rate:", str(sconfig["primer_mismatch_rate"])
@@ -108,12 +113,14 @@ def WriteReport(
 
     pdf.ln(5)
 
-    pdf = analysis_details(pdf, "Computing execution:", sconfig["computing_execution"])
-    if sconfig["computing_execution"] == "grid":
+    pdf = analysis_details(pdf, "Computing execution:", conf["COMPUTING"]["compmode"])
+    if conf["COMPUTING"]["compmode"] == "grid":
         pdf = analysis_details(
             pdf, "Selected Grid Queue:", conf["COMPUTING"]["queuename"]
         )
-    pdf = analysis_details(pdf, "Local available threads:", str(sconfig["cores"]))
+    pdf = analysis_details(
+        pdf, "Local available threads:", str(snakemake_resource_settings.cores)
+    )
 
     pdf.ln(10)
 

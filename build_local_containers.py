@@ -1,13 +1,14 @@
-import os
-import shutil
-import sys
-import pathlib
-import subprocess
 import glob
+import os
+import pathlib
+import shutil
+import subprocess
 
 from ViroConstrictor.userprofile import ReadConfig
 
-userconf = ReadConfig(pathlib.Path("~/.ViroConstrictor_defaultprofile.ini").expanduser())
+userconf = ReadConfig(
+    pathlib.Path("~/.ViroConstrictor_defaultprofile.ini").expanduser()
+)
 
 containerpath = None
 try:
@@ -41,4 +42,4 @@ for file in glob.glob("./containers/*.tar"):
     print(file)
     os.remove(file)
 
-os.remove("./containers/builtcontainers.json") 
+os.remove("./containers/builtcontainers.json")
