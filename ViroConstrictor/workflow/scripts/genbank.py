@@ -64,7 +64,7 @@ def main(args: list[str] | None = None) -> None:
     if args is None:
         args = sys.argv[1:]
 
-    if len(args) < 1:
+    if len(args) < 1 or len(args) > 2:
         print("Usage: genbank.py <genbank_file> [--target]")
         sys.exit(1)
 

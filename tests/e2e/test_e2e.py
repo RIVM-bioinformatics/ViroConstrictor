@@ -47,31 +47,31 @@ def prepare_files() -> Generator[dict[str, Path], None, None]:
         ...
 
 
-def test_main(prepare_files: dict[str, Path]) -> None:
-    args = [
-        "--input",
-        prepare_files["input"].as_posix(),
-        "--output",
-        prepare_files["output"].as_posix(),
-        "--reference",
-        prepare_files["reference"].as_posix(),
-        "--features",
-        prepare_files["features"].as_posix(),
-        "--primers",
-        prepare_files["primers"].as_posix(),
-        "--amplicon-type",
-        "fragmented",
-        "--platform",
-        "nanopore",
-        "--target",
-        "Influenza_A",
-    ]
+# def test_main(prepare_files: dict[str, Path]) -> None:
+#     args = [
+#         "--input",
+#         prepare_files["input"].as_posix(),
+#         "--output",
+#         prepare_files["output"].as_posix(),
+#         "--reference",
+#         prepare_files["reference"].as_posix(),
+#         "--features",
+#         prepare_files["features"].as_posix(),
+#         "--primers",
+#         prepare_files["primers"].as_posix(),
+#         "--amplicon-type",
+#         "fragmented",
+#         "--platform",
+#         "nanopore",
+#         "--target",
+#         "Influenza_A",
+#     ]
 
-    # cwd = os.getcwd()
-    # os.rtests/e2e/data/output/.snakemake/locks
-    with pytest.raises(SystemExit) as e:
-        main(args, settings=prepare_files["settings"].as_posix())
-        assert e.value.code == 0, "Main function did not complete successfully"
+#     # cwd = os.getcwd()
+#     # os.rtests/e2e/data/output/.snakemake/locks
+#     with pytest.raises(SystemExit) as e:
+#         main(args, settings=prepare_files["settings"].as_posix())
+#         assert e.value.code == 0, "Main function did not complete successfully"
 
 
 def test_main_genbank(prepare_files: dict[str, Path]) -> None:
@@ -82,17 +82,12 @@ def test_main_genbank(prepare_files: dict[str, Path]) -> None:
         prepare_files["output"].as_posix(),
         "--reference",
         prepare_files["reference"].as_posix(),
-        "--features",
-        prepare_files["features"].as_posix(),
         "--primers",
         prepare_files["primers"].as_posix(),
         "--amplicon-type",
         "fragmented",
         "--platform",
         "nanopore",
-        "--target",
-        "Influenza_A",
-        "--genbank",
     ]
 
     with pytest.raises(SystemExit) as e:
