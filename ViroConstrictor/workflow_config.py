@@ -3,7 +3,6 @@ import os
 import sys
 from argparse import Namespace
 from configparser import ConfigParser
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Hashable
 
@@ -27,9 +26,11 @@ from snakemake_interface_logger_plugins.settings import (
     LogHandlerSettingsBase,
 )
 
+from ViroConstrictor import __prog__
 from ViroConstrictor.logging import log
 from ViroConstrictor.parser import CLIparser
 from ViroConstrictor.runconfigs import WriteYaml
+from ViroConstrictor.scheduler import Scheduler
 from ViroConstrictor.workflow.containers import (
     construct_container_bind_args,
     download_containers,
@@ -159,7 +160,9 @@ class WorkflowConfig:
             ),
             resources={"max_local_mem": self._get_max_local_mem()},
             nodes=200 if self.configuration["COMPUTING"]["compmode"] == "grid" else 1,
-            default_resources=default_resource_setting,
+            default_resources=add_default_resource_settings(
+                scheduler=self.inputs.scheduler, user_config=self.configuration
+            ),
         )
 
         self.storage_settings = StorageSettings()
@@ -198,7 +201,9 @@ class WorkflowConfig:
             scheduler="greedy",
         )
 
-        self.workflow_settings = WorkflowSettings(exec_mode=ExecMode.SUBPROCESS if self.dryrun else ExecMode.DEFAULT)
+        self.workflow_settings = WorkflowSettings(
+            exec_mode=ExecMode.SUBPROCESS if self.dryrun else ExecMode.DEFAULT
+        )
 
         unidirectional = correct_unidirectional_flag(
             self.inputs.samples_dict, self.inputs.flags
@@ -280,7 +285,58 @@ class WorkflowConfig:
         return int(round(avl_mem_bytes / (1024.0**2) - 2000, -3))
 
 
-@dataclass
+def add_default_resource_settings(
+    scheduler: Scheduler, user_config: ConfigParser
+) -> DefaultResources:
+    """
+    A barebones function to add queuename settings to the DefaultResources snakemake object for correct scheduling instructions.
+
+    Parameters
+    ----------
+    scheduler : Scheduler
+        The job scheduler to be used (e.g., LOCAL, DRYRUN, LSF, SLURM).
+    user_config : ConfigParser
+        The user configuration containing resource settings, specifically the queue or partition name.
+
+    Returns
+    -------
+    DefaultResources
+        A DefaultResources object with the added default resource settings.
+    """
+    default_resource_setting = DefaultResources()
+    queue = user_config["COMPUTING"].get("queuename", None)
+    if scheduler in [Scheduler.LOCAL, Scheduler.DRYRUN]:
+        # For local execution there are no additional resource settings required.
+        # All the resources are already set in the rest of the WorkflowConfig and in the workflows themselves.
+        return default_resource_setting
+    if scheduler == Scheduler.LSF:
+        # required settings: lsf_queue
+        # optional settings: lsf_project
+        if queue is None:
+            log.error(
+                "HPC/Grid mode is set with LSF as the job-scheduler, but no queue name could be found in the user configuration."
+                f"Please re-create the user configuration file with a valid queue name using `{__prog__} --reset-user-config`."
+            )
+            sys.exit(1)
+        default_resource_setting.set_resource("lsf_queue", queue)
+        # the project is optional, leaving it unassigned for now.
+        # This may be an issue if the LSF cluster doesn't have a default project configured by an admin.
+    if scheduler == Scheduler.SLURM:
+        # required settings: slurm_partition (this is the same as a queue for the LSF scheduler)
+        # optional settings: slurm_account, clusters
+        # TODO: we don't have a SLURM cluster to properly test this on, will need to verify this later.
+        if queue is None:
+            log.error(
+                "HPC/Grid mode is set with SLURM as the job-scheduler, but no partition/queuename name could be found in the user configuration."
+                f"Please re-create the user configuration file with a valid partition or queue name using `{__prog__} --reset-user-config`."
+            )
+            sys.exit(1)
+        default_resource_setting.set_resource("slurm_partition", queue)
+        # the account and the clusters are optional, leaving it unassigned for now.
+        # This may be an issue if the SLURM cluster doesn't have default values for these settings configured by an admin
+    return default_resource_setting
+
+
 class MaxThreadsPerType:
     """
     Represents the maximum number of threads to use for each type of process.
