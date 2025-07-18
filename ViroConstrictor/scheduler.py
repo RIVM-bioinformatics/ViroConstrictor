@@ -70,7 +70,7 @@ class Scheduler(Enum):
         if config_exec_mode.lower() == "local":
             log.debug("Execution mode set to local in config, using LOCAL scheduler.")
             return cls.LOCAL
-        
+
         config_scheduler = user_config["COMPUTING"].get("scheduler", "")
         if config_scheduler:
             if not cls.is_valid(config_scheduler):
