@@ -9,6 +9,7 @@ from rich.color import ANSI_COLOR_NAMES
 from rich.default_styles import DEFAULT_STYLES
 from rich.highlighter import NullHighlighter
 from rich.logging import RichHandler
+
 from ViroConstrictor import __prog__
 
 richstyles = list(set(list(DEFAULT_STYLES.keys()) + list(ANSI_COLOR_NAMES.keys())))
@@ -496,6 +497,7 @@ def print_jobstatistics_logmessage(msg: str) -> str:
     # if logmessage := msg.get("msg"):
     logmessage = msg.split("\n", 1)[1]
     return f"Workflow statistics:\n[yellow]{logmessage}[/yellow]"
+
 
 log = logging.getLogger(__prog__)
 log.propagate = False
