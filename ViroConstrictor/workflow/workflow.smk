@@ -511,7 +511,7 @@ def get_primers_output(wildcards):
     elif sample_primers.endswith(".bed"):
         return rules.filter_primer_bed.output.bed
     else:
-        return rules.prepare_primers_fasta.output.bed
+        return rules.prepare_primers.output.bed
 
 rule ampligone:
     input:
