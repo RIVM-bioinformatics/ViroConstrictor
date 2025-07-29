@@ -1,0 +1,41 @@
+LOCUS							DQ415318																1698	bp	ss-RNA					linear			VRL	24-AUG-2006
+DEFINITION		Influenza	A	virus	(A/TW/4845/99(H1N1))	HA	gene,	complete	cds.
+ACCESSION			DQ415318
+VERSION					DQ415318.1
+KEYWORDS				.
+SOURCE						Influenza	A	virus	(A/Taiwan/4845/1999(H1N1))
+		ORGANISM		Influenza	A	virus	(A/Taiwan/4845/1999(H1N1))
+												Viruses;	Riboviria;	Orthornavirae;	Negarnaviricota;
+												Polyploviricotina;	Insthoviricetes;	Articulavirales;
+												Orthomyxoviridae;	Alphainfluenzavirus;	Alphainfluenzavirus
+												influenzae.
+REFERENCE			1		(bases	1	to	1698)
+		AUTHORS			Chang,G.-W.,	Chen,S.-C.,	Mok,C.-K.,	Lo,Y.-L.,	Kung,Y.-N.,
+												Huang,J.-H.,	Shih,Y.-H.,	Wang,J.-Y.,	Chiang,C.,	Chen,C.-J.	and
+												Shih,S.-R.
+		TITLE					Genomic	signatures	of	human	versus	avian	influenza	A	viruses
+		JOURNAL			Emerging	Infect.	Dis.	12	(9),	1353-1360	(2006)
+			PUBMED			17073083
+REFERENCE			2		(bases	1	to	1698)
+		AUTHORS			Chang,S.-C.,	Chen,G.-W.,	Mok,C.-K.,	Lo,Y.-L.,	Kung,Y.-N.,
+												Huang,J.-H.,	Shih,Y.-H.,	Wang,J.-Y.,	Chiang,C.,	Chen,C.-J.	and
+												Shih,S.-R.
+		TITLE					Direct	Submission
+		JOURNAL			Submitted	(23-FEB-2006)	Department	of	Medical	Biotechnology	&
+												Laboratory	Science,	Chang	Gung	University,	259	Wen-Hua	1st	Rd.,
+												Kwei-Shan,	Tao-Yuan	333,	Taiwan
+FEATURES													Location/Qualifiers
+					CDS													1..1698
+																					/codon_start=1
+																					/product="HA"
+																					/protein_id="ABD59849.1"
+																					/translation="MKAKLLVLLYAFVATDADTICIGYHANNSTDTVDTIFEKNVAVT
+																					HSVNLLEDSHNGKLCLLKGIAPLQLGNCSVAGWILGNPECELLISKESWSYIVETPNP
+																					ENGTCYPGYFADYEELREQLSSVSSFERFEIFPKESSWPNHTVTGVSASCSHNGKSSF
+																					YRNLLWLTGKNGLYPNLSKSYANNKEKEVLVLWGVHHPPNIGDQQGLYSNGNAYVSVA
+																					SSNYNRRFTPEIAARPKVKDQHGRMNYYWTLLEPGDTIIFEATGNLIAPWYAFALSRG
+																					FESGIITSNASMHECNTKCQTPQGSINSNLPFQNIHPVTIGECPKYVRSAKLRMVTGL
+																					RNIPSIQSRGLFGAIAGFIEGGWTGMVDGWYGYHHQNEQGSGYAADQKSTQNAINGIT
+																					NKVNSVIEKMNTQFTAVGKEFNRLERRMENLNKKVDDGFLDIWTYNAELLVLLENERT
+																					LDFHDSNVKNLYEKVKSQLKNNAKEIGNGCFEFYHKCNNECMESVKNGTYDYPKYSEE
+																					SKLNREKIDGVKLESMGVYQILAIYSTVASSLVLLVSLGAISFWMCSNGSLQCRICI"

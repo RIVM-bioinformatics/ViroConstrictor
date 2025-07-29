@@ -65,3 +65,5 @@ packages = [
 "ViroConstrictor/workflow" = "ViroConstrictor/workflow"
 "snakemake_logger_plugin_viroconstrictor" = "snakemake_logger_plugin_viroconstrictor"
 
+[tool.pylint]
+max-line-length = 150
