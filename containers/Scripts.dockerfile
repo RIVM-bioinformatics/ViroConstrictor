@@ -19,6 +19,8 @@ RUN adduser \
     --uid "${UID}" \
     appuser
 
+RUN touch /__init__.py
+    
 RUN micromamba install -q -y -n base git -c conda-forge && \
     micromamba install -q -y -n base -f /install.yml && \
     micromamba clean -q --all --yes
