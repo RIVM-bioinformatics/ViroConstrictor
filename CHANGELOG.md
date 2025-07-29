@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.5](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.5.4...v1.5.5) (2025-07-28)
+
+
+### Bug Fixes
+
+* **workflow:** fix typo of rulename which leads to unresolvable DAG ([af21030](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/af21030c98737092b6317c1366d63ac380b72fe8))
+
 ## [1.5.4](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.5.3...v1.5.4) (2025-06-26)
 
 
