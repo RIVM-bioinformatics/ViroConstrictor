@@ -531,7 +531,7 @@ class CLIparser:
                 f is None for f in (args.primers, args.reference)
             ):
                 log.error(
-                    f"[bold red]Run-wide analysis settings were not provided and no samplesheet was given either with per-sample run information.\nPlease either provide all required information ([underline]reference[/underline], [underline]primers[/underline], [underline]genomic features[/underline] and [underline]viral-target[/underline]) for a run-wide analysis or provide a samplesheet with per-sample run information[/bold red]"
+                    "[bold red]Run-wide analysis settings were not provided and no samplesheet was given either with per-sample run information.\nPlease either provide all required information ([underline]reference[/underline], [underline]primers[/underline], [underline]genomic features[/underline] and [underline]viral-target[/underline]) for a run-wide analysis or provide a samplesheet with per-sample run information[/bold red]"
                 )
                 sys.exit(1)
         else:
@@ -540,7 +540,7 @@ class CLIparser:
                 for f in (args.primers, args.reference, args.features, args.target)
             ):
                 log.error(
-                    f"[bold red]Run-wide analysis settings were not provided and no samplesheet was given either with per-sample run information.\nPlease either provide all required information ([underline]reference[/underline], [underline]primers[/underline], [underline]genomic features[/underline] and [underline]viral-target[/underline]) for a run-wide analysis or provide a samplesheet with per-sample run information[/bold red]"
+                    "[bold red]Run-wide analysis settings were not provided and no samplesheet was given either with per-sample run information.\nPlease either provide all required information ([underline]reference[/underline], [underline]primers[/underline], [underline]genomic features[/underline] and [underline]viral-target[/underline]) for a run-wide analysis or provide a samplesheet with per-sample run information[/bold red]"
                 )
                 sys.exit(1)
 
