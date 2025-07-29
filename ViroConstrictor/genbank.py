@@ -48,9 +48,11 @@ class GenBank:
     @staticmethod
     def _parse_target(records: list[SeqIO.SeqRecord]) -> str:
         """Parse the target organism from GenBank records."""
-        organisms: list[str] = [record.annotations["organism"] for record in records]
+        organisms: list[str] = [
+            record.annotations.get("organism", "") for record in records
+        ]
         organisms = [
-            org.split("(")[0].strip().replace(" ", "_") for org in organisms if org
+            org.split("(", 1)[0].strip().replace(" ", "_") for org in organisms if org
         ]
         if not all(org == organisms[0] for org in organisms):
             raise ValueError(
