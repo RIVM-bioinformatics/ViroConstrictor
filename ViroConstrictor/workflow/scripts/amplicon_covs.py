@@ -37,7 +37,8 @@ $ python amplicon_covs.py --primers primers.bed --coverages coverages.tsv --key 
 from enum import Enum
 
 import pandas as pd
-from amplicon_arg_parser import parse_args
+
+from .amplicon_arg_parser import parse_args
 
 
 class ReadDirection(Enum):

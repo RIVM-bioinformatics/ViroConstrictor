@@ -1,0 +1,80 @@
+LOCUS       DQ415318                1698 bp ss-RNA     linear   VRL 24-AUG-2006
+DEFINITION  Influenza A virus (A/TW/4845/99(H1N1)) HA gene, complete cds.
+ACCESSION   DQ415318
+VERSION     DQ415318.1
+KEYWORDS    .
+SOURCE      Influenza A virus (A/Taiwan/4845/1999(H1N1))
+  ORGANISM  Influenza A virus (A/Taiwan/4845/1999(H1N1))
+            Viruses; Riboviria; Orthornavirae; Negarnaviricota;
+            Polyploviricotina; Insthoviricetes; Articulavirales;
+            Orthomyxoviridae; Alphainfluenzavirus; Alphainfluenzavirus
+            influenzae.
+REFERENCE   1  (bases 1 to 1698)
+  AUTHORS   Chang,G.-W., Chen,S.-C., Mok,C.-K., Lo,Y.-L., Kung,Y.-N.,
+            Huang,J.-H., Shih,Y.-H., Wang,J.-Y., Chiang,C., Chen,C.-J. and
+            Shih,S.-R.
+  TITLE     Genomic signatures of human versus avian influenza A viruses
+  JOURNAL   Emerging Infect. Dis. 12 (9), 1353-1360 (2006)
+   PUBMED   17073083
+REFERENCE   2  (bases 1 to 1698)
+  AUTHORS   Chang,S.-C., Chen,G.-W., Mok,C.-K., Lo,Y.-L., Kung,Y.-N.,
+            Huang,J.-H., Shih,Y.-H., Wang,J.-Y., Chiang,C., Chen,C.-J. and
+            Shih,S.-R.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (23-FEB-2006) Department of Medical Biotechnology &
+            Laboratory Science, Chang Gung University, 259 Wen-Hua 1st Rd.,
+            Kwei-Shan, Tao-Yuan 333, Taiwan
+FEATURES             Location/Qualifiers
+     source          1..1698
+                     /organism="Influenza A virus (A/Taiwan/4845/1999(H1N1))"
+                     /mol_type="genomic RNA"
+                     /strain="A/TW/4845/99"
+                     /serotype="H1N1"
+                     /db_xref="taxon:162536"
+                     /geo_loc_name="Taiwan"
+     CDS             1..1698
+                     /codon_start=1
+                     /product="HA"
+                     /protein_id="ABD59849.1"
+                     /translation="MKAKLLVLLYAFVATDADTICIGYHANNSTDTVDTIFEKNVAVT
+                     HSVNLLEDSHNGKLCLLKGIAPLQLGNCSVAGWILGNPECELLISKESWSYIVETPNP
+                     ENGTCYPGYFADYEELREQLSSVSSFERFEIFPKESSWPNHTVTGVSASCSHNGKSSF
+                     YRNLLWLTGKNGLYPNLSKSYANNKEKEVLVLWGVHHPPNIGDQQGLYSNGNAYVSVA
+                     SSNYNRRFTPEIAARPKVKDQHGRMNYYWTLLEPGDTIIFEATGNLIAPWYAFALSRG
+                     FESGIITSNASMHECNTKCQTPQGSINSNLPFQNIHPVTIGECPKYVRSAKLRMVTGL
+                     RNIPSIQSRGLFGAIAGFIEGGWTGMVDGWYGYHHQNEQGSGYAADQKSTQNAINGIT
+                     NKVNSVIEKMNTQFTAVGKEFNRLERRMENLNKKVDDGFLDIWTYNAELLVLLENERT
+                     LDFHDSNVKNLYEKVKSQLKNNAKEIGNGCFEFYHKCNNECMESVKNGTYDYPKYSEE
+                     SKLNREKIDGVKLESMGVYQILAIYSTVASSLVLLVSLGAISFWMCSNGSLQCRICI"
+ORIGIN      
+        1 atgaaagcaa aactactggt cctgttatat gcatttgtag ctacagatgc agacacaata
+       61 tgtataggct accatgcgaa caactcaacc gacactgttg acacaatatt cgagaagaat
+      121 gtggcagtga cacattctgt taacctgctt gaggacagtc acaatgggaa gctatgtcta
+      181 ctaaaaggaa tagccccact acaattgggt aattgcagcg ttgccggatg gatcttagga
+      241 aacccagaat gcgaattact gatttccaag gaatcatggt cctacattgt agaaacacca
+      301 aatcctgaga atggaacatg ttacccaggg tatttcgccg actatgagga actgagggag
+      361 caattgagtt cagtatcttc atttgagaga ttcgaaatat tccccaaaga gagctcatgg
+      421 cccaaccaca ccgtaaccgg agtatcagca tcatgctccc ataatgggaa aagcagtttt
+      481 tacagaaatt tgctatggct gacggggaag aatggtttgt acccaaacct gagcaagtcc
+      541 tatgcaaaca acaaagagaa agaagtcctt gtactatggg gtgttcatca cccgcctaac
+      601 ataggggacc aacagggcct ctatagtaat ggaaatgctt atgtctctgt agcgtcttca
+      661 aattataaca ggagattcac cccggaaata gctgcaaggc ccaaagtaaa agatcaacat
+      721 gggaggatga actattactg gaccttgcta gaacccggag acacaataat atttgaggca
+      781 actggtaatc taatagcacc atggtatgct ttcgcactga gtagagggtt tgagtccggc
+      841 atcatcacct caaacgcgtc aatgcatgag tgtaacacga agtgtcaaac accccaggga
+      901 tctataaaca gcaatctccc tttccagaat atacacccag tcacaatagg agagtgccca
+      961 aagtatgtca ggagtgcaaa attaaggatg gttacaggac taaggaacat cccatccatt
+     1021 caatccagag gtttgtttgg agccattgcc ggtttcattg aaggggggtg gactggaatg
+     1081 gtagatgggt ggtatggtta tcatcatcag aatgagcaag gatctggcta tgctgcagat
+     1141 caaaaaagca cacaaaatgc cattaacggg attacaaaca aggtgaattc tgtaattgag
+     1201 aaaatgaaca ctcaattcac agctgtgggc aaagaattca acagattgga aagaaggatg
+     1261 gaaaacttaa ataaaaaagt tgatgatggg tttctagaca tttggacata taatgcagaa
+     1321 ttgttggttc tactggaaaa tgaaaggact ttggatttcc atgactccaa tgtgaagaat
+     1381 ctgtatgaga aagtaaaaag ccaattaaag aataatgcca aagaaatagg aaacgggtgt
+     1441 tttgaatttt atcacaagtg taacaatgaa tgcatggaga gtgtgaaaaa tggaacttat
+     1501 gactatccaa aatattccga agaatcaaag ttaaacaggg agaaaattga tggagtaaaa
+     1561 ttggaatcaa tgggagtcta tcagattctg gcgatctact caactgtcgc cagttccctg
+     1621 gttcttttgg tctccctggg ggcaatcagc ttctggatgt gttccaatgg gtctttgcag
+     1681 tgtagaatat gcatctga
+//
+
