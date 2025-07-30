@@ -3,12 +3,12 @@ from pathlib import Path
 
 import pandas as pd
 
-from ViroConstrictor.workflow.scripts.base_script_class import BaseScript
+from .base_script_class import BaseScript
 
 
 class VcfToTsv(BaseScript):
-    def __init__(self, input_path: Path, output_path: Path, samplename: str) -> None:
-        super().__init__(input_path, output_path)
+    def __init__(self, input: Path, output: Path, samplename: str) -> None:
+        super().__init__(input, output)
         self.samplename = samplename
 
     @classmethod

@@ -3,7 +3,7 @@ from pathlib import Path
 
 from Bio import SeqIO
 
-from ViroConstrictor.workflow.scripts.base_script_class import BaseScript
+from .base_script_class import BaseScript
 
 
 class PrepareRefs(BaseScript):
@@ -14,8 +14,9 @@ class PrepareRefs(BaseScript):
     and writes it to an output file if the reference ID matches.
     """
 
-    def __init__(self, input_path: Path, output_path: Path, reference_id: str) -> None:
-        super().__init__(input_path, output_path)
+    def __init__(self, input: Path, output: Path, reference_id: str) -> None:
+        super().__init__(input, output)
+        print(input, output, reference_id)
         self.reference_id = reference_id
 
     @classmethod
@@ -34,10 +35,16 @@ class PrepareRefs(BaseScript):
 
     def _prepare_refs(self) -> None:
         """Prepare reference sequences by converting to uppercase."""
+        self.log(f"Processing input file: {self.input_path}", level="info")
         for record in SeqIO.parse(self.input_path.as_posix(), "fasta"):
             if self.reference_id in record.id:
                 record.seq = record.seq.upper()
                 SeqIO.write(record, self.output_path.as_posix(), "fasta")
+            else:
+                self.log(
+                    f"Reference ID {self.reference_id} not found in record {record.id}",
+                    level="warning",
+                )
 
 
 if __name__ == "__main__":

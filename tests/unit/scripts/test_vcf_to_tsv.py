@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from ViroConstrictor.workflow.scripts.vcf_to_tsv import VcfToTsvScript
+from ViroConstrictor.workflow.scripts.vcf_to_tsv import VcfToTsv
 
 
 def test_vcf_to_tsv(tmp_path: Path) -> None:
@@ -19,7 +19,7 @@ chr1\t67890\t.\tG\tN\t.\tPASS\tDP=50
 """
     )
 
-    script = VcfToTsvScript(input_path, output_path, samplename)
+    script = VcfToTsv(input_path, output_path, samplename)
     script.run()
 
     # Verify the output
