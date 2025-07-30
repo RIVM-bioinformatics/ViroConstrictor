@@ -168,10 +168,14 @@ rule prepare_refs:
     container:
         f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     params:
-        script=workflow.source_path("scripts/prepare_refs.py") if (DeploymentMethod.CONDA in workflow.deployment_settings.deployment_method) is True else "/scripts/prepare_refs.py",
+        script = "-m scripts.prepare_refs"
     shell:
         """
-        python {params.script} {input} {output} {wildcards.RefID} > {log}
+        PYTHONPATH={workflow.basedir} \
+        python {params.script} \
+        --input {input} \
+        --output {output} \
+        --reference_id {wildcards.RefID} > {log}
         """
 
 rule prepare_primers:
@@ -894,10 +898,14 @@ rule vcf_to_tsv:
     log:
         f"{logdir}" "vcf_to_tsv_{Virus}.{RefID}.{sample}.log",
     params:
-        script=workflow.source_path("scripts/vcf_to_tsv.py") if (DeploymentMethod.CONDA in workflow.deployment_settings.deployment_method) is True else "/scripts/vcf_to_tsv.py",
+        script= "-m scripts.vcf_to_tsv"
     shell:
         """
-        python {params.script} {input.vcf} {output.tsv} {wildcards.sample} >> {log} 2>&1
+        PYTHONPATH={workflow.basedir} \
+        python {params.script} \
+        --input {input.vcf} \
+        --output {output.tsv} \
+        --sample {wildcards.sample} >> {log} 2>&1
         """
 
 
