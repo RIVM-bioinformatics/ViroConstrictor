@@ -974,10 +974,9 @@ rule calculate_amplicon_cov:
     container:
         f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     params:
-        script = "-m scripts.amplicon_covs" if (DeploymentMethod.CONDA in workflow.deployment_settings.deployment_method) is True else "-m scripts.amplicon_covs",
+        script = "-m scripts.amplicon_covs",
     shell:
         """
-        echo $(ls -lah /)
         PYTHONPATH={workflow.basedir} \
         python {params.script} \
         --primers {input.pr} \
