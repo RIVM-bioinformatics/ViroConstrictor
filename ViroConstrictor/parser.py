@@ -3,7 +3,6 @@ import multiprocessing
 import os
 import pathlib
 import re
-import shutil
 import sys
 from typing import Any, Hashable, List
 
@@ -13,6 +12,7 @@ import rich
 
 from ViroConstrictor import __prog__, __version__
 from ViroConstrictor.functions import FlexibleArgFormatter, RichParser
+from ViroConstrictor.genbank import GenBank
 from ViroConstrictor.logging import log, setup_logger
 from ViroConstrictor.samplesheet import GetSamples
 from ViroConstrictor.scheduler import Scheduler
@@ -48,6 +48,8 @@ class CLIparser:
             self.samples_df = pd.DataFrame.from_dict(self.samples_dict, orient="index")
         else:
             self._print_missing_asset_warning(self.flags, False)
+            if GenBank.is_genbank(pathlib.Path(self.flags.reference)):
+                self.parse_genbank(self.flags.reference)
             self.samples_dict = self._make_samples_dict(
                 None, self.flags, GetSamples(self.flags.input, self.flags.platform)
             )
@@ -69,6 +71,11 @@ class CLIparser:
         self._check_sample_properties(
             self.samples_dict
         )  # raises errors if stuff is not right
+
+    def parse_genbank(self, reference: str) -> None:
+        self.flags.reference, self.flags.features, self.flags.target = (
+            GenBank.split_genbank(pathlib.Path(reference))
+        )
 
     def _validate_cli_args(self) -> list[str] | None:
         arg_errors = []
@@ -92,7 +99,7 @@ class CLIparser:
                     f"'[magenta]{self.flags.samplesheet}[/magenta]' does not have a valid file extension.\nAllowed file extenstions for the samplesheet: {' '.join([f'[blue]{x}[/blue]' for x in allowed_extensions])}"
                 )
         if self.flags.reference is not None:
-            allowed_extensions = [".fasta", ".fa"]
+            allowed_extensions = [".fasta", ".fa", ".gb", ".gbk"]
             if self.flags.reference == "NONE":
                 arg_errors.append(
                     f"'[magenta]{self.flags.reference}[/magenta]' cannot be given for the reference file."
@@ -519,16 +526,23 @@ class CLIparser:
                 log.warn(
                     "[yellow]Both a sample sheet and run-wide GFF file was given, the GFF file given through the commandline will be ignored[/yellow]"
                 )
-        if not sheet_present and any(
-            map(
-                lambda f: f is None,
-                {args.primers, args.reference, args.features, args.target},
-            )
-        ):
-            log.error(
-                f"[bold red]Run-wide analysis settings were not provided and no samplesheet was given either with per-sample run information.\nPlease either provide all required information ([underline]reference[/underline], [underline]primers[/underline], [underline]genomic features[/underline] and [underline]viral-target[/underline]) for a run-wide analysis or provide a samplesheet with per-sample run information[/bold red]"
-            )
-            sys.exit(1)
+        if GenBank.is_genbank(pathlib.Path(args.reference)):
+            if not sheet_present and any(
+                f is None for f in (args.primers, args.reference)
+            ):
+                log.error(
+                    "[bold red]Run-wide analysis settings were not provided and no samplesheet was given either with per-sample run information.\nPlease either provide all required information ([underline]reference[/underline], [underline]primers[/underline], [underline]genomic features[/underline] and [underline]viral-target[/underline]) for a run-wide analysis or provide a samplesheet with per-sample run information[/bold red]"
+                )
+                sys.exit(1)
+        else:
+            if not sheet_present and any(
+                f is None
+                for f in (args.primers, args.reference, args.features, args.target)
+            ):
+                log.error(
+                    "[bold red]Run-wide analysis settings were not provided and no samplesheet was given either with per-sample run information.\nPlease either provide all required information ([underline]reference[/underline], [underline]primers[/underline], [underline]genomic features[/underline] and [underline]viral-target[/underline]) for a run-wide analysis or provide a samplesheet with per-sample run information[/bold red]"
+                )
+                sys.exit(1)
 
     def _get_paths_for_workflow(
         self, flags: argparse.Namespace
