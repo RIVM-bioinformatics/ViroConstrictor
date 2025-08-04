@@ -10,6 +10,7 @@ from typing import Any, Hashable, List
 import numpy as np
 import pandas as pd
 import rich
+import logging
 
 from ViroConstrictor import __prog__, __version__
 from ViroConstrictor.functions import FlexibleArgFormatter, RichParser
@@ -24,17 +25,31 @@ from ViroConstrictor.workflow.presets import match_preset_name
 class CLIparser:
     def __init__(self, input_args: list[str], settings_path: str) -> None:
         self.flags: argparse.Namespace = self._get_args(input_args)
+
+        # Override standard logging when verbose option is given and add debug statements
+        if self.flags.verbose:
+            log.setLevel(logging.DEBUG)
+            logging.getLogger("asyncio").setLevel(logging.DEBUG)
+            logging.getLogger("snakemake").setLevel(logging.DEBUG)
+            logging.getLogger("smart_open").setLevel(logging.DEBUG)
+            logging.getLogger("urllib3").setLevel(logging.DEBUG)
+            logging.getLogger("fpdf").setLevel(logging.DEBUG)
+
         self.logfile = setup_logger(self.flags.output)
         log.info(f"ViroConstrictor version: [blue]{__version__}[/blue]")
+        log.debug("Validate arguments :: checking all given command line arguments.")
         self.cli_errors = self._validate_cli_args()
         if self.cli_errors:
             for err in self.cli_errors:
                 log.error(err)
             sys.exit(1)
+        else:
+            log.debug("Validate arguments :: all given command line arguments have been successfully checked.")
         self.user_config = ReadConfig(pathlib.Path(settings_path).expanduser())
         self.scheduler = Scheduler.determine_scheduler(
             self.flags.scheduler, self.user_config, log
         )
+        log.debug("Getting samples :: getting samples from sample sheet.")
         self.flags.presets = self.flags.disable_presets is False
         self.samples_df = pd.DataFrame()
         self.samples_dict: dict[Hashable, Any] = {}
@@ -56,6 +71,7 @@ class CLIparser:
         self.samples_df = self.samples_df.reset_index(drop=False).rename(
             columns={"index": "SAMPLE"}
         )
+        log.debug("Getting samples :: samples have been acquired successfully.")
         (
             self.input_path,
             self.workdir,
@@ -66,9 +82,12 @@ class CLIparser:
         if not self.samples_dict:
             sys.exit(1)
         log.info("[green]Successfully parsed all command line arguments[/green]")
+        converted_args = ", ".join(str(key) + "=" + str(value) for key, value in vars(self.flags).items())
+        log.debug(f"Parse arguments :: the parsed arguments are: {converted_args}")
         self._check_sample_properties(
             self.samples_dict
         )  # raises errors if stuff is not right
+
 
     def _validate_cli_args(self) -> list[str] | None:
         arg_errors = []
@@ -367,6 +386,13 @@ class CLIparser:
             "--skip-updates",
             action="store_true",
             help="Skip the update check",
+        )
+
+        optional_args.add_argument(
+            "--verbose",
+            "-V",
+            action="store_true",
+            help="Adds extra information to the log file",
         )
 
         if not givenargs:
