@@ -5,11 +5,14 @@ import pathlib
 import re
 from typing import Any, Callable
 
+from numpy import record
 from rich.color import ANSI_COLOR_NAMES
 from rich.default_styles import DEFAULT_STYLES
 from rich.highlighter import NullHighlighter
 from rich.logging import RichHandler
 from ViroConstrictor import __prog__
+
+from rich import print
 
 richstyles = list(set(list(DEFAULT_STYLES.keys()) + list(ANSI_COLOR_NAMES.keys())))
 
@@ -53,7 +56,11 @@ class StripBracketsFilter(logging.Filter):
     def filter(self, record):
         pattern = r"\[/?\b(%s)\b[^\]]*\]" % "|".join(richstyles)
         record.msg = re.sub(pattern, "", record.msg)
-        record.msg = record.msg.replace("\n", "\n\t\t\t\t\t\t\t")
+        if record.levelname == "DEBUG":
+            # Outline the debug message with 4 \t instead of 7
+            record.msg = record.msg.replace("\n", "\n\t\t\t\t")
+        else:
+            record.msg = record.msg.replace("\n", "\n\t\t\t\t\t\t\t")
         return record
 
 
@@ -131,7 +138,7 @@ class ViroConstrictorBaseLogHandler(logging.Handler):
         )  # Add the filter to the file handler
 
         # Define formatter for the file log
-        format_file = "%(asctime)s\t%(levelname)s\t%(message)s"
+        format_file = "%(asctime)s\t%(levelname)s\t%(message)s" # TODO andere message layout voor debug???
         file_formatter = logging.Formatter(
             fmt=format_file, datefmt="[%d/%m/%y %H:%M:%S]"
         )
@@ -253,6 +260,17 @@ class ViroConstrictorBaseLogHandler(logging.Handler):
         log_message = log_record.get("msg", None)
         log_event = log_record.get("event", None)
         execjob_logfile = log_record.get("log", None)
+        
+        rule_name = log_record.get("rule_name", None)
+        wildcards = log_record.get("wildcards", None)
+        rule_id = log_record.get("jobid", None)
+        rule_input = log_record.get("input", None)
+        rule_output = log_record.get("output", None)
+        shellcmd = log_record.get("shellcmd", None)
+
+        if None not in [rule_name, wildcards, rule_id, rule_input, rule_output, shellcmd]:
+            handle_job_debug_message(log_record, rule_name, wildcards, rule_id, rule_input, rule_output, shellcmd)
+            return None
 
         if log_message is None and log_record.get("message") is not None:
             log_message = log_record.get("message")
@@ -490,6 +508,45 @@ def HandleJobErrorMessage(record: dict[str, Any]) -> dict[str, Any]:
         f"Job [red underline]{process_name}[/red underline] for sample [blue]{sample}[/blue] with target [blue]{input_target}[/blue] and reference-id [blue]{refid}[/blue] failed!\nJob is using jobID [cyan]{job_id}[/cyan], logging output will be written to [magenta]{logfile}[/magenta]\nThe expected output file(s) are as follows:\n[red]{outputfiles_list}[/red]\nThe following shell command was issued:\n[red]{shellcmd}[/red]"
     )
     return record
+
+
+def handle_job_debug_message(record: dict[str, Any], rule_name: str, wildcards: dict[str, str], rule_id: str, rule_input: list[str], rule_output: list[str], shellcmd: str):
+    """
+    Formats and logs a debug message containing job details for a Snakemake rule execution.
+    
+    Parameters
+    ----------
+    record : dict[str, Any]
+        The log record dictionary to be updated with the formatted debug message.
+    rule_name : str
+        The name of the Snakemake rule being executed.
+    wildcards : dict[str, str]
+        Dictionary of wildcard values for the current job.
+    rule_id : str
+        Unique identifier for the job.
+    rule_input : list[str]
+        List of input file paths for the rule.
+    rule_output : list[str]
+        List of output file paths for the rule.
+    shellcmd : str
+        The shell command to be executed for the rule.
+        
+    Notes
+    -----
+    This function updates the `record` with a formatted debug message including rule name, wildcards,
+    job ID, input and output files, and the shell command. The message is styled with color tags for
+    rich logging output and is logged at the DEBUG level.
+    """
+    # Replace the record's wildcard, rule input & output and shellcmd with a formatted string containing the job details
+    wildcards = ", ".join(f"{key}: [blue]{value}[/blue]" for key, value in wildcards.items())
+    rule_input = ", ".join(f"[magenta]{input_path}[/magenta]" for input_path in rule_input)
+    rule_output = ", ".join(f"[magenta]{output_path}[/magenta]" for output_path in rule_output)
+    shellcmd = re.sub(r" +", " ", shellcmd.strip()) # remove extra spaces and leading & trailing characters from the shell command
+    # Create the debug message
+    record["msg"] = f"{rule_name} :: {wildcards} :: JobID: [cyan]{rule_id}[/cyan]\nInput: {rule_input}\nOutput: {rule_output}\nFull command:\n{shellcmd}"
+    # Set the log level to DEBUG for this record
+    record["levelname"] = "DEBUG" 
+    log.debug(record["msg"])
 
 
 def print_jobstatistics_logmessage(msg: str) -> str:
