@@ -138,7 +138,7 @@ class ViroConstrictorBaseLogHandler(logging.Handler):
         )  # Add the filter to the file handler
 
         # Define formatter for the file log
-        format_file = "%(asctime)s\t%(levelname)s\t%(message)s" # TODO andere message layout voor debug???
+        format_file = "%(asctime)s\t%(levelname)s\t%(message)s"
         file_formatter = logging.Formatter(
             fmt=format_file, datefmt="[%d/%m/%y %H:%M:%S]"
         )

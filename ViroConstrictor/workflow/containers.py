@@ -1,5 +1,6 @@
 import hashlib
 import os
+import yaml
 import subprocess
 from pathlib import Path
 from typing import Dict, List
@@ -96,14 +97,16 @@ def calculate_hashes(file_list: List[str]) -> Dict[str, str]:
     return hashdict
 
 
-def fetch_hashes() -> Dict[str, str]:
+def fetch_hashes() -> tuple[Dict[str, str], str]:
     """
     Fetches and returns the hashes of recipe files, script files, and config files.
 
     Returns
     -------
-    Dict[str, str]
-        A dictionary containing the file paths as keys and their corresponding hashes as values.
+    tuple[Dict[str, str], str]
+        A tuple containing two elements:
+        - A dictionary where the keys are file paths and the values are hashes of the files.
+        - A string representing the merged hash of the scripts and configuration files.
     """
     # Fetch the recipe files, script files, and config files
     recipe_files = sorted(
@@ -147,7 +150,79 @@ def fetch_hashes() -> Dict[str, str]:
             ).hexdigest()[:6]
             hashes[recipe_file] = file_hash
 
-    return hashes
+    return hashes, merged_hashes
+
+
+def log_containers(recipe_hashes: Dict[str, str], merged_hash: str) -> None:
+    """
+    Logs information about container recipe files, their hashes, and dependencies.
+    
+    Parameters
+    ----------
+    recipe_hashes : Dict[str, str]
+        A dictionary mapping recipe file paths to their corresponding hash values.
+    merged_hash : str
+        The hash value representing the merged scripts and configuration files.
+        
+    Returns
+    -------
+    None
+    
+    Notes
+    -----
+    This function reads each recipe file, extracts its dependencies from YAML,
+    parses them into a standardized list, and logs the dependencies along with
+    their versions. It also logs the hashes of the recipe files and the merged hash.
+    """
+    # Log the merged hash of scripts and config files
+    log.debug(f"Getting hashes :: merged hash of scripts and config files: {merged_hash}")
+    # Log the hashes of the recipe files
+    hashes_to_string = ",\n".join(f"{file}: {hash}" for file, hash in recipe_hashes.items())
+    log.debug(f"Getting hashes :: recipe file hashes: \n{hashes_to_string}")
+
+    # Log the depencies and their versions
+    for recipe_file, hash in recipe_hashes.items():
+        with open(recipe_file, "r") as file:
+            # Load the YAML content from the recipe file
+            # and extract the dependencies
+            dependencies = yaml.safe_load(file).get("dependencies", [])
+            # Parse the dependencies into a standardized list
+            dependency_list = parse_dependencies(dependencies)
+            dependency_string = ",\n".join(dependency_list)
+            # Log the dependencies and their versions
+            log.debug(f"Getting dependency versions :: recipe file: {recipe_file}, hash: {hash}\n{dependency_string}")
+
+
+def parse_dependencies(dependencies: List) -> List[str]:
+    """
+    Parse a list of dependencies into a standardized list of strings.
+
+    Parameters
+    ----------
+    dependencies : list
+        A list containing dependencies specified as strings, dictionaries, or other types.
+        - If an element is a string, it is added directly to the result.
+        - If an element is a dictionary, each key is treated as a dependency type and its values as versions.
+          The output will be formatted as "dep_type::version" for each version.
+        - Other types are converted to strings and added to the result.
+
+    Returns
+    -------
+    dependency_list : list of str
+        A list of dependencies as strings, standardized for further processing.
+    """
+    dependency_list = []
+    for dependency in dependencies:
+        # Check if the dependency is a string, dictionary or other type and
+        # handle accordingly
+        if isinstance(dependency, str):
+            dependency_list.append(dependency)
+        elif isinstance(dependency, dict):
+            for dep_type, versions in dependency.items():
+                dependency_list.extend(f"{dep_type}::{version}" for version in versions)
+        else:
+            dependency_list.append(str(dependency))
+    return dependency_list
 
 
 def get_hash(target_container: str) -> str | None:
@@ -164,7 +239,7 @@ def get_hash(target_container: str) -> str | None:
     str or None
         The hash of the target container if found, None otherwise.
     """
-    hashes = fetch_hashes()
+    hashes, merged_hash = fetch_hashes()
     return next(
         (hash for recipe, hash in hashes.items() if target_container in recipe),
         None,
@@ -200,7 +275,8 @@ def containers_to_download(apptainer_path: Path) -> List[str]:
         A list of container names that need to be downloaded.
 
     """
-    recipes = fetch_hashes()
+    recipes, merged_hash = fetch_hashes()
+    log_containers(recipes, merged_hash)
 
     # check the recipes dict and create a list of required containers for the workflow. the list must contain strings that look like "viroconstrictor_alignment_{hash}" "viroconstrictor_clean_{hash}" etc.
     required_containers = []
@@ -269,7 +345,7 @@ def download_containers(
     """
     to_download = containers_to_download(apptainer_path)
     to_download = [x.rsplit("_", 1)[0] + ":" + x.rsplit("_", 1)[1] for x in to_download]
-
+    
     if dryrun:
         log.info(
             f"Container(s) [magenta]{', '.join(to_download)}[/magenta] will be downloaded"
