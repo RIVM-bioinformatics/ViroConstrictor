@@ -17,7 +17,7 @@ from rich.console import Console
 
 from ViroConstrictor.functions import tabCompleter
 from ViroConstrictor.logging import log
-from ViroConstrictor.workflow.containers import containerization_installed
+from ViroConstrictor.workflow.helpers.containers import containerization_installed
 
 
 def FileExists(file: pathlib.Path) -> bool:

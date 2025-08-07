@@ -107,29 +107,30 @@ def fetch_hashes() -> Dict[str, str]:
     """
     # Fetch the recipe files, script files, and config files
     recipe_files = sorted(
-        fetch_recipes(f"{os.path.dirname(os.path.realpath(__file__))}/envs/")
+        fetch_recipes(f"{Path(os.path.dirname(os.path.realpath(__file__))).parent}/envs/")
     )
     script_files = sorted(
-        fetch_scripts(f"{os.path.dirname(os.path.realpath(__file__))}/scripts/")
+        fetch_scripts(f"{os.path.dirname(os.path.realpath(__file__))}/match_ref/scripts/")
     )
-    config_files = sorted(
-        fetch_files(f"{os.path.dirname(os.path.realpath(__file__))}/files/")
+    script_files.extend(
+        fetch_scripts(f"{os.path.dirname(os.path.realpath(__file__))}/main/scripts/")
     )
+    # config_files = sorted(
+    #     fetch_files(f"{os.path.dirname(os.path.realpath(__file__))}/files/")
+    # )
 
     # Calculate hashes for script files
     script_hashes = calculate_hashes(script_files)
 
     # Calculate hashes for config files
-    config_hashes = calculate_hashes(config_files)
+    # config_hashes = calculate_hashes(config_files)
 
     # Sort the hashes of the scripts and the configs
     script_hashes = dict(sorted(script_hashes.items()))
-    config_hashes = dict(sorted(config_hashes.items()))
+    # config_hashes = dict(sorted(config_hashes.items()))
 
     # Join the hashes of the scripts and the configs, and create a new hash of the joined hashes
-    merged_hashes = hashlib.sha256(
-        "".join(list(script_hashes.values()) + list(config_hashes.values())).encode()
-    ).hexdigest()[:6]
+    merged_hashes = hashlib.sha256("".join(list(script_hashes.values())).encode()).hexdigest()[:6]
 
     # Calculate hashes for recipe files
     hashes = {}

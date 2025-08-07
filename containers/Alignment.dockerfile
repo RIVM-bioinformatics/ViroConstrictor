@@ -1,8 +1,6 @@
 FROM mambaorg/micromamba:latest
 
 COPY ./ViroConstrictor/workflow/envs/Alignment.yaml /install.yml
-COPY ./ViroConstrictor/workflow/files/ /files/
-COPY ./ViroConstrictor/workflow/wrappers/ /wrappers/
 
 LABEL org.opencontainers.image.description="Sequence alignment processes and tools for the ViroConstrictor workflow."
 

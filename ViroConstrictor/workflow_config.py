@@ -30,7 +30,7 @@ from snakemake_interface_logger_plugins.settings import (
 from ViroConstrictor.logging import log
 from ViroConstrictor.parser import CLIparser
 from ViroConstrictor.runconfigs import WriteYaml
-from ViroConstrictor.workflow.containers import (
+from ViroConstrictor.workflow.helpers.containers import (
     construct_container_bind_args,
     download_containers,
 )
