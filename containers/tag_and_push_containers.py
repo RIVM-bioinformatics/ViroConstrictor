@@ -2,7 +2,7 @@ import json
 import subprocess
 from typing import List
 
-from ViroConstrictor.workflow.containers import upstream_registry
+from ViroConstrictor.workflow.helpers.containers import upstream_registry
 
 base_path_to_container_defs = "./containers"
 

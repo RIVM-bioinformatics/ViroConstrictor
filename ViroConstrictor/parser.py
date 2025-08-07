@@ -18,7 +18,7 @@ from ViroConstrictor.samplesheet import GetSamples
 from ViroConstrictor.scheduler import Scheduler
 from ViroConstrictor.userprofile import ReadConfig
 from ViroConstrictor.validatefasta import CheckReferenceFile
-from ViroConstrictor.workflow.presets import match_preset_name
+from ViroConstrictor.workflow.helpers.presets import match_preset_name
 
 
 class CLIparser:
@@ -550,10 +550,10 @@ class CLIparser:
         working_directory: str = os.path.abspath(flags.output)
         exec_start_path: str = os.path.abspath(os.getcwd())
         snakefile: str = os.path.join(
-            os.path.abspath(os.path.dirname(__file__)), "workflow", "workflow.smk"
+            os.path.abspath(os.path.dirname(__file__)), "workflow", "main", "workflow.smk"
         )
         match_ref_snakefile: str = os.path.join(
-            os.path.abspath(os.path.dirname(__file__)), "workflow", "match_ref.smk"
+            os.path.abspath(os.path.dirname(__file__)), "workflow", "match_ref", "workflow.smk"
         )
 
         if not os.path.exists(working_directory):

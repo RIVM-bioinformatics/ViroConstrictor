@@ -6,7 +6,7 @@ import tempfile
 import requests
 
 from ViroConstrictor import __prog__
-from ViroConstrictor.workflow.containers import fetch_hashes, upstream_registry
+from ViroConstrictor.workflow.helpers.containers import fetch_hashes, upstream_registry
 
 base_path_to_container_defs = "./containers"
 upstream_api_endpoint = (
