@@ -5,14 +5,12 @@ import pathlib
 import re
 from typing import Any, Callable
 
-from numpy import record
 from rich.color import ANSI_COLOR_NAMES
 from rich.default_styles import DEFAULT_STYLES
 from rich.highlighter import NullHighlighter
 from rich.logging import RichHandler
-from ViroConstrictor import __prog__
 
-from rich import print
+from ViroConstrictor import __prog__
 
 richstyles = list(set(list(DEFAULT_STYLES.keys()) + list(ANSI_COLOR_NAMES.keys())))
 
@@ -543,7 +541,7 @@ def handle_job_debug_message(record: dict[str, Any], rule_name: str, wildcards: 
     rule_output = ", ".join(f"[magenta]{output_path}[/magenta]" for output_path in rule_output)
     shellcmd = re.sub(r" +", " ", shellcmd.strip()) # remove extra spaces and leading & trailing characters from the shell command
     # Create the debug message
-    record["msg"] = f"{rule_name} :: {wildcards} :: JobID: [cyan]{rule_id}[/cyan]\nInput: {rule_input}\nOutput: {rule_output}\nFull command:\n{shellcmd}"
+    record["msg"] = f"Snakemake workflow :: {rule_name} :: {wildcards} :: JobID: [cyan]{rule_id}[/cyan]\nInput: {rule_input}\nOutput: {rule_output}\nFull command:\n{shellcmd}"
     # Set the log level to DEBUG for this record
     record["levelname"] = "DEBUG" 
     log.debug(record["msg"])

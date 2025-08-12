@@ -55,9 +55,9 @@ class Scheduler(Enum):
                 return cls.LOCAL
             scheduler = cls.from_string(scheduler_str)
             if scheduler == cls.AUTO:
-                log.debug("Scheduler set to AUTO, trying to determine automatically")
+                log.debug("Python code :: Scheduler :: Scheduler set to AUTO, trying to determine automatically")
                 return None
-            log.debug("Scheduler determined from string: '%s'", scheduler_str)
+            log.debug("Python code :: Scheduler :: Scheduler determined from string: '%s'", scheduler_str)
             return scheduler
         return None
 
@@ -73,19 +73,19 @@ class Scheduler(Enum):
                     config_scheduler,
                 )
                 return cls.LOCAL
-            log.debug("Scheduler determined from config: '%s'", config_scheduler)
+            log.debug("Python code :: Scheduler :: Scheduler determined from config: '%s'", config_scheduler)
             return cls.from_string(config_scheduler)
         return None
 
     @classmethod
     def _scheduler_from_environment(cls, log: Logger) -> Optional["Scheduler"]:
         if shutil.which("sbatch") or "SLURM_JOB_ID" in os.environ:
-            log.debug("Scheduler found in environment: SLURM")
+            log.debug("Python code :: Scheduler :: Scheduler found in environment: SLURM")
             return cls.SLURM
         if shutil.which("bsub") or "LSB_JOBID" in os.environ:
-            log.debug("Scheduler found in environment: LSF")
+            log.debug("Python code :: Scheduler :: Scheduler found in environment: LSF")
             return cls.LSF
-        log.debug("No scheduler found in environment variables or executables.")
+        log.debug("Python code :: Scheduler :: No scheduler found in environment variables or executables.")
         return None
 
     @classmethod
@@ -95,10 +95,10 @@ class Scheduler(Enum):
 
             with drmaa.Session() as session:
                 scheduler_name = session.drmsInfo
-                log.debug("Scheduler determined from DRMAA: '%s'", scheduler_name)
+                log.debug("Python code :: Scheduler :: Scheduler determined from DRMAA: '%s'", scheduler_name)
                 return cls.from_string(scheduler_name)
         except RuntimeError as e:
-            log.debug(f"DRMAA not available: {e}")
+            log.debug(f"Python code :: Scheduler :: DRMAA not available: {e}")
         return None
 
     @classmethod
@@ -107,28 +107,28 @@ class Scheduler(Enum):
     ) -> "Scheduler":
         """Determine the scheduler type from argument, config, env, or DRMAA."""
 
-        log.debug("Determining scheduler...")
+        log.debug("Python code :: Scheduler :: Determining scheduler...")
 
         if scheduler_str:
             scheduler = cls._scheduler_from_argument(scheduler_str, log)
             if scheduler is not None:
-                log.debug("Scheduler selected from argument: '%s'", scheduler.name)
+                log.debug("Python code :: Scheduler :: Scheduler selected from argument: '%s'", scheduler.name)
                 return scheduler
 
         if user_config:
             scheduler = cls._scheduler_from_config(user_config, log)
             if scheduler is not None:
-                log.debug("Scheduler selected from config: '%s'", scheduler.name)
+                log.debug("Python code :: Scheduler :: Scheduler selected from config: '%s'", scheduler.name)
                 return scheduler
 
         scheduler = cls._scheduler_from_environment(log)
         if scheduler is not None:
-            log.debug("Scheduler selected from environment: '%s'", scheduler.name)
+            log.debug("Python code :: Scheduler :: Scheduler selected from environment: '%s'", scheduler.name)
             return scheduler
 
         scheduler = cls._scheduler_from_drmaa(log)
         if scheduler is not None:
-            log.debug("Scheduler selected from DRMAA: '%s'", scheduler.name)
+            log.debug("Python code :: Scheduler :: Scheduler selected from DRMAA: '%s'", scheduler.name)
             return scheduler
 
         log.info(
