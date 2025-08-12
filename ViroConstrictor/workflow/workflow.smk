@@ -110,7 +110,9 @@ def list_aa_result_outputs():
             aa_feats.extend(
                 [f"{res}Virus~{Virus}/RefID~{RefID}/{amino}{aa}.faa" for aa in Feats]
             )
-    return list(set(aa_feats))
+
+    result = list(set(aa_feats))
+    return result
 
 
 def construct_all_rule(p_space):
@@ -222,14 +224,18 @@ rule filter_primer_bed:
     benchmark:
         f"{logdir}{bench}prepare_primers_" "{Virus}.{RefID}.{sample}.txt"
     params:
-        script=workflow.source_path("scripts/filter_bed_input.py") if (DeploymentMethod.CONDA in workflow.deployment_settings.deployment_method) is True else "/scripts/filter_bed_input.py",
+        script="-m scripts.filter_bed_input",
     conda:
         f"{conda_envs}Scripts.yaml"
     container:
         f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     shell:
         """
-        python {params.script} {input.prm} {output.bed} {wildcards.RefID}
+        PYTHONPATH={workflow.basedir} \
+        python {params.script} \
+        --input {input.prm} \
+        --output {output.bed} \
+        --reference_id {wildcards.RefID}
         """
 
 rule create_empty_primers:
@@ -838,6 +844,7 @@ def group_aminoacids_inputs(wildcards):
                 file_list.append(
                     f"{datadir}Virus~{virus}/RefID~{ref}/{amino}{sample}/aa.faa"
                 )
+
     return file_list
 
 
@@ -877,9 +884,15 @@ rule concat_aminoacids:
         f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     threads: 1
     params:
-        script=workflow.source_path("scripts/group_aminoacids.py") if (DeploymentMethod.CONDA in workflow.deployment_settings.deployment_method) is True else "/scripts/group_aminoacids.py",
+        script="-m scripts.group_aminoacids",
     shell:
-        'python {params.script} "{input.files}" "{output}" {input.sampleinfo}'
+        """
+        PYTHONPATH={workflow.basedir} \
+        python {params.script} \
+        --input "{input.files}" \
+        --output "{output}" \
+        --space {input.sampleinfo}
+        """
 
 
 rule vcf_to_tsv:

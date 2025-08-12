@@ -1,5 +1,4 @@
 from argparse import ArgumentParser
-from logging import Logger
 from pathlib import Path
 
 
@@ -61,42 +60,9 @@ class BaseScript:
     >>>     MyScript.main()
     """
 
-    def __init__(self, input: Path, output: Path) -> None:
-        self.input_path = input
-        self.output_path = output
-        self._validate_paths()
-
-    def log(self, message: str, level: str = "info") -> None:
-        """
-        Log a message at the specified logging level.
-
-        Parameters
-        ----------
-        message : str
-            The message to log.
-        level : str, optional
-            The logging level (default is "info").
-        """
-        level = level.lower().strip()
-        if level not in ["info", "error", "warning", "debug"]:
-            raise ValueError(
-                f"Invalid logging level: {level}. Use 'info', 'error', 'warning', or 'debug'."
-            )
-        logger = Logger(__name__)
-        if level == "info":
-            logger.info(message)
-        elif level == "error":
-            logger.error(message)
-        elif level == "warning":
-            logger.warning(message)
-        else:
-            logger.debug(message)
-
-    def _validate_paths(self) -> None:
-        if not self.input_path.exists():
-            raise FileNotFoundError(f"Input path {self.input_path} does not exist.")
-        if self.output_path.exists():
-            raise FileExistsError(f"Output path {self.output_path} already exists.")
+    def __init__(self, input: Path | str, output: Path | str) -> None:
+        self.input = input
+        self.output = output
 
     def run(self) -> None:
         raise NotImplementedError("Subclasses should implement this method.")
@@ -107,14 +73,14 @@ class BaseScript:
             "--input",
             metavar="File",
             help="Input file path.",
-            type=Path,
+            type=str,
             required=True,
         )
         parser.add_argument(
             "--output",
             metavar="File",
             help="Output file path.",
-            type=Path,
+            type=str,
             required=True,
         )
 
@@ -125,6 +91,5 @@ class BaseScript:
         args = parser.parse_args()
 
         # Pass parsed arguments to the script
-        print(f"Running {cls.__name__} with arguments: {args}")
         script = cls(**vars(args))
         script.run()

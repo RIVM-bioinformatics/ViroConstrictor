@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 from pathlib import Path
+from typing import Iterator, cast
 
 from Bio import SeqIO
 
@@ -15,8 +16,9 @@ class PrepareRefs(BaseScript):
     """
 
     def __init__(self, input: Path, output: Path, reference_id: str) -> None:
+        print("HOIASDS")
         super().__init__(input, output)
-        print(input, output, reference_id)
+
         self.reference_id = reference_id
 
     @classmethod
@@ -35,16 +37,13 @@ class PrepareRefs(BaseScript):
 
     def _prepare_refs(self) -> None:
         """Prepare reference sequences by converting to uppercase."""
-        self.log(f"Processing input file: {self.input_path}", level="info")
-        for record in SeqIO.parse(self.input_path.as_posix(), "fasta"):
+        assert not isinstance(self.input, list), "Input must be cannot be a list of strs."
+        assert not isinstance(self.output, list), "Output must be cannot be a list of strs."
+        records = cast(Iterator[SeqIO.SeqRecord], SeqIO.parse(self.input, "fasta"))
+        for record in records:
             if self.reference_id in record.id:
                 record.seq = record.seq.upper()
-                SeqIO.write(record, self.output_path.as_posix(), "fasta")
-            else:
-                self.log(
-                    f"Reference ID {self.reference_id} not found in record {record.id}",
-                    level="warning",
-                )
+                SeqIO.write(record, self.output, "fasta")
 
 
 if __name__ == "__main__":
