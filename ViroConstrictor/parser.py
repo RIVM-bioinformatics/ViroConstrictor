@@ -49,11 +49,11 @@ class CLIparser:
         self.scheduler = Scheduler.determine_scheduler(
             self.flags.scheduler, self.user_config, log
         )
-        log.debug("Getting samples :: getting samples from sample sheet.")
         self.flags.presets = self.flags.disable_presets is False
         self.samples_df = pd.DataFrame()
         self.samples_dict: dict[Hashable, Any] = {}
         if self.flags.samplesheet is not None:
+            log.debug("Getting samples :: getting samples from sample sheet.")
             self._print_missing_asset_warning(self.flags, True)
             self.samples_dict = self._make_samples_dict(
                 self._check_sample_sheet(self.flags.samplesheet),
@@ -61,6 +61,9 @@ class CLIparser:
                 GetSamples(self.flags.input, self.flags.platform),
             )
             self.samples_df = pd.DataFrame.from_dict(self.samples_dict, orient="index")
+            log.debug("Getting samples :: samples have been acquired successfully.")
+            converted_samples = convert_log_text(self.samples_dict)
+            log.debug(f"Getting samples :: the parsed samples are:\n{converted_samples}")
         else:
             self._print_missing_asset_warning(self.flags, False)
             self.samples_dict = self._make_samples_dict(
@@ -71,7 +74,6 @@ class CLIparser:
         self.samples_df = self.samples_df.reset_index(drop=False).rename(
             columns={"index": "SAMPLE"}
         )
-        log.debug("Getting samples :: samples have been acquired successfully.")
         (
             self.input_path,
             self.workdir,
@@ -82,7 +84,7 @@ class CLIparser:
         if not self.samples_dict:
             sys.exit(1)
         log.info("[green]Successfully parsed all command line arguments[/green]")
-        converted_args = ", ".join(str(key) + "=" + str(value) for key, value in vars(self.flags).items())
+        converted_args = ", ".join(f"{param}={param_value}" for param, param_value in vars(self.flags).items())
         log.debug(f"Parse arguments :: the parsed arguments are: {converted_args}")
         self._check_sample_properties(
             self.samples_dict
@@ -1038,3 +1040,34 @@ def sampledir_to_df(
         frame.rename(columns={0: "INPUTFILE"}, inplace=True)
         return frame
     raise ValueError(f"Platform {platform} not supported")
+
+
+def convert_log_text(samples_dict: dict) -> str:
+    """
+    Converts a dictionary of sample information into a formatted log text string.
+    
+    Parameters
+    ----------
+    samples_dict : dict
+        A dictionary where each key is a sample name and each value is another dictionary
+        containing sample information as key-value pairs.
+        
+    Returns
+    -------
+    str
+        A formatted string where each sample is listed with its associated information
+        in the format:
+            sample_name:
+            key1=value1, key2=value2, ...
+    """
+    
+    convert_samples = []
+    for sample, sample_info in samples_dict.items():
+        # Extract the sample information
+        convert_samples.append(f"{sample}:")
+        convert_samples.append(", ".join(f"{sample_key}={sample_value}" for sample_key, 
+                                         sample_value in sample_info.items()))
+    # Combine the sample information into a single log string
+    converted_samples = "\n".join(convert_samples)
+    return converted_samples
+    
