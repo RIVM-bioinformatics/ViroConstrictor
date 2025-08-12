@@ -28,7 +28,7 @@ class VcfToTsv(BaseScript):
     def _convert_vcf_to_tsv(self) -> None:
         """Convert VCF to TSV format."""
         df = pd.read_csv(
-            self.input_path,
+            self.input,
             sep="\t",
             comment="#",
             names=["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO"],
@@ -37,16 +37,14 @@ class VcfToTsv(BaseScript):
         df = df[df.ALT != "N"]
 
         if df.empty:
-            df.to_csv(self.output_path, sep="\t", index=False, header=False)
+            df.to_csv(self.output, sep="\t", index=False, header=False)
             return
 
-        df["INFO"] = (
-            df["INFO"].str.split("=", expand=True)[1].str.split(";", expand=True)[0]
-        )
+        df["INFO"] = df["INFO"].str.split("=", expand=True)[1].str.split(";", expand=True)[0]
         df.drop(["ID", "QUAL", "FILTER"], axis=1, inplace=True)
         df.insert(loc=0, column="Sample", value=self.samplename)
 
-        df.to_csv(self.output_path, sep="\t", index=False, header=False)
+        df.to_csv(self.output, sep="\t", index=False, header=False)
 
 
 if __name__ == "__main__":
