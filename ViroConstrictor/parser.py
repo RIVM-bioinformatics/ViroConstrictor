@@ -37,14 +37,14 @@ class CLIparser:
 
         self.logfile = setup_logger(self.flags.output)
         log.info(f"ViroConstrictor version: [blue]{__version__}[/blue]")
-        log.debug("Validate arguments :: checking all given command line arguments.")
+        log.debug("Python code :: Parser :: Validate arguments :: checking all given command line arguments.")
         self.cli_errors = self._validate_cli_args()
         if self.cli_errors:
             for err in self.cli_errors:
                 log.error(err)
             sys.exit(1)
         else:
-            log.debug("Validate arguments :: all given command line arguments have been successfully checked.")
+            log.debug("Python code :: Parser :: Validate arguments :: all given command line arguments have been successfully checked.")
         self.user_config = ReadConfig(pathlib.Path(settings_path).expanduser())
         self.scheduler = Scheduler.determine_scheduler(
             self.flags.scheduler, self.user_config, log
@@ -53,7 +53,7 @@ class CLIparser:
         self.samples_df = pd.DataFrame()
         self.samples_dict: dict[Hashable, Any] = {}
         if self.flags.samplesheet is not None:
-            log.debug("Getting samples :: getting samples from sample sheet.")
+            log.debug("Python code :: Parser :: Getting samples :: getting samples from sample sheet.")
             self._print_missing_asset_warning(self.flags, True)
             self.samples_dict = self._make_samples_dict(
                 self._check_sample_sheet(self.flags.samplesheet),
@@ -61,9 +61,9 @@ class CLIparser:
                 GetSamples(self.flags.input, self.flags.platform),
             )
             self.samples_df = pd.DataFrame.from_dict(self.samples_dict, orient="index")
-            log.debug("Getting samples :: samples have been acquired successfully.")
+            log.debug("Python code :: Parser :: Getting samples :: samples have been acquired successfully.")
             converted_samples = convert_log_text(self.samples_dict)
-            log.debug(f"Getting samples :: the parsed samples are:\n{converted_samples}")
+            log.debug(f"Python code :: Parser :: Getting samples :: the parsed samples are:\n{converted_samples}")
         else:
             self._print_missing_asset_warning(self.flags, False)
             self.samples_dict = self._make_samples_dict(
@@ -85,7 +85,7 @@ class CLIparser:
             sys.exit(1)
         log.info("[green]Successfully parsed all command line arguments[/green]")
         converted_args = ", ".join(f"{param}={param_value}" for param, param_value in vars(self.flags).items())
-        log.debug(f"Parse arguments :: the parsed arguments are: {converted_args}")
+        log.debug(f"Python code :: Parser :: Getting arguments :: the parsed arguments are: {converted_args}")
         self._check_sample_properties(
             self.samples_dict
         )  # raises errors if stuff is not right

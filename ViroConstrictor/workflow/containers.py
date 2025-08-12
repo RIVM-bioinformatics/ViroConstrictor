@@ -175,10 +175,10 @@ def log_containers(recipe_hashes: Dict[str, str], merged_hash: str) -> None:
     their versions. It also logs the hashes of the recipe files and the merged hash.
     """
     # Log the merged hash of scripts and config files
-    log.debug(f"Getting hashes :: merged hash of scripts and config files: {merged_hash}")
+    log.debug(f"Python code :: Containers :: Getting hashes :: merged hash of scripts and config files: {merged_hash}")
     # Log the hashes of the recipe files
     hashes_to_string = ",\n".join(f"{file}: {hash}" for file, hash in recipe_hashes.items())
-    log.debug(f"Getting hashes :: recipe file hashes: \n{hashes_to_string}")
+    log.debug(f"Python code :: Containers :: Getting hashes :: recipe file hashes: \n{hashes_to_string}")
 
     # Log the depencies and their versions
     for recipe_file, hash in recipe_hashes.items():
@@ -190,7 +190,7 @@ def log_containers(recipe_hashes: Dict[str, str], merged_hash: str) -> None:
             dependency_list = parse_dependencies(dependencies)
             dependency_string = ",\n".join(dependency_list)
             # Log the dependencies and their versions
-            log.debug(f"Getting dependency versions :: recipe file: {recipe_file}, hash: {hash}\n{dependency_string}")
+            log.debug(f"Python code :: Containers :: Getting dependency versions :: recipe file: {recipe_file}, hash: {hash}\n{dependency_string}")
 
 
 def parse_dependencies(dependencies: List) -> List[str]:

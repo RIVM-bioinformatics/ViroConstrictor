@@ -13,7 +13,7 @@ from ViroConstrictor.logging import log
 
 
 class PDF(FPDF):
-    log.debug("Create run report :: creating run information report.")
+    log.debug("Python code :: Run report :: Create run report :: creating run information report.")
     def timestamp(self) -> str:
         return datetime.now().strftime("%d-%m-%Y %H:%M")
 
@@ -132,4 +132,4 @@ def WriteReport(
 
     pdf.output(name="Runinfomation.pdf")
 
-    log.debug("Create run report :: run information report created successfully.")
+    log.debug("Python code :: Run report :: Create run report :: run information report created successfully.")
