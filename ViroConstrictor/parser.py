@@ -488,6 +488,25 @@ class CLIparser:
                 df["MATCH-REF"] = args.match_ref
             if df.get("SEGMENTED") is None:
                 df["SEGMENTED"] = args.segmented
+            if df.get("FRAGMENT-LOOKAROUND-SIZE") is None:
+                df["FRAGMENT-LOOKAROUND-SIZE"] = 10
+                # TODO add fragment-lookaround-size as command line argument?
+                #df["FRAGMENT-LOOKAROUND-SIZE"] = args.fragment_lookaround_size
+            else:
+                if self.flags.amplicon_type == "fragmented":
+                    # Convert all non valid numbers to NaN
+                    converted = pd.to_numeric(df["FRAGMENT-LOOKAROUND-SIZE"], errors="coerce")
+                    # Allows any floats that can be converted to integers (x.0, where x is any integer)
+                    # but converts x.y where y is any non-zero digit to NaN
+                    converted = converted.where(converted.mod(1) == 0, np.nan)
+                    for sample, frag_size in converted.items():
+                        if np.isnan(frag_size):
+                            log.warning(f"[yellow]Invalid fragment-lookaround-size detected for sample '{sample}'. Using default value 10 for this sample.[/yellow]")
+                    # Replace all NaN values with default value 10 and convert all values to integers
+                    df["FRAGMENT-LOOKAROUND-SIZE"] = converted.fillna(10).astype(int)
+                else:
+                    log.warning("[yellow]Changing fragment-lookaround-size is only relevant for fragmented amplicons. Using default value 10.[/yellow]")
+                    df["FRAGMENT-LOOKAROUND-SIZE"] = 10
             df = pd.DataFrame.replace(df, np.nan, None)
             return df.to_dict(orient="index")
         return args_to_df(args, indirFrame).to_dict(orient="index")
@@ -760,7 +779,7 @@ def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
     Returns
     -------
         A dataframe with the columns: SAMPLE, VIRUS, PRIMERS, REFERENCE, FEATURES, MATCH-REF, SEGMENTED, MIN-COVERAGE,
-    PRIMER-MISMATCH-RATE
+    PRIMER-MISMATCH-RATE, PRESET, PRESET_SCORE, FRAGMENT-LOOKAROUND-SIZE
 
     """
     formats = {
@@ -827,6 +846,12 @@ def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
         "PRESET_SCORE": {
             "dtype": float,
             "required": True,
+            "disallowed_characters": None,
+            "path": False,
+        },
+        "FRAGMENT-LOOKAROUND-SIZE": {
+            "dtype": int,
+            "required": False,
             "disallowed_characters": None,
             "path": False,
         },
