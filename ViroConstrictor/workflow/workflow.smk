@@ -573,6 +573,7 @@ rule ampligone:
     params:
         amplicontype=config["amplicon_type"],
         primer_mismatch_rate=lambda wc: SAMPLES[wc.sample]["PRIMER-MISMATCH-RATE"],
+        fragment_lookaround_size=lambda wc: SAMPLES[wc.sample]["FRAGMENT-LOOKAROUND-SIZE"],
         alignmentpreset=lambda wc: get_preset_parameter(
             preset_name=SAMPLES[wc.sample]["PRESET"],
             parameter_name=f"AmpliGone_AlignmentPreset_{config['platform']}",
@@ -595,6 +596,7 @@ rule ampligone:
             -at {params.amplicontype} \
             --error-rate {params.primer_mismatch_rate} \
             --export-primers {output.ep} \
+            --fragment-lookaround-size {params.fragment_lookaround_size} \
             {params.alignmentpreset} {params.alignmentmatrix} {params.extrasettings} \
             -to \
             -t {threads} >> {log} 2>&1
