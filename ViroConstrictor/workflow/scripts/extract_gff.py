@@ -1,10 +1,9 @@
-import sys
 from argparse import ArgumentParser
 from pathlib import Path
 
 import AminoExtract
 
-from .base_script_class import BaseScript
+from ViroConstrictor.workflow.scripts import BaseScript
 
 
 class ExtractGff(BaseScript):
@@ -30,7 +29,7 @@ class ExtractGff(BaseScript):
         Reference ID of the GFF record to extract.
     """
 
-    def __init__(self, input: Path | str, output: Path | str, output: str, ref_id: str) -> None:
+    def __init__(self, input: Path | str, output: Path | str, ref_id: str) -> None:
         super().__init__(input, output)
         self.ref_id = ref_id
 
