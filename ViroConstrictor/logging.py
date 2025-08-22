@@ -258,7 +258,7 @@ class ViroConstrictorBaseLogHandler(logging.Handler):
         log_message = log_record.get("msg", None)
         log_event = log_record.get("event", None)
         execjob_logfile = log_record.get("log", None)
-        
+
         rule_name = log_record.get("rule_name", None)
         wildcards = log_record.get("wildcards", None)
         rule_id = log_record.get("jobid", None)
@@ -266,8 +266,23 @@ class ViroConstrictorBaseLogHandler(logging.Handler):
         rule_output = log_record.get("output", None)
         shellcmd = log_record.get("shellcmd", None)
 
-        if None not in [rule_name, wildcards, rule_id, rule_input, rule_output, shellcmd]:
-            handle_job_debug_message(log_record, rule_name, wildcards, rule_id, rule_input, rule_output, shellcmd)
+        if None not in [
+            rule_name,
+            wildcards,
+            rule_id,
+            rule_input,
+            rule_output,
+            shellcmd,
+        ]:
+            handle_job_debug_message(
+                log_record,
+                rule_name,
+                wildcards,
+                rule_id,
+                rule_input,
+                rule_output,
+                shellcmd,
+            )
             return None
 
         if log_message is None and log_record.get("message") is not None:
@@ -508,10 +523,18 @@ def HandleJobErrorMessage(record: dict[str, Any]) -> dict[str, Any]:
     return record
 
 
-def handle_job_debug_message(record: dict[str, Any], rule_name: str, wildcards: dict[str, str], rule_id: str, rule_input: list[str], rule_output: list[str], shellcmd: str):
+def handle_job_debug_message(
+    record: dict[str, Any],
+    rule_name: str,
+    wildcards: dict[str, str],
+    rule_id: str,
+    rule_input: list[str],
+    rule_output: list[str],
+    shellcmd: str,
+):
     """
     Formats and logs a debug message containing job details for a Snakemake rule execution.
-    
+
     Parameters
     ----------
     record : dict[str, Any]
@@ -528,7 +551,7 @@ def handle_job_debug_message(record: dict[str, Any], rule_name: str, wildcards: 
         List of output file paths for the rule.
     shellcmd : str
         The shell command to be executed for the rule.
-        
+
     Notes
     -----
     This function updates the `record` with a formatted debug message including rule name, wildcards,
@@ -536,14 +559,24 @@ def handle_job_debug_message(record: dict[str, Any], rule_name: str, wildcards: 
     rich logging output and is logged at the DEBUG level.
     """
     # Replace the record's wildcard, rule input & output and shellcmd with a formatted string containing the job details
-    wildcards = ", ".join(f"{key}: [blue]{value}[/blue]" for key, value in wildcards.items())
-    rule_input = ", ".join(f"[magenta]{input_path}[/magenta]" for input_path in rule_input)
-    rule_output = ", ".join(f"[magenta]{output_path}[/magenta]" for output_path in rule_output)
-    shellcmd = re.sub(r" +", " ", shellcmd.strip()) # remove extra spaces and leading & trailing characters from the shell command
+    wildcards = ", ".join(
+        f"{key}: [blue]{value}[/blue]" for key, value in wildcards.items()
+    )
+    rule_input = ", ".join(
+        f"[magenta]{input_path}[/magenta]" for input_path in rule_input
+    )
+    rule_output = ", ".join(
+        f"[magenta]{output_path}[/magenta]" for output_path in rule_output
+    )
+    shellcmd = re.sub(
+        r" +", " ", shellcmd.strip()
+    )  # remove extra spaces and leading & trailing characters from the shell command
     # Create the debug message
-    record["msg"] = f"Snakemake workflow :: {rule_name} :: {wildcards} :: JobID: [cyan]{rule_id}[/cyan]\nInput: {rule_input}\nOutput: {rule_output}\nFull command:\n{shellcmd}"
+    record["msg"] = (
+        f"Snakemake workflow :: {rule_name} :: {wildcards} :: JobID: [cyan]{rule_id}[/cyan]\nInput: {rule_input}\nOutput: {rule_output}\nFull command:\n{shellcmd}"
+    )
     # Set the log level to DEBUG for this record
-    record["levelname"] = "DEBUG" 
+    record["levelname"] = "DEBUG"
     log.debug(record["msg"])
 
 
@@ -551,6 +584,7 @@ def print_jobstatistics_logmessage(msg: str) -> str:
     # if logmessage := msg.get("msg"):
     logmessage = msg.split("\n", 1)[1]
     return f"Workflow statistics:\n[yellow]{logmessage}[/yellow]"
+
 
 log = logging.getLogger(__prog__)
 log.propagate = False

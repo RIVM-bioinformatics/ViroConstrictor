@@ -1,9 +1,10 @@
 import hashlib
 import os
-import yaml
 import subprocess
 from pathlib import Path
 from typing import Dict, List
+
+import yaml
 
 from ViroConstrictor import __prog__
 from ViroConstrictor.logging import log
@@ -156,18 +157,18 @@ def fetch_hashes() -> tuple[Dict[str, str], str]:
 def log_containers(recipe_hashes: Dict[str, str], merged_hash: str) -> None:
     """
     Logs information about container recipe files, their hashes, and dependencies.
-    
+
     Parameters
     ----------
     recipe_hashes : Dict[str, str]
         A dictionary mapping recipe file paths to their corresponding hash values.
     merged_hash : str
         The hash value representing the merged scripts and configuration files.
-        
+
     Returns
     -------
     None
-    
+
     Notes
     -----
     This function reads each recipe file, extracts its dependencies from YAML,
@@ -175,10 +176,16 @@ def log_containers(recipe_hashes: Dict[str, str], merged_hash: str) -> None:
     their versions. It also logs the hashes of the recipe files and the merged hash.
     """
     # Log the merged hash of scripts and config files
-    log.debug(f"Python code :: Containers :: Getting hashes :: merged hash of scripts and config files: {merged_hash}")
+    log.debug(
+        f"Python code :: Containers :: Getting hashes :: merged hash of scripts and config files: {merged_hash}"
+    )
     # Log the hashes of the recipe files
-    hashes_to_string = ",\n".join(f"{file}: {hash}" for file, hash in recipe_hashes.items())
-    log.debug(f"Python code :: Containers :: Getting hashes :: recipe file hashes: \n{hashes_to_string}")
+    hashes_to_string = ",\n".join(
+        f"{file}: {hash}" for file, hash in recipe_hashes.items()
+    )
+    log.debug(
+        f"Python code :: Containers :: Getting hashes :: recipe file hashes: \n{hashes_to_string}"
+    )
 
     # Log the depencies and their versions
     for recipe_file, hash in recipe_hashes.items():
@@ -190,7 +197,9 @@ def log_containers(recipe_hashes: Dict[str, str], merged_hash: str) -> None:
             dependency_list = parse_dependencies(dependencies)
             dependency_string = ",\n".join(dependency_list)
             # Log the dependencies and their versions
-            log.debug(f"Python code :: Containers :: Getting dependency versions :: recipe file: {recipe_file}, hash: {hash}\n{dependency_string}")
+            log.debug(
+                f"Python code :: Containers :: Getting dependency versions :: recipe file: {recipe_file}, hash: {hash}\n{dependency_string}"
+            )
 
 
 def parse_dependencies(dependencies: List) -> List[str]:
@@ -345,7 +354,7 @@ def download_containers(
     """
     to_download = containers_to_download(apptainer_path)
     to_download = [x.rsplit("_", 1)[0] + ":" + x.rsplit("_", 1)[1] for x in to_download]
-    
+
     if dryrun:
         log.info(
             f"Container(s) [magenta]{', '.join(to_download)}[/magenta] will be downloaded"
