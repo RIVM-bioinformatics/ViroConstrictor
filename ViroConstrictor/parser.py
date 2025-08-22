@@ -399,13 +399,32 @@ class CLIparser:
             if req_cols is False:
                 sys.exit(1)
             df = samplesheet_enforce_absolute_paths(df)
-            if df.get("PRESET") is None:
-                df[["PRESET", "PRESET_SCORE"]] = df.apply(
+            # print(df.get("DISABLE-PRESET"))
+            # if df.get("DISABLE-PRESET") is not None:
+            #     df[["PRESET", "PRESET_SCORE"]] = df.apply(
+            #         lambda x: pd.Series(
+            #             match_preset_name(x["VIRUS"], use_presets=not x["DISABLE-PRESET"])
+            #         ),
+            #         axis=1,
+            #     )
+            # elif df.get("PRESET") is None:
+            #     df[["PRESET", "PRESET_SCORE"]] = df.apply(
+            #         lambda x: pd.Series(
+            #             match_preset_name(x["VIRUS"], use_presets=self.flags.presets)
+            #         ),
+            #         axis=1,
+            #     )
+            df[["PRESET", "PRESET_SCORE"]] = df.apply(
                     lambda x: pd.Series(
-                        match_preset_name(x["VIRUS"], use_presets=self.flags.presets)
+                        # If DISABLE-PRESET is present, use its value, otherwise use self.flags.presets
+                        match_preset_name(x["VIRUS"], use_presets=not x["DISABLE-PRESET"]) 
+                        if df.get("DISABLE-PRESET") is not None 
+                        else match_preset_name(x["VIRUS"], use_presets=self.flags.presets)
                     ),
                     axis=1,
                 )
+            
+            print(df)
             return check_samplesheet_rows(df)
         return pd.DataFrame()
 
@@ -519,6 +538,11 @@ class CLIparser:
                 log.warn(
                     "[yellow]Both a sample sheet and run-wide GFF file was given, the GFF file given through the commandline will be ignored[/yellow]"
                 )
+            # check if column for disable presets is present in sample sheet instead of sample sheet itself
+            # if args.disable_presets is True:
+            #     log.warning(
+            #         "[yellow]Both a sample sheet and run-wide disable presets option were given, the disable presets option given through the commandline will be ignored[/yellow]"
+            #     )
         if not sheet_present and any(
             map(
                 lambda f: f is None,
@@ -827,6 +851,12 @@ def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
         "PRESET_SCORE": {
             "dtype": float,
             "required": True,
+            "disallowed_characters": None,
+            "path": False,
+        },
+        "DISABLE-PRESET": {
+            "dtype": bool,
+            "required": False,
             "disallowed_characters": None,
             "path": False,
         },
