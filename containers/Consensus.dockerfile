@@ -7,6 +7,7 @@ COPY ./ViroConstrictor/workflow/wrappers/ /wrappers/
 LABEL org.opencontainers.image.description="Consensus sequence generation processes and tools for the ViroConstrictor workflow."
 
 USER root
+RUN apt-get update && apt-get install -y adduser
 
 ARG UID=10001
 RUN adduser \

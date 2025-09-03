@@ -1,9 +1,9 @@
 from argparse import ArgumentParser
 from pathlib import Path
 
-import AminoExtract
+from AminoExtract import SequenceReader
 
-from ViroConstrictor.workflow.scripts import BaseScript
+from .base_script_class import BaseScript
 
 
 class ExtractGff(BaseScript):
@@ -37,7 +37,7 @@ class ExtractGff(BaseScript):
     def add_arguments(cls, parser: ArgumentParser) -> None:
         super().add_arguments(parser)
         parser.add_argument(
-            "--refID",
+            "--ref_id",
             metavar="String",
             help="Reference ID of the GFF record to extract.",
             type=str,
@@ -51,16 +51,19 @@ class ExtractGff(BaseScript):
         """
         Extracts a specific GFF record based on the provided reference ID and writes it to the output file.
         """
-        assert isinstance(self.input, (Path, str)), "Input should be a string path to the GFF file."
-        assert isinstance(self.output, (Path, str)), "Output should be a string path for the extracted GFF record."
+        assert isinstance(
+            self.input, (Path, str)
+        ), "Input should be a string path to the GFF file."
+        assert isinstance(
+            self.output, (Path, str)
+        ), "Output should be a string path for the extracted GFF record."
         assert isinstance(self.ref_id, str), "Reference ID should be a string."
 
-        gff = AminoExtract.read_gff(self.input)
+        seq_reader = SequenceReader(logger=None, verbose=False)
+        gff = seq_reader.read_gff(self.input)
         gff.df = gff.df[gff.df.seqid == self.ref_id]
 
-        with open(self.output, "w") as f:
-            f.write(gff.header)
-            f.write(gff.df.to_csv(sep="\t", index=False, header=None))
+        gff.export_gff_to_file(self.output)
 
 
 if __name__ == "__main__":

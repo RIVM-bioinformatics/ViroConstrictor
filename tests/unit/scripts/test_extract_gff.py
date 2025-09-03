@@ -1,45 +1,10 @@
-from 
-
-SCRIPTS = [
-    {
-        "class": GroupAminoAcids,
-        "args": {
-            "input": "tests/unit/data/aa.faa",
-            "output": "tests/unit/data/aa_output.faa",
-            "space": "tests/unit/data/sampleinfo.pkl",
-        },
-    },
-    {
-        "class": ExtractGff,
-        "args": {
-            "input": "tests/unit/data/example.gff",
-            "output": "tests/unit/data/example_output.gff",
-            "ref_id": "example_ref",
-        },
-    },
-    # Add more scripts here
-]
+from ViroConstrictor.workflow.scripts.extract_gff import ExtractGff
 
 
-@pytest.mark.parametrize("script_data", SCRIPTS)
-def test_scripts(script_data, tmp_path: Path) -> None:
-    """
-    Generalized test for all scripts.
+def test_extract_gff():
+    input_gff = "tests/unit/data/ESIB_EQA_2024_SARS1_01_features.gff"
+    output_gff = "tests/unit/data/ESIB_EQA_2024_SARS1_01_features_output.gff"
+    ref_id = "NC_045512.2"
 
-    Parameters
-    ----------
-    script_data : dict
-        A dictionary containing the script class and its arguments.
-    tmp_path : Path
-        Temporary directory provided by pytest for test outputs.
-    """
-    # Prepare arguments, replacing output paths with temporary paths
-    args = script_data["args"].copy()
-    args["output"] = tmp_path / Path(args["output"]).name
-
-    # Instantiate and run the script
-    script_instance = script_data["class"](**args)
-    script_instance.run()
-
-    # Assert that the output file was created
-    assert args["output"].exists(), f"Output file {args['output']} was not created."
+    gff_extractor = ExtractGff(input=input_gff, output=output_gff, ref_id=ref_id)
+    gff_extractor.run()

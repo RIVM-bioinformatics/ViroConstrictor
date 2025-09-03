@@ -64,10 +64,18 @@ class FilterGff(BaseScript):
         """
         Filters the GFF file based on reference data and updates the statistics.
         """
-        assert isinstance(self.input, (Path, str)), "Input should be a string path to the GFF file."
-        assert isinstance(self.refdata, (Path, str)), "Reference data should be a string path to the CSV file."
-        assert isinstance(self.output, (Path, str)), "Output should be a string path for the filtered GFF file."
-        assert isinstance(self.updatedstats, (Path, str)), "Updated stats should be a string path for the CSV file."
+        assert isinstance(
+            self.input, (Path, str)
+        ), "Input should be a string path to the GFF file."
+        assert isinstance(
+            self.refdata, (Path, str)
+        ), "Reference data should be a string path to the CSV file."
+        assert isinstance(
+            self.output, (Path, str)
+        ), "Output should be a string path for the filtered GFF file."
+        assert isinstance(
+            self.updatedstats, (Path, str)
+        ), "Updated stats should be a string path for the CSV file."
 
         # Read the GFF file
         gff = AminoExtract.read_gff(self.input, split_attributes=False)
@@ -77,10 +85,14 @@ class FilterGff(BaseScript):
 
         # Filter the GFF file based on reference data
         seqrecord_names = df["seqrecord_name"].tolist()
-        gff.df = gff.df.loc[gff.df["seqid"].isin(seqrecord_names)].reset_index(drop=True)
+        gff.df = gff.df.loc[gff.df["seqid"].isin(seqrecord_names)].reset_index(
+            drop=True
+        )
 
         # Update the "seqid" column in the GFF file with the "Reference" column from the reference data
-        gff.df["seqid"] = gff.df["seqid"].map(df.set_index("seqrecord_name")["Reference"])
+        gff.df["seqid"] = gff.df["seqid"].map(
+            df.set_index("seqrecord_name")["Reference"]
+        )
 
         # Write the filtered GFF file to the output
         with open(self.output, "w") as f:

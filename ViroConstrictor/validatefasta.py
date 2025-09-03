@@ -7,6 +7,7 @@ Basic functions to see if a fasta is valid
 import re
 
 from Bio import SeqIO
+from biovalid import BioValidator
 
 from ViroConstrictor.logging import log
 
@@ -63,7 +64,10 @@ def IsValidRef(inputfile: str) -> bool:
         A boolean value.
 
     """
-    if IsValidFasta(inputfile):
+    validator = BioValidator(inputfile, bool_mode=True, verbose=False)
+    is_valid = validator.validate_files()
+
+    if is_valid:
         return not any(
             ContainsAmbiguities(str(record.seq))
             for record in SeqIO.parse(inputfile, "fasta")

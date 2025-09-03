@@ -43,7 +43,7 @@ def Get_AA_feats(df):
             AA_dict = AminoExtract.get_feature_name_attribute(
                 input_gff=str(rec["FEATURES"]),
                 input_seq=str(rec["REFERENCE"]),
-                feature_type="all",
+                feature_type="CDS",
             )
             if AA_dict:
                 for k, v in AA_dict.items():
@@ -269,11 +269,16 @@ rule prepare_gffs:
         mem_mb=low_memory_job,
         runtime=55
     params:
-        script=workflow.source_path("scripts/extract_gff.py") if (DeploymentMethod.CONDA in workflow.deployment_settings.deployment_method) is True else "/scripts/extract_gff.py",
+        script="-m scripts.extract_gff"
     shell:
         """
-        python {params.script} {input.feats} {output.gff} {wildcards.RefID}
+        PYTHONPATH={workflow.basedir} \
+        python {params.script} \
+        --input {input.feats} \
+        --output {output.gff} \
+        --ref_id {wildcards.RefID}
         """
+
 
 
 ruleorder: prepare_gffs > prodigal
@@ -489,15 +494,21 @@ rule remove_adapters_p2:
         mem_mb=low_memory_job,
         runtime=55
     params:
-        script=workflow.source_path("scripts/clipper.py") if (DeploymentMethod.CONDA in workflow.deployment_settings.deployment_method) is True else "/scripts/clipper.py",
+        script="-m scripts.clipper",
         clipper_filterparams=lambda wc: get_preset_parameter(
             preset_name=SAMPLES[wc.sample]["PRESET"],
             parameter_name=f"Clipper_FilterParams_{config['platform']}",
         ),
     shell:
         """
-        python {params.script} --input {input} --output {output} {params.clipper_filterparams} --threads {threads}
+        PYTHONPATH={workflow.basedir} \
+        python {params.script} \
+        --input {input} \
+        --output {output} \
+        {params.clipper_filterparams} \
+        --threads {threads}
         """
+
 
 
 rule qc_filter:
@@ -953,11 +964,17 @@ rule get_breadth_of_coverage:
     container:
         f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     params:
-        script=workflow.source_path("scripts/boc.py") if (DeploymentMethod.CONDA in workflow.deployment_settings.deployment_method) is True else "/scripts/boc.py",
+        script="-m scripts.boc",
     shell:
         """
-        python {params.script} {input.reference} {wildcards.sample} {input.coverage} {output}
+        PYTHONPATH={workflow.basedir} \
+        python {params.script} \
+        --input {input.reference} \
+        --sample {wildcards.sample} \
+        --coverage {input.coverage} \
+        --output {output}
         """
+
 
 
 rule concat_boc:
@@ -1000,7 +1017,7 @@ rule calculate_amplicon_cov:
         """
         PYTHONPATH={workflow.basedir} \
         python {params.script} \
-        --primers {input.pr} \
+        --input {input.pr} \
         --coverages {input.cov} \
         --key {wildcards.sample} \
         --output {output} > {log} 2>&1
@@ -1024,10 +1041,13 @@ rule concat_amplicon_cov:
     container:
         f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"	
     params:
-        script=workflow.source_path("scripts/concat_amplicon_covs.py") if (DeploymentMethod.CONDA in workflow.deployment_settings.deployment_method) is True else "/scripts/concat_amplicon_covs.py",
+        script="-m scripts.concat_amplicon_covs",
     shell:
         """
-        python {params.script} --output {output} --input {input}
+        PYTHONPATH={workflow.basedir} \
+        python {params.script} \
+        --input {input} \
+        --output {output}
         """
 
 

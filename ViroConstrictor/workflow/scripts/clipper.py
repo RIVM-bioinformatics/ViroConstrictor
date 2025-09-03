@@ -109,10 +109,20 @@ class Clipper(BaseScript):
         bamfile = pysam.AlignmentFile(self.input, "rb", threads=self.threads)
         reflength = bamfile.lengths[0]
         minimal_read_length = int(reflength * self.min_aligned_length)
-        maximum_read_length = int(reflength if self.max_aligned_length == 0 else self.max_aligned_length)
+        maximum_read_length = int(
+            reflength if self.max_aligned_length == 0 else self.max_aligned_length
+        )
 
-        include_region_start = int(self.only_include_region.split(":")[0]) if self.only_include_region else None
-        include_region_end = int(self.only_include_region.split(":")[1]) if self.only_include_region else None
+        include_region_start = (
+            int(self.only_include_region.split(":")[0])
+            if self.only_include_region
+            else None
+        )
+        include_region_end = (
+            int(self.only_include_region.split(":")[1])
+            if self.only_include_region
+            else None
+        )
 
         with open(self.output, "w") as fileout:
             for read in bamfile:
@@ -134,7 +144,10 @@ class Clipper(BaseScript):
 
                 if self.exclude_spliced:
                     cigartuples = self._split_cigar(read.cigarstring)
-                    if self._is_spliced(cigartuples) and (self._get_largest_spliced_len(cigartuples) > self.spliced_length_threshold):
+                    if self._is_spliced(cigartuples) and (
+                        self._get_largest_spliced_len(cigartuples)
+                        > self.spliced_length_threshold
+                    ):
                         continue
 
                 if read.query_alignment_length <= minimal_read_length:

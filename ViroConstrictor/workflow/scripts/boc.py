@@ -8,10 +8,16 @@ from .base_script_class import BaseScript
 
 
 class Boc(BaseScript):
-    def __init__(self, input: Path | str, output: Path | str, samplename: str, coverages: Path | str) -> None:
+    def __init__(
+        self,
+        input: Path | str,
+        output: Path | str,
+        samplename: str,
+        coverage: Path | str,
+    ) -> None:
         super().__init__(input, output)
         self.samplename = samplename
-        self.coverages = coverages
+        self.coverages = coverage
 
     @classmethod
     def add_arguments(cls, parser: ArgumentParser) -> None:
@@ -25,9 +31,9 @@ class Boc(BaseScript):
         )
         parser.add_argument(
             "--coverage",
-            metavar="Path",
+            metavar="String",
             help="Path to the coverage file.",
-            type=Path,
+            type=str,
             required=True,
         )
 
@@ -35,8 +41,12 @@ class Boc(BaseScript):
         self._boc()
 
     def _boc(self) -> None:
-        assert isinstance(self.input, (Path, str)), "Input should be a string path to the GFF file."
-        assert isinstance(self.output, (Path, str)), "Output should be a string path for the extracted GFF record."
+        assert isinstance(
+            self.input, (Path, str)
+        ), "Input should be a string path to the GFF file."
+        assert isinstance(
+            self.output, (Path, str)
+        ), "Output should be a string path for the extracted GFF record."
 
         df = pd.read_csv(self.coverages, sep="\t", index_col=0)
 

@@ -7,13 +7,37 @@ import pandas as pd
 from .base_script_class import BaseScript
 
 
+class AltName(Enum):
+    ALT = ["alt", "alternative"]
+
+    @staticmethod
+    def is_valid_alt_name(string: str) -> bool:
+        """
+        Checks if the given string is a valid alternative name.
+        This should return True in cases like alt1, altleft, ALT, etc.
+        """
+        return any(string.lower().startswith(alt) for alt in AltName.ALT.value)
+
+
+class ReadDirection(Enum):
+    FORWARD = ["FW", "F", "1", "LEFT", "POSITIVE", "FORWARD", "PLUS"]
+    REVERSE = ["RV", "R", "2", "RIGHT", "NEGATIVE", "REVERSE", "MINUS"]
+
+    @staticmethod
+    def is_valid_direction(string: str) -> bool:
+        """
+        Checks if the given string is a valid read direction.
+        """
+        return any(string.upper() in direction.value for direction in ReadDirection)
+
+
 class AmpliconCovs(BaseScript):
     """
     Calculates amplicon coverage based on primer and coverage data.
 
     Parameters
     ----------
-    primers : str
+    input : str
         Path to the input BED file with primers.
     coverages : str
         Path to the input TSV file with coverages.
@@ -28,21 +52,16 @@ class AmpliconCovs(BaseScript):
         Executes the amplicon coverage calculation.
     """
 
-    def __init__(self, primers: Path | str, coverages: Path | str, key: str, output: Path | str) -> None:
-        super().__init__(primers, output)
+    def __init__(
+        self, input: Path | str, coverages: Path | str, key: str, output: Path | str
+    ) -> None:
+        super().__init__(input, output)
         self.coverages = coverages
         self.key = key
 
     @classmethod
     def add_arguments(cls, parser: ArgumentParser) -> None:
         super().add_arguments(parser)
-        parser.add_argument(
-            "--primers",
-            metavar="File",
-            type=str,
-            help="Input BED file with primers.",
-            required=True,
-        )
         parser.add_argument(
             "--coverages",
             metavar="File",
@@ -55,13 +74,6 @@ class AmpliconCovs(BaseScript):
             metavar="String",
             type=str,
             help="Sample ID.",
-            required=True,
-        )
-        parser.add_argument(
-            "--output",
-            metavar="File",
-            type=str,
-            help="Output CSV file for average coverage per amplicon.",
             required=True,
         )
 
@@ -78,7 +90,9 @@ class AmpliconCovs(BaseScript):
         amplicon_sizes = self._calculate_amplicon_start_end(primers)
 
         coverages = self._open_tsv_file(self.coverages, index_col=0)
-        amplicon_sizes["coverage"] = amplicon_sizes.apply(lambda x: self._calculate_mean_coverage(x, coverages), axis=1)
+        amplicon_sizes["coverage"] = amplicon_sizes.apply(
+            lambda x: self._calculate_mean_coverage(x, coverages), axis=1
+        )
         amplicon_sizes["amplicon_names"] = self._create_amplicon_names_list(primers)
 
         final_df = pd.DataFrame(
@@ -90,7 +104,9 @@ class AmpliconCovs(BaseScript):
         self._write_output(final_df, self.output)
 
     @staticmethod
-    def _open_tsv_file(filename: Path | str, index_col: int | None = None) -> pd.DataFrame:
+    def _open_tsv_file(
+        filename: Path | str, index_col: int | None = None
+    ) -> pd.DataFrame:
         """
         Opens a TSV file and returns its contents as a pandas DataFrame.
         """
@@ -107,17 +123,46 @@ class AmpliconCovs(BaseScript):
 
         def _process_primer_row(row: pd.Series) -> pd.Series:
             split_names = row["split_name_list"]
+
+            # we need to enforce the correct dtypes and this is the easiest way
+            row["name"] = ""
+            row["count"] = 0
+            row["alt"] = ""
+            row["direction"] = ""
+
             if len(split_names) == 4:
-                row["name"], row["count"], row["alt"], row["direction"] = split_names
+                if ReadDirection.is_valid_direction(
+                    split_names[3]
+                ) and AltName.is_valid_alt_name(split_names[2]):
+                    row["name"], row["count"], row["alt"], row["direction"] = (
+                        split_names
+                    )
+                elif ReadDirection.is_valid_direction(
+                    split_names[2]
+                ) and AltName.is_valid_alt_name(split_names[3]):
+                    row["name"], row["count"], row["direction"], row["alt"] = (
+                        split_names
+                    )
+                else:
+                    raise ValueError(
+                        f"Primer name {row[3]} does not match expected format with alt and direction."
+                    )
             elif len(split_names) == 3:
                 row["name"], row["count"], row["alt"], row["direction"] = (
                     split_names[0],
                     split_names[1],
-                    None,
+                    "",
                     split_names[2],
                 )
             else:
-                raise ValueError(f"Primer name {row[3]} does not contain the expected number of underscores.")
+                raise ValueError(
+                    f"Primer name {row[3]} does not contain the expected number of underscores."
+                )
+
+            row["count"] = int(row["count"])  # Ensure count is an integer
+            row["name"] = str(row["name"])
+            row["alt"] = str(row["alt"]) if row["alt"] else ""
+            row["direction"] = str(row["direction"])
             return row
 
         df["split_name_list"] = df[3].str.split("_", expand=False)
@@ -129,10 +174,6 @@ class AmpliconCovs(BaseScript):
         """
         Standardizes the given read direction string to a standardized direction name.
         """
-
-        class ReadDirection(Enum):
-            FORWARD = ["FW", "F", "1", "LEFT", "POSITIVE", "FORWARD", "PLUS"]
-            REVERSE = ["RV", "R", "2", "RIGHT", "NEGATIVE", "REVERSE", "MINUS"]
 
         for read_direction in ReadDirection:
             if direction.upper() in read_direction.value:
@@ -147,16 +188,26 @@ class AmpliconCovs(BaseScript):
         df = pd.DataFrame(primers["count"].unique(), columns=["amplicon_number"])
         for amplicon_number in df["amplicon_number"]:
             amplicon_group = primers[primers["count"] == amplicon_number]
-            df.loc[df["amplicon_number"] == amplicon_number, "start"] = amplicon_group[1].min()
-            df.loc[df["amplicon_number"] == amplicon_number, "end"] = amplicon_group[2].max()
+            df.loc[df["amplicon_number"] == amplicon_number, "start"] = amplicon_group[
+                1
+            ].min()
+            df.loc[df["amplicon_number"] == amplicon_number, "end"] = amplicon_group[
+                2
+            ].max()
         return df
 
     @staticmethod
-    def _calculate_mean_coverage(input_array: pd.Series, coverages: pd.DataFrame) -> float:
+    def _calculate_mean_coverage(
+        input_array: pd.Series, coverages: pd.DataFrame
+    ) -> float:
         """
         Calculates the mean coverage for a given amplicon.
         """
-        return coverages.iloc[int(input_array["start"]) - 1 : int(input_array["end"])].mean().values[0]
+        return (
+            coverages.iloc[int(input_array["start"]) - 1 : int(input_array["end"])]
+            .mean()
+            .values[0]
+        )
 
     @staticmethod
     def _create_amplicon_names_list(primers: pd.DataFrame) -> list[str]:
@@ -171,7 +222,7 @@ class AmpliconCovs(BaseScript):
         """
         Writes the calculated amplicon sizes to a CSV file.
         """
-        df.to_csv(output_file, sep=",", index=True)
+        df.to_csv(output_file, sep=",", index=True, index_label="amplicon_names")
 
 
 if __name__ == "__main__":

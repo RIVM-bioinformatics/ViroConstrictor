@@ -333,7 +333,7 @@ def construct_container_bind_args(samples_dict: Dict) -> str:
     >>> construct_container_bind_args(samples)
     '--bind /path/to'
     """
-    paths = []
+    paths = [f"{os.path.dirname(os.path.realpath(__file__))}"]
     for keys, nested_dict in samples_dict.items():
         paths.extend(
             f"{os.path.dirname(value)}"

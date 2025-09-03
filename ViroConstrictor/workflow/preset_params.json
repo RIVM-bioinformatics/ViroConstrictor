@@ -51,15 +51,13 @@
             "Fastp_MinReadLength_Settings_nanopore": "--length_required 100",
             "Fastp_MinReadLength_Settings_illumina": "--length_required 100",
             "Fastp_MinReadLength_Settings_iontorrent": "--length_required 100",
-            "AminoExtract_FeatureType": "all",
+            "AminoExtract_FeatureType": "CDS",
             "AminoExtract_Settings": "--keep-gaps"
         }
     },
     "SARSCOV2": {
-        "STAGE_GLOBAL": {
-        },
-        "STAGE_MATCHREF": {
-        },
+        "STAGE_GLOBAL": {},
+        "STAGE_MATCHREF": {},
         "STAGE_MAIN": {
             "Minimap2_AlignmentParams_nanopore": "-E2,0 -O8,24 -A4 -B4",
             "AmpliGone_AlignmentMatrix_nanopore": "-as match=4 mismatch=4 gap_o1=8 gap_e1=2 gap_o2=24 gap_e2=0",
@@ -69,8 +67,7 @@
         }
     },
     "INFLUENZA": {
-        "STAGE_GLOBAL": {
-        },
+        "STAGE_GLOBAL": {},
         "STAGE_MATCHREF": {
             "Samtools_Filters_nanopore": "-q 5",
             "Samtools_Filters_illumina": "-q 5",
@@ -87,10 +84,8 @@
         }
     },
     "PARAMYXOVIRIDAE": {
-        "STAGE_GLOBAL": {
-        },
-        "STAGE_MATCHREF": {
-        },
+        "STAGE_GLOBAL": {},
+        "STAGE_MATCHREF": {},
         "STAGE_MAIN": {
             "Minimap2_Settings": "--frag=no",
             "Minimap2_RawAlignParams_nanopore": "--splice",
@@ -105,10 +100,8 @@
         }
     },
     "HEPATOVIRUS": {
-        "STAGE_GLOBAL": {
-        },
-        "STAGE_MATCHREF": {
-        },
+        "STAGE_GLOBAL": {},
+        "STAGE_MATCHREF": {},
         "STAGE_MAIN": {
             "Minimap2_Settings": "--frag=no",
             "Minimap2_RawAlignParams_nanopore": "--splice",
