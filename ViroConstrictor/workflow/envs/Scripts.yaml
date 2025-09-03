@@ -11,4 +11,6 @@ dependencies:
 
   - bioconda::pysam==0.21
   - bioconda::fastqc==0.11.9
-  - bioconda::aminoextract==0.3.1
+  - pip
+  - pip:
+      - git+https://github.com/RIVM-bioinformatics/AminoExtract.git@dev

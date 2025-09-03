@@ -6,6 +6,7 @@ COPY ./ViroConstrictor/workflow/main/configs/ /configs/
 LABEL org.opencontainers.image.description="Data cleaning processes and tools for the ViroConstrictor workflow."
 
 USER root
+RUN apt-get update && apt-get install -y adduser
 
 ARG UID=10001
 RUN adduser \

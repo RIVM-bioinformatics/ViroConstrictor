@@ -6,7 +6,8 @@
         "COV",
         "SARSCOV",
         "SARSCOV2",
-        "CORONAVIRUS"
+        "CORONAVIRUS",
+        "SEVERE_ACUTE_RESPIRATORY_SYNDROME_CORONAVIRUS_2"
     ],
     "INFLUENZA": [
         "FLU",

@@ -7,6 +7,7 @@ COPY ./ViroConstrictor/workflow/match_ref/scripts/ /match_ref_scripts/
 LABEL org.opencontainers.image.description="Supplementary scripts for the ViroConstrictor workflow."
 
 USER root
+RUN apt-get update && apt-get install -y adduser
 
 ARG UID=10001
 RUN adduser \
@@ -18,6 +19,8 @@ RUN adduser \
     --uid "${UID}" \
     appuser
 
+RUN touch /__init__.py
+    
 RUN micromamba install -q -y -n base git -c conda-forge && \
     micromamba install -q -y -n base -f /install.yml && \
     micromamba clean -q --all --yes

@@ -17,18 +17,14 @@ rule prepare_gffs:
         mem_mb=low_memory_job,
         runtime=55,
     params:
-        script=(
-            workflow_script_path("scripts/extract_gff.py")
-            if (
-                DeploymentMethod.CONDA
-                in workflow.deployment_settings.deployment_method
-            )
-            is True
-            else "/scripts/extract_gff.py"
-        ),
+        script="-m scripts.extract_gff"
     shell:
         """
-        python {params.script} {input.feats} {output.gff} {wildcards.RefID}
+        PYTHONPATH={workflow.basedir} \
+        python {params.script} \
+        --input {input.feats} \
+        --output {output.gff} \
+        --ref_id {wildcards.RefID}
         """
 
 

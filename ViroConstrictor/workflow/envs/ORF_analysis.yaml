@@ -9,4 +9,7 @@ dependencies:
   - conda-forge::biopython==1.79
 
   - bioconda::prodigal==2.6.3
-  - bioconda::aminoextract==0.3.1
+  # - bioconda::aminoextract==0.3.1
+  - pip
+  - pip:
+      - git+https://github.com/RIVM-bioinformatics/AminoExtract.git@dev
