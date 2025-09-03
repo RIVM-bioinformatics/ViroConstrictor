@@ -154,9 +154,13 @@ def check_output_file(filename: str) -> str:
         raise ArgumentTypeError("Output file must be a CSV file.")
 
     if os.path.isfile(filename):
-        raise ArgumentTypeError(f"Output file '{filename}' already exists. Please choose another name.")
+        raise ArgumentTypeError(
+            f"Output file '{filename}' already exists. Please choose another name."
+        )
 
     if not os.access(os.path.dirname(filename), os.W_OK):
-        raise ArgumentTypeError(f"Directory '{os.path.dirname(filename)}' is not writable.")
+        raise ArgumentTypeError(
+            f"Directory '{os.path.dirname(filename)}' is not writable."
+        )
 
     return filename

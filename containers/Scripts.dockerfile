@@ -8,6 +8,7 @@ COPY ./ViroConstrictor/workflow/scripts/ /scripts/
 LABEL org.opencontainers.image.description="Supplementary scripts for the ViroConstrictor workflow."
 
 USER root
+RUN apt-get update && apt-get install -y adduser
 
 ARG UID=10001
 RUN adduser \

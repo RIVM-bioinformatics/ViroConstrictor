@@ -64,10 +64,18 @@ class FilterBestMatchingRef(BaseScript):
         """
         Filters the best matching reference from the input CSV file and updates the reference FASTA file.
         """
-        assert isinstance(self.input, (Path, str)), "Inputcount should be a string path to the CSV file."
-        assert isinstance(self.inputref, (Path, str)), "Inputref should be a string path to the FASTA file."
-        assert isinstance(self.filtref, (Path, str)), "Filtref should be a string path for the output FASTA file."
-        assert isinstance(self.output, (Path, str)), "Output should be a string path for the output CSV file."
+        assert isinstance(
+            self.input, (Path, str)
+        ), "Inputcount should be a string path to the CSV file."
+        assert isinstance(
+            self.inputref, (Path, str)
+        ), "Inputref should be a string path to the FASTA file."
+        assert isinstance(
+            self.filtref, (Path, str)
+        ), "Filtref should be a string path for the output FASTA file."
+        assert isinstance(
+            self.output, (Path, str)
+        ), "Output should be a string path for the output CSV file."
 
         # Read the input CSV file
         df = pd.read_csv(self.input, index_col=0)

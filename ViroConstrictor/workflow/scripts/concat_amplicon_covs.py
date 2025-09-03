@@ -37,11 +37,19 @@ class ConcatAmpliconCovs(BaseScript):
         """
         Concatenates multiple amplicon coverage CSV files into a single CSV file.
         """
-        assert isinstance(self.input, list), "Input should be a list of file paths."
-        assert isinstance(self.output, (Path, str)), "Output should be a string path for the output file."
+        assert isinstance(
+            self.input, (list, str)
+        ), "Input should be a list of file paths."
+        assert isinstance(
+            self.output, (Path, str)
+        ), "Output should be a string path for the output file."
+
+        if isinstance(self.input, str):
+            frames = [self._read_csv(self.input)]
+        else:
+            frames = [self._read_csv(file) for file in self.input]
 
         # Read and concatenate input files
-        frames = [self._read_csv(file) for file in self.input]
         concatenated_frame = pd.concat(frames, sort=True).fillna("NA")
 
         # Write the concatenated DataFrame to the output file

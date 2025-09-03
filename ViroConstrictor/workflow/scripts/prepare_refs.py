@@ -16,7 +16,6 @@ class PrepareRefs(BaseScript):
     """
 
     def __init__(self, input: Path, output: Path, reference_id: str) -> None:
-        print("HOIASDS")
         super().__init__(input, output)
 
         self.reference_id = reference_id
@@ -37,8 +36,12 @@ class PrepareRefs(BaseScript):
 
     def _prepare_refs(self) -> None:
         """Prepare reference sequences by converting to uppercase."""
-        assert not isinstance(self.input, list), "Input must be cannot be a list of strs."
-        assert not isinstance(self.output, list), "Output must be cannot be a list of strs."
+        assert not isinstance(
+            self.input, list
+        ), "Input must be cannot be a list of strs."
+        assert not isinstance(
+            self.output, list
+        ), "Output must be cannot be a list of strs."
         records = cast(Iterator[SeqIO.SeqRecord], SeqIO.parse(self.input, "fasta"))
         for record in records:
             if self.reference_id in record.id:
