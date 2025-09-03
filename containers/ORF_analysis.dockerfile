@@ -5,6 +5,7 @@ COPY ./ViroConstrictor/workflow/envs/ORF_analysis.yaml /install.yml
 LABEL org.opencontainers.image.description="ORF analysis processes and tools for the ViroConstrictor workflow."
 
 USER root
+RUN apt-get update && apt-get install -y adduser
 
 ARG UID=10001
 RUN adduser \

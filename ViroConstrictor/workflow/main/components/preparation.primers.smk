@@ -49,22 +49,18 @@ rule filter_primer_bed:
     benchmark:
         f"{logdir}{bench}prepare_primers_" "{Virus}.{RefID}.{sample}.txt"
     params:
-        script=(
-            workflow_script_path("scripts/filter_bed_input.py")
-            if (
-                DeploymentMethod.CONDA
-                in workflow.deployment_settings.deployment_method
-            )
-            is True
-            else "/scripts/filter_bed_input.py"
-        ),
+        script="-m scripts.filter_bed_input",
     conda:
         workflow_environment_path("Scripts.yaml")
     container:
         f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     shell:
         """
-        python {params.script} {input.prm} {output.bed} {wildcards.RefID}
+        PYTHONPATH={workflow.basedir} \
+        python {params.script} \
+        --input {input.prm} \
+        --output {output.bed} \
+        --reference_id {wildcards.RefID}
         """
 
 

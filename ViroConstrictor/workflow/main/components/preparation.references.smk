@@ -18,16 +18,12 @@ rule prepare_refs:
     container:
         f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     params:
-        script=(
-            workflow_script_path("scripts/prepare_refs.py")
-            if (
-                DeploymentMethod.CONDA
-                in workflow.deployment_settings.deployment_method
-            )
-            is True
-            else "/scripts/prepare_refs.py"
-        ),
+        script = "-m scripts.prepare_refs"
     shell:
         """
-        python {params.script} {input} {output} {wildcards.RefID} > {log}
+        PYTHONPATH={workflow.basedir} \
+        python {params.script} \
+        --input {input} \
+        --output {output} \
+        --reference_id {wildcards.RefID} > {log}
         """

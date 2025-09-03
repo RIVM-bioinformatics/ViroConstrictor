@@ -15,18 +15,14 @@ rule vcf_to_tsv:
     log:
         f"{logdir}" "vcf_to_tsv_{Virus}.{RefID}.{sample}.log",
     params:
-        script=(
-            workflow_script_path("scripts/vcf_to_tsv.py")
-            if (
-                DeploymentMethod.CONDA
-                in workflow.deployment_settings.deployment_method
-            )
-            is True
-            else "/scripts/vcf_to_tsv.py"
-        ),
+        script= "-m scripts.vcf_to_tsv"
     shell:
         """
-        python {params.script} {input.vcf} {output.tsv} {wildcards.sample} >> {log} 2>&1
+        PYTHONPATH={workflow.basedir} \
+        python {params.script} \
+        --input {input.vcf} \
+        --output {output.tsv} \
+        --sample {wildcards.sample} >> {log} 2>&1
         """
 
 
@@ -44,18 +40,15 @@ rule get_breadth_of_coverage:
     container:
         f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     params:
-        script=(
-            workflow_script_path("scripts/boc.py")
-            if (
-                DeploymentMethod.CONDA
-                in workflow.deployment_settings.deployment_method
-            )
-            is True
-            else "/scripts/boc.py"
-        ),
+        script="-m scripts.boc",
     shell:
         """
-        python {params.script} {input.reference} {wildcards.sample} {input.coverage} {output}
+        PYTHONPATH={workflow.basedir} \
+        python {params.script} \
+        --input {input.reference} \
+        --sample {wildcards.sample} \
+        --coverage {input.coverage} \
+        --output {output}
         """
 
 

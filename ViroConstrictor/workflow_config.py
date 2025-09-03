@@ -3,7 +3,6 @@ import os
 import sys
 from argparse import Namespace
 from configparser import ConfigParser
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Hashable
 
@@ -23,22 +22,20 @@ from snakemake.api import (
 from snakemake.resources import DefaultResources
 from snakemake.settings.enums import Quietness
 from snakemake_interface_executor_plugins.settings import ExecMode
-from snakemake_interface_logger_plugins.settings import (
-    LogHandlerSettingsBase,
-)
+from snakemake_interface_logger_plugins.settings import LogHandlerSettingsBase
 
+from ViroConstrictor import __prog__
 from ViroConstrictor.logging import log
 from ViroConstrictor.parser import CLIparser
 from ViroConstrictor.runconfigs import WriteYaml
+from ViroConstrictor.scheduler import Scheduler
 from ViroConstrictor.workflow.helpers.containers import (
     construct_container_bind_args,
     download_containers,
 )
 
 
-def correct_unidirectional_flag(
-    samples_dict: dict[Hashable, Any], flags: Namespace
-) -> bool:
+def correct_unidirectional_flag(samples_dict: dict[Hashable, Any], flags: Namespace) -> bool:
     """Corrects the unidirectional flag based on the platform and samples dictionary."""
     if flags.platform == "illumina" and flags.unidirectional is True:
         # check if the samples_dict has the INPUTFILE key, if it does, set the unidirectional flag to True
@@ -113,6 +110,7 @@ class WorkflowConfig:
         self.outdir_override = outdir_override
         self.configuration = self.inputs.user_config
         self.vc_stage = vc_stage
+        self.dryrun = self.inputs.flags.dryrun
 
         # check if VC_stage is set to either "MR" or "MAIN", these are the only two valid stages. Exit if None
         if self.vc_stage not in ["MR", "MAIN"]:
@@ -129,7 +127,7 @@ class WorkflowConfig:
         # TODO: dryrun only seems to work if outputsettings.dryrun is set to True, the executor is set to "dryrun" and the quietness is set to "SUBPROCESS"
         # Quite convoluted, but this is the only combination of settings that seems to actually run the workflow in true dryrun mode.
         self.output_settings = OutputSettings(
-            dryrun=parsed_inputs.flags.dryrun,  # this doesn't seem to actually work all that much? if dryrun is set to True, it will still run the workflow and actually execute the tasks.
+            dryrun=self.dryrun,  # this doesn't seem to actually work all that much? if dryrun is set to True, it will still run the workflow and actually execute the tasks.
             printshellcmds=False,
             nocolor=False,
             debug_dag=False,
@@ -145,29 +143,21 @@ class WorkflowConfig:
         # TODO: set resources dynamically based on the user configuration and the possible grid flags (remote executor plugins, like LSF, SLURM or other)
         # NOTE: current resource settings are just an example for LSF but this should be lifted to a separate function
         default_resource_setting = DefaultResources()
-        default_resource_setting.set_resource(
-            "lsf_queue", "bio"
-        )  # this should be set dynamically based on the user config
+        default_resource_setting.set_resource("lsf_queue", "bio")  # this should be set dynamically based on the user config
         # default_resource_setting.set_resource("lsf_project", "PROJECT HERE") # this should be set dynamically as well, or be left empty if no default project can be found.
 
         self.resource_settings = ResourceSettings(
-            cores=(
-                300
-                if self.configuration["COMPUTING"]["compmode"] == "grid"
-                else self._set_cores(self.inputs.flags.threads)
-            ),
+            cores=(300 if self.configuration["COMPUTING"]["compmode"] == "grid" else self._set_cores(self.inputs.flags.threads)),
             resources={"max_local_mem": self._get_max_local_mem()},
             nodes=200 if self.configuration["COMPUTING"]["compmode"] == "grid" else 1,
-            default_resources=default_resource_setting,
+            default_resources=add_default_resource_settings(scheduler=self.inputs.scheduler, user_config=self.configuration),
         )
 
         self.storage_settings = StorageSettings()
 
         self.deployment_settings = DeploymentSettings(
             deployment_method=(
-                {DeploymentMethod.APPTAINER}
-                if self.configuration["REPRODUCTION"]["repro_method"] == "containers"
-                else {DeploymentMethod.CONDA}
+                {DeploymentMethod.APPTAINER} if self.configuration["REPRODUCTION"]["repro_method"] == "containers" else {DeploymentMethod.CONDA}
             ),
             conda_prefix=None,
             conda_cleanup_pkgs=None,
@@ -197,11 +187,9 @@ class WorkflowConfig:
             scheduler="greedy",
         )
 
-        self.workflow_settings = WorkflowSettings(exec_mode=ExecMode.DEFAULT)
+        self.workflow_settings = WorkflowSettings(exec_mode=ExecMode.SUBPROCESS if self.dryrun else ExecMode.DEFAULT)
 
-        unidirectional = correct_unidirectional_flag(
-            self.inputs.samples_dict, self.inputs.flags
-        )
+        unidirectional = correct_unidirectional_flag(self.inputs.samples_dict, self.inputs.flags)
 
         self.snakemake_base_params = {
             "sample_sheet": WriteYaml(
@@ -227,13 +215,7 @@ class WorkflowConfig:
         }
 
         self.workflow_configsettings = ConfigSettings(
-            configfiles=[
-                Path(
-                    WriteYaml(
-                        self.snakemake_base_params, f"{self.inputs.workdir}/config.yaml"
-                    )
-                )
-            ],
+            configfiles=[Path(WriteYaml(self.snakemake_base_params, f"{self.inputs.workdir}/config.yaml"))],
         )
 
         self.remote_execution_settings = RemoteExecutionSettings(
@@ -279,7 +261,56 @@ class WorkflowConfig:
         return int(round(avl_mem_bytes / (1024.0**2) - 2000, -3))
 
 
-@dataclass
+def add_default_resource_settings(scheduler: Scheduler, user_config: ConfigParser) -> DefaultResources:
+    """
+    A barebones function to add queuename settings to the DefaultResources snakemake object for correct scheduling instructions.
+
+    Parameters
+    ----------
+    scheduler : Scheduler
+        The job scheduler to be used (e.g., LOCAL, DRYRUN, LSF, SLURM).
+    user_config : ConfigParser
+        The user configuration containing resource settings, specifically the queue or partition name.
+
+    Returns
+    -------
+    DefaultResources
+        A DefaultResources object with the added default resource settings.
+    """
+    default_resource_setting = DefaultResources()
+    queue = user_config["COMPUTING"].get("queuename", None)
+    if scheduler in [Scheduler.LOCAL, Scheduler.DRYRUN]:
+        # For local execution there are no additional resource settings required.
+        # All the resources are already set in the rest of the WorkflowConfig and in the workflows themselves.
+        return default_resource_setting
+    if scheduler == Scheduler.LSF:
+        # required settings: lsf_queue
+        # optional settings: lsf_project
+        if queue is None:
+            log.error(
+                "HPC/Grid mode is set with LSF as the job-scheduler, but no queue name could be found in the user configuration."
+                f"Please re-create the user configuration file with a valid queue name using `{__prog__} --reset-user-config`."
+            )
+            sys.exit(1)
+        default_resource_setting.set_resource("lsf_queue", queue)
+        # the project is optional, leaving it unassigned for now.
+        # This may be an issue if the LSF cluster doesn't have a default project configured by an admin.
+    if scheduler == Scheduler.SLURM:
+        # required settings: slurm_partition (this is the same as a queue for the LSF scheduler)
+        # optional settings: slurm_account, clusters
+        # TODO: we don't have a SLURM cluster to properly test this on, will need to verify this later.
+        if queue is None:
+            log.error(
+                "HPC/Grid mode is set with SLURM as the job-scheduler, but no partition/queuename name could be found in the user configuration."
+                f"Please re-create the user configuration file with a valid partition or queue name using `{__prog__} --reset-user-config`."
+            )
+            sys.exit(1)
+        default_resource_setting.set_resource("slurm_partition", queue)
+        # the account and the clusters are optional, leaving it unassigned for now.
+        # This may be an issue if the SLURM cluster doesn't have default values for these settings configured by an admin
+    return default_resource_setting
+
+
 class MaxThreadsPerType:
     """
     Represents the maximum number of threads to use for each type of process.

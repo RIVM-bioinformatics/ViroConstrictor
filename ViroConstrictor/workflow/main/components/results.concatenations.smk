@@ -88,18 +88,15 @@ rule concat_aminoacids:
         f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     threads: 1
     params:
-        script=(
-            workflow_script_path("scripts/group_aminoacids.py")
-            if (
-                DeploymentMethod.CONDA
-                in workflow.deployment_settings.deployment_method
-            )
-            is True
-            else "/scripts/group_aminoacids.py"
-        ),
+        script="-m scripts.group_aminoacids",
     shell:
-        'python {params.script} "{input.files}" "{output}" {input.sampleinfo}'
-
+        """
+        PYTHONPATH={workflow.basedir} \
+        python {params.script} \
+        --input "{input.files}" \
+        --output "{output}" \
+        --space {input.sampleinfo}
+        """
 
 def group_items(wildcards, folder, filename):
     filtered_virus = p_space.dataframe.loc[
@@ -160,16 +157,13 @@ rule concat_amplicon_cov:
     container:
         f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
     params:
-        script=(
-            workflow_script_path("scripts/concat_amplicon_covs.py")
-            if (
-                DeploymentMethod.CONDA
-                in workflow.deployment_settings.deployment_method
-            )
-            is True
-            else "/scripts/concat_amplicon_covs.py"
-        ),
+        script = "-m scripts.amplicon_covs",
     shell:
         """
-        python {params.script} --output {output} --input {input}
+        PYTHONPATH={workflow.basedir} \
+        python {params.script} \
+        --input {input.pr} \
+        --coverages {input.cov} \
+        --key {wildcards.sample} \
+        --output {output} > {log} 2>&1
         """

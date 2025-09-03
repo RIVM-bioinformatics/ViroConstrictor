@@ -125,20 +125,17 @@ rule remove_adapters_p2:
         mem_mb=low_memory_job,
         runtime=55,
     params:
-        script=(
-            workflow_script_path("scripts/clipper.py")
-            if (
-                DeploymentMethod.CONDA
-                in workflow.deployment_settings.deployment_method
-            )
-            is True
-            else "/scripts/clipper.py"
-        ),
+        script="-m scripts.clipper",
         clipper_filterparams=lambda wc: get_preset_parameter(
             preset_name=SAMPLES[wc.sample]["PRESET"],
             parameter_name=f"Clipper_FilterParams_{config['platform']}",
         ),
     shell:
         """
-        python {params.script} --input {input} --output {output} {params.clipper_filterparams} --threads {threads}
+        PYTHONPATH={workflow.basedir} \
+        python {params.script} \
+        --input {input} \
+        --output {output} \
+        {params.clipper_filterparams} \
+        --threads {threads}
         """

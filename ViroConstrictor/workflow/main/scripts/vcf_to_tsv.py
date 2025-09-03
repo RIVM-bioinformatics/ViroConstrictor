@@ -1,32 +1,53 @@
-import sys
+from argparse import ArgumentParser
+from pathlib import Path
 
 import pandas as pd
 
-_, input_vcf, output_tsv, samplename = sys.argv
+from .base_script_class import BaseScript
 
-# read the file
-df = pd.read_csv(
-    input_vcf,
-    sep="\t",
-    comment="#",
-    names=["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO"],
-)
 
-# drop all rows where ALT is a non-determined base (N)
-df = df[df.ALT != "N"]
+class VcfToTsv(BaseScript):
+    def __init__(self, input: Path, output: Path, samplename: str) -> None:
+        super().__init__(input, output)
+        self.samplename = samplename
 
-if df.empty is True:
-    df.to_csv(output_tsv, sep="\t", index=False, header=False)
-    sys.exit(0)
+    @classmethod
+    def add_arguments(cls, parser: ArgumentParser) -> None:
+        super().add_arguments(parser)
+        parser.add_argument(
+            "--samplename",
+            metavar="String",
+            help="Sample name to be added to the output.",
+            type=str,
+            required=True,
+        )
 
-# change the INFO column to only contain the depth-numbers, remove the keys
-df["INFO"] = df["INFO"].str.split("=", expand=True)[1].str.split(";", expand=True)[0]
+    def run(self) -> None:
+        self._convert_vcf_to_tsv()
 
-# drop the unnecessary columns in the dataframe
-df.drop(["ID", "QUAL", "FILTER"], axis=1, inplace=True)
+    def _convert_vcf_to_tsv(self) -> None:
+        """Convert VCF to TSV format."""
+        df = pd.read_csv(
+            self.input,
+            sep="\t",
+            comment="#",
+            names=["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO"],
+        )
 
-# insert the samplename as a column
-df.insert(loc=0, column="Sample", value=samplename)
+        df = df[df.ALT != "N"]
 
-# write the file as a TSV to disk
-df.to_csv(output_tsv, sep="\t", index=False, header=False)
+        if df.empty:
+            df.to_csv(self.output, sep="\t", index=False, header=False)
+            return
+
+        df["INFO"] = (
+            df["INFO"].str.split("=", expand=True)[1].str.split(";", expand=True)[0]
+        )
+        df.drop(["ID", "QUAL", "FILTER"], axis=1, inplace=True)
+        df.insert(loc=0, column="Sample", value=self.samplename)
+
+        df.to_csv(self.output, sep="\t", index=False, header=False)
+
+
+if __name__ == "__main__":
+    VcfToTsv.main()
