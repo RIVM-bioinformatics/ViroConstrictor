@@ -179,13 +179,6 @@ def log_containers(recipe_hashes: Dict[str, str], merged_hash: str) -> None:
     log.debug(
         f"Python code :: Containers :: Getting hashes :: merged hash of scripts and config files: {merged_hash}"
     )
-    # Log the hashes of the recipe files
-    hashes_to_string = ",\n".join(
-        f"{file}: {hash}" for file, hash in recipe_hashes.items()
-    )
-    log.debug(
-        f"Python code :: Containers :: Getting hashes :: recipe file hashes: \n{hashes_to_string}"
-    )
 
     # Log the depencies and their versions
     for recipe_file, hash in recipe_hashes.items():
