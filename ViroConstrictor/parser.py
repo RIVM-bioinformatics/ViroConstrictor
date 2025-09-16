@@ -25,18 +25,15 @@ from ViroConstrictor.workflow.presets import match_preset_name
 class CLIparser:
     def __init__(self, input_args: list[str], settings_path: str) -> None:
         self.flags: argparse.Namespace = self._get_args(input_args)
-
         # Override standard logging when verbose option is given and add debug statements
         if self.flags.verbose:
             log.setLevel(logging.DEBUG)
-            logging.getLogger("asyncio").setLevel(logging.DEBUG)
-            logging.getLogger("snakemake").setLevel(logging.DEBUG)
-            logging.getLogger("smart_open").setLevel(logging.DEBUG)
-            logging.getLogger("urllib3").setLevel(logging.DEBUG)
-            logging.getLogger("fpdf").setLevel(logging.DEBUG)
-
         self.logfile = setup_logger(self.flags.output)
+        
         log.info(f"ViroConstrictor version: [blue]{__version__}[/blue]")
+        log.debug(
+            f"Python code :: Parser :: Getting arguments :: the parsed arguments are: {self.flags}"
+        )
         log.debug(
             "Python code :: Parser :: Validate arguments :: checking all given command line arguments."
         )
@@ -94,12 +91,6 @@ class CLIparser:
         if not self.samples_dict:
             sys.exit(1)
         log.info("[green]Successfully parsed all command line arguments[/green]")
-        converted_args = ", ".join(
-            f"{param}={param_value}" for param, param_value in vars(self.flags).items()
-        )
-        log.debug(
-            f"Python code :: Parser :: Getting arguments :: the parsed arguments are: {converted_args}"
-        )
         self._check_sample_properties(
             self.samples_dict
         )  # raises errors if stuff is not right
