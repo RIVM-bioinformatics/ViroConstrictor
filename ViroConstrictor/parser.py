@@ -51,7 +51,7 @@ class CLIparser:
             )
         self.user_config = ReadConfig(pathlib.Path(settings_path).expanduser())
         self.scheduler = Scheduler.determine_scheduler(
-            self.flags.scheduler, self.user_config, log
+            self.flags.scheduler, self.user_config, self.flags.dryrun
         )
         self.flags.presets = self.flags.disable_presets is False
         self.samples_df = pd.DataFrame()
