@@ -405,7 +405,7 @@ class CLIparser:
 
         optional_args.add_argument(
             "--verbose",
-            "-V",
+            "--debug",
             action="store_true",
             help="Adds extra information to the log file",
         )
