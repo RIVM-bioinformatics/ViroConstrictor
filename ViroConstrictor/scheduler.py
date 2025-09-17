@@ -52,8 +52,7 @@ class Scheduler(Enum):
         if scheduler_str:
             if not cls.is_valid(scheduler_str):
                 log.warning(
-                    "Invalid scheduler string: '%s', using non-grid mode",
-                    scheduler_str,
+                    f"Invalid scheduler string: '{scheduler_str}', using non-grid mode"
                 )
                 return cls.LOCAL
             scheduler = cls.from_string(scheduler_str)
@@ -63,9 +62,8 @@ class Scheduler(Enum):
                 )
                 return None
             log.debug(
-                "Helper functionality :: Scheduler :: Scheduler determined from string: '%s'",
-                scheduler_str,
-            )
+                f"Helper functionality :: Scheduler :: Scheduler determined from string: '{scheduler_str}'"
+                )
             return scheduler
         return None
 
@@ -73,20 +71,18 @@ class Scheduler(Enum):
     def _scheduler_from_config(cls, user_config: ConfigParser) -> Optional["Scheduler"]:
         config_exec_mode = user_config["COMPUTING"].get("compmode", "")
         if config_exec_mode.lower() == "local":
-            log.debug("Execution mode set to local in config, using LOCAL scheduler.")
+            log.debug("Helper functionality :: Scheduler :: Execution mode set to local in config, using LOCAL scheduler.")
             return cls.LOCAL
 
         config_scheduler = user_config["COMPUTING"].get("scheduler", "")
         if config_scheduler:
             if not cls.is_valid(config_scheduler):
                 log.warning(
-                    "Invalid scheduler in config: '%s', using non-grid mode",
-                    config_scheduler,
+                    f"Invalid scheduler in config: '{config_scheduler}', using non-grid mode"
                 )
                 return cls.LOCAL
             log.debug(
-                "Helper functionality :: Scheduler :: Scheduler determined from config: '%s'",
-                config_scheduler,
+                f"Helper functionality :: Scheduler :: Scheduler determined from config: '{config_scheduler}'"
             )
             return cls.from_string(config_scheduler)
         return None
@@ -114,8 +110,7 @@ class Scheduler(Enum):
             with drmaa.Session() as session:
                 scheduler_name = session.drmsInfo
                 log.debug(
-                    "Helper functionality :: Scheduler :: Scheduler determined from DRMAA: '%s'",
-                    scheduler_name,
+                    f"Helper functionality :: Scheduler :: Scheduler determined from DRMAA: '{scheduler_name}'"
                 )
                 return cls.from_string(scheduler_name)
         except RuntimeError as e:
@@ -131,18 +126,16 @@ class Scheduler(Enum):
     ) -> "Scheduler":
         """Determine the scheduler type from argument, config, env, or DRMAA."""
 
-        log.debug("Determining scheduler...")
-        if dryrun_arg:
-            log.debug("Dry-run mode set on the commandline, using DRYRUN scheduler.")
-            return cls.DRYRUN
         log.debug("Helper functionality :: Scheduler :: Determining scheduler...")
+        if dryrun_arg:
+            log.debug("Helper functionality :: Scheduler :: Dry-run mode set on the commandline, using DRYRUN scheduler.")
+            return cls.DRYRUN
 
         if scheduler_str:
             scheduler = cls._scheduler_from_argument(scheduler_str)
             if scheduler is not None:
                 log.debug(
-                    "Helper functionality :: Scheduler :: Scheduler selected from argument: '%s'",
-                    scheduler.name,
+                    f"Helper functionality :: Scheduler :: Scheduler selected from argument: '{scheduler.name}'"
                 )
                 return scheduler
 
@@ -150,24 +143,21 @@ class Scheduler(Enum):
             scheduler = cls._scheduler_from_config(user_config)
             if scheduler is not None:
                 log.debug(
-                    "Helper functionality :: Scheduler :: Scheduler selected from config: '%s'",
-                    scheduler.name,
+                    f"Helper functionality :: Scheduler :: Scheduler selected from config: '{scheduler.name}'"
                 )
                 return scheduler
 
         scheduler = cls._scheduler_from_environment()
         if scheduler is not None:
             log.debug(
-                "Helper functionality :: Scheduler :: Scheduler selected from environment: '%s'",
-                scheduler.name,
+                f"Helper functionality :: Scheduler :: Scheduler selected from environment: '{scheduler.name}'"
             )
             return scheduler
 
         scheduler = cls._scheduler_from_drmaa()
         if scheduler is not None:
             log.debug(
-                "Helper functionality :: Scheduler :: Scheduler selected from DRMAA: '%s'",
-                scheduler.name,
+                f"Helper functionality :: Scheduler :: Scheduler selected from DRMAA: '{scheduler.name}'"
             )
             return scheduler
 
