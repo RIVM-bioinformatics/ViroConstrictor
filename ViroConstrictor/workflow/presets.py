@@ -200,12 +200,12 @@ def get_preset_parameter(preset_name: str, parameter_name: str) -> str:
             "DEFAULT", ["STAGE_MAIN", "STAGE_GLOBAL"], _stage_identifier
         )
         log.debug(
-            f"Python code :: Preset :: {preset_name} specific parameter '[yellow]{_stage_identifier}_{parameter_name}[/yellow]' not found, inheriting parameter value from 'DEFAULT'."
+            f"Parameter handling :: Preset :: {preset_name} specific parameter '[yellow]{_stage_identifier}_{parameter_name}[/yellow]' not found, inheriting parameter value from 'DEFAULT'."
         )
 
         return preset_params[f"{_stage_identifier}_{parameter_name}"]
 
     log.debug(
-        f"Python code :: Preset :: Using {preset_name} specific parameter '[yellow]{_stage_identifier}_{parameter_name}[/yellow]'"
+        f"Parameter handling :: Preset :: Using {preset_name} specific parameter '[yellow]{_stage_identifier}_{parameter_name}[/yellow]'"
     )
     return parameter
