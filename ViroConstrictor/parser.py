@@ -29,7 +29,7 @@ class CLIparser:
         if self.flags.verbose:
             log.setLevel(logging.DEBUG)
         self.logfile = setup_logger(self.flags.output)
-        
+
         log.info(f"ViroConstrictor version: [blue]{__version__}[/blue]")
         log.debug(
             f"Input handling :: Parser :: Getting arguments :: the parsed arguments are: {self.flags}"
