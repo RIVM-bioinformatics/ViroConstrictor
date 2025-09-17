@@ -32,10 +32,10 @@ class CLIparser:
         
         log.info(f"ViroConstrictor version: [blue]{__version__}[/blue]")
         log.debug(
-            f"Python code :: Parser :: Getting arguments :: the parsed arguments are: {self.flags}"
+            f"Input handling :: Parser :: Getting arguments :: the parsed arguments are: {self.flags}"
         )
         log.debug(
-            "Python code :: Parser :: Validate arguments :: checking all given command line arguments."
+            "Input handling :: Parser :: Validate arguments :: checking all given command line arguments."
         )
         self.cli_errors = self._validate_cli_args()
         if self.cli_errors:
@@ -44,7 +44,7 @@ class CLIparser:
             sys.exit(1)
         else:
             log.debug(
-                "Python code :: Parser :: Validate arguments :: all given command line arguments have been successfully checked."
+                "Input handling :: Parser :: Validate arguments :: all given command line arguments have been successfully checked."
             )
         self.user_config = ReadConfig(pathlib.Path(settings_path).expanduser())
         self.scheduler = Scheduler.determine_scheduler(
@@ -55,7 +55,7 @@ class CLIparser:
         self.samples_dict: dict[Hashable, Any] = {}
         if self.flags.samplesheet is not None:
             log.debug(
-                "Python code :: Parser :: Getting samples :: getting samples from sample sheet."
+                "Input handling :: Parser :: Getting samples :: getting samples from sample sheet."
             )
             self._print_missing_asset_warning(self.flags, True)
             self.samples_dict = self._make_samples_dict(
@@ -65,11 +65,11 @@ class CLIparser:
             )
             self.samples_df = pd.DataFrame.from_dict(self.samples_dict, orient="index")
             log.debug(
-                "Python code :: Parser :: Getting samples :: samples have been acquired successfully."
+                "Input handling :: Parser :: Getting samples :: samples have been acquired successfully."
             )
             converted_samples = convert_log_text(self.samples_dict)
             log.debug(
-                f"Python code :: Parser :: Getting samples :: the parsed samples are:\n{converted_samples}"
+                f"Input handling :: Parser :: Getting samples :: the parsed samples are:\n{converted_samples}"
             )
         else:
             self._print_missing_asset_warning(self.flags, False)

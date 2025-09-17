@@ -14,7 +14,7 @@ from ViroConstrictor.parser import CLIparser
 
 class PDF(FPDF):
     log.debug(
-        "Python code :: Run report :: Create run report :: creating run information report."
+        "Output handling :: Run report :: Create run report :: creating run information report."
     )
 
     def timestamp(self) -> str:
@@ -136,5 +136,5 @@ def WriteReport(
     pdf.output(name="Runinfomation.pdf")
 
     log.debug(
-        "Python code :: Run report :: Create run report :: run information report created successfully."
+        "Output handling :: Run report :: Create run report :: run information report created successfully."
     )

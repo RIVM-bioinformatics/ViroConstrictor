@@ -177,7 +177,7 @@ def log_containers(recipe_hashes: Dict[str, str], merged_hash: str) -> None:
     """
     # Log the merged hash of scripts and config files
     log.debug(
-        f"Python code :: Containers :: Getting hashes :: merged hash of scripts and config files: {merged_hash}"
+        f"Helper functionality :: Containers :: Getting hashes :: merged hash of scripts and config files: {merged_hash}"
     )
 
     # Log the depencies and their versions
@@ -191,7 +191,7 @@ def log_containers(recipe_hashes: Dict[str, str], merged_hash: str) -> None:
             dependency_string = ",\n".join(dependency_list)
             # Log the dependencies and their versions
             log.debug(
-                f"Python code :: Containers :: Getting dependency versions :: recipe file: {recipe_file}, hash: {hash}\n{dependency_string}"
+                f"Helper functionality :: Containers :: Getting dependency versions :: recipe file: {recipe_file}, hash: {hash}\n{dependency_string}"
             )
 
 

@@ -59,11 +59,11 @@ class Scheduler(Enum):
             scheduler = cls.from_string(scheduler_str)
             if scheduler == cls.AUTO:
                 log.debug(
-                    "Python code :: Scheduler :: Scheduler set to AUTO, trying to determine automatically"
+                    "Helper functionality :: Scheduler :: Scheduler set to AUTO, trying to determine automatically"
                 )
                 return None
             log.debug(
-                "Python code :: Scheduler :: Scheduler determined from string: '%s'",
+                "Helper functionality :: Scheduler :: Scheduler determined from string: '%s'",
                 scheduler_str,
             )
             return scheduler
@@ -85,7 +85,7 @@ class Scheduler(Enum):
                 )
                 return cls.LOCAL
             log.debug(
-                "Python code :: Scheduler :: Scheduler determined from config: '%s'",
+                "Helper functionality :: Scheduler :: Scheduler determined from config: '%s'",
                 config_scheduler,
             )
             return cls.from_string(config_scheduler)
@@ -95,14 +95,14 @@ class Scheduler(Enum):
     def _scheduler_from_environment(cls) -> Optional["Scheduler"]:
         if shutil.which("sbatch") or "SLURM_JOB_ID" in os.environ:
             log.debug(
-                "Python code :: Scheduler :: Scheduler found in environment: SLURM"
+                "Helper functionality :: Scheduler :: Scheduler found in environment: SLURM"
             )
             return cls.SLURM
         if shutil.which("bsub") or "LSB_JOBID" in os.environ:
-            log.debug("Python code :: Scheduler :: Scheduler found in environment: LSF")
+            log.debug("Helper functionality :: Scheduler :: Scheduler found in environment: LSF")
             return cls.LSF
         log.debug(
-            "Python code :: Scheduler :: No scheduler found in environment variables or executables."
+            "Helper functionality :: Scheduler :: No scheduler found in environment variables or executables."
         )
         return None
 
@@ -114,12 +114,12 @@ class Scheduler(Enum):
             with drmaa.Session() as session:
                 scheduler_name = session.drmsInfo
                 log.debug(
-                    "Python code :: Scheduler :: Scheduler determined from DRMAA: '%s'",
+                    "Helper functionality :: Scheduler :: Scheduler determined from DRMAA: '%s'",
                     scheduler_name,
                 )
                 return cls.from_string(scheduler_name)
         except RuntimeError as e:
-            log.debug(f"Python code :: Scheduler :: DRMAA not available: {e}")
+            log.debug(f"Helper functionality :: Scheduler :: DRMAA not available: {e}")
         return None
 
     @classmethod
@@ -135,13 +135,13 @@ class Scheduler(Enum):
         if dryrun_arg:
             log.debug("Dry-run mode set on the commandline, using DRYRUN scheduler.")
             return cls.DRYRUN
-        log.debug("Python code :: Scheduler :: Determining scheduler...")
+        log.debug("Helper functionality :: Scheduler :: Determining scheduler...")
 
         if scheduler_str:
             scheduler = cls._scheduler_from_argument(scheduler_str)
             if scheduler is not None:
                 log.debug(
-                    "Python code :: Scheduler :: Scheduler selected from argument: '%s'",
+                    "Helper functionality :: Scheduler :: Scheduler selected from argument: '%s'",
                     scheduler.name,
                 )
                 return scheduler
@@ -150,7 +150,7 @@ class Scheduler(Enum):
             scheduler = cls._scheduler_from_config(user_config)
             if scheduler is not None:
                 log.debug(
-                    "Python code :: Scheduler :: Scheduler selected from config: '%s'",
+                    "Helper functionality :: Scheduler :: Scheduler selected from config: '%s'",
                     scheduler.name,
                 )
                 return scheduler
@@ -158,7 +158,7 @@ class Scheduler(Enum):
         scheduler = cls._scheduler_from_environment()
         if scheduler is not None:
             log.debug(
-                "Python code :: Scheduler :: Scheduler selected from environment: '%s'",
+                "Helper functionality :: Scheduler :: Scheduler selected from environment: '%s'",
                 scheduler.name,
             )
             return scheduler
@@ -166,7 +166,7 @@ class Scheduler(Enum):
         scheduler = cls._scheduler_from_drmaa()
         if scheduler is not None:
             log.debug(
-                "Python code :: Scheduler :: Scheduler selected from DRMAA: '%s'",
+                "Helper functionality :: Scheduler :: Scheduler selected from DRMAA: '%s'",
                 scheduler.name,
             )
             return scheduler
