@@ -174,10 +174,10 @@ class ViroConstrictorBaseLogHandler(logging.Handler):
         processed_records = self._dispatch_log_record_formatter(record)
         if processed_records is None:
             return
-        
+
         # sort items in processed_records, by their log level
         processed_records.sort(key=lambda x: x["levelno"], reverse=True)
-            
+
         for record_dict in processed_records:
             try:
                 # Use the internal console_handler to emit to the console
@@ -185,11 +185,11 @@ class ViroConstrictorBaseLogHandler(logging.Handler):
                 self.console_handler.emit(console_record)
             except Exception:
                 self.handleError(logging.makeLogRecord(record_dict))
-            
+
             try:
                 # 2. Handle file output
                 # If self.emit() is called, the record should also be written to the file.
-            
+
                 # Create a copy of the record for file processing.
                 # This is to prevent modifications from affecting other handlers or console output.
                 file_record = logging.makeLogRecord(record_dict)
@@ -288,18 +288,23 @@ class ViroConstrictorBaseLogHandler(logging.Handler):
                 (rule_id, int),
                 (rule_input, list),
                 (rule_output, list),
-                (shellcmd, str)
+                (shellcmd, str),
             ]
-            if all(isinstance(value, expected_type) for value, expected_type in expected_types):
-                records_to_emit.append(handle_job_debug_message(
-                log_record.copy(),
-                rule_name,
-                wildcards,
-                rule_id,
-                rule_input,
-                rule_output,
-                shellcmd,
-                ))
+            if all(
+                isinstance(value, expected_type)
+                for value, expected_type in expected_types
+            ):
+                records_to_emit.append(
+                    handle_job_debug_message(
+                        log_record.copy(),
+                        rule_name,
+                        wildcards,
+                        rule_id,
+                        rule_input,
+                        rule_output,
+                        shellcmd,
+                    )
+                )
 
         if log_message is None and log_record.get("message") is not None:
             log_message = log_record.get("message")
@@ -573,7 +578,7 @@ def handle_job_debug_message(
         List of output file paths for the rule.
     shellcmd : str
         The shell command to be executed for the rule.
-        
+
     Returns
     -------
     dict[str, Any]

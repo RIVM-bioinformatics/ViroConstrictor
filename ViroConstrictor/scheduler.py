@@ -63,7 +63,7 @@ class Scheduler(Enum):
                 return None
             log.debug(
                 f"Helper functionality :: Scheduler :: Scheduler determined from string: '{scheduler_str}'"
-                )
+            )
             return scheduler
         return None
 
@@ -71,7 +71,9 @@ class Scheduler(Enum):
     def _scheduler_from_config(cls, user_config: ConfigParser) -> Optional["Scheduler"]:
         config_exec_mode = user_config["COMPUTING"].get("compmode", "")
         if config_exec_mode.lower() == "local":
-            log.debug("Helper functionality :: Scheduler :: Execution mode set to local in config, using LOCAL scheduler.")
+            log.debug(
+                "Helper functionality :: Scheduler :: Execution mode set to local in config, using LOCAL scheduler."
+            )
             return cls.LOCAL
 
         config_scheduler = user_config["COMPUTING"].get("scheduler", "")
@@ -95,7 +97,9 @@ class Scheduler(Enum):
             )
             return cls.SLURM
         if shutil.which("bsub") or "LSB_JOBID" in os.environ:
-            log.debug("Helper functionality :: Scheduler :: Scheduler found in environment: LSF")
+            log.debug(
+                "Helper functionality :: Scheduler :: Scheduler found in environment: LSF"
+            )
             return cls.LSF
         log.debug(
             "Helper functionality :: Scheduler :: No scheduler found in environment variables or executables."
@@ -128,7 +132,9 @@ class Scheduler(Enum):
 
         log.debug("Helper functionality :: Scheduler :: Determining scheduler...")
         if dryrun_arg:
-            log.debug("Helper functionality :: Scheduler :: Dry-run mode set on the commandline, using DRYRUN scheduler.")
+            log.debug(
+                "Helper functionality :: Scheduler :: Dry-run mode set on the commandline, using DRYRUN scheduler."
+            )
             return cls.DRYRUN
 
         if scheduler_str:
