@@ -118,9 +118,9 @@ rule count_mapped_reads:
     output:
         temp(f"{datadir}{matchref}{wc_folder}" "{sample}_count.csv"),
     conda:
-        workflow_environment_path("Scripts.yaml")
+        workflow_environment_path("mr_scripts.yaml")
     container:
-        f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
+        f"{container_base_path}/viroconstrictor_mr_scripts_{get_hash('mr_scripts')}.sif"
     threads: 1
     resources:
         mem_mb=low_memory_job,
@@ -128,16 +128,12 @@ rule count_mapped_reads:
     log:
         f"{logdir}CountMR_" "{Virus}.{segment}.{sample}.log",
     params:
-        script=(
-            workflow_script_path("scripts/count_mapped_reads.py")
-            if (
-                DeploymentMethod.CONDA
-                in workflow.deployment_settings.deployment_method
-            )
-            is True
-            else "/match_ref_scripts/count_mapped_reads.py"
-        ),
+        script="-m match_ref.scripts.count_mapped_reads",
+        pythonpath=f'{Path(workflow.basedir).parent}'
     shell:
         """
-        python {params.script} {input.bam} {output} >> {log} 2>&1
+        PYTHONPATH={params.pythonpath} \
+        python {params.script} \
+        --input {input.bam} \
+        --output {output} >> {log} 2>&1
         """

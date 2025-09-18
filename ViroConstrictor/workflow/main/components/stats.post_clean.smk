@@ -6,9 +6,9 @@ rule qc_clean:
         html=f"{datadir}{wc_folder}{qc_post}" "{sample}_fastqc.html",
         zip=f"{datadir}{wc_folder}{qc_post}" "{sample}_fastqc.zip",
     conda:
-        workflow_environment_path("Scripts.yaml")
+        workflow_environment_path("core_scripts.yaml")
     container:
-        f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
+        f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     log:
         f"{logdir}QC_clean_" "{Virus}.{RefID}.{sample}.log",
     benchmark:
@@ -19,15 +19,7 @@ rule qc_clean:
         runtime=55,
     params:
         outdir=f"{datadir}{wc_folder}{qc_post}",
-        script=(
-            workflow_script_path("scripts/fastqc.sh")
-            if (
-                DeploymentMethod.CONDA
-                in workflow.deployment_settings.deployment_method
-            )
-            is True
-            else "/scripts/fastqc.sh"
-        ),
+        script=workflow_script_path("scripts/fastqc.sh")
     shell:
         """
         bash {params.script} {input} {params.outdir} {output.html} {output.zip} {log}

@@ -83,15 +83,16 @@ rule concat_aminoacids:
         mem_mb=low_memory_job,
         runtime=55,
     conda:
-        workflow_environment_path("Scripts.yaml")
+        workflow_environment_path("core_scripts.yaml")
     container:
-        f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
+        f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     threads: 1
     params:
-        script="-m scripts.group_aminoacids",
+        script="-m main.scripts.group_aminoacids",
+        pythonpath=f'{Path(workflow.basedir).parent}',
     shell:
         """
-        PYTHONPATH={workflow.basedir} \
+        PYTHONPATH={params.pythonpath} \
         python {params.script} \
         --input "{input.files}" \
         --output "{output}" \
@@ -142,7 +143,7 @@ rule concat_boc:
 
 rule concat_amplicon_cov:
     input:
-        lambda wildcards: group_items(
+        pr = lambda wildcards: group_items(
             wildcards,
             folder=f"{datadir}{wc_folder}{prim}",
             filename="_ampliconcoverage.csv",
@@ -153,17 +154,17 @@ rule concat_amplicon_cov:
         mem_mb=low_memory_job,
         runtime=55,
     conda:
-        workflow_environment_path("Scripts.yaml")
+        workflow_environment_path("core_scripts.yaml")
     container:
-        f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
+        f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     params:
-        script = "-m scripts.amplicon_covs",
+        script="-m main.scripts.concat_amplicon_covs",
+        pythonpath=f'{Path(workflow.basedir).parent}',
     shell:
         """
-        PYTHONPATH={workflow.basedir} \
+        PYTHONPATH={params.pythonpath} \
         python {params.script} \
-        --input {input.pr} \
-        --coverages {input.cov} \
-        --key {wildcards.sample} \
-        --output {output} > {log} 2>&1
+        --input "empty" \
+        --input_coverages {input.pr} \
+        --output {output}
         """

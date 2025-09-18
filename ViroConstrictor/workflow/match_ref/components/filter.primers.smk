@@ -50,23 +50,21 @@ rule filter_bed:
         runtime=55,
     log:
         f"{logdir}FilterBed_" "{sample}.log",
-    params:
-        script=(
-            workflow_script_path("script/filter_bed.py")
-            if (
-                DeploymentMethod.CONDA
-                in workflow.deployment_settings.deployment_method
-            )
-            is True
-            else "/match_ref_scripts/filter_bed.py"
-        ),
     conda:
-        workflow_environment_path("Scripts.yaml")
+        workflow_environment_path("mr_scripts.yaml")
     container:
-        f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
+        f"{container_base_path}/viroconstrictor_mr_scripts_{get_hash('mr_scripts')}.sif"
+    params:
+        script="-m scripts.filter_bed",
+        pythonpath=f'{Path(workflow.basedir).parent}'
     shell:
         """
-        python {params.script} {input.prm} {input.refdata} {output.bed} {output.groupedstats}
+        PYTHONPATH={params.pythonpath} \
+        python {params.script} \
+        --input {input.prm} \
+        --refdata {input.refdata} \
+        --output {output.bed} \
+        --updatedstats {output.groupedstats}
         """
 
 

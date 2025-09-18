@@ -1,0 +1,16 @@
+name: mr_custom_scripts
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - conda-forge::python>=3.10
+  - conda-forge::pandas>=2.0
+  - conda-forge::numpy>=2.0
+  - conda-forge::biopython==1.79
+
+  - bioconda::pysam==0.21
+  - bioconda::fastqc==0.11.9
+  - pip
+  - pip:
+      - git+https://github.com/RIVM-bioinformatics/AminoExtract.git@dev

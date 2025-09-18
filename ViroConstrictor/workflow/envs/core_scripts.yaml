@@ -1,4 +1,4 @@
-name: Custom_scripts
+name: core_custom_scripts
 channels:
   - conda-forge
   - bioconda

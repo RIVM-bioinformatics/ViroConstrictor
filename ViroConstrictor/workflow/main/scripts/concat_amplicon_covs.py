@@ -3,7 +3,9 @@ from pathlib import Path
 
 import pandas as pd
 
-from .base_script_class import BaseScript
+import os
+
+from helpers.base_script_class import BaseScript  # type: ignore[import]  # noqa: F401,E402
 
 
 class ConcatAmpliconCovs(BaseScript):
@@ -23,12 +25,26 @@ class ConcatAmpliconCovs(BaseScript):
         Executes the concatenation of amplicon coverage files.
     """
 
-    def __init__(self, input: list[Path | str], output: Path | str) -> None:
-        super().__init__(input, output)
+    def __init__(
+        self, 
+        input: list[Path | str], 
+        input_coverages: list[Path | str], 
+        output: Path | str
+    ) -> None:
+        super().__init__(input_coverages, output)
+        self.input_coverages = input_coverages
 
     @classmethod
     def add_arguments(cls, parser: ArgumentParser) -> None:
         super().add_arguments(parser)
+        parser.add_argument(
+            "--input_coverages",
+            metavar="File",
+            nargs="+",
+            type=str,
+            help="List of input CSV file paths.",
+            required=True,
+        )
 
     def run(self) -> None:
         self._concat_amplicon_covs()

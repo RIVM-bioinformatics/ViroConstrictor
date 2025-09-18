@@ -7,6 +7,7 @@ import AminoExtract
 import numpy as np
 import pandas as pd
 import yaml
+from pathlib import Path
 from Bio import SeqIO, SeqRecord
 from snakemake.utils import Paramspace, min_version
 from snakemake_interface_executor_plugins.settings import DeploymentMethod
@@ -32,17 +33,10 @@ with open(config["sample_sheet"]) as sample_sheet_file:
 
 container_base_path = workflow.deployment_settings.apptainer_prefix if not None else ""
 
-samples_df = (
-    pd.DataFrame(SAMPLES)
-    .transpose()
-    .reset_index()
-    .rename(columns=dict(index="sample", VIRUS="Virus"))
-)
+samples_df = pd.DataFrame(SAMPLES).transpose().reset_index().rename(columns=dict(index="sample", VIRUS="Virus"))
 samples_df = segmented_ref_groups(samples_df)
 samples_df = samples_df.explode("segment")
-p_space = Paramspace(
-    samples_df[["Virus", "segment", "sample"]], filename_params=["sample"]
-)
+p_space = Paramspace(samples_df[["Virus", "segment", "sample"]], filename_params=["sample"])
 wc_folder = "/".join(p_space.wildcard_pattern.split("/")[:-1]) + "/"
 
 
@@ -70,9 +64,7 @@ def workflow_script_path(relative_path):
 
 
 def workflow_environment_path(filename):
-    basepath = os.path.dirname(
-        workflow.basedir
-    )  # moves up one directory from the workflow.basedir
+    basepath = os.path.dirname(workflow.basedir)  # moves up one directory from the workflow.basedir
     return os.path.join(basepath, conda_envs, filename)
 
 
@@ -137,17 +129,11 @@ rule concat_frames:
 
 onsuccess:
     logging.info(f"{'='*20} [green] Finished Match-reference process [/green] {'='*20}")
-    logging.info(
-        "[green]Finalizing the results and continuing with the main analysis workflow[/green]"
-    )
+    logging.info("[green]Finalizing the results and continuing with the main analysis workflow[/green]")
     return True
 
 
 onerror:
-    logging.error(
-        "[bold red]An error occurred during the ViroConstrictor match-reference process.[/bold red]"
-    )
-    logging.error(
-        "[bold red]Shutting down... Please check all the inputs and logfiles for any abnormalities and try again.[/bold red]"
-    )
+    logging.error("[bold red]An error occurred during the ViroConstrictor match-reference process.[/bold red]")
+    logging.error("[bold red]Shutting down... Please check all the inputs and logfiles for any abnormalities and try again.[/bold red]")
     return False

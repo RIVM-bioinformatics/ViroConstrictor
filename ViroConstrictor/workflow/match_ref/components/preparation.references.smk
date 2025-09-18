@@ -13,20 +13,17 @@ rule filter_references:
     benchmark:
         f"{logdir}{bench}MR_prepare_refs" "{Virus}.{segment}.{sample}.txt"
     conda:
-        workflow_environment_path("Scripts.yaml")
+        workflow_environment_path("mr_scripts.yaml")
     container:
-        f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
+        f"{container_base_path}/viroconstrictor_mr_scripts_{get_hash('mr_scripts')}.sif"
     params:
-        script=(
-            workflow_script_path("scripts/filter_references.py")
-            if (
-                DeploymentMethod.CONDA
-                in workflow.deployment_settings.deployment_method
-            )
-            is True
-            else "/match_ref_scripts/filter_references.py"
-        ),
+        script="-m match_ref.scripts.filter_references",
+        pythonpath=f'{Path(workflow.basedir).parent}'
     shell:
         """
-        python {params.script} {input} {output} {wildcards.segment} >> {log} 2>&1
+        PYTHONPATH={params.pythonpath} \
+        python {params.script} \
+        --input {input} \
+        --output {output} \
+        --wildcard_segment {wildcards.segment} >> {log} 2>&1
         """

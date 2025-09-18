@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 import pysam
 
-from ..base_script_class import BaseScript
+from helpers.base_script_class import BaseScript  # type: ignore[import]  # noqa: F401,E402
 
 
 class CountMappedReads(BaseScript):
@@ -30,20 +30,6 @@ class CountMappedReads(BaseScript):
     @classmethod
     def add_arguments(cls, parser: ArgumentParser) -> None:
         super().add_arguments(parser)
-        parser.add_argument(
-            "--input",
-            metavar="File",
-            type=str,
-            help="Path to the input BAM file.",
-            required=True,
-        )
-        parser.add_argument(
-            "--output",
-            metavar="File",
-            type=str,
-            help="Path to the output CSV file.",
-            required=True,
-        )
 
     def run(self) -> None:
         self._count_mapped_reads()

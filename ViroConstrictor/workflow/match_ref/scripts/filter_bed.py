@@ -3,7 +3,11 @@ from pathlib import Path
 
 import pandas as pd
 
-from ..base_script_class import BaseScript
+import os
+
+from typing import TYPE_CHECKING
+
+from helpers.base_script_class import BaseScript  # type: ignore[import]  # noqa: F401,E402
 
 
 class FilterBed(BaseScript):

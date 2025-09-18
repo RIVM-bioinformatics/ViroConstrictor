@@ -7,9 +7,9 @@ rule filter_best_matching_ref:
         filtref=temp(f"{datadir}{matchref}{wc_folder}" "{sample}_best_ref.fasta"),
         filtcount=temp(f"{datadir}{matchref}{wc_folder}" "{sample}_best_ref.csv"),
     conda:
-        workflow_environment_path("Scripts.yaml")
+        workflow_environment_path("mr_scripts.yaml")
     container:
-        f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
+        f"{container_base_path}/viroconstrictor_mr_scripts_{get_hash('mr_scripts')}.sif"
     threads: 1
     resources:
         mem_mb=low_memory_job,
@@ -17,18 +17,16 @@ rule filter_best_matching_ref:
     log:
         f"{logdir}FilterBR_" "{Virus}.{segment}.{sample}.log",
     params:
-        script=(
-            workflow_script_path("scripts/filter_best_matching_ref.py")
-            if (
-                DeploymentMethod.CONDA
-                in workflow.deployment_settings.deployment_method
-            )
-            is True
-            else "/match_ref_scripts/filter_best_matching_ref.py"
-        ),
+        script="-m match_ref.scripts.filter_best_matching_ref",
+        pythonpath=f'{Path(workflow.basedir).parent}'
     shell:
         """
-        python {params.script} {input.stats} {input.ref} {output.filtref} {output.filtcount} >> {log} 2>&1
+        PYTHONPATH={params.pythonpath} \
+        python {params.script} \
+        --input {input.stats} \
+        --inputref {input.ref} \
+        --filtref {output.filtref} \
+        --output {output.filtcount} >> {log} 2>&1
         """
 
 
@@ -60,9 +58,9 @@ rule group_and_rename_refs:
         groupedrefs=f"{datadir}{matchref}" "{sample}_refs.fasta",
         groupedstats=temp(f"{datadir}{matchref}" "{sample}_refs.csv"),
     conda:
-        workflow_environment_path("Scripts.yaml")
+        workflow_environment_path("mr_scripts.yaml")
     container:
-        f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
+        f"{container_base_path}/viroconstrictor_mr_scripts_{get_hash('mr_scripts')}.sif"
     threads: 1
     resources:
         mem_mb=low_memory_job,
@@ -70,16 +68,16 @@ rule group_and_rename_refs:
     log:
         f"{logdir}GroupRefs_" "{sample}.log",
     params:
-        script=(
-            workflow_script_path("scripts/group_refs.py")
-            if (
-                DeploymentMethod.CONDA
-                in workflow.deployment_settings.deployment_method
-            )
-            is True
-            else "/match_ref_scripts/group_refs.py"
-        ),
+        script="-m match_ref.scripts.group_refs",
+        pythonpath=f'{Path(workflow.basedir).parent}'
     shell:
         """
-        python {params.script} "{input.ref}" "{input.stats}" {output.groupedrefs} {output.groupedstats} {wildcards.sample} >> {log} 2>&1
+        PYTHONPATH={params.pythonpath} \
+        python {params.script} \
+        --input "empty" \
+        --input_refs "{input.ref}" \
+        --input_stats "{input.stats}" \
+        --output {output.groupedrefs} \
+        --output_stats {output.groupedstats} \
+        --sample {wildcards.sample} >> {log} 2>&1
         """

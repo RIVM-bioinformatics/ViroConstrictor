@@ -117,22 +117,23 @@ rule remove_adapters_p2:
     output:
         f"{datadir}{wc_folder}{cln}{noad}" "{sample}.fastq",
     conda:
-        workflow_environment_path("Scripts.yaml")
+        workflow_environment_path("core_scripts.yaml")
     container:
-        f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
+        f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     threads: config["threads"]["AdapterRemoval"]
     resources:
         mem_mb=low_memory_job,
         runtime=55,
     params:
-        script="-m scripts.clipper",
+        script="-m main.scripts.clipper",
+        pythonpath = f'{Path(workflow.basedir).parent}',
         clipper_filterparams=lambda wc: get_preset_parameter(
             preset_name=SAMPLES[wc.sample]["PRESET"],
             parameter_name=f"Clipper_FilterParams_{config['platform']}",
         ),
     shell:
         """
-        PYTHONPATH={workflow.basedir} \
+        PYTHONPATH={params.pythonpath} \
         python {params.script} \
         --input {input} \
         --output {output} \

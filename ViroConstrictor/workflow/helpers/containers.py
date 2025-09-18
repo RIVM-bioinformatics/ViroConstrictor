@@ -24,11 +24,7 @@ def fetch_recipes(recipe_folder: str) -> List[str]:
     List[str]
         A list of absolute file paths for all YAML files in the recipe folder.
     """
-    return [
-        os.path.abspath(os.path.join(recipe_folder, file))
-        for file in os.listdir(recipe_folder)
-        if file.endswith(".yaml")
-    ]
+    return [os.path.abspath(os.path.join(recipe_folder, file)) for file in os.listdir(recipe_folder) if file.endswith(".yaml")]
 
 
 def fetch_scripts(script_folder: str) -> List[str]:
@@ -47,11 +43,7 @@ def fetch_scripts(script_folder: str) -> List[str]:
     """
     script_files = []
     for root, dirs, files in os.walk(script_folder):
-        script_files.extend(
-            os.path.abspath(os.path.join(root, file))
-            for file in files
-            if file.endswith(".py")
-        )
+        script_files.extend(os.path.abspath(os.path.join(root, file)) for file in files if file.endswith(".py"))
     return script_files
 
 
@@ -70,10 +62,7 @@ def fetch_files(file_folder: str) -> List[str]:
         A list of absolute file paths.
 
     """
-    return [
-        os.path.abspath(os.path.join(file_folder, file))
-        for file in os.listdir(file_folder)
-    ]
+    return [os.path.abspath(os.path.join(file_folder, file)) for file in os.listdir(file_folder)]
 
 
 def calculate_hashes(file_list: List[str]) -> Dict[str, str]:
@@ -96,6 +85,41 @@ def calculate_hashes(file_list: List[str]) -> Dict[str, str]:
     return hashdict
 
 
+# def get_scripts_path_merged_hash(insert_path: str) -> str:
+#     """
+#     Generates a short hash representing the combined contents of script files in a specified directory.
+
+#     This function locates all script files within the `scripts` subdirectory of the given `insert_path`,
+#     calculates their individual hashes, sorts them, concatenates the hash values, and returns a 6-character
+#     SHA-256 hash of the result. This can be used to detect changes in the script environment.
+
+#     Parameters
+#     ----------
+#     insert_path : str
+#         The relative path to the directory containing the `scripts` subdirectory.
+
+#     Returns
+#     -------
+#     str
+#         A 6-character hexadecimal string representing the combined hash of all script files.
+
+#     Notes
+#     -----
+#     - The function depends on `fetch_scripts` to retrieve script file paths and `calculate_hashes` to compute file hashes.
+#     - Only the contents of the script files are considered for the hash; file names and other metadata are ignored.
+#     """
+#     script_files = sorted(fetch_scripts(f"{os.path.dirname(os.path.realpath(__file__))}/{insert_path}/scripts/"))
+
+#     # Calculate hashes for script files
+#     script_hashes = calculate_hashes(script_files)
+
+#     # Sort the hashes of the scripts and the configs
+#     script_hashes = dict(sorted(script_hashes.items()))
+
+#     # Join the hashes of the scripts and the configs, and create a new hash of the joined hashes
+#     return hashlib.sha256("".join(list(script_hashes.values())).encode()).hexdigest()[:6]
+
+
 def fetch_hashes() -> Dict[str, str]:
     """
     Fetches and returns the hashes of recipe files, script files, and config files.
@@ -106,47 +130,28 @@ def fetch_hashes() -> Dict[str, str]:
         A dictionary containing the file paths as keys and their corresponding hashes as values.
     """
     # Fetch the recipe files, script files, and config files
-    recipe_files = sorted(
-        fetch_recipes(f"{Path(os.path.dirname(os.path.realpath(__file__))).parent}/envs/")
-    )
-    script_files = sorted(
-        fetch_scripts(f"{os.path.dirname(os.path.realpath(__file__))}/match_ref/scripts/")
-    )
-    script_files.extend(
-        fetch_scripts(f"{os.path.dirname(os.path.realpath(__file__))}/main/scripts/")
-    )
-    # config_files = sorted(
-    #     fetch_files(f"{os.path.dirname(os.path.realpath(__file__))}/files/")
-    # )
-
-    # Calculate hashes for script files
-    script_hashes = calculate_hashes(script_files)
-
-    # Calculate hashes for config files
-    # config_hashes = calculate_hashes(config_files)
-
-    # Sort the hashes of the scripts and the configs
-    script_hashes = dict(sorted(script_hashes.items()))
-    # config_hashes = dict(sorted(config_hashes.items()))
-
-    # Join the hashes of the scripts and the configs, and create a new hash of the joined hashes
-    merged_hashes = hashlib.sha256("".join(list(script_hashes.values())).encode()).hexdigest()[:6]
+    recipe_files = sorted(fetch_recipes(f"{Path(os.path.dirname(os.path.realpath(__file__))).parent}/envs/"))
 
     # Calculate hashes for recipe files
     hashes = {}
     for recipe_file in recipe_files:
         with open(recipe_file, "rb") as f:
             recipe_hash = hashlib.sha256(f.read()).hexdigest()[:6]
-            # if the recipe file is not named 'Scripts', then add the hash to the dictionary and continue
-            if os.path.basename(recipe_file).split(".")[0] != "Scripts":
-                hashes[recipe_file] = recipe_hash
-                continue
-            # if the recipe file *is* named 'Scripts', then combine the recipe hash with the merged hash of the scripts and configs
+            # if the recipe file *is* one of the 'scripts' recipes, then combine the recipe hash with the merged hash of the scripts and configs
             # Subsequently, create a new hash of the joined hashes to avoid conflicts and end up with a singular tracker.
-            file_hash = hashlib.sha256(
-                (recipe_hash + merged_hashes).encode()
-            ).hexdigest()[:6]
-            hashes[recipe_file] = file_hash
+            # if "core_scripts" in os.path.basename(recipe_file).split(".")[0].lower():
+            #     merged_hash = get_scripts_path_merged_hash("main")
+            #     file_hash = hashlib.sha256((recipe_hash + merged_hash).encode()).hexdigest()[:6]
+            #     hashes[recipe_file] = file_hash
+            #     continue
+            # if "mr_scripts" in os.path.basename(recipe_file).split(".")[0].lower():
+            #     merged_hash = get_scripts_path_merged_hash("main")
+            #     file_hash = hashlib.sha256((recipe_hash + merged_hash).encode()).hexdigest()[:6]
+            #     hashes[recipe_file] = file_hash
+            #     continue
+            # if the recipe file is not named 'scripts', then add the hash to the dictionary and continue
+            hashes[recipe_file] = recipe_hash
+            continue
 
     return hashes
 
@@ -219,11 +224,7 @@ def containers_to_download(apptainer_path: Path) -> List[str]:
 
     # loop through the required_containers list and check if they are present in the containers_present list
     # if they are not present, add them to the containers_to_download list
-    return [
-        container
-        for container in required_containers
-        if container not in containers_present
-    ]
+    return [container for container in required_containers if container not in containers_present]
 
 
 def containerization_executable() -> str:
@@ -248,9 +249,7 @@ def containerization_executable() -> str:
     )
 
 
-def download_containers(
-    apptainer_path: Path, dryrun: bool = False, verbose=False
-) -> int:
+def download_containers(apptainer_path: Path, dryrun: bool = False, verbose=False) -> int:
     """
     Download containers specified in the configuration.
 
@@ -272,17 +271,13 @@ def download_containers(
     to_download = [x.rsplit("_", 1)[0] + ":" + x.rsplit("_", 1)[1] for x in to_download]
 
     if dryrun:
-        log.info(
-            f"Container(s) [magenta]{', '.join(to_download)}[/magenta] will be downloaded"
-        )
+        log.info(f"Container(s) [magenta]{', '.join(to_download)}[/magenta] will be downloaded")
         return 0
     # I thought this would be a great place to use concurrent.futures to download the containers in parallel
     # however this has unintended consequences for the various OCI layers resulting in at least one container not being downloaded correctly.
     # Thus it's better for now to download the containers sequentially.
     for container in to_download:
-        log.info(
-            f"Downloading container: [magenta]'{container}'[/magenta] to local cache"
-        )
+        log.info(f"Downloading container: [magenta]'{container}'[/magenta] to local cache")
         executable = containerization_executable()
         status = subprocess.call(
             f"{executable} pull --dir {apptainer_path} docker://{upstream_registry}/{container}",
@@ -293,9 +288,7 @@ def download_containers(
         if status != 0:
             log.error(f"Failed to download container: [magenta]'{container}'[/magenta]")
             return 1
-        log.info(
-            f"Successfully downloaded container: [magenta]'{container}'[/magenta] to local cache"
-        )
+        log.info(f"Successfully downloaded container: [magenta]'{container}'[/magenta] to local cache")
 
     return 0
 
@@ -334,13 +327,9 @@ def construct_container_bind_args(samples_dict: Dict) -> str:
     >>> construct_container_bind_args(samples)
     '--bind /path/to'
     """
-    paths = [f"{os.path.dirname(os.path.realpath(__file__))}"]
+    paths = [f"{Path(os.path.dirname(os.path.realpath(__file__))).parent}/"]
     for keys, nested_dict in samples_dict.items():
-        paths.extend(
-            f"{os.path.dirname(value)}"
-            for value in nested_dict.values()
-            if isinstance(value, str) and os.path.exists(value)
-        )
+        paths.extend(f"{os.path.dirname(value)}" for value in nested_dict.values() if isinstance(value, str) and os.path.exists(value))
     # remove all duplicates from the paths list by making it a set
     # for every item in the set, add '--bind '
     # join all the items together to make a long string
