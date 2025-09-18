@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Iterator, cast
 
 from Bio import SeqIO
-
 from helpers.base_script_class import BaseScript  # type: ignore[import]  # noqa: F401,E402
 
 
@@ -36,12 +35,8 @@ class PrepareRefs(BaseScript):
 
     def _prepare_refs(self) -> None:
         """Prepare reference sequences by converting to uppercase."""
-        assert not isinstance(
-            self.input, list
-        ), "Input must be cannot be a list of strs."
-        assert not isinstance(
-            self.output, list
-        ), "Output must be cannot be a list of strs."
+        assert not isinstance(self.input, list), "Input must be cannot be a list of strs."
+        assert not isinstance(self.output, list), "Output must be cannot be a list of strs."
         records = cast(Iterator[SeqIO.SeqRecord], SeqIO.parse(self.input, "fasta"))
         for record in records:
             if self.reference_id in record.id:

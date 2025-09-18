@@ -34,16 +34,11 @@ def fetch_fastq_url(accession_num: str) -> str:
     The fastq_ftp field contains a list of URLs separated by semicolons.
     We only need the first URL, so we split the string by semicolons and take the first one.
     """
-    url = (
-        f"https://www.ebi.ac.uk/ena/portal/api/filereport?accession={accession_num}"
-        "&result=read_run&fields=fastq_ftp&format=tsv&download=true"
-    )
+    url = f"https://www.ebi.ac.uk/ena/portal/api/filereport?accession={accession_num}" "&result=read_run&fields=fastq_ftp&format=tsv&download=true"
 
     response = requests.get(url, stream=False, timeout=10)
     if response.status_code != 200:
-        raise requests.exceptions.HTTPError(
-            f"Failed to download file: {response.status_code} {response.reason}"
-        )
+        raise requests.exceptions.HTTPError(f"Failed to download file: {response.status_code} {response.reason}")
     lines = response.text.strip().split("\n")
     if len(lines) < 2:
         raise ValueError("Invalid TSV response format")
@@ -71,16 +66,12 @@ def download_fastq_file(fastq_url: str) -> requests.Response:
 
     fastq_response = requests.get(fastq_url, stream=True, timeout=10)
     if fastq_response.status_code != 200:
-        raise requests.exceptions.HTTPError(
-            f"Failed to download fastq file: {fastq_response.status_code} {fastq_response.reason}"
-        )
+        raise requests.exceptions.HTTPError(f"Failed to download fastq file: {fastq_response.status_code} {fastq_response.reason}")
 
     return fastq_response
 
 
-def write_fastq_reads_to_file(
-    num_reads: int, output_file: Path, fastq_response: requests.Response
-) -> None:
+def write_fastq_reads_to_file(num_reads: int, output_file: Path, fastq_response: requests.Response) -> None:
     """
     Write the reads from the fastq response to a file.
     The fastq response is a gzip file, so we need to decompress it.

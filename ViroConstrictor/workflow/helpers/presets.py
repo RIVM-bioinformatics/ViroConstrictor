@@ -11,16 +11,10 @@ from rich import print
 from ViroConstrictor.logging import log
 
 # Load the preset aliases from a JSON file (preset_aliases.json)
-aliases = json.load(
-    open(
-        os.path.join(os.path.abspath(os.path.dirname(__file__)), "preset_aliases.json")
-    )
-)
+aliases = json.load(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "preset_aliases.json")))
 
 # Load the preset parameters from a JSON file (preset_params.json)
-presets = json.load(
-    open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "preset_params.json"))
-)
+presets = json.load(open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "preset_params.json")))
 
 
 def get_key_from_value(d: dict, value: str) -> str | None:
@@ -87,9 +81,7 @@ def match_preset_name(targetname: str, use_presets: bool) -> Tuple[str, float]:
     return "DEFAULT", float(0)
 
 
-def collapse_preset_group(
-    preset_name: str, stages: List[str], stage_identifier: str
-) -> dict[str, str]:
+def collapse_preset_group(preset_name: str, stages: List[str], stage_identifier: str) -> dict[str, str]:
     """
     Collapse one or more preset groups into a single dictionary.
 
@@ -178,12 +170,8 @@ def get_preset_parameter(preset_name: str, parameter_name: str) -> str:
 
     # collapse the preset groups into dictionaries for the main and matchref stages
     # This results in the dictionaries with only the override values for the specific stage that is being called.
-    presets_main = collapse_preset_group(
-        preset_name, ["STAGE_MAIN", "STAGE_GLOBAL"], _stage_identifier
-    )
-    presets_matchref = collapse_preset_group(
-        preset_name, ["STAGE_MATCHREF", "STAGE_GLOBAL"], _stage_identifier
-    )
+    presets_main = collapse_preset_group(preset_name, ["STAGE_MAIN", "STAGE_GLOBAL"], _stage_identifier)
+    presets_matchref = collapse_preset_group(preset_name, ["STAGE_MATCHREF", "STAGE_GLOBAL"], _stage_identifier)
 
     # merge the two dictionaries together, with the main stage taking precedence over the matchref stage
     # this results in one dictionary with the override values with the stage prepended to the key
@@ -196,16 +184,12 @@ def get_preset_parameter(preset_name: str, parameter_name: str) -> str:
     # if the parameter is a dictionary, it means that the parameter is not found in the specific preset group
     if isinstance(parameter, dict):
         # fetch the parameter from the default preset
-        preset_params = collapse_preset_group(
-            "DEFAULT", ["STAGE_MAIN", "STAGE_GLOBAL"], _stage_identifier
-        )
+        preset_params = collapse_preset_group("DEFAULT", ["STAGE_MAIN", "STAGE_GLOBAL"], _stage_identifier)
         log.debug(
             f"{preset_name} specific parameter '[yellow]{_stage_identifier}_{parameter_name}[/yellow]' not found, inheriting parameter value from 'DEFAULT'."
         )
 
         return preset_params[f"{_stage_identifier}_{parameter_name}"]
 
-    log.debug(
-        f"Using {preset_name} specific parameter '[yellow]{_stage_identifier}_{parameter_name}[/yellow]'"
-    )
+    log.debug(f"Using {preset_name} specific parameter '[yellow]{_stage_identifier}_{parameter_name}[/yellow]'")
     return parameter

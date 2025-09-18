@@ -2,7 +2,6 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 import pandas as pd
-
 from helpers.base_script_class import BaseScript  # type: ignore[import]  # noqa: F401,E402
 
 
@@ -40,9 +39,7 @@ class VcfToTsv(BaseScript):
             df.to_csv(self.output, sep="\t", index=False, header=False)
             return
 
-        df["INFO"] = (
-            df["INFO"].str.split("=", expand=True)[1].str.split(";", expand=True)[0]
-        )
+        df["INFO"] = df["INFO"].str.split("=", expand=True)[1].str.split(";", expand=True)[0]
         df.drop(["ID", "QUAL", "FILTER"], axis=1, inplace=True)
         df.insert(loc=0, column="Sample", value=self.samplename)
 

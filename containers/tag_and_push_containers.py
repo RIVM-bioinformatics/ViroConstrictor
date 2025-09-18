@@ -14,7 +14,5 @@ if __name__ == "__main__":
 
     for container in built_containers:
         print(f"Tagging and pushing {container}")
-        subprocess.run(
-            f"docker tag {container} {upstream_registry}/{container}", shell=True
-        )
+        subprocess.run(f"docker tag {container} {upstream_registry}/{container}", shell=True)
         subprocess.run(f"docker push {upstream_registry}/{container}", shell=True)

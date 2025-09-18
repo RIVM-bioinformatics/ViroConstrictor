@@ -127,15 +127,11 @@ class ViroConstrictorBaseLogHandler(logging.Handler):
 
         # Setup a FileHandler specific to this instance for writing to the log file
         self.instance_file_handler = logging.FileHandler(logfile_path)
-        self.instance_file_handler.addFilter(
-            self._strip_brackets_filter_instance
-        )  # Add the filter to the file handler
+        self.instance_file_handler.addFilter(self._strip_brackets_filter_instance)  # Add the filter to the file handler
 
         # Define formatter for the file log
         format_file = "%(asctime)s\t%(levelname)s\t%(message)s"
-        file_formatter = logging.Formatter(
-            fmt=format_file, datefmt="[%d/%m/%y %H:%M:%S]"
-        )
+        file_formatter = logging.Formatter(fmt=format_file, datefmt="[%d/%m/%y %H:%M:%S]")
         self.instance_file_handler.setFormatter(file_formatter)
 
         log.addHandler(self.instance_file_handler)
@@ -213,9 +209,7 @@ class ViroConstrictorBaseLogHandler(logging.Handler):
                 self.instance_file_handler.close()
         super().close()
 
-    def _dispatch_log_record_formatter(
-        self, record: logging.LogRecord
-    ) -> logging.LogRecord | None:
+    def _dispatch_log_record_formatter(self, record: logging.LogRecord) -> logging.LogRecord | None:
         """
         Formats a log record based on its content, applying specific transformations or filters.
         This method inspects the log record's level, message, event, and associated log file,
@@ -261,11 +255,7 @@ class ViroConstrictorBaseLogHandler(logging.Handler):
         # log_record.get("log") will be either None or a list of the log files.
         # Since we always pass a single log file in the workflows we need to get the first element of the list.
         if execjob_logfile is not None:
-            execjob_logfile = (
-                execjob_logfile[0]
-                if isinstance(execjob_logfile, list) and len(execjob_logfile) > 0
-                else execjob_logfile
-            )
+            execjob_logfile = execjob_logfile[0] if isinstance(execjob_logfile, list) and len(execjob_logfile) > 0 else execjob_logfile
 
         if log_level is None or log_message is None or log_message == "None":
             # If the record does not have a level or message, we cannot process it.
@@ -305,19 +295,13 @@ class ViroConstrictorBaseLogHandler(logging.Handler):
         if log_event in suppress_events:
             return None
 
-        if log_message is not None and any(
-            x in log_message for x in suppress_warning_logmessages
-        ):
+        if log_message is not None and any(x in log_message for x in suppress_warning_logmessages):
             return None
 
-        if log_message is not None and any(
-            x in log_message for x in supress_info_logmessages
-        ):
+        if log_message is not None and any(x in log_message for x in supress_info_logmessages):
             return None
 
-        if log_message is not None and any(
-            x in log_message for x in list(logmessage_to_formatter_map.keys())
-        ):
+        if log_message is not None and any(x in log_message for x in list(logmessage_to_formatter_map.keys())):
             for key in logmessage_to_formatter_map.keys():
                 if key in log_message:
                     log_record["msg"] = logmessage_to_formatter_map[key](log_message)
@@ -421,14 +405,10 @@ def LogFileOverride(msg, logfile) -> str:
 def HandleJobStartedMessage(record: dict[str, Any]) -> dict[str, Any]:
     jobids: list = record.get("jobs", [])
     if len(jobids) == 1:
-        record["msg"] = (
-            f"Starting [cyan]{len(jobids)}[/cyan] task with jobid [cyan]{jobids[0]}[/cyan]"
-        )
+        record["msg"] = f"Starting [cyan]{len(jobids)}[/cyan] task with jobid [cyan]{jobids[0]}[/cyan]"
         return record
     # multiple jobs being started
-    record["msg"] = (
-        f"Starting [cyan]{len(jobids)}[/cyan] tasks with jobids: [cyan]{'[/cyan], [cyan]'.join(map(str, jobids))}[/cyan]"
-    )
+    record["msg"] = f"Starting [cyan]{len(jobids)}[/cyan] tasks with jobids: [cyan]{'[/cyan], [cyan]'.join(map(str, jobids))}[/cyan]"
     return record
 
 
@@ -449,9 +429,7 @@ def HandleJobInfoMessage(record: dict[str, Any]) -> dict[str, Any]:
     refid = wildcards.get("RefID", None) if wildcards else None
     list_logfile: list = record.get("log", [])
     job_id = record.get("jobid", None)
-    logfile: str | None = (
-        str(pathlib.Path(list_logfile[0]).absolute()) if list_logfile else None
-    )
+    logfile: str | None = str(pathlib.Path(list_logfile[0]).absolute()) if list_logfile else None
     if record.get("local", False):
         record["msg"] = (
             f"Executing localjob [green underline]{process_name}[/green underline] for sample [blue]{sample}[/blue] with target [blue]{input_target}[/blue] and reference-id [blue]{refid}[/blue]\nJob is using jobID [cyan]{job_id}[/cyan], logging output will be written to [magenta]{logfile}[/magenta]"
@@ -479,9 +457,7 @@ def HandleJobErrorMessage(record: dict[str, Any]) -> dict[str, Any]:
     refid = wildcards.get("RefID", None) if wildcards else None
     list_logfile: list = record.get("log", [])
     job_id = record.get("jobid", None)
-    logfile: str | None = (
-        str(pathlib.Path(list_logfile[0]).absolute()) if list_logfile else None
-    )
+    logfile: str | None = str(pathlib.Path(list_logfile[0]).absolute()) if list_logfile else None
     shellcmd = record.get("shellcmd", "").strip().replace("\n", " ").replace("  ", " ")
     if outputfiles := record.get("output"):
         outputfiles_list = " ".join(list(outputfiles))

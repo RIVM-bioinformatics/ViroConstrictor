@@ -17,9 +17,7 @@ class LogHandler(LogHandlerBase, ViroConstrictorLogHandler):
             stderr=False,
         )
 
-        ViroConstrictorLogHandler.__init__(
-            self, console=console, settings=self.common_settings
-        )
+        ViroConstrictorLogHandler.__init__(self, console=console, settings=self.common_settings)
         # self.setFormatter(RichFormatter(console, self.common_settings.printshellcmds))
         # self.addFilter(RichFilter())
 

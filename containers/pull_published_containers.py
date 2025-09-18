@@ -18,11 +18,7 @@ if __name__ == "__main__":
                 f"{config['container_cache']}/{file}",
             )
 
-    download_status = download_containers(
-        config["container_cache"], dryrun=config["dryrun"], verbose=True
-    )
+    download_status = download_containers(config["container_cache"], dryrun=config["dryrun"], verbose=True)
     if download_status == 1:
-        print(
-            "Failed to download all necessary containers. Please check the logs for more information."
-        )
+        print("Failed to download all necessary containers. Please check the logs for more information.")
         sys.exit(1)

@@ -1,14 +1,16 @@
-from Bio import SeqIO, SeqRecord
 import AminoExtract
-import pandas as pd
 import numpy as np
+import pandas as pd
+from Bio import SeqIO, SeqRecord
+
 from ViroConstrictor.workflow.helpers.directories import *
 
-def get_reference_header(reffile):   
+
+def get_reference_header(reffile):
     """
     #TODO: Docstring should be added to this function.
     #TODO: The docstrings in this file should also note where the function is used as they are explicit workflow helper functions.
-    """ 
+    """
     return [record.id for record in SeqIO.parse(reffile, "fasta")]
 
 
@@ -48,9 +50,7 @@ def list_aminoacid_result_outputs(samples_df):
         RefID = x["RefID"]
         features = x["AA_FEAT_NAMES"]
         if not isinstance(features, float):
-            aminoacid_features.extend(
-                [f"{res}Virus~{Virus}/RefID~{RefID}/{amino}{aa}.faa" for aa in features]
-            )
+            aminoacid_features.extend([f"{res}Virus~{Virus}/RefID~{RefID}/{amino}{aa}.faa" for aa in features])
     return list(set(aminoacid_features))
 
 
@@ -92,7 +92,7 @@ def segmented_ref_groups(df: pd.DataFrame) -> pd.DataFrame:
 
     """
     for index, row in df.iterrows():
-        # if the value in the "SEGMENTED" column is False then place a None string in the segment column. 
+        # if the value in the "SEGMENTED" column is False then place a None string in the segment column.
         # Ensure that the value is a string and not a NoneType.
         if not row["SEGMENTED"]:
             df.at[index, "segment"] = {"None"}
@@ -105,6 +105,6 @@ def segmented_ref_groups(df: pd.DataFrame) -> pd.DataFrame:
         df.at[index, "segment"] = [unique_groups]
     # ensure the segment column is a flat set of strings and not a list with a set inside.
     df["segment"] = df["segment"].apply(lambda x: x.pop() if isinstance(x, list) else x)
-    # TODO: Check this later to see if this can be done in the first pass (when the values are being set in the first place) instead of fixing afterwards. 
+    # TODO: Check this later to see if this can be done in the first pass (when the values are being set in the first place) instead of fixing afterwards.
     # TODO: Not entirely sure why the values are being generated as a list with a set inside one time and just as a normal set the other time.
     return df

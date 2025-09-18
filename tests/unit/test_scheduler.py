@@ -107,34 +107,19 @@ class TestScheduler:
         config.add_section("COMPUTING")
 
         # Test with no scheduler set
-        assert (
-            Scheduler.determine_scheduler(None, config, dryrun_arg=False)
-            is Scheduler.LOCAL
-        )
+        assert Scheduler.determine_scheduler(None, config, dryrun_arg=False) is Scheduler.LOCAL
 
         # Test with scheduler from argument
-        assert (
-            Scheduler.determine_scheduler("local", config, dryrun_arg=False)
-            == Scheduler.LOCAL
-        )
+        assert Scheduler.determine_scheduler("local", config, dryrun_arg=False) == Scheduler.LOCAL
 
         # Test with scheduler from config
         config.set("COMPUTING", "scheduler", "SLURM")
-        assert (
-            Scheduler.determine_scheduler(None, config, dryrun_arg=False)
-            == Scheduler.SLURM
-        )
+        assert Scheduler.determine_scheduler(None, config, dryrun_arg=False) == Scheduler.SLURM
 
         # Test with environment variable
         with mock.patch.dict("os.environ", {"SLURM_JOB_ID": "123"}):
-            assert (
-                Scheduler.determine_scheduler(None, config, dryrun_arg=False)
-                == Scheduler.SLURM
-            )
+            assert Scheduler.determine_scheduler(None, config, dryrun_arg=False) == Scheduler.SLURM
 
         # Test with DRMAA
         sys.modules["drmaa"] = fake_drmaa
-        assert (
-            Scheduler.determine_scheduler(None, config, dryrun_arg=False)
-            == Scheduler.SLURM
-        )
+        assert Scheduler.determine_scheduler(None, config, dryrun_arg=False) == Scheduler.SLURM

@@ -1,10 +1,8 @@
+import os
 from argparse import ArgumentParser
 from pathlib import Path
 
 import pandas as pd
-
-import os
-
 from helpers.base_script_class import BaseScript  # type: ignore[import]  # noqa: F401,E402
 
 
@@ -25,12 +23,7 @@ class ConcatAmpliconCovs(BaseScript):
         Executes the concatenation of amplicon coverage files.
     """
 
-    def __init__(
-        self, 
-        input: list[Path | str], 
-        input_coverages: list[Path | str], 
-        output: Path | str
-    ) -> None:
+    def __init__(self, input: list[Path | str], input_coverages: list[Path | str], output: Path | str) -> None:
         super().__init__(input_coverages, output)
         self.input_coverages = input_coverages
 
@@ -53,12 +46,8 @@ class ConcatAmpliconCovs(BaseScript):
         """
         Concatenates multiple amplicon coverage CSV files into a single CSV file.
         """
-        assert isinstance(
-            self.input, (list, str)
-        ), "Input should be a list of file paths."
-        assert isinstance(
-            self.output, (Path, str)
-        ), "Output should be a string path for the output file."
+        assert isinstance(self.input, (list, str)), "Input should be a list of file paths."
+        assert isinstance(self.output, (Path, str)), "Output should be a string path for the output file."
 
         if isinstance(self.input, str):
             frames = [self._read_csv(self.input)]

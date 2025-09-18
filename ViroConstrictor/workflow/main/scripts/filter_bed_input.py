@@ -1,7 +1,6 @@
 from argparse import ArgumentParser
 
 import pandas as pd
-
 from helpers.base_script_class import BaseScript  # type: ignore[import]  # noqa: F401,E402
 
 
