@@ -1,10 +1,8 @@
 FROM mambaorg/micromamba:latest
 
-COPY ./ViroConstrictor/workflow/envs/Scripts.yaml /install.yml
-COPY ./ViroConstrictor/workflow/main/scripts/ /scripts/
-COPY ./ViroConstrictor/workflow/match_ref/scripts/ /match_ref_scripts/
+COPY ./ViroConstrictor/workflow/envs/mr_scripts.yaml /install.yml
 
-LABEL org.opencontainers.image.description="Supplementary scripts for the ViroConstrictor workflow."
+LABEL org.opencontainers.image.description="Supplementary scripts for the ViroConstrictor MR workflow."
 
 USER root
 RUN apt-get update && apt-get install -y adduser
@@ -19,7 +17,6 @@ RUN adduser \
     --uid "${UID}" \
     appuser
 
-RUN touch /__init__.py
     
 RUN micromamba install -q -y -n base git -c conda-forge && \
     micromamba install -q -y -n base -f /install.yml && \

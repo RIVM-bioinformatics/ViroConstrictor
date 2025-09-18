@@ -5,9 +5,9 @@ rule vcf_to_tsv:
     output:
         tsv=temp(f"{datadir}{wc_folder}{aln}{vf}" "{sample}.tsv"),
     conda:
-        workflow_environment_path("Scripts.yaml")
+        workflow_environment_path("core_scripts.yaml")
     container:
-        f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
+        f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     threads: config["threads"]["Index"]
     resources:
         mem_mb=low_memory_job,
@@ -15,10 +15,11 @@ rule vcf_to_tsv:
     log:
         f"{logdir}" "vcf_to_tsv_{Virus}.{RefID}.{sample}.log",
     params:
-        script= "-m scripts.vcf_to_tsv"
+        script="-m main.scripts.vcf_to_tsv",
+        pythonpath = f'{Path(workflow.basedir).parent}',
     shell:
         """
-        PYTHONPATH={workflow.basedir} \
+        PYTHONPATH={params.pythonpath} \
         python {params.script} \
         --input {input.vcf} \
         --output {output.tsv} \
@@ -36,14 +37,15 @@ rule get_breadth_of_coverage:
         mem_mb=low_memory_job,
         runtime=55,
     conda:
-        workflow_environment_path("Scripts.yaml")
+        workflow_environment_path("core_scripts.yaml")
     container:
-        f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
+        f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     params:
-        script="-m scripts.boc",
+        script="-m main.scripts.boc",
+        pythonpath = f'{Path(workflow.basedir).parent}',
     shell:
         """
-        PYTHONPATH={workflow.basedir} \
+        PYTHONPATH={params.pythonpath} \
         python {params.script} \
         --input {input.reference} \
         --sample {wildcards.sample} \
@@ -66,23 +68,17 @@ rule calculate_amplicon_cov:
         mem_mb=low_memory_job,
         runtime=55,
     conda:
-        workflow_environment_path("Scripts.yaml")
+        workflow_environment_path("core_scripts.yaml")
     container:
-        f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
+        f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     params:
-        script=(
-            workflow_script_path("scripts/amplicon_covs.py")
-            if (
-                DeploymentMethod.CONDA
-                in workflow.deployment_settings.deployment_method
-            )
-            is True
-            else "/scripts/amplicon_covs.py"
-        ),
+        script="-m main.scripts.amplicon_covs",
+        pythonpath = f'{Path(workflow.basedir).parent}',
     shell:
         """
+        PYTHONPATH={params.pythonpath} \
         python {params.script} \
-        --primers {input.pr} \
+        --input {input.pr} \
         --coverages {input.cov} \
         --key {wildcards.sample} \
         --output {output} > {log} 2>&1

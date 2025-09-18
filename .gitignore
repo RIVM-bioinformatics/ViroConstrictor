@@ -137,3 +137,5 @@ tests/e2e/**/fastqs/*
 tests/e2e/**/container_cache/*
 tests/e2e/**/.snakemake/*
 tests/e2e/**/output/*
+
+test/

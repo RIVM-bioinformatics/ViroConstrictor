@@ -2,6 +2,7 @@ import logging
 import os
 import pprint
 import sys
+from pathlib import Path
 
 import AminoExtract
 import numpy as np
@@ -35,18 +36,11 @@ with open(config["sample_sheet"]) as sample_sheet_file:
 
 container_base_path = workflow.deployment_settings.apptainer_prefix if not None else ""
 
-samples_df = (
-    pd.DataFrame(SAMPLES)
-    .transpose()
-    .reset_index()
-    .rename(columns=dict(index="sample", VIRUS="Virus"))
-)
+samples_df = pd.DataFrame(SAMPLES).transpose().reset_index().rename(columns=dict(index="sample", VIRUS="Virus"))
 samples_df["RefID"] = samples_df["REFERENCE"].apply(get_reference_header)
 samples_df = get_aminoacid_features(samples_df.explode("RefID"))
 # samples_df = get_aminoacid_features(samples_df)
-p_space = Paramspace(
-    samples_df[["Virus", "RefID", "sample"]], filename_params=["sample"]
-)
+p_space = Paramspace(samples_df[["Virus", "RefID", "sample"]], filename_params=["sample"])
 wc_folder = "/".join(p_space.wildcard_pattern.split("/")[:-1]) + "/"
 
 
@@ -74,9 +68,7 @@ def workflow_script_path(relative_path):
 
 
 def workflow_environment_path(filename):
-    basepath = os.path.dirname(
-        workflow.basedir
-    )  # moves up one directory from the workflow.basedir
+    basepath = os.path.dirname(workflow.basedir)  # moves up one directory from the workflow.basedir
     return os.path.join(basepath, conda_envs, filename)
 
 
@@ -136,18 +128,12 @@ include: workflow.source_path("components/results.concatenations.smk")
 
 
 onsuccess:
-    logging.info(
-        "[bold green]ViroConstrictor is finished with processing all the files in the given input directory.[/bold green]"
-    )
+    logging.info("[bold green]ViroConstrictor is finished with processing all the files in the given input directory.[/bold green]")
     logging.info("[bold green]Generating reports and shutting down...[/bold green]")
     return True
 
 
 onerror:
-    logging.error(
-        "[bold red]An error occurred and ViroConstrictor had to shut down.[/bold red]"
-    )
-    logging.error(
-        "[bold red]Please check the input and logfiles for any abnormalities and try again.[/bold red]"
-    )
+    logging.error("[bold red]An error occurred and ViroConstrictor had to shut down.[/bold red]")
+    logging.error("[bold red]Please check the input and logfiles for any abnormalities and try again.[/bold red]")
     return False

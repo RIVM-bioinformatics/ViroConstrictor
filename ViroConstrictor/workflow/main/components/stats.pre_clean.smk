@@ -12,9 +12,9 @@ if config["platform"] in ["nanopore", "iontorrent"] or (
             html=f"{datadir}{qc_pre}" "{sample}_fastqc.html",
             zip=f"{datadir}{qc_pre}" "{sample}_fastqc.zip",
         conda:
-            workflow_environment_path("Scripts.yaml")
+            workflow_environment_path("core_scripts.yaml")
         container:
-            f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
+            f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
         log:
             f"{logdir}QC_raw_data_" "{sample}.log",
         benchmark:
@@ -25,15 +25,7 @@ if config["platform"] in ["nanopore", "iontorrent"] or (
             runtime=55,
         params:
             output_dir=f"{datadir}{qc_pre}",
-            script=(
-                workflow_script_path("scripts/fastqc.sh")
-                if (
-                    DeploymentMethod.CONDA
-                    in workflow.deployment_settings.deployment_method
-                )
-                is True
-                else "/scripts/fastqc.sh"
-            ),
+            script=workflow_script_path("scripts/fastqc.sh")
         shell:
             """
             bash {params.script} {input} {params.output_dir} {output.html} {output.zip} {log}
@@ -50,9 +42,9 @@ if config["platform"] == "illumina" and config["unidirectional"] is False:
             html=f"{datadir}{qc_pre}" "{sample}_{read}_fastqc.html",
             zip=f"{datadir}{qc_pre}" "{sample}_{read}_fastqc.zip",
         conda:
-            workflow_environment_path("Scripts.yaml")
+            workflow_environment_path("core_scripts.yaml")
         container:
-            f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
+            f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
         log:
             f"{logdir}" "QC_raw_data_{sample}_{read}.log",
         benchmark:
@@ -63,15 +55,7 @@ if config["platform"] == "illumina" and config["unidirectional"] is False:
             runtime=55,
         params:
             output_dir=f"{datadir}{qc_pre}",
-            script=(
-                workflow_script_path("wrappers/fastqc_wrapper.sh")
-                if (
-                    DeploymentMethod.CONDA
-                    in workflow.deployment_settings.deployment_method
-                )
-                is True
-                else "/wrappers/fastqc_wrapper.sh"
-            ),
+            script=workflow_script_path("scripts/fastqc.sh")
         shell:
             """
             bash {params.script} {input} {params.output_dir} {output.html} {output.zip} {log}

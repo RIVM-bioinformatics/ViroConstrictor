@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 from Bio import SeqIO
 
-from ..base_script_class import BaseScript
+from helpers.base_script_class import BaseScript  # type: ignore[import]  # noqa: F401,E402
 
 
 class GroupRefs(BaseScript):
@@ -32,13 +32,14 @@ class GroupRefs(BaseScript):
 
     def __init__(
         self,
-        input_refs: list[Path | str],
+        input: str,
+        input_refs: list[Path | str], # this might be a wrong type assignment
         input_stats: list[Path | str],
-        output_ref: Path | str,
+        output: Path | str,
         output_stats: Path | str,
         sample: str,
     ) -> None:
-        super().__init__(input_refs, output_ref)
+        super().__init__(input_refs, output)
         self.input_stats = input_stats
         self.output_stats = output_stats
         self.sample = sample
@@ -102,7 +103,7 @@ class GroupRefs(BaseScript):
         # Read and combine statistics
         df = pd.DataFrame()
         for file in self.input_stats:
-            tempdf = pd.read_csv(file, index_col=0)
+            tempdf = pd.read_csv(file)
             df = pd.concat([df, tempdf], ignore_index=True)
 
         df["sample"] = self.sample
@@ -137,7 +138,6 @@ class GroupRefs(BaseScript):
         # Replace the "Reference" column with the "seqrecord_id" column
         df["Reference"] = df["seqrecord_id"]
         df["Reference_file"] = Path(self.output).resolve()
-
         # Write the dataframe to a CSV file
         df.to_csv(self.output_stats, index=False)
 

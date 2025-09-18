@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 from Bio import SeqIO
 
-from ..base_script_class import BaseScript
+from helpers.base_script_class import BaseScript  # type: ignore[import]  # noqa: F401,E402
 
 
 class FilterBestMatchingRef(BaseScript):
@@ -77,12 +77,17 @@ class FilterBestMatchingRef(BaseScript):
             self.output, (Path, str)
         ), "Output should be a string path for the output CSV file."
 
+        print(f"Reading input count file: {self.input}"
+              f" and reference file: {self.inputref}"
+              f" to filter best matching reference to: {self.filtref}"
+              f" and output count to: {self.output}")
         # Read the input CSV file
-        df = pd.read_csv(self.input, index_col=0)
+        df = pd.read_csv(self.input)
 
         # Sort by "Mapped Reads" column and keep only the first row
         df = df.sort_values(by="Mapped Reads", ascending=False).iloc[[0]]
 
+        print(df)
         # Get the reference name
         refname = df["Reference"].values[0]
 
@@ -92,7 +97,7 @@ class FilterBestMatchingRef(BaseScript):
                 SeqIO.write(record, self.filtref, "fasta")
 
         # Write the filtered reference information to the output CSV file
-        df.to_csv(self.output)
+        df.to_csv(self.output, index=False)
 
 
 if __name__ == "__main__":

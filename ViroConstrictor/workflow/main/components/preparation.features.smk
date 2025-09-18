@@ -10,17 +10,18 @@ rule prepare_gffs:
     benchmark:
         f"{logdir}{bench}prepare_gffs_" "{Virus}.{RefID}.{sample}.txt"
     conda:
-        workflow_environment_path("Scripts.yaml")
+        workflow_environment_path("core_scripts.yaml")
     container:
-        f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
+        f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     resources:
         mem_mb=low_memory_job,
         runtime=55,
     params:
-        script="-m scripts.extract_gff"
+        pythonpath = f'{Path(workflow.basedir).parent}',
+        script="-m main.scripts.extract_gff"
     shell:
         """
-        PYTHONPATH={workflow.basedir} \
+        PYTHONPATH={params.pythonpath} \
         python {params.script} \
         --input {input.feats} \
         --output {output.gff} \

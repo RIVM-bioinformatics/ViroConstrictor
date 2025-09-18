@@ -1,10 +1,11 @@
 from argparse import ArgumentParser
 from pathlib import Path
 
-import AminoExtract
+from AminoExtract.logging import log as AminoExtractLogger
+from AminoExtract.reader import SequenceReader
 import pandas as pd
 
-from ..base_script_class import BaseScript
+from helpers.base_script_class import BaseScript  # type: ignore[import]  # noqa: F401,E402
 
 
 class FilterGff(BaseScript):
@@ -78,7 +79,8 @@ class FilterGff(BaseScript):
         ), "Updated stats should be a string path for the CSV file."
 
         # Read the GFF file
-        gff = AminoExtract.read_gff(self.input, split_attributes=False)
+        reader = SequenceReader(logger=AminoExtractLogger, verbose=False)
+        gff = reader.read_gff(file=self.input)
 
         # Read the reference data
         df = pd.read_csv(self.refdata, keep_default_na=False)
@@ -95,9 +97,7 @@ class FilterGff(BaseScript):
         )
 
         # Write the filtered GFF file to the output
-        with open(self.output, "w") as f:
-            f.write(gff.header)
-            f.write(gff.df.to_csv(sep="\t", index=False, header=False))
+        gff.export_gff_to_file(self.output)
 
         # Update the statistics and write to the updated stats file
         df["Feat_file"] = Path(self.output).resolve()

@@ -48,15 +48,16 @@ rule filter_primer_bed:
         f"{logdir}prepare_primers_" "{Virus}.{RefID}.{sample}.log",
     benchmark:
         f"{logdir}{bench}prepare_primers_" "{Virus}.{RefID}.{sample}.txt"
-    params:
-        script="-m scripts.filter_bed_input",
     conda:
-        workflow_environment_path("Scripts.yaml")
+        workflow_environment_path("core_scripts.yaml")
     container:
-        f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
+        f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
+    params:
+        pythonpath = f'{Path(workflow.basedir).parent}',
+        script="-m main.scripts.filter_bed_input",
     shell:
         """
-        PYTHONPATH={workflow.basedir} \
+        PYTHONPATH={params.pythonpath} \
         python {params.script} \
         --input {input.prm} \
         --output {output.bed} \

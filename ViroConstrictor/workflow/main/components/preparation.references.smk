@@ -14,14 +14,15 @@ rule prepare_refs:
     benchmark:
         f"{logdir}{bench}prepare_refs_" "{Virus}.{RefID}.{sample}.txt"
     conda:
-        workflow_environment_path("Scripts.yaml")
+        workflow_environment_path("core_scripts.yaml")
     container:
-        f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
+        f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     params:
-        script = "-m scripts.prepare_refs"
+        script="-m main.scripts.prepare_refs",
+        pythonpath=f'{Path(workflow.basedir).parent}'
     shell:
         """
-        PYTHONPATH={workflow.basedir} \
+        PYTHONPATH={params.pythonpath} \
         python {params.script} \
         --input {input} \
         --output {output} \

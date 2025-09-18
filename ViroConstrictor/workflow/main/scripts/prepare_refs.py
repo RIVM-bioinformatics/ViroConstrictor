@@ -4,7 +4,7 @@ from typing import Iterator, cast
 
 from Bio import SeqIO
 
-from .base_script_class import BaseScript
+from helpers.base_script_class import BaseScript  # type: ignore[import]  # noqa: F401,E402
 
 
 class PrepareRefs(BaseScript):

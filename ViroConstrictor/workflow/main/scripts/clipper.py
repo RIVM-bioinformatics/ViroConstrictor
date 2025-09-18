@@ -3,8 +3,7 @@ from pathlib import Path
 
 import pysam
 
-from .base_script_class import BaseScript
-
+from helpers.base_script_class import BaseScript  # type: ignore[import]  # noqa: F401,E402
 
 class Clipper(BaseScript):
     """

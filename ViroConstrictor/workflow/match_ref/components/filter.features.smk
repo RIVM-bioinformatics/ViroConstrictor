@@ -13,22 +13,20 @@ rule filter_gff:
     log:
         f"{logdir}FilterGFF_" "{sample}.log",
     conda:
-        workflow_environment_path("Scripts.yaml")
+        workflow_environment_path("mr_scripts.yaml")
     container:
-        f"{container_base_path}/viroconstrictor_scripts_{get_hash('Scripts')}.sif"
+        f"{container_base_path}/viroconstrictor_mr_scripts_{get_hash('mr_scripts')}.sif"
     params:
-        script=(
-            workflow_script_path("scripts/filter_gff.py")
-            if (
-                DeploymentMethod.CONDA
-                in workflow.deployment_settings.deployment_method
-            )
-            is True
-            else "/match_ref_scripts/filter_gff.py"
-        ),
+        script="-m match_ref.scripts.filter_gff",
+        pythonpath=f'{Path(workflow.basedir).parent}'
     shell:
         """
-        python {params.script} {input.refdata} {input.gff} {output.gff} {output.groupedstats} >> {log} 2>&1
+        PYTHONPATH={params.pythonpath} \
+        python {params.script} \
+        --refdata {input.refdata} \
+        --input {input.gff} \
+        --output {output.gff} \
+        --updatedstats {output.groupedstats} >> {log} 2>&1
         """
 
 
