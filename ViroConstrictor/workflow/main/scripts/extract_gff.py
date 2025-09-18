@@ -2,8 +2,8 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 from AminoExtract import SequenceReader
-
 from helpers.base_script_class import BaseScript  # type: ignore[import]  # noqa: F401,E402
+
 
 class ExtractGff(BaseScript):
     """
@@ -50,12 +50,8 @@ class ExtractGff(BaseScript):
         """
         Extracts a specific GFF record based on the provided reference ID and writes it to the output file.
         """
-        assert isinstance(
-            self.input, (Path, str)
-        ), "Input should be a string path to the GFF file."
-        assert isinstance(
-            self.output, (Path, str)
-        ), "Output should be a string path for the extracted GFF record."
+        assert isinstance(self.input, (Path, str)), "Input should be a string path to the GFF file."
+        assert isinstance(self.output, (Path, str)), "Output should be a string path for the extracted GFF record."
         assert isinstance(self.ref_id, str), "Reference ID should be a string."
 
         seq_reader = SequenceReader(logger=None, verbose=False)

@@ -1,12 +1,9 @@
+import os
 from argparse import ArgumentParser
 from pathlib import Path
-
-import pandas as pd
-
-import os
-
 from typing import TYPE_CHECKING
 
+import pandas as pd
 from helpers.base_script_class import BaseScript  # type: ignore[import]  # noqa: F401,E402
 
 
@@ -67,18 +64,10 @@ class FilterBed(BaseScript):
         """
         Filters the BED file based on reference data and updates the statistics.
         """
-        assert isinstance(
-            self.input, (Path, str)
-        ), "Input should be a string path to the BED file."
-        assert isinstance(
-            self.refdata, (Path, str)
-        ), "Reference data should be a string path to the CSV file."
-        assert isinstance(
-            self.output, (Path, str)
-        ), "Output should be a string path for the filtered BED file."
-        assert isinstance(
-            self.updatedstats, (Path, str)
-        ), "Updated stats should be a string path for the CSV file."
+        assert isinstance(self.input, (Path, str)), "Input should be a string path to the BED file."
+        assert isinstance(self.refdata, (Path, str)), "Reference data should be a string path to the CSV file."
+        assert isinstance(self.output, (Path, str)), "Output should be a string path for the filtered BED file."
+        assert isinstance(self.updatedstats, (Path, str)), "Updated stats should be a string path for the CSV file."
 
         # Read reference data
         ref_df = pd.read_csv(self.refdata, keep_default_na=False)
@@ -92,14 +81,10 @@ class FilterBed(BaseScript):
         )
 
         # Filter BED file based on reference data
-        bed_df = bed_df.loc[
-            bed_df["ref"].isin(ref_df["seqrecord_name"].tolist())
-        ].reset_index(drop=True)
+        bed_df = bed_df.loc[bed_df["ref"].isin(ref_df["seqrecord_name"].tolist())].reset_index(drop=True)
 
         # Replace "ref" column values in BED file with corresponding "Reference" column values from reference data
-        bed_df["ref"] = bed_df["ref"].map(
-            ref_df.set_index("seqrecord_name")["Reference"]
-        )
+        bed_df["ref"] = bed_df["ref"].map(ref_df.set_index("seqrecord_name")["Reference"])
 
         # Write filtered BED file to output
         bed_df.to_csv(self.output, sep="\t", index=False, header=False)

@@ -102,9 +102,7 @@ def AskPrompts(
                 print("Quitting...")
                 sys.exit(-1)
             else:
-                print(
-                    "The given answer was invalid. Please choose one of the available options\n"
-                )
+                print("The given answer was invalid. Please choose one of the available options\n")
         if not fixedchoices:
             reply = input(prompt).strip()
             if reply == "quit":

@@ -3,7 +3,6 @@ from pathlib import Path
 
 import pandas as pd
 import pysam
-
 from helpers.base_script_class import BaseScript  # type: ignore[import]  # noqa: F401,E402
 
 
@@ -38,12 +37,8 @@ class CountMappedReads(BaseScript):
         """
         Counts mapped reads, mismatches, and sequence identity for each reference in the BAM file.
         """
-        assert isinstance(
-            self.input, (Path, str)
-        ), "Input should be a string path to the BAM file."
-        assert isinstance(
-            self.output, (Path, str)
-        ), "Output should be a string path for the output CSV file."
+        assert isinstance(self.input, (Path, str)), "Input should be a string path to the BAM file."
+        assert isinstance(self.output, (Path, str)), "Output should be a string path for the output CSV file."
 
         # Open BAM file
         bamfile = pysam.AlignmentFile(self.input, "rb")
@@ -58,9 +53,7 @@ class CountMappedReads(BaseScript):
                 if not read.is_unmapped:
                     mapped_reads += 1
                     total_mismatches += read.get_tag("NM")
-                    total_identity += 1 - (
-                        read.get_tag("NM") / read.query_alignment_length
-                    )
+                    total_identity += 1 - (read.get_tag("NM") / read.query_alignment_length)
             if mapped_reads > 0:
                 avg_mismatches = total_mismatches / mapped_reads
                 avg_identity = total_identity / mapped_reads

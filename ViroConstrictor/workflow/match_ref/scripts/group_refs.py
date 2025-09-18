@@ -3,7 +3,6 @@ from pathlib import Path
 
 import pandas as pd
 from Bio import SeqIO
-
 from helpers.base_script_class import BaseScript  # type: ignore[import]  # noqa: F401,E402
 
 
@@ -33,7 +32,7 @@ class GroupRefs(BaseScript):
     def __init__(
         self,
         input: str,
-        input_refs: list[Path | str], # this might be a wrong type assignment
+        input_refs: list[Path | str],  # this might be a wrong type assignment
         input_stats: list[Path | str],
         output: Path | str,
         output_stats: Path | str,
@@ -81,18 +80,10 @@ class GroupRefs(BaseScript):
         """
         Groups reference sequences and their associated statistics into a single FASTA file and CSV file.
         """
-        assert isinstance(
-            self.input, list
-        ), "Input_refs should be a list of file paths."
-        assert isinstance(
-            self.input_stats, list
-        ), "Input_stats should be a list of file paths."
-        assert isinstance(
-            self.output, (Path, str)
-        ), "Output_ref should be a string path for the output FASTA file."
-        assert isinstance(
-            self.output_stats, (Path, str)
-        ), "Output_stats should be a string path for the output CSV file."
+        assert isinstance(self.input, list), "Input_refs should be a list of file paths."
+        assert isinstance(self.input_stats, list), "Input_stats should be a list of file paths."
+        assert isinstance(self.output, (Path, str)), "Output_ref should be a string path for the output FASTA file."
+        assert isinstance(self.output_stats, (Path, str)), "Output_stats should be a string path for the output CSV file."
         assert isinstance(self.sample, str), "Sample should be a string."
 
         # Read and combine reference sequences
@@ -114,9 +105,7 @@ class GroupRefs(BaseScript):
             # Segmented mode
             for record in seqrecords:
                 record.id = record.description.split()[1].split("|")[0]
-                record.description = " ".join(
-                    [record.name, " ".join(record.description.split(" ")[1:])]
-                )
+                record.description = " ".join([record.name, " ".join(record.description.split(" ")[1:])])
                 renamed_seqrecords.append(record)
         else:
             # Non-segmented mode
@@ -125,15 +114,9 @@ class GroupRefs(BaseScript):
         # Add sequence record information to the dataframe
         for record in renamed_seqrecords:
             df.loc[df["Reference"].str.contains(record.id), "seqrecord_id"] = record.id
-            df.loc[df["Reference"].str.contains(record.id), "seqrecord_description"] = (
-                record.description
-            )
-            df.loc[df["Reference"].str.contains(record.id), "seqrecord_name"] = (
-                record.name
-            )
-            df.loc[df["Reference"].str.contains(record.id), "seqrecord_seq"] = str(
-                record.seq
-            )
+            df.loc[df["Reference"].str.contains(record.id), "seqrecord_description"] = record.description
+            df.loc[df["Reference"].str.contains(record.id), "seqrecord_name"] = record.name
+            df.loc[df["Reference"].str.contains(record.id), "seqrecord_seq"] = str(record.seq)
 
         # Replace the "Reference" column with the "seqrecord_id" column
         df["Reference"] = df["seqrecord_id"]

@@ -32,9 +32,7 @@ class CLIparser:
                 log.error(err)
             sys.exit(1)
         self.user_config = ReadConfig(pathlib.Path(settings_path).expanduser())
-        self.scheduler = Scheduler.determine_scheduler(
-            self.flags.scheduler, self.user_config, self.flags.dryrun
-        )
+        self.scheduler = Scheduler.determine_scheduler(self.flags.scheduler, self.user_config, self.flags.dryrun)
         self.flags.presets = self.flags.disable_presets is False
         self.samples_df = pd.DataFrame()
         self.samples_dict: dict[Hashable, Any] = {}
@@ -50,14 +48,10 @@ class CLIparser:
             self._print_missing_asset_warning(self.flags, False)
             if GenBank.is_genbank(pathlib.Path(self.flags.reference)):
                 self.parse_genbank(self.flags.reference)
-            self.samples_dict = self._make_samples_dict(
-                None, self.flags, GetSamples(self.flags.input, self.flags.platform)
-            )
+            self.samples_dict = self._make_samples_dict(None, self.flags, GetSamples(self.flags.input, self.flags.platform))
         if self.samples_df.empty:
             self.samples_df = pd.DataFrame.from_dict(self.samples_dict, orient="index")
-        self.samples_df = self.samples_df.reset_index(drop=False).rename(
-            columns={"index": "SAMPLE"}
-        )
+        self.samples_df = self.samples_df.reset_index(drop=False).rename(columns={"index": "SAMPLE"})
         (
             self.input_path,
             self.workdir,
@@ -68,82 +62,46 @@ class CLIparser:
         if not self.samples_dict:
             sys.exit(1)
         log.info("[green]Successfully parsed all command line arguments[/green]")
-        self._check_sample_properties(
-            self.samples_dict
-        )  # raises errors if stuff is not right
+        self._check_sample_properties(self.samples_dict)  # raises errors if stuff is not right
 
     def parse_genbank(self, reference: str) -> None:
-        self.flags.reference, self.flags.features, self.flags.target = (
-            GenBank.split_genbank(pathlib.Path(reference))
-        )
+        self.flags.reference, self.flags.features, self.flags.target = GenBank.split_genbank(pathlib.Path(reference))
 
     def _validate_cli_args(self) -> list[str] | None:
         arg_errors = []
         if dir_path(self.flags.input) is False:
-            arg_errors.append(
-                f"'[magenta]{self.flags.input}[/magenta]' is not a directory."
-            )
+            arg_errors.append(f"'[magenta]{self.flags.input}[/magenta]' is not a directory.")
         if self.flags.samplesheet is not None:
             allowed_extensions = [".xls", ".xlsx", ".csv", ".tsv"]
             if file_exists(self.flags.samplesheet) is False:
-                arg_errors.append(
-                    f"'[magenta]{self.flags.samplesheet}[/magenta]' is not an existing file."
-                )
-            if (
-                check_file_extension(
-                    allowed_extensions=allowed_extensions, fname=self.flags.samplesheet
-                )
-                is False
-            ):
+                arg_errors.append(f"'[magenta]{self.flags.samplesheet}[/magenta]' is not an existing file.")
+            if check_file_extension(allowed_extensions=allowed_extensions, fname=self.flags.samplesheet) is False:
                 arg_errors.append(
                     f"'[magenta]{self.flags.samplesheet}[/magenta]' does not have a valid file extension.\nAllowed file extenstions for the samplesheet: {' '.join([f'[blue]{x}[/blue]' for x in allowed_extensions])}"
                 )
         if self.flags.reference is not None:
             allowed_extensions = [".fasta", ".fa", ".gb", ".gbk"]
             if self.flags.reference == "NONE":
-                arg_errors.append(
-                    f"'[magenta]{self.flags.reference}[/magenta]' cannot be given for the reference file."
-                )
+                arg_errors.append(f"'[magenta]{self.flags.reference}[/magenta]' cannot be given for the reference file.")
             if file_exists(self.flags.reference) is False:
-                arg_errors.append(
-                    f"'[magenta]{self.flags.reference}[/magenta]' is not an existing file."
-                )
-            if (
-                check_file_extension(
-                    allowed_extensions=allowed_extensions, fname=self.flags.reference
-                )
-                is False
-            ):
+                arg_errors.append(f"'[magenta]{self.flags.reference}[/magenta]' is not an existing file.")
+            if check_file_extension(allowed_extensions=allowed_extensions, fname=self.flags.reference) is False:
                 arg_errors.append(
                     f"'[magenta]{self.flags.reference}[/magenta]' does not have a valid file extension.\nAllowed file extenstions for the reference: {' '.join([f'[blue]{x}[/blue]' for x in allowed_extensions])}"
                 )
         if self.flags.primers is not None:
             allowed_extensions = [".fasta", ".fa", ".bed"]
             if file_exists(self.flags.primers) is False:
-                arg_errors.append(
-                    f"'[magenta]{self.flags.primers}[/magenta]' is not an existing file."
-                )
-            if (
-                check_file_extension(
-                    allowed_extensions=allowed_extensions, fname=self.flags.primers
-                )
-                is False
-            ):
+                arg_errors.append(f"'[magenta]{self.flags.primers}[/magenta]' is not an existing file.")
+            if check_file_extension(allowed_extensions=allowed_extensions, fname=self.flags.primers) is False:
                 arg_errors.append(
                     f"'[magenta]{self.flags.primers}[/magenta]' does not have a valid file extension.\nAllowed file extenstions for the primers: {' '.join([f'[blue]{x}[/blue]' for x in allowed_extensions])}"
                 )
         if self.flags.features is not None:
             allowed_extensions = [".gff", ".gff3"]
             if file_exists(self.flags.features) is False:
-                arg_errors.append(
-                    f"'[magenta]{self.flags.features}[/magenta]' is not an existing file."
-                )
-            if (
-                check_file_extension(
-                    allowed_extensions=allowed_extensions, fname=self.flags.features
-                )
-                is False
-            ):
+                arg_errors.append(f"'[magenta]{self.flags.features}[/magenta]' is not an existing file.")
+            if check_file_extension(allowed_extensions=allowed_extensions, fname=self.flags.features) is False:
                 arg_errors.append(
                     f"'[magenta]{self.flags.features}[/magenta]' does not have a valid file extension.\nAllowed file extenstions for the features: {' '.join([f'[blue]{x}[/blue]' for x in allowed_extensions])}"
                 )
@@ -408,9 +366,7 @@ class CLIparser:
             df = samplesheet_enforce_absolute_paths(df)
             if df.get("PRESET") is None:
                 df[["PRESET", "PRESET_SCORE"]] = df.apply(
-                    lambda x: pd.Series(
-                        match_preset_name(x["VIRUS"], use_presets=self.flags.presets)
-                    ),
+                    lambda x: pd.Series(match_preset_name(x["VIRUS"], use_presets=self.flags.presets)),
                     axis=1,
                 )
             return check_samplesheet_rows(df)
@@ -440,13 +396,9 @@ class CLIparser:
 
         """
         if not CheckInputFiles(args.input):
-            log.error(
-                f"'[magenta]{args.input}[/magenta]' does not contain any valid FastQ files. Exiting..."
-            )
+            log.error(f"'[magenta]{args.input}[/magenta]' does not contain any valid FastQ files. Exiting...")
             sys.exit(1)
-        log.info(
-            f"[green]Valid FastQ files were found in the input directory.[/green] ('[magenta]{args.input}[/magenta]')"
-        )
+        log.info(f"[green]Valid FastQ files were found in the input directory.[/green] ('[magenta]{args.input}[/magenta]')")
         indirFrame: pd.DataFrame = sampledir_to_df(filedict, args.platform)
         if df is not None:
             df.set_index("SAMPLE", inplace=True)
@@ -486,9 +438,7 @@ class CLIparser:
                     sys.exit(1)
             if df.get("PRESET") is None:
                 df[["PRESET", "PRESET_SCORE"]] = df.apply(
-                    lambda x: pd.Series(
-                        match_preset_name(x["VIRUS"], use_presets=args.presets)
-                    ),
+                    lambda x: pd.Series(match_preset_name(x["VIRUS"], use_presets=args.presets)),
                     axis=1,
                 )
             if df.get("MATCH-REF") is None:
@@ -499,9 +449,7 @@ class CLIparser:
             return df.to_dict(orient="index")
         return args_to_df(args, indirFrame).to_dict(orient="index")
 
-    def _print_missing_asset_warning(
-        self, args: argparse.Namespace, sheet_present: bool
-    ) -> None:
+    def _print_missing_asset_warning(self, args: argparse.Namespace, sheet_present: bool) -> None:
         """If a sample sheet is present, print a warning that conflicting run-wide settings given through the commandline will be ignored.
         If no sample sheet is present, check if all required run-wide settings are given. If not, exit with a corresponding error message
 
@@ -527,26 +475,19 @@ class CLIparser:
                     "[yellow]Both a sample sheet and run-wide GFF file was given, the GFF file given through the commandline will be ignored[/yellow]"
                 )
         if GenBank.is_genbank(pathlib.Path(args.reference)):
-            if not sheet_present and any(
-                f is None for f in (args.primers, args.reference)
-            ):
+            if not sheet_present and any(f is None for f in (args.primers, args.reference)):
                 log.error(
                     "[bold red]Run-wide analysis settings were not provided and no samplesheet was given either with per-sample run information.\nPlease either provide all required information ([underline]reference[/underline], [underline]primers[/underline], [underline]genomic features[/underline] and [underline]viral-target[/underline]) for a run-wide analysis or provide a samplesheet with per-sample run information[/bold red]"
                 )
                 sys.exit(1)
         else:
-            if not sheet_present and any(
-                f is None
-                for f in (args.primers, args.reference, args.features, args.target)
-            ):
+            if not sheet_present and any(f is None for f in (args.primers, args.reference, args.features, args.target)):
                 log.error(
                     "[bold red]Run-wide analysis settings were not provided and no samplesheet was given either with per-sample run information.\nPlease either provide all required information ([underline]reference[/underline], [underline]primers[/underline], [underline]genomic features[/underline] and [underline]viral-target[/underline]) for a run-wide analysis or provide a samplesheet with per-sample run information[/bold red]"
                 )
                 sys.exit(1)
 
-    def _get_paths_for_workflow(
-        self, flags: argparse.Namespace
-    ) -> tuple[str, str, str, str, str]:
+    def _get_paths_for_workflow(self, flags: argparse.Namespace) -> tuple[str, str, str, str, str]:
         """Takes the input and output paths from the command line, and then creates the working directory if
         it doesn't exist. It then changes the current working directory to the working directory
 
@@ -563,12 +504,8 @@ class CLIparser:
         input_path: str = os.path.abspath(flags.input)
         working_directory: str = os.path.abspath(flags.output)
         exec_start_path: str = os.path.abspath(os.getcwd())
-        snakefile: str = os.path.join(
-            os.path.abspath(os.path.dirname(__file__)), "workflow", "main", "workflow.smk"
-        )
-        match_ref_snakefile: str = os.path.join(
-            os.path.abspath(os.path.dirname(__file__)), "workflow", "match_ref", "workflow.smk"
-        )
+        snakefile: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), "workflow", "main", "workflow.smk")
+        match_ref_snakefile: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), "workflow", "match_ref", "workflow.smk")
 
         if not os.path.exists(working_directory):
             os.makedirs(working_directory)
@@ -613,9 +550,7 @@ def samplesheet_enforce_absolute_paths(df: pd.DataFrame) -> pd.DataFrame:
     columns_to_enforce: List[str] = ["PRIMERS", "FEATURES", "REFERENCE"]
     for column in columns_to_enforce:
         if column in df.columns:
-            df[column] = df[column].apply(
-                lambda x: os.path.abspath(os.path.expanduser(x)) if x != "NONE" else x
-            )
+            df[column] = df[column].apply(lambda x: os.path.abspath(os.path.expanduser(x)) if x != "NONE" else x)
     return df
 
 
@@ -863,10 +798,7 @@ def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
                         f"[bold red]{colName} column contains invalid data type.[/bold red]\n[yellow]Please check your samplesheet file and try again.[/yellow]"
                     )
                     sys.exit(1)
-                if (
-                    formats[colName]["disallowed_characters"] is not None
-                    and formats[colName]["dtype"] == str
-                ):
+                if formats[colName]["disallowed_characters"] is not None and formats[colName]["dtype"] == str:
                     chars = re.compile(formats[colName]["disallowed_characters"])
                     if chars.search(val):
                         log.error(
@@ -946,11 +878,7 @@ def CheckInputFiles(indir: str) -> bool:
         extensions = "".join(pathlib.Path(filenames).suffixes)
         foundfiles.append(extensions)
 
-    return any(
-        file
-        for file in foundfiles
-        if any(file.endswith(ext) for ext in allowedextensions)
-    )
+    return any(file for file in foundfiles if any(file.endswith(ext) for ext in allowedextensions))
 
 
 def args_to_df(args: argparse.Namespace, existing_df: pd.DataFrame) -> pd.DataFrame:
@@ -974,15 +902,9 @@ def args_to_df(args: argparse.Namespace, existing_df: pd.DataFrame) -> pd.DataFr
                 "VIRUS": args.target,
                 "MATCH-REF": args.match_ref,
                 "SEGMENTED": args.segmented,
-                "PRIMERS": (
-                    os.path.abspath(args.primers) if args.primers != "NONE" else "NONE"
-                ),
+                "PRIMERS": (os.path.abspath(args.primers) if args.primers != "NONE" else "NONE"),
                 "REFERENCE": os.path.abspath(args.reference),
-                "FEATURES": (
-                    os.path.abspath(args.features)
-                    if args.features != "NONE"
-                    else "NONE"
-                ),
+                "FEATURES": (os.path.abspath(args.features) if args.features != "NONE" else "NONE"),
                 "MIN-COVERAGE": args.min_coverage,
                 "PRIMER-MISMATCH-RATE": args.primer_mismatch_rate,
                 "PRESET": match_preset_name(args.target, args.presets)[0],
@@ -996,9 +918,7 @@ def args_to_df(args: argparse.Namespace, existing_df: pd.DataFrame) -> pd.DataFr
     return existing_df
 
 
-def sampledir_to_df(
-    sampledict: dict[str, str] | dict[str, dict[str, str]], platform: str
-) -> pd.DataFrame:
+def sampledir_to_df(sampledict: dict[str, str] | dict[str, dict[str, str]], platform: str) -> pd.DataFrame:
     """Takes a dictionary of sample names and lists of input files, and returns a dataframe with the
     sample names as the index and the input files as the columns
 

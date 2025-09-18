@@ -13,7 +13,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from Bio import SeqIO
-
 from helpers.base_script_class import BaseScript  # type: ignore[import]  # noqa: F401,E402
 
 
@@ -68,12 +67,8 @@ class GroupAminoAcids(BaseScript):
         and writes them to output files in a structured directory format.
         """
         # Validate input and output arguments
-        assert isinstance(
-            self.input, str
-        ), "Input should be a space-separated string of file paths."
-        assert isinstance(
-            self.output, str
-        ), "Output should be a space-separated string of file paths."
+        assert isinstance(self.input, str), "Input should be a space-separated string of file paths."
+        assert isinstance(self.output, str), "Output should be a space-separated string of file paths."
 
         input_files = self.input.split()
         output_files = self.output.split()
@@ -83,9 +78,7 @@ class GroupAminoAcids(BaseScript):
             pattern = rf"(?:^|[.\-_ ]){re.escape(feature)}(?:$|[.\-_ ])"
             return re.search(pattern, record_id, re.IGNORECASE) is not None
 
-        def process_record(
-            record: SeqIO.SeqRecord, space_data: pd.DataFrame
-        ) -> pd.DataFrame:
+        def process_record(record: SeqIO.SeqRecord, space_data: pd.DataFrame) -> pd.DataFrame:
             sample = record.id.split(".")[0]
             sample_data = space_data.loc[space_data["sample"] == sample]
             sample_data = sample_data.explode("AA_FEAT_NAMES").reset_index(drop=True)
@@ -96,14 +89,10 @@ class GroupAminoAcids(BaseScript):
 
             for feature in all_unique_features:
                 if feature_in_id(feature, record.id):
-                    return sample_data.loc[
-                        sample_data["AA_FEAT_NAMES"] == feature
-                    ].assign(AA_SEQ=str(record.seq))
+                    return sample_data.loc[sample_data["AA_FEAT_NAMES"] == feature].assign(AA_SEQ=str(record.seq))
 
             aa_feature = ".".join(record.id.split(".")[1:])
-            return sample_data.loc[sample_data["AA_FEAT_NAMES"] == aa_feature].assign(
-                AA_SEQ=str(record.seq)
-            )
+            return sample_data.loc[sample_data["AA_FEAT_NAMES"] == aa_feature].assign(AA_SEQ=str(record.seq))
 
         def write_sequences(
             virus: str,
@@ -112,31 +101,23 @@ class GroupAminoAcids(BaseScript):
             output_files: list[str],
             seq_records_df: pd.DataFrame,
         ) -> None:
-            output_path = (
-                f"results/Virus~{virus}/RefID~{ref_id}/aminoacids/{feature_name}.faa"
-            )
+            output_path = f"results/Virus~{virus}/RefID~{ref_id}/aminoacids/{feature_name}.faa"
             if output_path in output_files:
                 filtered_data = seq_records_df.loc[
-                    (seq_records_df["Virus"] == virus)
-                    & (seq_records_df["RefID"] == ref_id)
-                    & (seq_records_df["AA_FEAT_NAMES"] == feature_name)
+                    (seq_records_df["Virus"] == virus) & (seq_records_df["RefID"] == ref_id) & (seq_records_df["AA_FEAT_NAMES"] == feature_name)
                 ]
                 file_path = Path(output_path)
                 file_path.parent.mkdir(parents=True, exist_ok=True)
                 with open(file_path, "w", encoding="utf-8") as file:
                     for _, row in filtered_data.iterrows():
-                        file.write(
-                            f">{row['sample']}.{row['AA_FEAT_NAMES']}\n{row['AA_SEQ']}\n"
-                        )
+                        file.write(f">{row['sample']}.{row['AA_FEAT_NAMES']}\n{row['AA_SEQ']}\n")
 
         seq_records_df = pd.DataFrame()
         for input_file in input_files:
             records: list[SeqIO.SeqRecord] = list(SeqIO.parse(input_file, "fasta"))
             for record in records:
                 processed_data = process_record(record, space_data)
-                seq_records_df = pd.concat(
-                    [seq_records_df, processed_data], ignore_index=True
-                )
+                seq_records_df = pd.concat([seq_records_df, processed_data], ignore_index=True)
 
         unique_viruses = np.array(seq_records_df["Virus"].unique(), dtype=np.str_)
         for virus in unique_viruses:
@@ -146,17 +127,12 @@ class GroupAminoAcids(BaseScript):
             )
             for ref_id in unique_ref_ids:
                 unique_feature_names = np.array(
-                    seq_records_df.loc[
-                        (seq_records_df["Virus"] == virus)
-                        & (seq_records_df["RefID"] == ref_id)
-                    ]["AA_FEAT_NAMES"].unique(),
+                    seq_records_df.loc[(seq_records_df["Virus"] == virus) & (seq_records_df["RefID"] == ref_id)]["AA_FEAT_NAMES"].unique(),
                     dtype=np.str_,
                 )
                 for feature_name in unique_feature_names:
 
-                    write_sequences(
-                        virus, ref_id, feature_name, output_files, seq_records_df
-                    )
+                    write_sequences(virus, ref_id, feature_name, output_files, seq_records_df)
 
 
 if __name__ == "__main__":

@@ -2,7 +2,6 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 from Bio import SeqIO
-
 from helpers.base_script_class import BaseScript  # type: ignore[import]  # noqa: F401,E402
 
 
@@ -25,9 +24,7 @@ class FilterReferences(BaseScript):
         Executes the filtering of reference sequences.
     """
 
-    def __init__(
-        self, input: Path | str, output: Path | str, wildcard_segment: str
-    ) -> None:
+    def __init__(self, input: Path | str, output: Path | str, wildcard_segment: str) -> None:
         super().__init__(input, output)
         self.wildcard_segment = wildcard_segment
 
@@ -50,24 +47,15 @@ class FilterReferences(BaseScript):
         Filters reference sequences from the input FASTA file based on the wildcard segment
         and writes the filtered sequences to the output FASTA file.
         """
-        assert isinstance(
-            self.input, (Path, str)
-        ), "Input should be a string path to the FASTA file."
-        assert isinstance(
-            self.output, (Path, str)
-        ), "Output should be a string path for the filtered FASTA file."
-        assert isinstance(
-            self.wildcard_segment, str
-        ), "Wildcard segment should be a string."
+        assert isinstance(self.input, (Path, str)), "Input should be a string path to the FASTA file."
+        assert isinstance(self.output, (Path, str)), "Output should be a string path for the filtered FASTA file."
+        assert isinstance(self.wildcard_segment, str), "Wildcard segment should be a string."
 
         # Parse the input FASTA file and filter sequences
         records_to_keep = []
         for record in SeqIO.parse(self.input, "fasta"):
             if self.wildcard_segment != "None":
-                if (
-                    record.description.split(" ")[1].split("|")[0]
-                    == self.wildcard_segment
-                ):
+                if record.description.split(" ")[1].split("|")[0] == self.wildcard_segment:
                     records_to_keep.append(record)
             else:
                 records_to_keep.append(record)
