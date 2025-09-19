@@ -3,8 +3,8 @@ channels:
   - bioconda
   - conda-forge
 dependencies:
+  - bioconda::aminoextract==0.4.0
   - pip
   - pip:
     - cython
-    - git+https://github.com/RIVM-bioinformatics/aminoextract@dev
     - git+https://github.com/RIVM-bioinformatics/TrueConsense@dev
