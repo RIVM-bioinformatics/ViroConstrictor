@@ -10,6 +10,7 @@ from pathlib import Path
 
 from BCBio import GFF  # type: ignore
 from Bio import SeqIO  # type: ignore
+import difflib
 
 
 class GenBank:
@@ -50,16 +51,22 @@ class GenBank:
         """Parse the target organism from GenBank records."""
         organisms: list[str] = [record.annotations.get("organism", "") for record in records]
         organisms = [org.split("(", 1)[0].strip().replace(" ", "_") for org in organisms if org]
-        if not all(org == organisms[0] for org in organisms):
+
+        threshold = 0.85  # similarity threshold
+        ref_org = organisms[0]
+        if any(
+            difflib.SequenceMatcher(None, ref_org, org).ratio() < threshold
+            for org in organisms
+        ):
             raise ValueError(
-                "Not all GenBank records have the same organism annotation.\n"
-                "Either edit the GenBank file to have the same organism annotation for all records (strains don't count),\n"
+                "Not all GenBank records have sufficiently similar organism annotations.\n"
+                "Either edit the GenBank file to have similar organism annotation for all records (strains don't count),\n"
                 "or manually provide a target organism name using the --target option."
             )
         return organisms[0]
 
     @staticmethod
-    def split_genbank(file_path: Path) -> tuple[Path, Path, str]:
+    def split_genbank(file_path: Path, emit_target: bool = False) -> tuple[Path, Path, str]:
         """Splits a GenBank file into a reference fasta, a features file and possibly a target file."""
 
         records = GenBank.open_genbank(file_path)
@@ -72,7 +79,9 @@ class GenBank:
         with open(file_path.with_suffix(".gff"), "w", encoding="utf-8") as gff_file:
             GFF.write(records, gff_file)
         gff_path = file_path.with_suffix(".gff")
-
-        target = GenBank._parse_target(records)
+        
+        target = ""
+        if emit_target:
+            target = GenBank._parse_target(records)
 
         return fasta_path, gff_path, target
