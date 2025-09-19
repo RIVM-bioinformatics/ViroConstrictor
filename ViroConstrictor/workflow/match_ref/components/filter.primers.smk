@@ -55,7 +55,7 @@ rule filter_bed:
     container:
         f"{container_base_path}/viroconstrictor_mr_scripts_{get_hash('mr_scripts')}.sif"
     params:
-        script="-m scripts.filter_bed",
+        script="-m match_ref.scripts.filter_bed",
         pythonpath=f'{Path(workflow.basedir).parent}'
     shell:
         """
