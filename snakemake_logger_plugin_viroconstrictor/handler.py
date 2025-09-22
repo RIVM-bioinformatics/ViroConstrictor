@@ -37,9 +37,7 @@ class ViroConstrictorLogHandler(ViroConstrictorBaseLogHandler):
         Closes the log handler.
     """
 
-    def __init__(
-        self, console: Console, settings: OutputSettingsLoggerInterface, *args, **kwargs
-    ) -> None:
+    def __init__(self, console: Console, settings: OutputSettingsLoggerInterface, *args, **kwargs) -> None:
         self.console = console
 
         super().__init__(logfile_path=ViroConstrictor.logging.logfile, *args, **kwargs)

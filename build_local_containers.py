@@ -6,17 +6,13 @@ import subprocess
 
 from ViroConstrictor.userprofile import ReadConfig
 
-userconf = ReadConfig(
-    pathlib.Path("~/.ViroConstrictor_defaultprofile.ini").expanduser()
-)
+userconf = ReadConfig(pathlib.Path("~/.ViroConstrictor_defaultprofile.ini").expanduser())
 
 containerpath = None
 try:
     containerpath = userconf["REPRODUCTION"]["container_cache_path"]
 except KeyError as e:
-    raise KeyError(
-        "The container_cache_path option is missing from the REPRODUCTION section of your configuration file."
-    ) from e
+    raise KeyError("The container_cache_path option is missing from the REPRODUCTION section of your configuration file.") from e
 
 if not os.path.exists(containerpath):
     os.makedirs(containerpath)
