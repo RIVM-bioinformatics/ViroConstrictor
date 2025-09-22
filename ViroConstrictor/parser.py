@@ -396,6 +396,7 @@ class CLIparser:
         if not df.empty:
             df.columns = df.columns.str.upper()
             req_cols = check_samplesheet_columns(df)
+            df = check_samplesheet_empty_rows(df)
             if req_cols is False:
                 sys.exit(1)
             df = samplesheet_enforce_absolute_paths(df)
@@ -406,7 +407,12 @@ class CLIparser:
                     ),
                     axis=1,
                 )
-            return check_samplesheet_rows(df)
+            df = check_samplesheet_rows(df)
+            # If empty rows are present in the samplesheet, integers are converted to floats
+            # Here we convert them back to integers
+            if df.get("MIN-COVERAGE") is not None:
+                df["MIN-COVERAGE"] = pd.to_numeric(df["MIN-COVERAGE"], downcast="integer", errors="coerce")
+            return df
         return pd.DataFrame()
 
     def _make_samples_dict(
@@ -600,6 +606,7 @@ def samplesheet_enforce_absolute_paths(df: pd.DataFrame) -> pd.DataFrame:
     for column in columns_to_enforce:
         if column in df.columns:
             df[column] = df[column].apply(
+                #lambda x: os.path.abspath(os.path.expanduser(x)) if not pd.isna(x) else x
                 lambda x: os.path.abspath(os.path.expanduser(x)) if x != "NONE" else x
             )
     return df
@@ -747,6 +754,35 @@ def check_samplesheet_columns(df: pd.DataFrame) -> bool:
         log.error("[bold red]Missing required columns in samplesheet file.[/bold red]")
         return False
     return True
+
+
+def check_samplesheet_empty_rows(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Removes completely empty rows from a pandas DataFrame.
+    
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The input DataFrame representing the samplesheet.
+        
+    Returns
+    -------
+    pandas.DataFrame
+        The DataFrame with all completely empty rows removed.
+        
+    Notes
+    -----
+    If any completely empty rows are found and removed, a warning is logged indicating
+    the number of rows removed.
+    """
+    # als geen sample gooi dan weg 
+    
+    rows_before = len(df)
+    df = df.dropna(how="all")
+    rows_after = len(df)
+    if rows_before > rows_after:
+        log.warning(f"[yellow]Some rows in the samplesheet were completely empty and have been removed. Number of removed rows: {rows_before - rows_after}[/yellow]")
+    return df
 
 
 def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
