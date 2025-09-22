@@ -1,3 +1,0 @@
-##gff-version 3
-##species Influenza A H1N1
-A.H1N1.HA	.	CDS	31	1731	.	+	.	ID=gene-HA;Name=HA;gene=HA;gene_biotype=protein_coding;gene_name=HA

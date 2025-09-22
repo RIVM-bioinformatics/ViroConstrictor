@@ -44,17 +44,12 @@ def get_preset_warning_list(
     preset_fallback_warnings = []
     preset_score_warnings = []
 
-    p_scorewarning_df = sample_info_df.loc[
-        (sample_info_df["PRESET_SCORE"] < 0.8) & (sample_info_df["PRESET_SCORE"] > 0.0)
-    ]
+    p_scorewarning_df = sample_info_df.loc[(sample_info_df["PRESET_SCORE"] < 0.8) & (sample_info_df["PRESET_SCORE"] > 0.0)]
     for _input, _preset in zip(
         list(set(p_scorewarning_df["VIRUS"].tolist())),
         list(set(p_scorewarning_df["PRESET"].tolist())),
     ):
-        filtered_df = p_scorewarning_df.loc[
-            (p_scorewarning_df["VIRUS"] == _input)
-            & (p_scorewarning_df["PRESET"] == _preset)
-        ]
+        filtered_df = p_scorewarning_df.loc[(p_scorewarning_df["VIRUS"] == _input) & (p_scorewarning_df["PRESET"] == _preset)]
         samples = [" * " + x + "\n" for x in filtered_df["SAMPLE"].tolist()]
         score = filtered_df["PRESET_SCORE"].tolist()[0]
 
@@ -67,10 +62,7 @@ This applies to the following samples:\n{''.join(samples)}"""
 
     # check if the preset score is larger or equal than 0.0 and smaller than 0.000001 (1e-6)
     # We do this because the preset score is a float and we want to check if it is within a certain range as floating point equality checks are not reliable
-    p_fallbackwarning_df = sample_info_df.loc[
-        (sample_info_df["PRESET_SCORE"] >= 0.0)
-        & (sample_info_df["PRESET_SCORE"] < 1e-6)
-    ]
+    p_fallbackwarning_df = sample_info_df.loc[(sample_info_df["PRESET_SCORE"] >= 0.0) & (sample_info_df["PRESET_SCORE"] < 1e-6)]
 
     targets, presets = (
         (
@@ -89,10 +81,7 @@ This applies to the following samples:\n{''.join(samples)}"""
         else ([], [])
     )
     for _input, _preset in zip(targets, presets):
-        filtered_df = p_fallbackwarning_df.loc[
-            (p_fallbackwarning_df["VIRUS"] == _input)
-            & (p_fallbackwarning_df["PRESET"] == _preset)
-        ]
+        filtered_df = p_fallbackwarning_df.loc[(p_fallbackwarning_df["VIRUS"] == _input) & (p_fallbackwarning_df["PRESET"] == _preset)]
         samples = [" * " + x + "\n" for x in filtered_df["SAMPLE"].tolist()]
 
         warn = f"""[red]The following information was given as an input-target: '[bold underline]{_input}[/bold underline]'.
@@ -104,9 +93,7 @@ It may also be possible that your input-target does not yet have an associated p
     return preset_fallback_warnings, preset_score_warnings
 
 
-def show_preset_warnings(
-    warnings: list[str], fallbacks: list[str], disabled: bool
-) -> None:
+def show_preset_warnings(warnings: list[str], fallbacks: list[str], disabled: bool) -> None:
     """This function logs warning and fallback messages if they exist and if the disabled flag is not set.
 
     Parameters
@@ -145,9 +132,7 @@ def main(args: list[str] | None = None, settings: str | None = None) -> NoReturn
         settings = "~/.ViroConstrictor_defaultprofile.ini"
     parsed_input = CLIparser(input_args=args, settings_path=settings)
 
-    preset_fallback_warnings, preset_score_warnings = get_preset_warning_list(
-        parsed_input.samples_df
-    )
+    preset_fallback_warnings, preset_score_warnings = get_preset_warning_list(parsed_input.samples_df)
     if not parsed_input.flags.skip_updates:
         update(sys.argv, parsed_input.user_config)
 
@@ -159,16 +144,12 @@ def main(args: list[str] | None = None, settings: str | None = None) -> NoReturn
 
     status: bool = False
 
-    status, used_workflow_config = run_snakemake_workflow(
-        inputs_obj=parsed_input, stage="MAIN", scheduler=parsed_input.scheduler
-    )
+    status, used_workflow_config = run_snakemake_workflow(inputs_obj=parsed_input, stage="MAIN", scheduler=parsed_input.scheduler)
 
     # if used_workflow_config.output_settings.dryrun is False and status is True:
     #    #     TODO: add back the functionality to generate a snakemake report upon completion of the workflow
 
-    workflow_state: Literal["Failed", "Success"] = (
-        "Failed" if status is False else "Success"
-    )
+    workflow_state: Literal["Failed", "Success"] = "Failed" if status is False else "Success"
 
     WriteReport(
         parsed_input.workdir,
