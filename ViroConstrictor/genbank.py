@@ -65,6 +65,7 @@ class GenBank:
             )
         return organisms[0]
 
+    # TODO: splitting of the genbank file should potentially happen in a target directory instead of placing the split files into the source directory
     @staticmethod
     def split_genbank(file_path: Path, emit_target: bool = False) -> tuple[Path, Path, str]:
         """Splits a GenBank file into a reference fasta, a features file and possibly a target file."""
