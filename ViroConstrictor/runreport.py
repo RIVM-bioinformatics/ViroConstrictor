@@ -108,9 +108,7 @@ def WriteReport(
     # pdf = analysis_details(pdf, "Primer file:", sconfig["primer_file"])
     # pdf = analysis_details(pdf, "GFF file:", sconfig["features_file"])
     pdf = analysis_details(pdf, "Sequencing platform:", inputs_config.flags.platform)
-    pdf = analysis_details(
-        pdf, "Selected amplicon type:", inputs_config.flags.amplicon_type
-    )
+    pdf = analysis_details(pdf, "Selected amplicon type:", inputs_config.flags.amplicon_type)
     # if sconfig["primer_file"] != "None":
     #     pdf = analysis_details(
     #         pdf, "Primer mismatch rate:", str(sconfig["primer_mismatch_rate"])
@@ -120,12 +118,8 @@ def WriteReport(
 
     pdf = analysis_details(pdf, "Computing execution:", conf["COMPUTING"]["compmode"])
     if conf["COMPUTING"]["compmode"] == "grid":
-        pdf = analysis_details(
-            pdf, "Selected Grid Queue:", conf["COMPUTING"]["queuename"]
-        )
-    pdf = analysis_details(
-        pdf, "Local available threads:", str(snakemake_resource_settings.cores)
-    )
+        pdf = analysis_details(pdf, "Selected Grid Queue:", conf["COMPUTING"]["queuename"])
+    pdf = analysis_details(pdf, "Local available threads:", str(snakemake_resource_settings.cores))
 
     pdf.ln(10)
 

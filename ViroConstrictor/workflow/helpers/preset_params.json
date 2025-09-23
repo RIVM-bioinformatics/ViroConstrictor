@@ -1,0 +1,118 @@
+{
+    "DEFAULT": {
+        "STAGE_GLOBAL": {
+            "Minimap2_Settings_Base": "--secondary=no",
+            "Samtools_Filters_Base": "-F 256 -F 512 -F 4 -F 2048"
+        },
+        "STAGE_MATCHREF": {
+            "Minimap2_Settings": "",
+            "Minimap2_AlignmentParams_nanopore": "",
+            "Minimap2_AlignmentParams_illumina": "",
+            "Minimap2_AlignmentParams_iontorrent": "",
+            "Samtools_Filters_nanopore": "-q 10",
+            "Samtools_Filters_illumina": "-q 10",
+            "Samtools_Filters_iontorrent": "-q 10"
+        },
+        "STAGE_MAIN": {
+            "Minimap2_Settings": "",
+            "Minimap2_RawAlignParams_nanopore": "",
+            "Minimap2_RawAlignParams_illumina": "",
+            "Minimap2_RawAlignParams_iontorrent": "",
+            "Minimap2_AlignmentParams_nanopore": "",
+            "Minimap2_AlignmentParams_illumina": "",
+            "Minimap2_AlignmentParams_iontorrent": "",
+            "Samtools_Filters_nanopore": "",
+            "Samtools_Filters_illumina": "",
+            "Samtools_Filters_iontorrent": "",
+            "AmpliGone_AlignmentPreset_nanopore": "-ap map-ont",
+            "AmpliGone_AlignmentPreset_illumina": "-ap sr",
+            "AmpliGone_AlignmentPreset_iontorrent": "-ap sr",
+            "AmpliGone_AlignmentMatrix_nanopore": "",
+            "AmpliGone_AlignmentMatrix_illumina": "",
+            "AmpliGone_AlignmentMatrix_iontorrent": "",
+            "AmpliGone_ExtraSettings_nanopore": "",
+            "AmpliGone_ExtraSettings_illumina": "",
+            "AmpliGone_ExtraSettings_iontorrent": "",
+            "Clipper_FilterParams_nanopore": "",
+            "Clipper_FilterParams_illumina": "",
+            "Clipper_FilterParams_iontorrent": "",
+            "FastP_AdapterRemoval_Settings_nanopore": "--disable_adapter_trimming",
+            "FastP_AdapterRemoval_Settings_illumina": "--disable_adapter_trimming",
+            "FastP_AdapterRemoval_Settings_iontorrent": "--disable_adapter_trimming",
+            "Fastp_PerReadQC_Settings_nanopore": "--disable_quality_filtering",
+            "Fastp_PerReadQC_Settings_illumina": "--disable_quality_filtering",
+            "Fastp_PerReadQC_Settings_iontorrent": "--disable_quality_filtering",
+            "Fastp_QC_SlidingWindow_Settings_nanopore": "--cut_right --cut_right_window_size 20 --cut_right_mean_quality 7",
+            "Fastp_QC_SlidingWindow_Settings_illumina": "--cut_right --cut_right_window_size 5 --cut_right_mean_quality 20",
+            "Fastp_QC_SlidingWindow_Settings_iontorrent": "--cut_right --cut_right_window_size 15 --cut_right_mean_quality 20",
+            "Fastp_LowComplexityFilter_Settings_nanopore": "",
+            "Fastp_LowComplexityFilter_Settings_illumina": "",
+            "Fastp_LowComplexityFilter_Settings_iontorrent": "",
+            "Fastp_MinReadLength_Settings_nanopore": "--length_required 100",
+            "Fastp_MinReadLength_Settings_illumina": "--length_required 100",
+            "Fastp_MinReadLength_Settings_iontorrent": "--length_required 100",
+            "AminoExtract_FeatureType": "CDS",
+            "AminoExtract_Settings": "--keep-gaps"
+        }
+    },
+    "SARSCOV2": {
+        "STAGE_GLOBAL": {},
+        "STAGE_MATCHREF": {},
+        "STAGE_MAIN": {
+            "Minimap2_AlignmentParams_nanopore": "-E2,0 -O8,24 -A4 -B4",
+            "AmpliGone_AlignmentMatrix_nanopore": "-as match=4 mismatch=4 gap_o1=8 gap_e1=2 gap_o2=24 gap_e2=0",
+            "AmpliGone_ExtraSettings_nanopore": "--virtual-primers",
+            "AmpliGone_ExtraSettings_illumina": "--virtual-primers",
+            "AmpliGone_ExtraSettings_iontorrent": "--virtual-primers"
+        }
+    },
+    "INFLUENZA": {
+        "STAGE_GLOBAL": {},
+        "STAGE_MATCHREF": {
+            "Samtools_Filters_nanopore": "-q 5",
+            "Samtools_Filters_illumina": "-q 5",
+            "Samtools_Filters_iontorrent": "-q 5"
+        },
+        "STAGE_MAIN": {
+            "Minimap2_Settings": "--frag=no",
+            "Minimap2_RawAlignParams_nanopore": "--splice",
+            "Minimap2_RawAlignParams_illumina": "--splice",
+            "Minimap2_RawAlignParams_iontorrent": "--splice",
+            "Clipper_FilterParams_nanopore": "--exclude-spliced --spliced-length-threshold 50 --min-aligned-length 0.5",
+            "Clipper_FilterParams_illumina": "--exclude-spliced --spliced-length-threshold 50",
+            "Clipper_FilterParams_iontorrent": "--exclude-spliced --spliced-length-threshold 50 --min-aligned-length 0.5"
+        }
+    },
+    "PARAMYXOVIRIDAE": {
+        "STAGE_GLOBAL": {},
+        "STAGE_MATCHREF": {},
+        "STAGE_MAIN": {
+            "Minimap2_Settings": "--frag=no",
+            "Minimap2_RawAlignParams_nanopore": "--splice",
+            "Minimap2_RawAlignParams_illumina": "--splice",
+            "Minimap2_RawAlignParams_iontorrent": "--splice",
+            "Clipper_FilterParams_nanopore": "--exclude-spliced --spliced-length-threshold 21",
+            "Clipper_FilterParams_illumina": "--exclude-spliced --spliced-length-threshold 21",
+            "Clipper_FilterParams_iontorrent": "--exclude-spliced --spliced-length-threshold 21",
+            "AmpliGone_ExtraSettings_nanopore": "--virtual-primers",
+            "AmpliGone_ExtraSettings_illumina": "--virtual-primers",
+            "AmpliGone_ExtraSettings_iontorrent": "--virtual-primers"
+        }
+    },
+    "HEPATOVIRUS": {
+        "STAGE_GLOBAL": {},
+        "STAGE_MATCHREF": {},
+        "STAGE_MAIN": {
+            "Minimap2_Settings": "--frag=no",
+            "Minimap2_RawAlignParams_nanopore": "--splice",
+            "Minimap2_RawAlignParams_illumina": "--splice",
+            "Minimap2_RawAlignParams_iontorrent": "--splice",
+            "Clipper_FilterParams_nanopore": "--exclude-spliced --spliced-length-threshold 200",
+            "Clipper_FilterParams_illumina": "--exclude-spliced --spliced-length-threshold 200",
+            "Clipper_FilterParams_iontorrent": "--exclude-spliced --spliced-length-threshold 200",
+            "AmpliGone_ExtraSettings_nanopore": "--virtual-primers",
+            "AmpliGone_ExtraSettings_illumina": "--virtual-primers",
+            "AmpliGone_ExtraSettings_iontorrent": "--virtual-primers"
+        }
+    }
+}

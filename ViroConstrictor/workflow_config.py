@@ -22,24 +22,20 @@ from snakemake.api import (
 from snakemake.resources import DefaultResources
 from snakemake.settings.enums import Quietness
 from snakemake_interface_executor_plugins.settings import ExecMode
-from snakemake_interface_logger_plugins.settings import (
-    LogHandlerSettingsBase,
-)
+from snakemake_interface_logger_plugins.settings import LogHandlerSettingsBase
 
 from ViroConstrictor import __prog__
 from ViroConstrictor.logging import log
 from ViroConstrictor.parser import CLIparser
 from ViroConstrictor.runconfigs import WriteYaml
 from ViroConstrictor.scheduler import Scheduler
-from ViroConstrictor.workflow.containers import (
+from ViroConstrictor.workflow.helpers.containers import (
     construct_container_bind_args,
     download_containers,
 )
 
 
-def correct_unidirectional_flag(
-    samples_dict: dict[Hashable, Any], flags: Namespace
-) -> bool:
+def correct_unidirectional_flag(samples_dict: dict[Hashable, Any], flags: Namespace) -> bool:
     """Corrects the unidirectional flag based on the platform and samples dictionary."""
     if flags.platform == "illumina" and flags.unidirectional is True:
         # check if the samples_dict has the INPUTFILE key, if it does, set the unidirectional flag to True
@@ -147,31 +143,21 @@ class WorkflowConfig:
         # TODO: set resources dynamically based on the user configuration and the possible grid flags (remote executor plugins, like LSF, SLURM or other)
         # NOTE: current resource settings are just an example for LSF but this should be lifted to a separate function
         default_resource_setting = DefaultResources()
-        default_resource_setting.set_resource(
-            "lsf_queue", "bio"
-        )  # this should be set dynamically based on the user config
+        default_resource_setting.set_resource("lsf_queue", "bio")  # this should be set dynamically based on the user config
         # default_resource_setting.set_resource("lsf_project", "PROJECT HERE") # this should be set dynamically as well, or be left empty if no default project can be found.
 
         self.resource_settings = ResourceSettings(
-            cores=(
-                300
-                if self.configuration["COMPUTING"]["compmode"] == "grid"
-                else self._set_cores(self.inputs.flags.threads)
-            ),
+            cores=(300 if self.configuration["COMPUTING"]["compmode"] == "grid" else self._set_cores(self.inputs.flags.threads)),
             resources={"max_local_mem": self._get_max_local_mem()},
             nodes=200 if self.configuration["COMPUTING"]["compmode"] == "grid" else 1,
-            default_resources=add_default_resource_settings(
-                scheduler=self.inputs.scheduler, user_config=self.configuration
-            ),
+            default_resources=add_default_resource_settings(scheduler=self.inputs.scheduler, user_config=self.configuration),
         )
 
         self.storage_settings = StorageSettings()
 
         self.deployment_settings = DeploymentSettings(
             deployment_method=(
-                {DeploymentMethod.APPTAINER}
-                if self.configuration["REPRODUCTION"]["repro_method"] == "containers"
-                else {DeploymentMethod.CONDA}
+                {DeploymentMethod.APPTAINER} if self.configuration["REPRODUCTION"]["repro_method"] == "containers" else {DeploymentMethod.CONDA}
             ),
             conda_prefix=None,
             conda_cleanup_pkgs=None,
@@ -201,13 +187,9 @@ class WorkflowConfig:
             scheduler="greedy",
         )
 
-        self.workflow_settings = WorkflowSettings(
-            exec_mode=ExecMode.SUBPROCESS if self.dryrun else ExecMode.DEFAULT
-        )
+        self.workflow_settings = WorkflowSettings(exec_mode=ExecMode.SUBPROCESS if self.dryrun else ExecMode.DEFAULT)
 
-        unidirectional = correct_unidirectional_flag(
-            self.inputs.samples_dict, self.inputs.flags
-        )
+        unidirectional = correct_unidirectional_flag(self.inputs.samples_dict, self.inputs.flags)
 
         self.snakemake_base_params = {
             "sample_sheet": WriteYaml(
@@ -233,13 +215,7 @@ class WorkflowConfig:
         }
 
         self.workflow_configsettings = ConfigSettings(
-            configfiles=[
-                Path(
-                    WriteYaml(
-                        self.snakemake_base_params, f"{self.inputs.workdir}/config.yaml"
-                    )
-                )
-            ],
+            configfiles=[Path(WriteYaml(self.snakemake_base_params, f"{self.inputs.workdir}/config.yaml"))],
         )
 
         self.remote_execution_settings = RemoteExecutionSettings(
@@ -285,9 +261,7 @@ class WorkflowConfig:
         return int(round(avl_mem_bytes / (1024.0**2) - 2000, -3))
 
 
-def add_default_resource_settings(
-    scheduler: Scheduler, user_config: ConfigParser
-) -> DefaultResources:
+def add_default_resource_settings(scheduler: Scheduler, user_config: ConfigParser) -> DefaultResources:
     """
     A barebones function to add queuename settings to the DefaultResources snakemake object for correct scheduling instructions.
 

@@ -33,16 +33,12 @@ class Scheduler(Enum):
         for scheduler in cls:
             if scheduler_str.lower().strip() in scheduler.value:
                 return scheduler
-        raise ValueError(
-            f"Invalid scheduler: {scheduler_str}. Must be one of {cls.supported_schedulers()}."
-        )
+        raise ValueError(f"Invalid scheduler: {scheduler_str}. Must be one of {cls.supported_schedulers()}.")
 
     @classmethod
     def is_valid(cls, scheduler_str: str) -> bool:
         """Check if the given string is a valid scheduler."""
-        return any(
-            scheduler_str.lower().strip() in scheduler.value for scheduler in cls
-        )
+        return any(scheduler_str.lower().strip() in scheduler.value for scheduler in cls)
 
     @classmethod
     def _scheduler_from_argument(
@@ -167,8 +163,5 @@ class Scheduler(Enum):
             )
             return scheduler
 
-        log.info(
-            "[yellow]No scheduler detected, running in non-grid mode. "
-            "Please check your configuration or environment variables.[/yellow]"
-        )
+        log.info("[yellow]No scheduler detected, running in non-grid mode. " "Please check your configuration or environment variables.[/yellow]")
         return cls.LOCAL

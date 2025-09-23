@@ -12,9 +12,7 @@ if __name__ == "__main__":
     with open(f"{base_path_to_container_defs}/builtcontainers.json", "r") as f:
         builtcontainers: List = json.load(f)
 
-    builtcontainers_trimmed = [
-        container.replace(":", "_") for container in builtcontainers
-    ]
+    builtcontainers_trimmed = [container.replace(":", "_") for container in builtcontainers]
 
     for original_name, trimmed_name in zip(builtcontainers, builtcontainers_trimmed):
         print(f"Renaming {original_name} to {trimmed_name}")
