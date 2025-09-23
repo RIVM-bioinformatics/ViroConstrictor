@@ -127,6 +127,7 @@ class ViroConstrictorBaseLogHandler(logging.Handler):
             rich_tracebacks=True,
             highlighter=NullHighlighter(),  # Use NullHighlighter to avoid colorization in the console
         )
+        self.shell_handler.setLevel(log.level)
         log.addHandler(self.shell_handler)
 
         # Setup a FileHandler specific to this instance for writing to the log file
@@ -138,6 +139,7 @@ class ViroConstrictorBaseLogHandler(logging.Handler):
         file_formatter = logging.Formatter(fmt=format_file, datefmt="[%d/%m/%y %H:%M:%S]")
         self.instance_file_handler.setFormatter(file_formatter)
 
+        self.instance_file_handler.setLevel(log.level)
         log.addHandler(self.instance_file_handler)
 
     def emit(self, record: logging.LogRecord) -> None:
@@ -173,6 +175,9 @@ class ViroConstrictorBaseLogHandler(logging.Handler):
 
         # sort items in processed_records, by their log level
         processed_records.sort(key=lambda x: x["levelno"], reverse=True)
+
+        # remove records where the log levelno is lower than the current log level
+        processed_records = [rec for rec in processed_records if rec["levelno"] >= log.level]
 
         for record_dict in processed_records:
             try:
