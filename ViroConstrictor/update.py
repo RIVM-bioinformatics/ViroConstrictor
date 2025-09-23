@@ -71,9 +71,7 @@ def post_install(sysargs: list[str], online_version: LooseVersion) -> NoReturn:
         The version number of the updated ViroConstrictor package that is available online.
 
     """
-    print(
-        f"ViroConstrictor updated to version [bold yellow]{online_version}[/bold yellow]"
-    )
+    print(f"ViroConstrictor updated to version [bold yellow]{online_version}[/bold yellow]")
     subprocess.run(sysargs)
     sys.exit(0)
 
@@ -98,9 +96,7 @@ def update(sysargs: list[str], conf: configparser.ConfigParser) -> None:
             online_version = LooseVersion(release_metadata.get("version"))
 
             if online_version is not None and (local_version < online_version):
-                log.info(
-                    f"Updating ViroConstrictor to latest version: [bold yellow]{online_version}[/bold yellow]"
-                )
+                log.info(f"Updating ViroConstrictor to latest version: [bold yellow]{online_version}[/bold yellow]")
                 update_succesfull = False
                 try:
                     with silence_stdout_stderr():
@@ -116,9 +112,7 @@ def update(sysargs: list[str], conf: configparser.ConfigParser) -> None:
                         f"ViroConstrictpor update process to version [bold yellow]{online_version}[/bold yellow] failed at package solver stage.\nThis might indicate that a new version of ViroConstrictor is uploaded to bioconda but download-servers are not ready yet.\nPlease try again later."
                     )
 
-                    log.warning(
-                        f"Continuing with current version: [bold red]{local_version}[/bold red]"
-                    )
+                    log.warning(f"Continuing with current version: [bold red]{local_version}[/bold red]")
                     return
                 if update_succesfull:
                     post_install(sysargs, online_version)
@@ -146,9 +140,7 @@ Latest version: [bold green]{online_version}[/bold green]\n""",
                 )
                 == "yes"
             ):
-                log.info(
-                    f"Updating ViroConstrictor to latest version: [bold yellow]{online_version}[/bold yellow]"
-                )
+                log.info(f"Updating ViroConstrictor to latest version: [bold yellow]{online_version}[/bold yellow]")
 
                 update_succesfull = False
                 try:
@@ -164,14 +156,10 @@ Latest version: [bold green]{online_version}[/bold green]\n""",
                     log.error(
                         f"ViroConstrictpor update process to version [bold yellow]{online_version}[/bold yellow] failed at package solver stage.\nThis might indicate that a new version of ViroConstrictor is uploaded to bioconda but download-servers are not ready yet.\nPlease try again later."
                     )
-                    log.warning(
-                        f"Continuing with current version: [bold red]{local_version}[/bold red]"
-                    )
+                    log.warning(f"Continuing with current version: [bold red]{local_version}[/bold red]")
                 if update_succesfull:
                     post_install(sysargs, online_version)
                 return
-            log.info(
-                f"Skipping update to version: [bold yellow]{online_version}[/bold yellow]"
-            )
+            log.info(f"Skipping update to version: [bold yellow]{online_version}[/bold yellow]")
             return
         return

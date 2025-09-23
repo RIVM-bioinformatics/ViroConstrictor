@@ -11,9 +11,7 @@ from ViroConstrictor.workflow_config import WorkflowConfig
 
 
 # TODO: Modify this method to re-add remote execution settings if they are set in the CLIparser or config file.
-def run_snakemake_workflow(
-    inputs_obj: CLIparser, stage: str, scheduler: Scheduler
-) -> tuple[bool, WorkflowConfig]:
+def run_snakemake_workflow(inputs_obj: CLIparser, stage: str, scheduler: Scheduler) -> tuple[bool, WorkflowConfig]:
     """
     Run the snakemake workflow for the specified stage.
 
@@ -29,9 +27,7 @@ def run_snakemake_workflow(
     bool
         True if the workflow ran successfully, False otherwise.
     """
-    workflow_configuration = WorkflowConfig(
-        parsed_inputs=inputs_obj, outdir_override="", vc_stage=stage
-    )
+    workflow_configuration = WorkflowConfig(parsed_inputs=inputs_obj, outdir_override="", vc_stage=stage)
     try:
         WorkflowExecutor(
             parsed_input=inputs_obj,
@@ -39,9 +35,7 @@ def run_snakemake_workflow(
             scheduler=scheduler,
         )
     except WorkflowError as e:
-        log.error(
-            f"Workflow execution failed with error: {e}\nPlease check the logs and your settings for more information and try again later."
-        )
+        log.error(f"Workflow execution failed with error: {e}\nPlease check the logs and your settings for more information and try again later.")
         return False, workflow_configuration
     return True, workflow_configuration
 
@@ -75,9 +69,7 @@ class WorkflowExecutor:
         self.parsed_input = parsed_input
         self.workflow_config = workflow_config
 
-        with SnakemakeApi(
-            output_settings=self.workflow_config.output_settings
-        ) as snakemake_api:
+        with SnakemakeApi(output_settings=self.workflow_config.output_settings) as snakemake_api:
             self.workflow_api = snakemake_api.workflow(
                 resource_settings=self.workflow_config.resource_settings,
                 config_settings=self.workflow_config.workflow_configsettings,
