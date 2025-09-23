@@ -7,6 +7,7 @@ Basic functions to see if a fasta is valid
 import re
 
 from Bio import SeqIO
+from biovalid import BioValidator
 
 from ViroConstrictor.logging import log
 
@@ -63,11 +64,11 @@ def IsValidRef(inputfile: str) -> bool:
         A boolean value.
 
     """
-    if IsValidFasta(inputfile):
-        return not any(
-            ContainsAmbiguities(str(record.seq))
-            for record in SeqIO.parse(inputfile, "fasta")
-        )
+    validator = BioValidator(inputfile, bool_mode=True, verbose=False)
+    is_valid = validator.validate_files()
+
+    if is_valid:
+        return not any(ContainsAmbiguities(str(record.seq)) for record in SeqIO.parse(inputfile, "fasta"))
     return False
 
 
@@ -88,9 +89,7 @@ def IsValidFasta(inputfile: str) -> bool:
     """
     if inputfile == "NONE":
         return True
-    results = [
-        ContainsSpecials(str(record.seq)) for record in SeqIO.parse(inputfile, "fasta")
-    ]
+    results = [ContainsSpecials(str(record.seq)) for record in SeqIO.parse(inputfile, "fasta")]
 
     return not any(results)
 
@@ -118,12 +117,7 @@ def CheckReferenceFile(referencefile: str, warnings_as_errors: bool = False) -> 
         # Check whether there are stretches of ambiguities
         matches = re.split("[ACTGactg]", str(record.seq))
         if longer_than_four := [m for m in matches if len(m) > 4]:
-            errors.append(
-                ValueError(
-                    f"In file {referencefile}, record {record.id} has stretches of ambiguities:\n"
-                    f"\t{longer_than_four}"
-                )
-            )
+            errors.append(ValueError(f"In file {referencefile}, record {record.id} has stretches of ambiguities:\n" f"\t{longer_than_four}"))
 
         # Check whether there are any ambiguous nucleotides
         if ambiguities := sum(map(len, matches)):
