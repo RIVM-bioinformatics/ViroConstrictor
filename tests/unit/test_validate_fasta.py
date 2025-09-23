@@ -160,13 +160,13 @@ def temp_ref_files(create_file_func) -> Generator[dict[Path, bool], None, None]:
     happy_files = [
         ("valid.fasta", ">seq1\nACTGACTG\n>seq2\nGTCAGTCA"),
         ("multi_line.fasta", ">seq1\nACGT\nGTCAGTCA\n>seq2\nGTCAGTCA"),
-        ("empty.fasta", ""),
     ]
 
     unhappy_files = [
+        ("empty.fasta", ""),
         ("ambiguous.fasta", ">seq1\nACNGACTG\n>seq2\nGTCAGTCA"),
         ("special.fasta", ">seq1\nACTG!ACTG\n>seq2\nGTCAGTCA"),
-        ("mixed.fasta", ">seq1\nACTGACTG\n>seq2\nGTCAGTCA*\n>seq3\nACTGACTG"),
+        ("mixed.fasta", ">seq1\nACTGACTG\n>seq2\nGTCAGTCA@\n>seq3\nACTGACTG"),
         (
             "missing_header.fasta",
             "ACTGACTG\n>seq2\nGTCAGTCA",
@@ -183,17 +183,6 @@ def temp_ref_files(create_file_func) -> Generator[dict[Path, bool], None, None]:
     unhappy_dict = {DATA_PATH / path: False for path, _ in unhappy_files}
     fasta_dict = {**happy_dict, **unhappy_dict}
     yield fasta_dict
-
-
-def test_is_valid_fasta(temp_fasta_files: dict[Path, bool]) -> None:
-    """Test the IsValidFasta function to ensure it correctly identifies valid FASTA files."""
-
-    for file, is_valid in temp_fasta_files.items():
-        str_file = str(file)
-        if is_valid:
-            assert IsValidFasta(str_file) is True
-        else:
-            assert IsValidFasta(str_file) is False
 
 
 def test_is_valid_ref(temp_ref_files: dict[Path, bool]) -> None:

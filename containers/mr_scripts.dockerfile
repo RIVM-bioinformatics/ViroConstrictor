@@ -1,0 +1,29 @@
+FROM mambaorg/micromamba:latest
+
+COPY ./ViroConstrictor/workflow/envs/mr_scripts.yaml /install.yml
+
+LABEL org.opencontainers.image.description="Supplementary scripts for the ViroConstrictor MR workflow."
+
+USER root
+RUN apt-get update && apt-get install -y adduser
+
+ARG UID=10001
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    appuser
+
+    
+RUN micromamba install -q -y -n base git -c conda-forge && \
+    micromamba install -q -y -n base -f /install.yml && \
+    micromamba clean -q --all --yes
+
+USER appuser
+
+ENV PATH=/opt/conda/bin:$PATH
+
+CMD ["@"]

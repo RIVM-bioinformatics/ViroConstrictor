@@ -44,12 +44,7 @@ class FlexibleArgFormatter(HelpFormatter):
     def _get_help_string(self, action: Action) -> Optional[str]:
         """ """
         help_text: Optional[str] = action.help
-        if (
-            help_text is not None
-            and action.default != SUPPRESS
-            and "default" not in help_text.lower()
-            and action.default is not None
-        ):
+        if help_text is not None and action.default != SUPPRESS and "default" not in help_text.lower() and action.default is not None:
             help_text += f"\n  ([underline]default: {str(action.default)}[/underline])"
         return help_text
 
@@ -173,10 +168,6 @@ class tabCompleter:
         def listCompleter(text: str, state: int) -> Optional[str]:
             line: str = readline.get_line_buffer()
 
-            return (
-                [c for c in ll if c.startswith(line)][state]
-                if line
-                else [f"{c} " for c in ll][state]
-            )
+            return [c for c in ll if c.startswith(line)][state] if line else [f"{c} " for c in ll][state]
 
         self.listCompleter = listCompleter
