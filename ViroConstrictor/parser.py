@@ -371,10 +371,6 @@ class CLIparser:
                     lambda x: pd.Series(match_preset_name(x["VIRUS"], use_presets=self.flags.presets)),
                     axis=1,
                 )
-            # If empty rows are present in the samplesheet, integers are converted to floats
-            # Here we convert them back to integers
-            if df.get("MIN-COVERAGE") is not None:
-                df["MIN-COVERAGE"] = pd.to_numeric(df["MIN-COVERAGE"], downcast="integer", errors="coerce")
             return df
         return pd.DataFrame()
 
@@ -958,7 +954,7 @@ def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
             "path": False,
         },
         "PRIMER-MISMATCH-RATE": {
-            "dtype": int,
+            "dtype": float,
             "required": False,
             "disallowed_characters": None,
             "path": False,
@@ -977,6 +973,11 @@ def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
         },
     }
     for colName, colValue in df.items():
+        if formats[colName]["dtype"] == int: 
+        # If empty rows are present in the samplesheet, integers are converted to floats
+        # Here we convert them back to integers for correct TrueConsense input
+            df[colName] = pd.to_numeric(df[colName], downcast="integer", errors="coerce")
+            
         if colName not in formats:
             log.error(
                 f"[bold red]Unknown column '{colName}' in samplesheet.[/bold red]\n[yellow]Please check the column-headers in your samplesheet file and try again.\nAllowed column-headers are as follows: {' | '.join(list(formats))}[/yellow]"
