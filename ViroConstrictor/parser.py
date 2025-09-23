@@ -365,12 +365,12 @@ class CLIparser:
             if req_cols is False:
                 sys.exit(1)
             df = samplesheet_enforce_absolute_paths(df)
+            df = check_samplesheet_rows(df)
             if df.get("PRESET") is None:
                 df[["PRESET", "PRESET_SCORE"]] = df.apply(
                     lambda x: pd.Series(match_preset_name(x["VIRUS"], use_presets=self.flags.presets)),
                     axis=1,
                 )
-            df = check_samplesheet_rows(df)
             # If empty rows are present in the samplesheet, integers are converted to floats
             # Here we convert them back to integers
             if df.get("MIN-COVERAGE") is not None:
@@ -718,8 +718,7 @@ def samplesheet_enforce_absolute_paths(df: pd.DataFrame) -> pd.DataFrame:
     for column in columns_to_enforce:
         if column in df.columns:
             df[column] = df[column].apply(
-                #lambda x: os.path.abspath(os.path.expanduser(x)) if not pd.isna(x) else x
-                lambda x: os.path.abspath(os.path.expanduser(x)) if x != "NONE" else x
+                lambda x: os.path.abspath(os.path.expanduser(x)) if not pd.isna(x) else x
             )
     return df
 
@@ -887,8 +886,6 @@ def check_samplesheet_empty_rows(df: pd.DataFrame) -> pd.DataFrame:
     If any completely empty rows are found and removed, a warning is logged indicating
     the number of rows removed.
     """
-    # als geen sample gooi dan weg 
-    
     rows_before = len(df)
     df = df.dropna(how="all")
     rows_after = len(df)
