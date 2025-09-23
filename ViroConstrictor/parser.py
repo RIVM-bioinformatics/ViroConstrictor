@@ -1,4 +1,5 @@
 import argparse
+import logging
 import multiprocessing
 import os
 import pathlib
@@ -24,19 +25,34 @@ from ViroConstrictor.workflow.helpers.presets import match_preset_name
 class CLIparser:
     def __init__(self, input_args: list[str], settings_path: str) -> None:
         self.flags: argparse.Namespace = self._get_args(input_args)
+        # Override standard logging when verbose option is given and add debug statements
+        if self.flags.verbose:
+            log.setLevel(logging.DEBUG)
         self.logfile = setup_logger(self.flags.output)
+
         log.info(f"ViroConstrictor version: [blue]{__version__}[/blue]")
+        log.debug(
+            f"Input handling :: Parser :: Getting arguments :: the parsed arguments are: {self.flags}"
+        )
+        log.debug(
+            "Input handling :: Parser :: Validate arguments :: checking all given command line arguments."
+        )
         self.cli_errors = self._validate_cli_args()
         if self.cli_errors:
             for err in self.cli_errors:
                 log.error(err)
             sys.exit(1)
         self.user_config = ReadConfig(pathlib.Path(settings_path).expanduser())
-        self.scheduler = Scheduler.determine_scheduler(self.flags.scheduler, self.user_config, self.flags.dryrun)
+        self.scheduler = Scheduler.determine_scheduler(
+            self.flags.scheduler, self.user_config, self.flags.dryrun
+        )
         self.flags.presets = self.flags.disable_presets is False
         self.samples_df = pd.DataFrame()
         self.samples_dict: dict[Hashable, Any] = {}
         if self.flags.samplesheet is not None: # samplesheet is given
+            log.debug(
+                "Input handling :: Parser :: Getting samples :: getting samples from sample sheet."
+            )
             self._print_missing_asset_warning(self.flags, True)
             self.samples_dict = self._make_samples_dict(
                 self._check_sample_sheet(self.flags.samplesheet),
@@ -44,6 +60,13 @@ class CLIparser:
                 GetSamples(self.flags.input, self.flags.platform),
             )
             self.samples_df = pd.DataFrame.from_dict(self.samples_dict, orient="index")
+            log.debug(
+                "Input handling :: Parser :: Getting samples :: samples have been acquired successfully."
+            )
+            converted_samples = convert_log_text(self.samples_dict)
+            log.debug(
+                f"Input handling :: Parser :: Getting samples :: the parsed samples are:\n{converted_samples}"
+            )
         else: # samplesheet is not given
             self._print_missing_asset_warning(self.flags, False)
             if GenBank.is_genbank(pathlib.Path(self.flags.reference)):
@@ -332,6 +355,13 @@ class CLIparser:
             "--skip-updates",
             action="store_true",
             help="Skip the update check",
+        )
+
+        optional_args.add_argument(
+            "--verbose",
+            "--debug",
+            action="store_true",
+            help="Adds extra information to the log file",
         )
 
         if not givenargs:
@@ -1107,3 +1137,37 @@ def sampledir_to_df(sampledict: dict[str, str] | dict[str, dict[str, str]], plat
         frame.rename(columns={0: "INPUTFILE"}, inplace=True)
         return frame
     raise ValueError(f"Platform {platform} not supported")
+
+
+def convert_log_text(samples_dict: dict) -> str:
+    """
+    Converts a dictionary of sample information into a formatted log text string.
+
+    Parameters
+    ----------
+    samples_dict : dict
+        A dictionary where each key is a sample name and each value is another dictionary
+        containing sample information as key-value pairs.
+
+    Returns
+    -------
+    str
+        A formatted string where each sample is listed with its associated information
+        in the format:
+            sample_name:
+            key1=value1, key2=value2, ...
+    """
+
+    convert_samples = []
+    for sample, sample_info in samples_dict.items():
+        # Extract the sample information
+        convert_samples.append(f"{sample}:")
+        convert_samples.append(
+            ", ".join(
+                f"{sample_key}={sample_value}"
+                for sample_key, sample_value in sample_info.items()
+            )
+        )
+    # Combine the sample information into a single log string
+    converted_samples = "\n".join(convert_samples)
+    return converted_samples

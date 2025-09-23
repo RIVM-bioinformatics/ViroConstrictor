@@ -4,6 +4,8 @@ import subprocess
 from pathlib import Path
 from typing import Dict, List
 
+import yaml
+
 from ViroConstrictor import __prog__
 from ViroConstrictor.logging import log
 
@@ -126,8 +128,10 @@ def fetch_hashes() -> Dict[str, str]:
 
     Returns
     -------
-    Dict[str, str]
-        A dictionary containing the file paths as keys and their corresponding hashes as values.
+    tuple[Dict[str, str], str]
+        A tuple containing two elements:
+        - A dictionary where the keys are file paths and the values are hashes of the files.
+        - A string representing the merged hash of the scripts and configuration files.
     """
     # Fetch the recipe files, script files, and config files
     recipe_files = sorted(fetch_recipes(f"{Path(os.path.dirname(os.path.realpath(__file__))).parent}/envs/"))
@@ -154,6 +158,75 @@ def fetch_hashes() -> Dict[str, str]:
             continue
 
     return hashes
+
+
+def log_containers(recipe_hashes: Dict[str, str]) -> None:
+    """
+    Logs information about container recipe files, their hashes, and dependencies.
+
+    Parameters
+    ----------
+    recipe_hashes : Dict[str, str]
+        A dictionary mapping recipe file paths to their corresponding hash values.
+    merged_hash : str
+        The hash value representing the merged scripts and configuration files.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    This function reads each recipe file, extracts its dependencies from YAML,
+    parses them into a standardized list, and logs the dependencies along with
+    their versions. It also logs the hashes of the recipe files and the merged hash.
+    """
+
+    # Log the container hash, dependencies and their versions
+    for recipe_file, hash in recipe_hashes.items():
+        with open(recipe_file, "r") as file:
+            # Load the YAML content from the recipe file
+            # and extract the dependencies
+            dependencies = yaml.safe_load(file).get("dependencies", [])
+            # Parse the dependencies into a standardized list
+            dependency_list = parse_dependencies(dependencies)
+            dependency_string = ",\n".join(dependency_list)
+            # Log the dependencies and their versions
+            log.debug(
+                f"Helper functionality :: Containers :: Getting dependency versions :: recipe file: {recipe_file}, hash: {hash}\n{dependency_string}"
+            )
+
+
+def parse_dependencies(dependencies: List) -> List[str]:
+    """
+    Parse a list of dependencies into a standardized list of strings.
+
+    Parameters
+    ----------
+    dependencies : list
+        A list containing dependencies specified as strings, dictionaries, or other types.
+        - If an element is a string, it is added directly to the result.
+        - If an element is a dictionary, each key is treated as a dependency type and its values as versions.
+          The output will be formatted as "dep_type::version" for each version.
+        - Other types are converted to strings and added to the result.
+
+    Returns
+    -------
+    dependency_list : list of str
+        A list of dependencies as strings, standardized for further processing.
+    """
+    dependency_list = []
+    for dependency in dependencies:
+        # Check if the dependency is a string, dictionary or other type and
+        # handle accordingly
+        if isinstance(dependency, str):
+            dependency_list.append(dependency)
+        elif isinstance(dependency, dict):
+            for dep_type, versions in dependency.items():
+                dependency_list.extend(f"{dep_type}::{version}" for version in versions)
+        else:
+            dependency_list.append(str(dependency))
+    return dependency_list
 
 
 def get_hash(target_container: str) -> str | None:
@@ -206,11 +279,12 @@ def containers_to_download(apptainer_path: Path) -> List[str]:
         A list of container names that need to be downloaded.
 
     """
-    recipes = fetch_hashes()
+    recipe_hashes = fetch_hashes()
+    log_containers(recipe_hashes)
 
     # check the recipes dict and create a list of required containers for the workflow. the list must contain strings that look like "viroconstrictor_alignment_{hash}" "viroconstrictor_clean_{hash}" etc.
     required_containers = []
-    for key, val in recipes.items():
+    for key, val in recipe_hashes.items():
         recipe_basename = os.path.basename(key).replace(".yaml", "")
         required_containers.append(f"{__prog__}_{recipe_basename}_{val}".lower())
 
