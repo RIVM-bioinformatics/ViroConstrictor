@@ -186,10 +186,12 @@ def get_preset_parameter(preset_name: str, parameter_name: str) -> str:
         # fetch the parameter from the default preset
         preset_params = collapse_preset_group("DEFAULT", ["STAGE_MAIN", "STAGE_GLOBAL"], _stage_identifier)
         log.debug(
-            f"{preset_name} specific parameter '[yellow]{_stage_identifier}_{parameter_name}[/yellow]' not found, inheriting parameter value from 'DEFAULT'."
+            f"Parameter handling :: Preset :: {preset_name} specific parameter '[yellow]{_stage_identifier}_{parameter_name}[/yellow]' not found, inheriting parameter value from 'DEFAULT'."
         )
 
         return preset_params[f"{_stage_identifier}_{parameter_name}"]
 
-    log.debug(f"Using {preset_name} specific parameter '[yellow]{_stage_identifier}_{parameter_name}[/yellow]'")
+    log.debug(
+        f"Parameter handling :: Preset :: Using {preset_name} specific parameter '[yellow]{_stage_identifier}_{parameter_name}[/yellow]'"
+    )
     return parameter

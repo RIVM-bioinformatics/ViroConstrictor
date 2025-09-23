@@ -54,7 +54,11 @@ class StripBracketsFilter(logging.Filter):
     def filter(self, record):
         pattern = r"\[/?\b(%s)\b[^\]]*\]" % "|".join(richstyles)
         record.msg = re.sub(pattern, "", record.msg)
-        record.msg = record.msg.replace("\n", "\n\t\t\t\t\t\t\t")
+        if record.levelname == "DEBUG":
+            # Outline the debug message with 4 \t instead of 7
+            record.msg = record.msg.replace("\n", "\n\t\t\t\t")
+        else:
+            record.msg = record.msg.replace("\n", "\n\t\t\t\t\t\t\t")
         return record
 
 
@@ -163,41 +167,47 @@ class ViroConstrictorBaseLogHandler(logging.Handler):
         """
 
         # take the provided log record and format it for console output with rich formatting.
-        processed_record = self._dispatch_log_record_formatter(record)
-        if processed_record is None:
+        processed_records = self._dispatch_log_record_formatter(record)
+        if processed_records is None:
             return
 
-        try:
-            # Use the internal console_handler to emit to the console
-            self.console_handler.emit(processed_record)
-        except Exception:
-            self.handleError(record)
+        # sort items in processed_records, by their log level
+        processed_records.sort(key=lambda x: x["levelno"], reverse=True)
 
-        # 2. Handle file output
-        # If self.emit() is called, the record should also be written to the file.
-        try:
-            # Create a copy of the record for file processing.
-            # This is to prevent modifications from affecting other handlers or console output.
-            file_record = logging.makeLogRecord(record.__dict__)
+        for record_dict in processed_records:
+            try:
+                # Use the internal console_handler to emit to the console
+                console_record = logging.makeLogRecord(record_dict)
+                self.console_handler.emit(console_record)
+            except Exception:
+                self.handleError(logging.makeLogRecord(record_dict))
 
-            # Get the fully resolved message (msg % args).
-            # This is important so the filter operates on the final string.
-            message_for_file = file_record.getMessage()
+            try:
+                # 2. Handle file output
+                # If self.emit() is called, the record should also be written to the file.
 
-            # Place the fully resolved message into file_record.msg
-            # and clear args, so the filter operates on the complete string.
-            file_record.msg = message_for_file
-            file_record.args = ()
+                # Create a copy of the record for file processing.
+                # This is to prevent modifications from affecting other handlers or console output.
+                file_record = logging.makeLogRecord(record_dict)
 
-            # Apply the StripBracketsFilter. This modifies file_record.msg in place.
-            # This is necessary to ensure that the message written to the file does not contain rich-style markup.
-            self._strip_brackets_filter_instance.filter(file_record)
+                # Get the fully resolved message (msg % args).
+                # This is important so the filter operates on the final string.
+                message_for_file = file_record.getMessage()
 
-            # Emit the modified record using the file handler.
-            # FileHandler.emit() itself does not re-check the level.
-            self.instance_file_handler.emit(file_record)
-        except Exception:
-            self.handleError(record)
+                # Place the fully resolved message into file_record.msg
+                # and clear args, so the filter operates on the complete string.
+                file_record.msg = message_for_file
+                file_record.args = ()
+
+                # Apply the StripBracketsFilter. This modifies file_record.msg in place.
+                # This is necessary to ensure that the message written to the file does not contain rich-style markup.
+                self._strip_brackets_filter_instance.filter(file_record)
+
+                # Emit the modified record using the file handler.
+                # FileHandler.emit() itself does not re-check the level.
+                self.instance_file_handler.emit(file_record)
+            except Exception:
+                self.handleError(logging.makeLogRecord(record_dict))
 
     def close(self) -> None:
         try:
@@ -209,7 +219,9 @@ class ViroConstrictorBaseLogHandler(logging.Handler):
                 self.instance_file_handler.close()
         super().close()
 
-    def _dispatch_log_record_formatter(self, record: logging.LogRecord) -> logging.LogRecord | None:
+    def _dispatch_log_record_formatter(
+        self, record: logging.LogRecord
+    ) -> list[dict[str, Any]] | None:
         """
         Formats a log record based on its content, applying specific transformations or filters.
         This method inspects the log record's level, message, event, and associated log file,
@@ -223,7 +235,7 @@ class ViroConstrictorBaseLogHandler(logging.Handler):
 
         Returns
         -------
-        logging.LogRecord | None
+        list[dict[str, Any]] | None
             The formatted log record, or None if the record should be suppressed.
 
         Raises
@@ -242,12 +254,53 @@ class ViroConstrictorBaseLogHandler(logging.Handler):
         - If the log message contains "Complete log(s):", it overrides the log file.
         - It handles specific log events such as "run_info", "job_started", "job_info", and "job_error".
         """
+        records_to_emit = []
         log_record = record.__dict__
 
         log_level = log_record.get("levelname", None)
         log_message = log_record.get("msg", None)
         log_event = log_record.get("event", None)
         execjob_logfile = log_record.get("log", None)
+
+        rule_name = log_record.get("rule_name", None)
+        wildcards = log_record.get("wildcards", None)
+        rule_id = log_record.get("jobid", None)
+        rule_input = log_record.get("input", None)
+        rule_output = log_record.get("output", None)
+        shellcmd = log_record.get("shellcmd", None)
+
+        if None not in [
+            rule_name,
+            wildcards,
+            rule_id,
+            rule_input,
+            rule_output,
+            shellcmd,
+        ]:
+            # Check if all variables have the expected types
+            expected_types = [
+                (rule_name, str),
+                (wildcards, dict),
+                (rule_id, int),
+                (rule_input, list),
+                (rule_output, list),
+                (shellcmd, str),
+            ]
+            if all(
+                isinstance(value, expected_type)
+                for value, expected_type in expected_types
+            ):
+                records_to_emit.append(
+                    handle_job_debug_message(
+                        log_record.copy(),
+                        rule_name,
+                        wildcards,
+                        rule_id,
+                        rule_input,
+                        rule_output,
+                        shellcmd,
+                    )
+                )
 
         if log_message is None and log_record.get("message") is not None:
             log_message = log_record.get("message")
@@ -305,27 +358,33 @@ class ViroConstrictorBaseLogHandler(logging.Handler):
             for key in logmessage_to_formatter_map.keys():
                 if key in log_message:
                     log_record["msg"] = logmessage_to_formatter_map[key](log_message)
-                    return logging.makeLogRecord(log_record)
+                    records_to_emit.append(log_record)
+                    return records_to_emit
 
         if log_message is not None and "Complete log(s):" in log_message:
             log_record["msg"] = LogFileOverride(log_record, logfile)
-            return logging.makeLogRecord(log_record)
+            records_to_emit.append(log_record)
+            return records_to_emit
         if log_event == "run_info":
             # print(log_message)
             log_record["msg"] = print_jobstatistics_logmessage(log_message)
-            return logging.makeLogRecord(log_record)
+            records_to_emit.append(log_record)
+            return records_to_emit
         if log_event == "job_started":
             log_record = HandleJobStartedMessage(log_record)
-            return logging.makeLogRecord(log_record)
+            records_to_emit.append(log_record)
+            return records_to_emit
         if log_event == "job_info":
             log_record = HandleJobInfoMessage(log_record)
-            return logging.makeLogRecord(log_record)
+            records_to_emit.append(log_record)
+            return records_to_emit
         if log_event == "job_error":
             log_record = HandleJobErrorMessage(log_record)
-            return logging.makeLogRecord(log_record)
+            records_to_emit.append(log_record)
+            return records_to_emit
 
-        record = logging.makeLogRecord(log_record)
-        return record
+        records_to_emit.append(log_record)
+        return records_to_emit
 
 
 def CondaEnvInstallerPreamble(msg: str) -> str:
@@ -466,6 +525,69 @@ def HandleJobErrorMessage(record: dict[str, Any]) -> dict[str, Any]:
     record["msg"] = (
         f"Job [red underline]{process_name}[/red underline] for sample [blue]{sample}[/blue] with target [blue]{input_target}[/blue] and reference-id [blue]{refid}[/blue] failed!\nJob is using jobID [cyan]{job_id}[/cyan], logging output will be written to [magenta]{logfile}[/magenta]\nThe expected output file(s) are as follows:\n[red]{outputfiles_list}[/red]\nThe following shell command was issued:\n[red]{shellcmd}[/red]"
     )
+    return record
+
+
+def handle_job_debug_message(
+    record: dict[str, Any],
+    rule_name: str,
+    wildcards: dict[str, str],
+    rule_id: str,
+    rule_input: list[str],
+    rule_output: list[str],
+    shellcmd: str,
+):
+    """
+    Formats and logs a debug message containing job details for a Snakemake rule execution.
+
+    Parameters
+    ----------
+    record : dict[str, Any]
+        The log record dictionary to be updated with the formatted debug message.
+    rule_name : str
+        The name of the Snakemake rule being executed.
+    wildcards : dict[str, str]
+        Dictionary of wildcard values for the current job.
+    rule_id : str
+        Unique identifier for the job.
+    rule_input : list[str]
+        List of input file paths for the rule.
+    rule_output : list[str]
+        List of output file paths for the rule.
+    shellcmd : str
+        The shell command to be executed for the rule.
+
+    Returns
+    -------
+    dict[str, Any]
+        The updated log record dictionary with the formatted debug message and log level set to DEBUG.
+
+    Notes
+    -----
+    This function updates the `record` with a formatted debug message including rule name, wildcards,
+    job ID, input and output files, and the shell command. The message is styled with color tags for
+    rich logging output and is logged at the DEBUG level.
+    """
+    # Replace the record's wildcard, rule input & output and shellcmd with a formatted string containing the job details
+    wildcards = ", ".join(
+        f"{key}: [blue]{value}[/blue]" for key, value in wildcards.items()
+    )
+    rule_input = ", ".join(
+        f"[magenta]{input_path}[/magenta]" for input_path in rule_input
+    )
+    rule_output = ", ".join(
+        f"[magenta]{output_path}[/magenta]" for output_path in rule_output
+    )
+    shellcmd = re.sub(
+        r" +", " ", shellcmd.strip()
+    )  # remove extra spaces and leading & trailing characters from the shell command
+    # Create the debug message
+    record["msg"] = (
+        f"Snakemake workflow :: {rule_name} :: {wildcards} :: JobID: [cyan]{rule_id}[/cyan]\nInput: {rule_input}\nOutput: {rule_output}\nFull command:\n{shellcmd}"
+    )
+    # Set the log level to DEBUG for this record
+    record["levelname"] = "DEBUG"
+    record["levelno"] = 10
     return record
 
 

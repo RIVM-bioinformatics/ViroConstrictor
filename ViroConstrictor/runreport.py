@@ -8,10 +8,15 @@ from fpdf import FPDF
 from snakemake.api import OutputSettings, ResourceSettings
 
 from ViroConstrictor import __version__
+from ViroConstrictor.logging import log
 from ViroConstrictor.parser import CLIparser
 
 
 class PDF(FPDF):
+    log.debug(
+        "Output handling :: Run report :: Create run report :: creating run information report."
+    )
+
     def timestamp(self) -> str:
         return datetime.now().strftime("%d-%m-%Y %H:%M")
 
@@ -123,3 +128,7 @@ def WriteReport(
     pdf.multi_cell(0, 5, f'{" ".join(command)}')
 
     pdf.output(name="Runinfomation.pdf")
+
+    log.debug(
+        "Output handling :: Run report :: Create run report :: run information report created successfully."
+    )
