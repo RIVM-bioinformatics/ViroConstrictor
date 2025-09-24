@@ -4,7 +4,7 @@ import pandas as pd
 from Bio import SeqIO, SeqRecord
 
 from ViroConstrictor.workflow.helpers.directories import *
-
+from ViroConstrictor.workflow.helpers.presets import get_preset_parameter
 
 def get_reference_header(reffile):
     """
@@ -26,7 +26,7 @@ def get_aminoacid_features(df):
             AA_dict = AminoExtract.get_feature_name_attribute(
                 input_gff=str(rec["FEATURES"]),
                 input_seq=str(rec["REFERENCE"]),
-                feature_type="all",
+                feature_type=get_preset_parameter(rec["PRESET"], "AminoExtract_FeatureType", "GLOBAL"),
             )
             if AA_dict:
                 for k, v in AA_dict.items():

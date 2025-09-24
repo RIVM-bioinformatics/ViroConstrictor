@@ -122,7 +122,7 @@ def collapse_preset_group(preset_name: str, stages: List[str], stage_identifier:
     return temp_dict
 
 
-def get_preset_parameter(preset_name: str, parameter_name: str) -> str:
+def get_preset_parameter(preset_name: str, parameter_name: str, stage_identifier: str = "") -> str:
     """
     Flexibly get predefined tool-parameters from one or more presets.
 
@@ -166,7 +166,10 @@ def get_preset_parameter(preset_name: str, parameter_name: str) -> str:
 
     # Using an inspect here to have a dynamic stage identifier that cannot be changed.
     # Additionally, this allows for the function to be used in any stage without needing to pass the stage identifier at every function call.
-    _stage_identifier = inspect.stack()[1][0].f_globals["VC_STAGE"]
+    if not stage_identifier:
+        _stage_identifier = inspect.stack()[1][0].f_globals["VC_STAGE"]
+    else:
+        _stage_identifier = stage_identifier
 
     # collapse the preset groups into dictionaries for the main and matchref stages
     # This results in the dictionaries with only the override values for the specific stage that is being called.
