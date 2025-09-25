@@ -549,8 +549,16 @@ class CLIparser:
                     "inheritance_allowed": False,
                     "empty_allowed": False,
                 },
+                "FRAGMENT-LOOKAROUND-SIZE": {
+                    "type": int,
+                    "default": None, # TODO: make this a command line argument?
+                    "required": False,
+                    "path": False,
+                    "inferred": False,
+                    "inheritance_allowed": False,
+                    "empty_allowed": False,
+                },
             }
-            
             # iterate over the existing df, adding missing columns with either default argument values, or overwrite values based on either genbank splitting or preset matching.
             for sample_name in df.index:
                 for column, properties in final_columns.items():
@@ -647,57 +655,22 @@ class CLIparser:
                                 df[column] = "DEFAULT"
                             else:  # PRESET_SCORE
                                 df[column] = 0.0
-
+                                
+                    # Handle FRAGMENT-LOOKAROUND-SIZE - use None if not fragmented amplicon type, 
+                    # if not provided or invalid input is given     
+                    elif column == "FRAGMENT-LOOKAROUND-SIZE":
+                        if args.amplicon_type != "fragmented":
+                            log.warning(f"[yellow]Fragment-lookaround-size is only relevant for 'fragmented' amplicon type. Ignoring value for sample '{sample_name}'.[/yellow]")
+                            df.at[sample_name, column] = None
+                        else:
+                            try:
+                                if int(current_value) != current_value:
+                                    log.warning(f"[yellow]Fragment-lookaround-size value for sample '{sample_name}' is not a valid input. Ignoring value for this sample.[/yellow]")
+                                    df.at[sample_name, column] = None
+                            except ValueError:
+                                log.warning(f"[yellow]Fragment-lookaround-size value for sample '{sample_name}' is not a valid input. Ignoring value for this sample.[/yellow]")
+                                df.at[sample_name, column] = None
             df = df.replace({np.nan: None})
-            # if df.get("PRIMER-MISMATCH-RATE") is None:
-            #     df["PRIMER-MISMATCH-RATE"] = args.primer_mismatch_rate
-            # if df.get("MIN-COVERAGE") is None:
-            #     df["MIN-COVERAGE"] = args.min_coverage
-            # if df.get("PRIMERS") is None:
-            #     df["PRIMERS"] = args.primers
-            #     if args.primers is None:
-            #         log.error(
-            #             "[bold red]No primer file specified in samplesheet or in command line options. Consider adding the -pr flag.[/bold red]"
-            #         )
-            #         sys.exit(1)
-            # if df.get("FEATURES") is None:
-            #     df["FEATURES"] = args.features
-            #     if args.features is None:
-            #         log.error(
-            #             "[bold red]No features file specified in samplesheet or in command line options. Consider adding the -gff flag.[/bold red]"
-            #         )
-            #         sys.exit(1)
-            # if df.get("PRESET") is None:
-            #     df[["PRESET", "PRESET_SCORE"]] = df.apply(
-            #         lambda x: pd.Series(
-            #             match_preset_name(x["VIRUS"], use_presets=args.presets)
-            #         ),
-            #         axis=1,
-            #     )
-            # if df.get("MATCH-REF") is None:
-            #     df["MATCH-REF"] = args.match_ref
-            # if df.get("SEGMENTED") is None:
-            #     df["SEGMENTED"] = args.segmented
-            # if df.get("FRAGMENT-LOOKAROUND-SIZE") is None:
-            #     df["FRAGMENT-LOOKAROUND-SIZE"] = 10
-            #     # TODO add fragment-lookaround-size as command line argument?
-            #     #df["FRAGMENT-LOOKAROUND-SIZE"] = args.fragment_lookaround_size
-            # else:
-            #     if self.flags.amplicon_type == "fragmented":
-            #         # Convert all non valid numbers to NaN
-            #         converted = pd.to_numeric(df["FRAGMENT-LOOKAROUND-SIZE"], errors="coerce")
-            #         # Allows any floats that can be converted to integers (x.0, where x is any integer)
-            #         # but converts x.y where y is any non-zero digit to NaN
-            #         converted = converted.where(converted.mod(1) == 0, np.nan)
-            #         for sample, frag_size in converted.items():
-            #             if np.isnan(frag_size):
-            #                 log.warning(f"[yellow]Invalid fragment-lookaround-size detected for sample '{sample}'. Using default value 10 for this sample.[/yellow]")
-            #         # Replace all NaN values with default value 10 and convert all values to integers
-            #         df["FRAGMENT-LOOKAROUND-SIZE"] = converted.fillna(10).astype(int)
-            #     else:
-            #         log.warning("[yellow]Changing fragment-lookaround-size is only relevant for fragmented amplicons. Using default value 10.[/yellow]")
-            #         df["FRAGMENT-LOOKAROUND-SIZE"] = 10
-            # df = pd.DataFrame.replace(df, np.nan, None)
             return df.to_dict(orient="index")
         return args_to_df(args, indirFrame).to_dict(orient="index")
 
@@ -1002,7 +975,7 @@ def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
             "path": False,
         },
         "PRIMER-MISMATCH-RATE": {
-            "dtype": int,
+            "dtype": float,
             "required": False,
             "disallowed_characters": None,
             "path": False,
@@ -1027,6 +1000,11 @@ def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
         },
     }
     for colName, colValue in df.items():
+        if formats[colName]["dtype"] == int: 
+            # Convert integers back to integer type after pandas read them as floats 
+            # strings will be converted to NaN
+            df[colName] = pd.to_numeric(df[colName], downcast="integer", errors="coerce")
+            
         if colName not in formats:
             log.error(
                 f"[bold red]Unknown column '{colName}' in samplesheet.[/bold red]\n[yellow]Please check the column-headers in your samplesheet file and try again.\nAllowed column-headers are as follows: {' | '.join(list(formats))}[/yellow]"
