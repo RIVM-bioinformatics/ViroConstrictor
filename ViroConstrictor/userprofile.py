@@ -17,7 +17,7 @@ from rich.console import Console
 
 from ViroConstrictor.functions import tabCompleter
 from ViroConstrictor.logging import log
-from ViroConstrictor.workflow.containers import containerization_installed
+from ViroConstrictor.workflow.helpers.containers import containerization_installed
 
 
 def FileExists(file: pathlib.Path) -> bool:
@@ -102,9 +102,7 @@ def AskPrompts(
                 print("Quitting...")
                 sys.exit(-1)
             else:
-                print(
-                    "The given answer was invalid. Please choose one of the available options\n"
-                )
+                print("The given answer was invalid. Please choose one of the available options\n")
         if not fixedchoices:
             reply = input(prompt).strip()
             if reply == "quit":

@@ -1,0 +1,39 @@
+{
+    "SARSCOV2": [
+        "SARS-COV-2",
+        "SARS2",
+        "COVID",
+        "COV",
+        "SARSCOV",
+        "SARSCOV2",
+        "CORONAVIRUS",
+        "SEVERE_ACUTE_RESPIRATORY_SYNDROME_CORONAVIRUS_2"
+    ],
+    "INFLUENZA": [
+        "FLU",
+        "INFLU",
+        "INFLUENZA",
+        "INFLUENZA_A",
+        "INFLUENZA_B",
+        "INF"
+    ],
+    "PARAMYXOVIRIDAE": [
+        "MEASLES",
+        "MEV",
+        "MEASLES_VIRUS",
+        "MUMPS",
+        "MUV",
+        "MUMPS_VIRUS",
+        "PARAMYXOVIRUS",
+        "PARAMYXOVIRIDAE",
+        "MORBILLIVIRUS",
+        "RUBULAVIRINAE",
+        "ORTHORUBULAVIRUS"
+    ],
+    "HEPATOVIRUS": [
+        "HEPATOVIRUS",
+        "HEPATITIS_A",
+        "HEPATITIS_A_VIRUS",
+        "HAV"
+    ]
+}
