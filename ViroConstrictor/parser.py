@@ -973,9 +973,9 @@ def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
         },
     }
     for colName, colValue in df.items():
+        # Convert integers back to integer type after pandas read them as floats 
+        # strings will be converted to NaN
         if formats[colName]["dtype"] == int: 
-        # If empty rows are present in the samplesheet, integers are converted to floats
-        # Here we convert them back to integers for correct TrueConsense input
             df[colName] = pd.to_numeric(df[colName], downcast="integer", errors="coerce")
             
         if colName not in formats:
