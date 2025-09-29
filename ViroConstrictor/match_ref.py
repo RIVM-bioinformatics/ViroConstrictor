@@ -64,11 +64,8 @@ def replacement_merge_dataframe_on_cols(
     for replacement_columns in zip(cols_left, cols_right):
         original_df[replacement_columns[0]] = original_df.apply(
             lambda x, replacement_columns=replacement_columns: (
-                override_df[replacement_columns[1]][
-                    override_df["sample"] == x["SAMPLE"]
-                ].values[0]
-                if x["SAMPLE"] in override_df["sample"].values
-                and x[replacement_columns[0]] != "NONE"
+                override_df[replacement_columns[1]][override_df["sample"] == x["SAMPLE"]].values[0]
+                if x["SAMPLE"] in override_df["sample"].values and x[replacement_columns[0]] != "NONE"
                 else x[replacement_columns[0]]
             ),
             axis=1,
@@ -94,18 +91,12 @@ def process_match_ref(parsed_inputs: CLIparser, scheduler: Scheduler) -> CLIpars
     """
     inputs_obj_match_ref = copy.deepcopy(parsed_inputs)
 
-    log.info(
-        f"{'='*20} [bold orange_red1] Starting Match-reference process [/bold orange_red1] {'='*20}"
-    )
+    log.info(f"{'='*20} [bold orange_red1] Starting Match-reference process [/bold orange_red1] {'='*20}")
 
     # TODO: re-add the functionality to correctly work with remote execution (a HPC), such as DRMAA, SLURM, or LSF
-    status, used_workflow_config = run_snakemake_workflow(
-        inputs_obj_match_ref, stage="MR", scheduler=scheduler
-    )
+    status, used_workflow_config = run_snakemake_workflow(inputs_obj_match_ref, stage="MR", scheduler=scheduler)
 
-    workflow_state: Literal["Failed", "Success"] = (
-        "Failed" if status is False else "Success"
-    )
+    workflow_state: Literal["Failed", "Success"] = "Failed" if status is False else "Success"
     if status is False:
         WriteReport(
             inputs_obj_match_ref.workdir,
@@ -136,9 +127,7 @@ def process_match_ref(parsed_inputs: CLIparser, scheduler: Scheduler) -> CLIpars
     imploded_df = filt_df.groupby("sample").agg(set).reset_index()
 
     # replace all the sets with just one value to only that value (without the set) except for the Reference column
-    imploded_df = replace_sets_to_singular_values(
-        imploded_df, ["Reference_file", "Primer_file", "Feat_file"]
-    )
+    imploded_df = replace_sets_to_singular_values(imploded_df, ["Reference_file", "Primer_file", "Feat_file"])
 
     # replace the values for the columns "REFERENCE", "PRIMERS" and "FEATURES" in parsed_inputs.samples_df with the values in columns "Reference_file", "Primer_file" and "Feat_file" in imploded_df where the sample names match.
     # if the sample names don't match, the value in the column should be unchanged from the original value

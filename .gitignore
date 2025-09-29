@@ -138,7 +138,6 @@ tests/e2e/**/container_cache/*
 tests/e2e/**/.snakemake/*
 tests/e2e/**/output/*
 
-# temporary local test dir
-test/*
+test/
 
 run_vc.sh
