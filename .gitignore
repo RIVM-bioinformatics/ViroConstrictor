@@ -140,3 +140,5 @@ tests/e2e/**/output/*
 
 # temporary local test dir
 test/*
+
+run_vc.sh
