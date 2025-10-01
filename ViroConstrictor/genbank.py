@@ -6,11 +6,11 @@ checking file extensions, parsing GenBank records, extracting target organisms,
 and splitting GenBank files into FASTA and GFF formats.
 """
 
+import difflib
 from pathlib import Path
 
 from BCBio import GFF  # type: ignore
 from Bio import SeqIO  # type: ignore
-import difflib
 
 
 class GenBank:

@@ -6,6 +6,7 @@ from Bio import SeqIO, SeqRecord
 from ViroConstrictor.workflow.helpers.directories import *
 from ViroConstrictor.workflow.helpers.presets import get_preset_parameter
 
+
 def get_reference_header(reffile):
     """
     #TODO: Docstring should be added to this function.
