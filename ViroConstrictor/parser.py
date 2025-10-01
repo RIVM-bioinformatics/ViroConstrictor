@@ -394,39 +394,27 @@ class CLIparser:
             if req_cols is False:
                 sys.exit(1)
             df = samplesheet_enforce_absolute_paths(df)
-             # print(df.get("DISABLE-PRESET"))
-            # if df.get("DISABLE-PRESET") is not None:
-            #     df[["PRESET", "PRESET_SCORE"]] = df.apply(
-            #         lambda x: pd.Series(
-            #             match_preset_name(x["VIRUS"], use_presets=not x["DISABLE-PRESET"])
-            #         ),
-            #         axis=1,
-            #     )
-            # elif df.get("PRESET") is None:
-            #     df[["PRESET", "PRESET_SCORE"]] = df.apply(
-            #         lambda x: pd.Series(
-            #             match_preset_name(x["VIRUS"], use_presets=self.flags.presets)
-            #         ),
-            #         axis=1,
-            #     )
-            
-            if df.get("PRESET") is None:
-                df[["PRESET", "PRESET_SCORE"]] = df.apply(
-                    lambda x: pd.Series(match_preset_name(x["VIRUS"], use_presets=self.flags.presets)),
-                    axis=1,
-                )
-
-                # df[["PRESET", "PRESET_SCORE"]] = df.apply(
-                #     lambda x: pd.Series(
-                #         # If DISABLE-PRESET is present, use its value, otherwise use self.flags.presets
-                #         match_preset_name(x["VIRUS"], use_presets=not x["DISABLE-PRESET"]) 
-                #         if df.get("DISABLE-PRESET") is not None 
-                #         else match_preset_name(x["VIRUS"], use_presets=self.flags.presets)
-                #     ),
-                #     axis=1,
-                # )
-            
-            print(df)
+        
+            # Make sure that the DISABLE-PRESETS column contains boolean values 
+            # ("FALSE" would otherwise be interpreted as True)
+            if df.get("DISABLE-PRESETS") is not None:
+                for index, row in df.iterrows():
+                    if str(row["DISABLE-PRESETS"]).upper() in ["TRUE", "FALSE"]:
+                        if str(row["DISABLE-PRESETS"]).upper() == "TRUE":
+                            df.at[index, "DISABLE-PRESETS"] = True
+                        else:
+                            df.at[index, "DISABLE-PRESETS"] = False
+                            
+            df[["PRESET", "PRESET_SCORE"]] = df.apply(
+                lambda x: pd.Series(
+                    # Allow only True or False inputs for the DISABLE-PRESETS column 
+                    # otherwise use the command line flag value
+                    match_preset_name(x["VIRUS"], use_presets=not x["DISABLE-PRESETS"])
+                    if df.get("DISABLE-PRESETS") is not None and str(x["DISABLE-PRESETS"]).upper() in ["TRUE", "FALSE"] 
+                    else match_preset_name(x["VIRUS"], use_presets=self.flags.presets)
+                ),
+                axis=1,
+            )
             return check_samplesheet_rows(df)
         return pd.DataFrame()
 
@@ -577,6 +565,15 @@ class CLIparser:
                     "inheritance_allowed": False,
                     "empty_allowed": False,
                 },
+                "DISABLE-PRESETS": {
+                    "type": bool,
+                    "default": args.disable_presets,
+                    "required": False,
+                    "path": False,
+                    "inferred": False,
+                    "inheritance_allowed": False,
+                    "empty_allowed": False,
+                },
             }
             
             # iterate over the existing df, adding missing columns with either default argument values, or overwrite values based on either genbank splitting or preset matching.
@@ -676,6 +673,14 @@ class CLIparser:
                             else:  # PRESET_SCORE
                                 df[column] = 0.0
 
+                    # Handle DISABLE-PRESETS - use defaults if not provided
+                    elif column == "DISABLE-PRESETS":
+                        if current_value is None or current_value == "" or pd.isna(current_value):
+                            df.at[sample_name, column] = properties["default"]
+                        elif str(current_value).upper() not in ["TRUE", "FALSE"]:
+                            log.warning(f"[yellow]The 'DISABLE-PRESETS' column for sample '{sample_name}' should be either TRUE or FALSE. Using command line value instead.[/yellow]")
+                            df.at[sample_name, column] = properties["default"]
+                            
             df = df.replace({np.nan: None})
             return df.to_dict(orient="index")
         return args_to_df(args, indirFrame).to_dict(orient="index")
@@ -705,21 +710,6 @@ class CLIparser:
                 log.warn(
                     "[yellow]Both a sample sheet and run-wide GFF file was given, the GFF file given through the commandline will be ignored[/yellow]"
                 )
-            # check if column for disable presets is present in sample sheet instead of sample sheet itself
-            # if args.disable_presets is True:
-            #     log.warning(
-            #         "[yellow]Both a sample sheet and run-wide disable presets option were given, the disable presets option given through the commandline will be ignored[/yellow]"
-            #     )
-        #     if not sheet_present and any(
-        #         map(
-        #             lambda f: f is None,
-        #             {args.primers, args.reference, args.features, args.target},
-        #         )
-        # ):
-        #     log.error(
-        #         f"[bold red]Run-wide analysis settings were not provided and no samplesheet was given either with per-sample run information.\nPlease either provide all required information ([underline]reference[/underline], [underline]primers[/underline], [underline]genomic features[/underline] and [underline]viral-target[/underline]) for a run-wide analysis or provide a samplesheet with per-sample run information[/bold red]"
-        #     )
-        #     sys.exit(1)
 
     def _get_paths_for_workflow(self, flags: argparse.Namespace) -> tuple[str, str, str, str, str]:
         """Takes the input and output paths from the command line, and then creates the working directory if
@@ -1013,7 +1003,7 @@ def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
             "disallowed_characters": None,
             "path": False,
         },
-        "DISABLE-PRESET": {
+        "DISABLE-PRESETS": {
             "dtype": bool,
             "required": False,
             "disallowed_characters": None,
