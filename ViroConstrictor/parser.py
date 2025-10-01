@@ -394,27 +394,7 @@ class CLIparser:
             if req_cols is False:
                 sys.exit(1)
             df = samplesheet_enforce_absolute_paths(df)
-        
-            # Make sure that the DISABLE-PRESETS column contains boolean values 
-            # ("FALSE" would otherwise be interpreted as True)
-            if df.get("DISABLE-PRESETS") is not None:
-                for index, row in df.iterrows():
-                    if str(row["DISABLE-PRESETS"]).upper() in ["TRUE", "FALSE"]:
-                        if str(row["DISABLE-PRESETS"]).upper() == "TRUE":
-                            df.at[index, "DISABLE-PRESETS"] = True
-                        else:
-                            df.at[index, "DISABLE-PRESETS"] = False
-                            
-            df[["PRESET", "PRESET_SCORE"]] = df.apply(
-                lambda x: pd.Series(
-                    # Allow only True or False inputs for the DISABLE-PRESETS column 
-                    # otherwise use the command line flag value
-                    match_preset_name(x["VIRUS"], use_presets=not x["DISABLE-PRESETS"])
-                    if df.get("DISABLE-PRESETS") is not None and str(x["DISABLE-PRESETS"]).upper() in ["TRUE", "FALSE"] 
-                    else match_preset_name(x["VIRUS"], use_presets=self.flags.presets)
-                ),
-                axis=1,
-            )
+            df = self._samplesheet_handle_presets(df)
             return check_samplesheet_rows(df)
         return pd.DataFrame()
 
@@ -741,6 +721,54 @@ class CLIparser:
             snakefile,
             match_ref_snakefile,
         )
+
+    def _samplesheet_handle_presets(self, df: pd.DataFrame, ) -> pd.DataFrame:
+        """
+        Process the 'DISABLE-PRESETS' column in the input DataFrame and assign preset values.
+        This function ensures that the 'DISABLE-PRESETS' column contains boolean values or None/NaN,
+        converting string representations ("TRUE", "FALSE") to their respective boolean types.
+        It then applies the `match_preset_name` function to each row, using the value of
+        'DISABLE-PRESETS' to determine whether to use presets, and assigns the results to
+        the 'PRESET' and 'PRESET_SCORE' columns. When the 'DISABLE-PRESETS' column is not present,
+        the command line flag value is used instead.
+        
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Input DataFrame containing at least the columns 'DISABLE-PRESETS' and 'VIRUS'.
+            
+        Returns
+        -------
+        pd.DataFrame
+            The modified DataFrame with updated 'DISABLE-PRESETS', 'PRESET', and 'PRESET_SCORE' columns.
+            
+        Notes
+        -----
+        - The function expects the presence of a `match_preset_name` function and a `self.flags.presets` attribute.
+        - Only rows with 'DISABLE-PRESETS' values of "TRUE" or "FALSE" (case-insensitive) are converted to boolean.
+        - If 'DISABLE-PRESETS' is not present or not a recognized value, the command line flag value is used.
+        """
+        # Make sure that the DISABLE-PRESETS column contains boolean values 
+        # ("FALSE" would otherwise be interpreted as True)
+        if df.get("DISABLE-PRESETS") is not None:
+            for index, row in df.iterrows():
+                if str(row["DISABLE-PRESETS"]).upper() in ["TRUE", "FALSE"]:
+                    if str(row["DISABLE-PRESETS"]).upper() == "TRUE":
+                        df.at[index, "DISABLE-PRESETS"] = True
+                    else:
+                        df.at[index, "DISABLE-PRESETS"] = False
+
+        df[["PRESET", "PRESET_SCORE"]] = df.apply(
+            lambda x: pd.Series(
+                # Allow only True or False inputs for the DISABLE-PRESETS column (None/NaN is also allowed)
+                # otherwise use the command line flag value
+                match_preset_name(x["VIRUS"], use_presets=not x["DISABLE-PRESETS"])
+                if df.get("DISABLE-PRESETS") is not None and str(x["DISABLE-PRESETS"]).upper() in ["TRUE", "FALSE"] 
+                else match_preset_name(x["VIRUS"], use_presets=self.flags.presets)
+            ),
+            axis=1,
+        )
+        return df
 
 
 def samplesheet_enforce_absolute_paths(df: pd.DataFrame) -> pd.DataFrame:
