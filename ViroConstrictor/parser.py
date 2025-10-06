@@ -309,6 +309,15 @@ class CLIparser:
         )
 
         optional_args.add_argument(
+            "--fragment-lookaround-size",
+            "-fls",
+            type=int,
+            default=None,
+            metavar="N",
+            help="Size of the fragment lookaround region (in bp) for the AmpliGone tool.",
+        )
+
+        optional_args.add_argument(
             "--threads",
             "-t",
             default=min(multiprocessing.cpu_count(), 128),
@@ -551,7 +560,7 @@ class CLIparser:
                 },
                 "FRAGMENT-LOOKAROUND-SIZE": {
                     "type": int,
-                    "default": None, # TODO: make this a command line argument?
+                    "default": args.fragment_lookaround_size,
                     "required": False,
                     "path": False,
                     "inferred": False,
@@ -656,20 +665,22 @@ class CLIparser:
                             else:  # PRESET_SCORE
                                 df[column] = 0.0
                                 
-                    # Handle FRAGMENT-LOOKAROUND-SIZE - use None if not fragmented amplicon type, 
-                    # if not provided or invalid input is given     
+                    # Handle FRAGMENT-LOOKAROUND-SIZE - use None if not fragmented amplicon type and
+                    # use default if not provided or invalid input is given
                     elif column == "FRAGMENT-LOOKAROUND-SIZE":
                         if args.amplicon_type != "fragmented":
                             log.warning(f"[yellow]Fragment-lookaround-size is only relevant for 'fragmented' amplicon type. Ignoring value for sample '{sample_name}'.[/yellow]")
                             df.at[sample_name, column] = None
+                        elif current_value is None or pd.isna(current_value):
+                            df.at[sample_name, column] = properties["default"]
                         else:
                             try:
                                 if int(current_value) != current_value:
-                                    log.warning(f"[yellow]Fragment-lookaround-size value for sample '{sample_name}' is not a valid input. Ignoring value for this sample.[/yellow]")
-                                    df.at[sample_name, column] = None
+                                    log.warning(f"[yellow]Fragment-lookaround-size value for sample '{sample_name}' is not a valid input. Using default value for this sample.[/yellow]")
+                                    df.at[sample_name, column] = properties["default"]
                             except ValueError:
-                                log.warning(f"[yellow]Fragment-lookaround-size value for sample '{sample_name}' is not a valid input. Ignoring value for this sample.[/yellow]")
-                                df.at[sample_name, column] = None
+                                log.warning(f"[yellow]Fragment-lookaround-size value for sample '{sample_name}' is not a valid input. Using default value for this sample.[/yellow]")
+                                df.at[sample_name, column] = properties["default"]
             df = df.replace({np.nan: None})
             return df.to_dict(orient="index")
         return args_to_df(args, indirFrame).to_dict(orient="index")
