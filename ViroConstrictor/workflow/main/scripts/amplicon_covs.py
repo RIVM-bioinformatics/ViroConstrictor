@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 from enum import Enum
 from pathlib import Path
+import numpy as np
 
 import pandas as pd
 from helpers.base_script_class import BaseScript  # type: ignore[import]  # noqa: F401,E402
@@ -103,7 +104,8 @@ class AmpliconCovs(BaseScript):
         """
         Opens a TSV file and returns its contents as a pandas DataFrame.
         """
-        df = pd.read_csv(filename, sep="\t", header=None, index_col=index_col)
+        #keep_default_na=False, na_values=["", "NaN"] - otherwise influenza segment NA is read as NaN
+        df = pd.read_csv(filename, sep="\t", header=None, index_col=index_col, keep_default_na=False, na_values=["", "NaN"])
         if df.isnull().to_numpy().any():
             raise ValueError(f"File {filename} contains NaN values.")
         return df
