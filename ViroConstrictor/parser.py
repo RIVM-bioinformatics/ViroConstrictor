@@ -309,6 +309,15 @@ class CLIparser:
         )
 
         optional_args.add_argument(
+            "--fragment-lookaround-size",
+            "-fls",
+            type=int,
+            default=None,
+            metavar="N",
+            help="Size of the fragment lookaround region (in bp) for the AmpliGone tool.",
+        )
+
+        optional_args.add_argument(
             "--threads",
             "-t",
             default=min(multiprocessing.cpu_count(), 128),
@@ -554,6 +563,15 @@ class CLIparser:
                     "inheritance_allowed": False,
                     "empty_allowed": False,
                 },
+                "FRAGMENT-LOOKAROUND-SIZE": {
+                    "type": int,
+                    "default": args.fragment_lookaround_size,
+                    "required": False,
+                    "path": False,
+                    "inferred": False,
+                    "inheritance_allowed": False,
+                    "empty_allowed": False,
+                },
                 "DISABLE-PRESETS": {
                     "type": bool,
                     "default": args.disable_presets,
@@ -564,7 +582,6 @@ class CLIparser:
                     "empty_allowed": False,
                 },
             }
-            
             # iterate over the existing df, adding missing columns with either default argument values, or overwrite values based on either genbank splitting or preset matching.
             for sample_name in df.index:
                 for column, properties in final_columns.items():
@@ -661,6 +678,23 @@ class CLIparser:
                                 df[column] = "DEFAULT"
                             else:  # PRESET_SCORE
                                 df[column] = 0.0
+                                
+                    # Handle FRAGMENT-LOOKAROUND-SIZE - use None if not fragmented amplicon type and
+                    # use default if not provided or invalid input is given
+                    elif column == "FRAGMENT-LOOKAROUND-SIZE":
+                        if args.amplicon_type != "fragmented":
+                            log.warning(f"[yellow]Fragment-lookaround-size is only relevant for 'fragmented' amplicon type. Ignoring value for sample '{sample_name}'.[/yellow]")
+                            df.at[sample_name, column] = None
+                        elif current_value is None or pd.isna(current_value):
+                            df.at[sample_name, column] = properties["default"]
+                        else:
+                            try:
+                                if int(current_value) != current_value:
+                                    log.warning(f"[yellow]Fragment-lookaround-size value for sample '{sample_name}' is not a valid input. Using default value for this sample.[/yellow]")
+                                    df.at[sample_name, column] = properties["default"]
+                            except ValueError:
+                                log.warning(f"[yellow]Fragment-lookaround-size value for sample '{sample_name}' is not a valid input. Using default value for this sample.[/yellow]")
+                                df.at[sample_name, column] = properties["default"]
 
                     # Handle DISABLE-PRESETS - use defaults if not provided
                     elif column == "DISABLE-PRESETS":
@@ -999,7 +1033,7 @@ def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
     Returns
     -------
         A dataframe with the columns: SAMPLE, VIRUS, PRIMERS, REFERENCE, FEATURES, MATCH-REF, SEGMENTED, MIN-COVERAGE,
-    PRIMER-MISMATCH-RATE
+    PRIMER-MISMATCH-RATE, PRESET, PRESET_SCORE, FRAGMENT-LOOKAROUND-SIZE
 
     """
     formats = {
@@ -1069,6 +1103,12 @@ def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
             "disallowed_characters": None,
             "path": False,
         },
+        "FRAGMENT-LOOKAROUND-SIZE": {
+            "dtype": int,
+            "required": False,
+            "disallowed_characters": None,
+            "path": False,
+        },
         "DISABLE-PRESETS": {
             "dtype": bool,
             "required": False,
@@ -1077,9 +1117,9 @@ def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
         },
     }
     for colName, colValue in df.items():
-        # Convert integers back to integer type after pandas read them as floats 
-        # strings will be converted to NaN
         if formats[colName]["dtype"] == int: 
+            # Convert integers back to integer type after pandas read them as floats 
+            # strings will be converted to NaN
             df[colName] = pd.to_numeric(df[colName], downcast="integer", errors="coerce")
             
         if colName not in formats:
