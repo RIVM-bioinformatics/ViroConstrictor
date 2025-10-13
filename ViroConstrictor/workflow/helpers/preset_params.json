@@ -51,7 +51,7 @@
             "Fastp_MinReadLength_Settings_nanopore": "--length_required 100",
             "Fastp_MinReadLength_Settings_illumina": "--length_required 100",
             "Fastp_MinReadLength_Settings_iontorrent": "--length_required 100",
-            "AminoExtract_FeatureType": "CDS",
+            "AminoExtract_FeatureType": "gene",
             "AminoExtract_Settings": "--keep-gaps"
         }
     },

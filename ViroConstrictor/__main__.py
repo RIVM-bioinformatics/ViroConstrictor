@@ -93,7 +93,7 @@ It may also be possible that your input-target does not yet have an associated p
     return preset_fallback_warnings, preset_score_warnings
 
 
-def show_preset_warnings(warnings: list[str], fallbacks: list[str], disabled: bool) -> None:
+def show_preset_warnings(warnings: list[str], fallbacks: list[str], disabled: bool, samples_df: pd.DataFrame) -> None:
     """This function logs warning and fallback messages if they exist and if the disabled flag is not set.
 
     Parameters
@@ -106,14 +106,35 @@ def show_preset_warnings(warnings: list[str], fallbacks: list[str], disabled: bo
         The "disabled" parameter is a boolean flag that indicates whether or not warning and fallback messages
     should be displayed. If it is set to True, then no warnings or fallbacks will be shown. If it is set
     to False, then warnings and fallbacks will be shown if there are any.
-
+    samples_df : pd.DataFrame
+        The "samples_df" parameter is a pandas DataFrame that contains information about the samples being
+    analyzed. It is used to check if there is a per-sample setting for disabling presets
     """
-    if warnings and not disabled:
-        for w in warnings:
-            log.warning(f"{w}")
-    if fallbacks and not disabled:
-        for w in fallbacks:
-            log.warning(f"{w}")
+    if samples_df.get("DISABLE-PRESETS") is not None:
+        # If per-sample DISABLE-PRESETS column exists, check per sample
+        for index, row in samples_df.iterrows():
+            sample_name = row["SAMPLE"]
+            # Only show warnings for this sample if presets are disabled (DISABLE-PRESETS is False)
+            if not row["DISABLE-PRESETS"]:
+                # Filter warnings and fallbacks that mention this specific sample
+                sample_warnings = [w for w in warnings if sample_name in w]
+                sample_fallbacks = [w for w in fallbacks if sample_name in w]
+                
+                if sample_warnings and not disabled:
+                    for w in sample_warnings:
+                        log.warning(f"{w}")
+                if sample_fallbacks and not disabled:
+                    for w in sample_fallbacks:
+                        log.warning(f"{w}")
+    else:
+        # If per-sample DISABLE-PRESETS column doesn't exists, use disable_presets flag
+        if not disabled:
+            if warnings and not disabled:
+                for w in warnings:
+                    log.warning(f"{w}")
+            if fallbacks and not disabled:
+                for w in fallbacks:
+                    log.warning(f"{w}")
 
 
 def main(args: list[str] | None = None, settings: str | None = None) -> NoReturn:
@@ -166,6 +187,7 @@ def main(args: list[str] | None = None, settings: str | None = None) -> NoReturn
         preset_score_warnings,
         preset_fallback_warnings,
         parsed_input.flags.disable_presets,
+        parsed_input.samples_df,
     )
 
     if status is False:

@@ -400,15 +400,20 @@ class CLIparser:
         if not df.empty:
             df.columns = df.columns.str.upper()
             req_cols = check_samplesheet_columns(df)
+            df = check_samplesheet_empty_rows(df)
             if req_cols is False:
                 sys.exit(1)
             df = samplesheet_enforce_absolute_paths(df)
-            if df.get("PRESET") is None:
-                df[["PRESET", "PRESET_SCORE"]] = df.apply(
-                    lambda x: pd.Series(match_preset_name(x["VIRUS"], use_presets=self.flags.presets)),
-                    axis=1,
-                )
-            return check_samplesheet_rows(df)
+            df = check_samplesheet_rows(df)
+            df = self._samplesheet_handle_presets(df)
+#           based on the _samplesheet_handle_presets function i commented out this section below under the assumption that it is now handled in the function.
+#           TODO: check if this needs to be changed
+#             if df.get("PRESET") is None:
+#                 df[["PRESET", "PRESET_SCORE"]] = df.apply(
+#                     lambda x: pd.Series(match_preset_name(x["VIRUS"], use_presets=self.flags.presets)),
+#                     axis=1,
+#                 )
+            return df
         return pd.DataFrame()
 
     def _make_samples_dict(
@@ -567,6 +572,15 @@ class CLIparser:
                     "inheritance_allowed": False,
                     "empty_allowed": False,
                 },
+                "DISABLE-PRESETS": {
+                    "type": bool,
+                    "default": args.disable_presets,
+                    "required": False,
+                    "path": False,
+                    "inferred": False,
+                    "inheritance_allowed": False,
+                    "empty_allowed": False,
+                },
             }
             # iterate over the existing df, adding missing columns with either default argument values, or overwrite values based on either genbank splitting or preset matching.
             for sample_name in df.index:
@@ -681,6 +695,15 @@ class CLIparser:
                             except ValueError:
                                 log.warning(f"[yellow]Fragment-lookaround-size value for sample '{sample_name}' is not a valid input. Using default value for this sample.[/yellow]")
                                 df.at[sample_name, column] = properties["default"]
+
+                    # Handle DISABLE-PRESETS - use defaults if not provided
+                    elif column == "DISABLE-PRESETS":
+                        if current_value is None or current_value == "" or pd.isna(current_value):
+                            df.at[sample_name, column] = properties["default"]
+                        elif str(current_value).upper() not in ["TRUE", "FALSE"]:
+                            log.warning(f"[yellow]The 'DISABLE-PRESETS' column for sample '{sample_name}' should be either TRUE or FALSE. Using command line value instead.[/yellow]")
+                            df.at[sample_name, column] = properties["default"]
+                            
             df = df.replace({np.nan: None})
             return df.to_dict(orient="index")
         return args_to_df(args, indirFrame).to_dict(orient="index")
@@ -742,6 +765,54 @@ class CLIparser:
             match_ref_snakefile,
         )
 
+    def _samplesheet_handle_presets(self, df: pd.DataFrame, ) -> pd.DataFrame:
+        """
+        Process the 'DISABLE-PRESETS' column in the input DataFrame and assign preset values.
+        This function ensures that the 'DISABLE-PRESETS' column contains boolean values or None/NaN,
+        converting string representations ("TRUE", "FALSE") to their respective boolean types.
+        It then applies the `match_preset_name` function to each row, using the value of
+        'DISABLE-PRESETS' to determine whether to use presets, and assigns the results to
+        the 'PRESET' and 'PRESET_SCORE' columns. When the 'DISABLE-PRESETS' column is not present,
+        the command line flag value is used instead.
+        
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Input DataFrame containing at least the columns 'DISABLE-PRESETS' and 'VIRUS'.
+            
+        Returns
+        -------
+        pd.DataFrame
+            The modified DataFrame with updated 'DISABLE-PRESETS', 'PRESET', and 'PRESET_SCORE' columns.
+            
+        Notes
+        -----
+        - The function expects the presence of a `match_preset_name` function and a `self.flags.presets` attribute.
+        - Only rows with 'DISABLE-PRESETS' values of "TRUE" or "FALSE" (case-insensitive) are converted to boolean.
+        - If 'DISABLE-PRESETS' is not present or not a recognized value, the command line flag value is used.
+        """
+        # Make sure that the DISABLE-PRESETS column contains boolean values 
+        # ("FALSE" would otherwise be interpreted as True)
+        if df.get("DISABLE-PRESETS") is not None:
+            for index, row in df.iterrows():
+                if str(row["DISABLE-PRESETS"]).upper() in ["TRUE", "FALSE"]:
+                    if str(row["DISABLE-PRESETS"]).upper() == "TRUE":
+                        df.at[index, "DISABLE-PRESETS"] = True
+                    else:
+                        df.at[index, "DISABLE-PRESETS"] = False
+
+        df[["PRESET", "PRESET_SCORE"]] = df.apply(
+            lambda x: pd.Series(
+                # Allow only True or False inputs for the DISABLE-PRESETS column (None/NaN is also allowed)
+                # otherwise use the command line flag value
+                match_preset_name(x["VIRUS"], use_presets=not x["DISABLE-PRESETS"])
+                if df.get("DISABLE-PRESETS") is not None and str(x["DISABLE-PRESETS"]).upper() in ["TRUE", "FALSE"] 
+                else match_preset_name(x["VIRUS"], use_presets=self.flags.presets)
+            ),
+            axis=1,
+        )
+        return df
+
 
 def samplesheet_enforce_absolute_paths(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -774,7 +845,9 @@ def samplesheet_enforce_absolute_paths(df: pd.DataFrame) -> pd.DataFrame:
     columns_to_enforce: List[str] = ["PRIMERS", "FEATURES", "REFERENCE"]
     for column in columns_to_enforce:
         if column in df.columns:
-            df[column] = df[column].apply(lambda x: os.path.abspath(os.path.expanduser(x)) if x != "NONE" else x)
+            df[column] = df[column].apply(
+                lambda x: os.path.abspath(os.path.expanduser(x)) if not pd.isna(x) else x
+            )
     return df
 
 
@@ -922,6 +995,33 @@ def check_samplesheet_columns(df: pd.DataFrame) -> bool:
     return True
 
 
+def check_samplesheet_empty_rows(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Removes completely empty rows from a pandas DataFrame.
+    
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The input DataFrame representing the samplesheet.
+        
+    Returns
+    -------
+    pandas.DataFrame
+        The DataFrame with all completely empty rows removed.
+        
+    Notes
+    -----
+    If any completely empty rows are found and removed, a warning is logged indicating
+    the number of rows removed.
+    """
+    rows_before = len(df)
+    df = df.dropna(how="all")
+    rows_after = len(df)
+    if rows_before > rows_after:
+        log.warning(f"[yellow]Some rows in the samplesheet were completely empty and have been removed. Number of removed rows: {rows_before - rows_after}[/yellow]")
+    return df
+
+
 def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
     """Checks whether the row-based contents of the samplesheet dataframe are valid.
 
@@ -1005,6 +1105,12 @@ def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
         },
         "FRAGMENT-LOOKAROUND-SIZE": {
             "dtype": int,
+            "required": False,
+            "disallowed_characters": None,
+            "path": False,
+        },
+        "DISABLE-PRESETS": {
+            "dtype": bool,
             "required": False,
             "disallowed_characters": None,
             "path": False,
