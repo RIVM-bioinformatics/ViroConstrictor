@@ -391,15 +391,17 @@ class CLIparser:
         if not df.empty:
             df.columns = df.columns.str.upper()
             req_cols = check_samplesheet_columns(df)
+            df = check_samplesheet_empty_rows(df)
             if req_cols is False:
                 sys.exit(1)
             df = samplesheet_enforce_absolute_paths(df)
+            df = check_samplesheet_rows(df)
             if df.get("PRESET") is None:
                 df[["PRESET", "PRESET_SCORE"]] = df.apply(
                     lambda x: pd.Series(match_preset_name(x["VIRUS"], use_presets=self.flags.presets)),
                     axis=1,
                 )
-            return check_samplesheet_rows(df)
+            return df
         return pd.DataFrame()
 
     def _make_samples_dict(
@@ -741,7 +743,9 @@ def samplesheet_enforce_absolute_paths(df: pd.DataFrame) -> pd.DataFrame:
     columns_to_enforce: List[str] = ["PRIMERS", "FEATURES", "REFERENCE"]
     for column in columns_to_enforce:
         if column in df.columns:
-            df[column] = df[column].apply(lambda x: os.path.abspath(os.path.expanduser(x)) if x != "NONE" else x)
+            df[column] = df[column].apply(
+                lambda x: os.path.abspath(os.path.expanduser(x)) if not pd.isna(x) else x
+            )
     return df
 
 
@@ -889,6 +893,33 @@ def check_samplesheet_columns(df: pd.DataFrame) -> bool:
     return True
 
 
+def check_samplesheet_empty_rows(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Removes completely empty rows from a pandas DataFrame.
+    
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The input DataFrame representing the samplesheet.
+        
+    Returns
+    -------
+    pandas.DataFrame
+        The DataFrame with all completely empty rows removed.
+        
+    Notes
+    -----
+    If any completely empty rows are found and removed, a warning is logged indicating
+    the number of rows removed.
+    """
+    rows_before = len(df)
+    df = df.dropna(how="all")
+    rows_after = len(df)
+    if rows_before > rows_after:
+        log.warning(f"[yellow]Some rows in the samplesheet were completely empty and have been removed. Number of removed rows: {rows_before - rows_after}[/yellow]")
+    return df
+
+
 def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
     """Checks whether the row-based contents of the samplesheet dataframe are valid.
 
@@ -953,7 +984,7 @@ def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
             "path": False,
         },
         "PRIMER-MISMATCH-RATE": {
-            "dtype": int,
+            "dtype": float,
             "required": False,
             "disallowed_characters": None,
             "path": False,
@@ -972,6 +1003,11 @@ def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
         },
     }
     for colName, colValue in df.items():
+        # Convert integers back to integer type after pandas read them as floats 
+        # strings will be converted to NaN
+        if formats[colName]["dtype"] == int: 
+            df[colName] = pd.to_numeric(df[colName], downcast="integer", errors="coerce")
+            
         if colName not in formats:
             log.error(
                 f"[bold red]Unknown column '{colName}' in samplesheet.[/bold red]\n[yellow]Please check the column-headers in your samplesheet file and try again.\nAllowed column-headers are as follows: {' | '.join(list(formats))}[/yellow]"
