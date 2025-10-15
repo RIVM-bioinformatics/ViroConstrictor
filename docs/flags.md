@@ -1,20 +1,3 @@
-# Starting an Analysis
-
-Once ViroConstrictor is [installed](installation.md), you can use it to analyze your NGS FASTQ data. ViroConstrictor supports multiple analysis workflows depending on your data and requirements.
-
-Before starting your analysis, ensure your input files are properly formatted according to the [input formatting guide](input-formatting.md). ViroConstrictor supports various sequencing platforms and amplicon types - see the [amplicons documentation](amplicons.md) for technical details about amplicon configurations.
-
-You can run analyses in different ways:
-
-- **Single-target analysis**: Single-target analysis with uniform parameters across all samples
-- **Multi-target analysis**: Use samplesheets to apply different settings per sample (see [samplesheet documentation](samplesheet.md))
-- **Multi-reference analysis**: Let ViroConstrictor choose the best reference for each sample (see [multi-reference guide](multi-reference.md))
-- **Preset configurations**: Use predefined settings for common viral targets (see [presets documentation](presets.md))
-
-For a quick start, see the [quickstart](quickstart.md) which includes a basic command template.
-
----
-
 
 ## Overview of Command-Line Options
 
