@@ -1,12 +1,70 @@
+"""
+Amplicon Coverage Calculator for ViroConstrictor.
+
+This module calculates amplicon coverage based on primer and coverage data for viral genome
+sequencing analysis. It provides flexible primer name parsing to handle various naming
+conventions and computes mean coverage across amplicon regions.
+
+The script processes BED files containing primer information and TSV files with coverage
+data to produce amplicon-specific coverage statistics. It supports complex primer naming
+schemes including alternative primers and various direction indicators.
+
+Classes
+-------
+AltName : Enum
+    Enum to represent alternative primer types.
+ReadDirection : Enum
+    Enum to represent primer read directions (forward/reverse).
+PrimerInfo : dataclass
+    Dataclass to hold parsed primer information.
+PrimerNameParser : class
+    Flexible parser for primer names with regex pattern matching.
+AmpliconCovs : class
+    Main class that calculates amplicon coverage from primer and coverage data.
+
+Functions
+---------
+The module can be executed as a script with command-line arguments:
+    python amplicon_covs.py --input primers.bed --coverages coverage.tsv --key sample_id --output results.csv
+
+Examples
+--------
+>>> parser = PrimerNameParser()
+>>> primer_info = parser.parse("ncov-2019_1_LEFT")
+>>> print(primer_info.name, primer_info.count, primer_info.direction.name)
+ncov-2019 1 FORWARD
+
+>>> covs = AmpliconCovs("primers.bed", "coverage.tsv", "sample1", "output.csv")
+>>> covs.run()
+
+Notes
+-----
+Supported primer name formats:
+- name_number_direction (e.g., "ncov-2019_1_LEFT")
+- name_number_alt_direction (e.g., "ncov-2019_1_alt_LEFT")
+- name_number_direction_alt (e.g., "ncov-2019_1_LEFT_alt1")
+- Complex alt formats (e.g., "HAV_1_alt-IB_LEFT")
+- Multiple underscores in names (e.g., "virus_strain_1_LEFT")
+
+Valid direction indicators: FW, F, LEFT, POSITIVE, FORWARD, PLUS (forward)
+                           RV, R, RIGHT, NEGATIVE, REVERSE, MINUS (reverse)
+
+"""
+
+import re
 from argparse import ArgumentParser
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
 import pandas as pd
-from helpers.base_script_class import BaseScript  # type: ignore[import]  # noqa: F401,E402
+
+from ViroConstrictor.workflow.helpers.base_script_class import BaseScript  # type: ignore[import]  # noqa: F401,E402
 
 
 class AltName(Enum):
+    """Enum to represent alternative primers."""
+
     ALT = ["alt", "alternative"]
 
     @staticmethod
@@ -19,8 +77,10 @@ class AltName(Enum):
 
 
 class ReadDirection(Enum):
-    FORWARD = ["FW", "F", "1", "LEFT", "POSITIVE", "FORWARD", "PLUS"]
-    REVERSE = ["RV", "R", "2", "RIGHT", "NEGATIVE", "REVERSE", "MINUS"]
+    """Enum to represent read directions."""
+
+    FORWARD = ["FW", "F", "LEFT", "POSITIVE", "FORWARD", "PLUS"]
+    REVERSE = ["RV", "R", "RIGHT", "NEGATIVE", "REVERSE", "MINUS"]
 
     @staticmethod
     def is_valid_direction(string: str) -> bool:
@@ -28,6 +88,129 @@ class ReadDirection(Enum):
         Checks if the given string is a valid read direction.
         """
         return any(string.upper() in direction.value for direction in ReadDirection)
+
+    @staticmethod
+    def from_string(string: str) -> "ReadDirection":
+        """
+        Converts a string to a ReadDirection enum member.
+        Raises ValueError if the string does not correspond to any ReadDirection.
+        """
+        for direction in ReadDirection:
+            if string.upper() in direction.value:
+                return direction
+        raise ValueError(f"Unrecognized read direction: {string}")
+
+
+@dataclass
+class PrimerInfo:
+    """Dataclass to hold parsed primer information."""
+
+    name: str
+    count: int
+    alt: AltName | None
+    direction: ReadDirection
+    original_string: str
+
+
+class PrimerNameParser:
+    """Class to parse and validate primer names."""
+
+    def __init__(self):
+        # Regex patterns for different primer name formats
+        self.patterns = [
+            # Pattern 1: name_number_direction (e.g., "ncov-2019_1_LEFT")
+            r"^([^_]+)_(\d+)_([^_]+)$",
+            # Pattern 2: name_number_alt_direction (e.g., "ncov-2019_1_alt_LEFT")
+            r"^([^_]+)_(\d+)_(alt\w*)_([^_]+)$",
+            # Pattern 3: name_number_direction_alt (e.g., "ncov-2019_1_LEFT_alt1")
+            r"^([^_]+)_(\d+)_([^_]+)_(alt\w*)$",
+            # Pattern 4: More complex alt formats (e.g., "HAV_1_alt-IB_LEFT")
+            r"^([^_]+)_(\d+)_(alt[^_]*)_([^_]+)$",
+            # Pattern 5: Multiple underscores in name (e.g., "virus_strain_1_LEFT")
+            r"^(.+)_(\d+)_([^_]+)$",
+            # Pattern 6: Multiple underscores with alt (e.g., "virus_strain_1_alt_LEFT")
+            r"^(.+)_(\d+)_(alt\w*)_([^_]+)$",
+        ]
+
+    def parse(self, primer_name: str) -> PrimerInfo:
+        """Parses the primer name and returns a PrimerInfo dataclass."""
+        cleaned_name = primer_name.lstrip(">")  # Remove leading '>' if present
+        for pattern in self.patterns:
+            match = re.match(pattern, cleaned_name, re.IGNORECASE)
+
+            if match:
+                return self._extract_info(match, cleaned_name)
+
+        return self._fallback_parse(cleaned_name)
+
+    def _extract_info(self, match: re.Match[str], original_string: str) -> PrimerInfo:
+        groups: tuple[str, ...] = match.groups()
+
+        alt, read_direction, count = None, None, None
+        i, j, k = None, None, None
+
+        for i, group in enumerate(groups):
+            if AltName.is_valid_alt_name(group):
+                alt = AltName.ALT
+                break
+        if alt is None:
+            i = -1  # so that it does not interfere with name extraction
+
+        for j, group in enumerate(groups):
+            if ReadDirection.is_valid_direction(group):
+                read_direction = ReadDirection.from_string(group)
+                break
+        if read_direction is None:
+            raise ValueError(f"Unrecognized read direction in primer name: {original_string}")
+
+        for k, group in enumerate(groups):
+            if group.isdigit():
+                count = int(group)
+                break
+        if count is None:
+            raise ValueError(f"Primer number not found in primer name: {original_string}")
+
+        name_parts = [group for idx, group in enumerate(groups) if idx not in (i, j, k)]
+
+        name = "_".join(name_parts) if name_parts else "unknown"
+
+        return PrimerInfo(name=name, count=count, alt=alt, direction=read_direction, original_string=original_string)
+
+    def _fallback_parse(self, primer_name: str) -> PrimerInfo:
+
+        name, count, alt, read_direction = None, None, None, None
+        parts = primer_name.split("_")
+        if len(parts) <= 2:
+            raise ValueError(f"Primer name {primer_name} does not match expected formats.")
+
+        if len(parts) == 3:
+            name, count_str, direction_str = parts
+            return PrimerInfo(
+                name=name,
+                count=int(count_str),
+                alt=None,
+                direction=ReadDirection.from_string(direction_str),
+                original_string=primer_name,
+            )
+        elif len(parts) == 4:
+            name, count, part3, part4 = parts
+            if AltName.is_valid_alt_name(part3):
+                alt = AltName.ALT
+                read_direction = ReadDirection.from_string(part4)
+            elif AltName.is_valid_alt_name(part4):
+                alt = AltName.ALT
+                read_direction = ReadDirection.from_string(part3)
+            else:
+                raise ValueError(f"Primer name {primer_name} does not match expected formats.")
+            return PrimerInfo(
+                name=name,
+                count=int(count),
+                alt=alt,
+                direction=read_direction,
+                original_string=primer_name,
+            )
+        else:
+            raise ValueError(f"Primer name {primer_name} does not match expected formats.")
 
 
 class AmpliconCovs(BaseScript):
@@ -55,6 +238,7 @@ class AmpliconCovs(BaseScript):
         super().__init__(input, output)
         self.coverages = coverages
         self.key = key
+        self.parser = PrimerNameParser()  # Initialize the parser
 
     @classmethod
     def add_arguments(cls, parser: ArgumentParser) -> None:
@@ -83,7 +267,6 @@ class AmpliconCovs(BaseScript):
         """
         primers = self._open_tsv_file(self.input)
         primers = self._split_primer_names(primers)
-        primers["direction"] = primers["direction"].apply(self._standardize_direction)
         amplicon_sizes = self._calculate_amplicon_start_end(primers)
 
         coverages = self._open_tsv_file(self.coverages, index_col=0)
@@ -108,58 +291,28 @@ class AmpliconCovs(BaseScript):
             raise ValueError(f"File {filename} contains NaN values.")
         return df
 
-    @staticmethod
-    def _split_primer_names(df: pd.DataFrame) -> pd.DataFrame:
+    def _split_primer_names(self, df: pd.DataFrame) -> pd.DataFrame:
         """
-        Splits the primer names in the DataFrame into separate columns.
+        Splits the primer names in the DataFrame into separate columns using the parser.
         """
 
         def _process_primer_row(row: pd.Series) -> pd.Series:
-            split_names = row["split_name_list"]
+            primer_name = row[3]  # Get the primer name from column 3
 
-            # we need to enforce the correct dtypes and this is the easiest way
-            row["name"] = ""
-            row["count"] = 0
-            row["alt"] = ""
-            row["direction"] = ""
+            # Use the parser to parse the primer name
+            parser_primer_name = self.parser.parse(primer_name)
 
-            if len(split_names) == 4:
-                if ReadDirection.is_valid_direction(split_names[3]) and AltName.is_valid_alt_name(split_names[2]):
-                    row["name"], row["count"], row["alt"], row["direction"] = split_names
-                elif ReadDirection.is_valid_direction(split_names[2]) and AltName.is_valid_alt_name(split_names[3]):
-                    row["name"], row["count"], row["direction"], row["alt"] = split_names
-                else:
-                    raise ValueError(f"Primer name {row[3]} does not match expected format with alt and direction.")
-            elif len(split_names) == 3:
-                row["name"], row["count"], row["alt"], row["direction"] = (
-                    split_names[0],
-                    split_names[1],
-                    "",
-                    split_names[2],
-                )
-            else:
-                raise ValueError(f"Primer name {row[3]} does not contain the expected number of underscores.")
+            # Set the parsed values using attribute access
+            row["name"] = parser_primer_name.name
+            row["count"] = int(parser_primer_name.count)
+            row["alt"] = parser_primer_name.alt
+            row["direction"] = parser_primer_name.direction
 
-            row["count"] = int(row["count"])  # Ensure count is an integer
-            row["name"] = str(row["name"])
-            row["alt"] = str(row["alt"]) if row["alt"] else ""
-            row["direction"] = str(row["direction"])
             return row
 
-        df["split_name_list"] = df[3].str.split("_", expand=False)
+        # Apply the parsing function to each row
         df = df.apply(_process_primer_row, axis=1)
-        return df.drop(columns=["split_name_list"])
-
-    @staticmethod
-    def _standardize_direction(direction: str) -> str:
-        """
-        Standardizes the given read direction string to a standardized direction name.
-        """
-
-        for read_direction in ReadDirection:
-            if direction.upper() in read_direction.value:
-                return read_direction.name
-        raise ValueError(f"Unrecognized read direction: {direction}")
+        return df
 
     @staticmethod
     def _calculate_amplicon_start_end(primers: pd.DataFrame) -> pd.DataFrame:
