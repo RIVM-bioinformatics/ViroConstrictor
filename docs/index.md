@@ -35,6 +35,7 @@ ViroConstrictor is available under the [AGPLv3 licence](https://www.gnu.org/lice
 * Gino Raaijmakers
 * Iveta Krskova
 * Annelies Kroneman
+* Margo Raijmakers
 
 
 If you use ViroConstrictor in your work, please cite:

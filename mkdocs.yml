@@ -9,14 +9,20 @@ nav:
   - Home: index.md
   - Getting started:
     - Download & installation: installation.md
-    - Global configuration: global-config.md
+    - Configuration: configuration.md
+    - Quickstart: quickstart.md
   - Usage: 
-    - manual.md
+    - Manual: manual.md
     - Formatting inputs: input-formatting.md
+    - Analysis types:
+      - Single-target-analysis: single-target-analysis.md
+      - Multi-target-analysis: multi-target-analysis.md
+      - Multi-reference-analysis: multi-reference-analysis.md
     - Working with analysis presets: presets.md
     - Explanation of amplicon types: amplicons.md
-    - Working with multiple references: multi-reference.md
-
+  - Architecture:
+    - Architecture overview: architecture.md
+    - Software dependencies: dependencies.md
   - Changelog: changelog.md
 
 # Basic config theming config settings
