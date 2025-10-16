@@ -107,7 +107,7 @@ class PrimerInfo:
 
     name: str
     count: int
-    alt: AltName | None
+    alt: bool
     direction: ReadDirection
     original_string: str
 
@@ -146,14 +146,15 @@ class PrimerNameParser:
     def _extract_info(self, match: re.Match[str], original_string: str) -> PrimerInfo:
         groups: tuple[str, ...] = match.groups()
 
-        alt, read_direction, count = None, None, None
+        alt = False
+        read_direction, count = None, None
         i, j, k = None, None, None
 
         for i, group in enumerate(groups):
             if AltName.is_valid_alt_name(group):
-                alt = AltName.ALT
+                alt = True
                 break
-        if alt is None:
+        if not alt:
             i = -1  # so that it does not interfere with name extraction
 
         for j, group in enumerate(groups):
