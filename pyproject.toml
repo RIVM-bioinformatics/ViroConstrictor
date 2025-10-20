@@ -25,15 +25,15 @@ classifiers = [
     "Intended Audience :: Science/Research",
 ]
 dependencies = [
-    "urllib3==1.26.*",
-    "biopython==1.81",
+    "urllib3==2.5.0",
+    "biopython==1.85.*",
     "drmaa==0.7.9",
-    "fpdf2==2.5.1",
-    "pandas>=1.4.2",
-    "openpyxl==3.1.*",
-    "pyyaml==6.0",
-    "rich==13.*",
-    "AminoExtract==0.3.1",
+    "fpdf2==2.8.4",
+    "pandas==2.3.3",
+    "openpyxl==3.1.5",
+    "pyyaml==6.0.3",
+    "rich==13.9.4",
+    "AminoExtract==0.4.0",
 ]
 
 [project.scripts]
