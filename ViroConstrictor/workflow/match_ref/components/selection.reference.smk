@@ -75,8 +75,8 @@ rule group_and_rename_refs:
         PYTHONPATH={params.pythonpath} \
         python {params.script} \
         --input "empty" \
-        --input_refs "{input.ref}" \
-        --input_stats "{input.stats}" \
+        --input_refs {input.ref} \
+        --input_stats {input.stats} \
         --output {output.groupedrefs} \
         --output_stats {output.groupedstats} \
         --sample {wildcards.sample} >> {log} 2>&1
