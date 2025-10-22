@@ -54,10 +54,7 @@ class GenBank:
 
         threshold = 0.85  # similarity threshold
         ref_org = organisms[0]
-        if any(
-            difflib.SequenceMatcher(None, ref_org, org).ratio() < threshold
-            for org in organisms
-        ):
+        if any(difflib.SequenceMatcher(None, ref_org, org).ratio() < threshold for org in organisms):
             raise ValueError(
                 "Not all GenBank records have sufficiently similar organism annotations.\n"
                 "Either edit the GenBank file to have similar organism annotation for all records (strains don't count),\n"
@@ -80,7 +77,7 @@ class GenBank:
         with open(file_path.with_suffix(".gff"), "w", encoding="utf-8") as gff_file:
             GFF.write(records, gff_file)
         gff_path = file_path.with_suffix(".gff")
-        
+
         target = ""
         if emit_target:
             target = GenBank._parse_target(records)
