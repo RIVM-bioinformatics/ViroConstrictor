@@ -5,10 +5,11 @@ ViroConstrictor supports multiple reference sequences in a single analysis run, 
 ## When to Use Multi-Reference Analysis
 
 Use multi-reference analysis when you have:
-- Samples containing multiple pathogens
-- Multiple strains of the same pathogen
-- Uncertainty about which reference best fits your samples
-- Segmented viruses with multiple subtypes (e.g., Influenza)
+
+* Samples containing multiple pathogens
+* Multiple strains of the same pathogen
+* Uncertainty about which reference best fits your samples
+* Segmented viruses with multiple subtypes (e.g., Influenza)
 
 ## Reference File Preparation
 
@@ -35,8 +36,9 @@ Multiple references must be combined into a single reference FASTA file containi
 **How it works**: ViroConstrictor evaluates all provided references and selects the one that best matches each sample's data.
 
 **Requirements**:
-- Multi-reference FASTA file
-- Enable with `--match-ref` flag or set `Match-ref=True` in samplesheet
+
+* Multi-reference FASTA file
+* Enable with `--match-ref` flag or set `Match-ref=True` in samplesheet
 
 <!-- TODO: Explain the criteria used for "best" reference selection -->
 
@@ -61,18 +63,20 @@ Multiple references must be combined into a single reference FASTA file containi
 **How it works**: ViroConstrictor selects the best-matching reference for each genome segment individually.
 
 **Requirements**:
-- Multi-reference FASTA with special header formatting
-- Enable with both `--match-ref` and `--segmented` flags
-- Or set both `Match-ref=True` and `Segmented=True` in samplesheet
+
+* Multi-reference FASTA with special header formatting
+* Enable with both `--match-ref` and `--segmented` flags
+* Or set both `Match-ref=True` and `Segmented=True` in samplesheet
 
 #### Header Formatting for Segmented Viruses
 
 **Required format**: `>{personal_identifier} {segment_name}|{segment_subtype}|{extra_information}`
 
 **Key points**:
-- `{segment_name}` must be consistent across all variants of the same segment
-- This ensures proper result folder organization
-- Headers are modified during analysis for correct output structure
+
+* `{segment_name}` must be consistent across all variants of the same segment
+* This ensures proper result folder organization
+* Headers are modified during analysis for correct output structure
 
 <!-- TODO: Add validation tips for segmented virus header formatting -->
 

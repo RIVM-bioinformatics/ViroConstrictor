@@ -15,20 +15,24 @@ ViroConstrictor supports three amplicon types: **End-to-End**, **End-to-Mid**, a
 **Definition**: Reads cover the full length of an amplicon from primer to primer.
 
 **Characteristics**:
-- Primers are present at both ends of reads
-- Reads span the complete amplicon length
-- Both forward and reverse primers need removal
 
-**Common platforms**: 
-- Nanopore sequencing
-- Illumina MiSeq (long amplicons)
+* Primers are present at both ends of reads
+* Reads span the complete amplicon length
+* Both forward and reverse primers need removal
 
-**Primer removal logic**: 
-- Both forward and reverse reads should start at a forward primer and end at a reverse primer
-- Read orientation doesn't affect primer detection
-- Primers removed from both ends of each read
+**Common platforms**:
+
+* Nanopore sequencing
+* Illumina MiSeq (long amplicons)
+
+**Primer removal logic**:
+
+* Both forward and reverse reads should start at a forward primer and end at a reverse primer
+* Read orientation doesn't affect primer detection
+* Primers removed from both ends of each read
 
 <!-- TODO: Add guidance on minimum/maximum amplicon lengths for end-to-end -->
+<!-- TODO: Add explanatory images to visualize how this works -->
 
 ---
 
@@ -37,21 +41,25 @@ ViroConstrictor supports three amplicon types: **End-to-End**, **End-to-Mid**, a
 **Definition**: Reads partially cover amplicons and overlap at the amplicon midpoint.
 
 **Characteristics**:
-- Primers present at only one end of reads
-- Forward reads start at forward primers
-- Reverse reads start at reverse primers
-- Reads meet/overlap in the middle of amplicons
+
+* Primers present at only one end of reads
+* Forward reads start at forward primers
+* Reverse reads start at reverse primers
+* Reads meet/overlap in the middle of amplicons
 
 **Common platforms**:
-- Illumina MiSeq (standard paired-end)
-- Most paired-end short-read platforms
+
+* Illumina MiSeq (standard paired-end)
+* Most paired-end short-read platforms
 
 **Primer removal logic**:
-- Forward reads: primer removal from 5' end only
-- Reverse reads: primer removal from 5' end only (reverse primer)
-- No primer removal from 3' ends
+
+* Forward reads: primer removal from 5' end only
+* Reverse reads: primer removal from 5' end only (reverse primer)
+* No primer removal from 3' ends
 
 <!-- TODO: Explain how overlap quality affects consensus calling -->
+<!-- TODO: Add explanatory images to visualize how this works -->
 
 ---
 
@@ -60,19 +68,22 @@ ViroConstrictor supports three amplicon types: **End-to-End**, **End-to-Mid**, a
 **Definition**: Multiple smaller reads cover single larger amplicons, with reads potentially scattered across the amplicon length.
 
 **Characteristics**:
-- Reads may or may not contain primer sequences
-- Not all reads start at primer positions
-- Reads can be internal to amplicons
-- Requires proximity-based primer detection
+
+* Reads may or may not contain primer sequences
+* Not all reads start at primer positions
+* Reads can be internal to amplicons
+* Requires proximity-based primer detection
 
 **Common platforms**:
-- Illumina NextSeq (shorter reads, longer amplicons)
-- Short-read platforms with large amplicons
+
+* Illumina NextSeq (shorter reads, longer amplicons)
+* Short-read platforms with large amplicons
 
 **Primer removal logic**:
-- Primers removed only from reads directly linked to primer regions
-- Uses "fragment lookaround size" (default: 10bp) to determine primer proximity
-- Reads starting/ending within 10bp of primer positions are considered primer-containing
+
+* Primers removed only from reads directly linked to primer regions
+* Uses "fragment lookaround size" (default: 10bp) to determine primer proximity
+* Reads starting/ending within 10bp of primer positions are considered primer-containing
 
 **Advanced option**: The fragment lookaround size can be adjusted with `--fragment-lookaround-size` flag if needed.
 
@@ -106,9 +117,10 @@ ViroConstrictor supports three amplicon types: **End-to-End**, **End-to-Mid**, a
 Traditional terms like "paired-end/single-end" or "short/long read" don't always convey the specific information AmpliGone needs for primer removal. 
 
 **Example scenarios**:
-- Short reads might have primers on both ends (End-to-End) or just one end (End-to-Mid)
-- Platform alone doesn't determine amplicon coverage patterns
-- Experimental design varies independently of sequencing technology
+
+* Short reads might have primers on both ends (End-to-End) or just one end (End-to-Mid)
+* Platform alone doesn't determine amplicon coverage patterns
+* Experimental design varies independently of sequencing technology
 
 The amplicon type system provides precise information about primer locations without requiring multiple command-line arguments or platform-specific assumptions.
 
