@@ -7,7 +7,7 @@ if config["platform"] in ["nanopore", "iontorrent"] or (
 
     rule qc_raw:
         input:
-            lambda wc: SAMPLES[wc.sample]["INPUTFILE"],
+            lambda wildcards: SAMPLES[wildcards.sample]["INPUTFILE"],
         output:
             html=f"{datadir}{qc_pre}" "{sample}_fastqc.html",
             zip=f"{datadir}{qc_pre}" "{sample}_fastqc.zip",
@@ -51,7 +51,7 @@ if config["platform"] == "illumina" and config["unidirectional"] is False:
             f"{logdir}{bench}" "QC_raw_data_{sample}_{read}.txt"
         threads: config["threads"]["QC"]
         resources:
-            mem_mb=lambda: low_memory_job(),
+            mem_mb=low_memory_job,
             runtime=55,
         params:
             output_dir=f"{datadir}{qc_pre}",
