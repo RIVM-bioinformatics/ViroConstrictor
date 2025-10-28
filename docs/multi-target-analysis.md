@@ -5,10 +5,11 @@ Multi-target analysis allows you to apply different settings to each sample with
 ## When to Use Multi-Target Analysis
 
 Use multi-target analysis when you have:
-- Multiple viral targets in the same batch
-- Different primer sets for different samples
-- Varying analysis parameters (coverage thresholds, mismatch rates)
-- Mixed experimental protocols
+
+* Multiple viral targets in the same batch
+* Different primer sets for different samples
+* Varying analysis parameters (coverage thresholds, mismatch rates)
+* Mixed experimental protocols
 
 ## Samplesheet Format
 
@@ -18,9 +19,10 @@ Multi-target analysis requires a samplesheet in Excel (`.xlsx`), CSV (`.csv`), o
 
 !!! attention "Mandatory Columns"
     The following columns are required and analysis will fail without them:
-    - **Sample**: Must match FASTQ filenames exactly
-    - **Virus**: Viral target name (triggers presets if available)
-    - **Reference**: Path to reference FASTA file
+
+    * **Sample**: Must match FASTQ filenames exactly
+    * **Virus**: Viral target name (triggers presets if available)
+    * **Reference**: Path to reference FASTA file
 
 ### Optional Columns
 
