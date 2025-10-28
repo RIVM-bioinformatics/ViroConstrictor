@@ -1,26 +1,68 @@
-# Formatting your inputs
+# Formatting Your Input Files
 
-For optimal results and accurate data analysis, it is important that the various inputs you provide are formatted correctly. Input formatting is particularly crucial for the primer file, the reference FASTA, and the GFF file.
+For optimal results and accurate analysis, it is important that your input files are formatted correctly. This guide covers the formatting requirements for primers, reference sequences, and annotation files.
 
-Please note that ViroConstrictor does not support circular reference data. Analysing a circular virus, such as HPV, is possible as long as the analysis uses a linear input reference with matching primers and GFF.
+!!! warning "Circular Reference Limitation"
+    ViroConstrictor does not support circular reference data. To analyze circular viruses (such as HPV), use a linear input reference with matching primers and annotations.
 
 ---
 
-## Formatting your input primers
+## Input File Types Overview
+
+ViroConstrictor accepts several input file formats:
+
+- **Primers**: FASTA or BED format
+- **Reference sequences**: FASTA or GenBank format  
+- **Genomic features**: GFF3 format (optional when using GenBank)
+
+## Reference Sequences
+
+### FASTA Format
+
+The formatting of your reference FASTA is straightforward, with no strict formatting requirements. However, ensure that your reference sequence has a proper identifier in the FASTA header, as this identifier is used during analysis.
+
+<!-- TODO: Add example of good vs bad FASTA headers -->
+
+Nucleotide ambiguity codes in your reference FASTA are supported but generally discouraged, as they can negatively affect the primer removal process. You will receive a warning during pre-processing if ambiguous nucleotides are detected in your reference sequence.
+
+If your reference FASTA contains multiple sequences, analysis will be performed for each individual sequence, split based on the reference identifier. This feature can be useful for analysing segmented viruses such as Influenza.
+
+### GenBank Format
+
+ViroConstrictor also accepts GenBank files (`.gb` or `.gbk`) as reference input. GenBank files contain both the reference sequence and genomic feature annotations in a single file, which offers several advantages:
+
+- **Simplified workflow**: No need to provide separate GFF files
+- **Integrated annotations**: Features like genes, CDS, and other annotations are included
+- **Automatic feature extraction**: ViroConstrictor automatically extracts genomic features for amino acid translation
+- **No viral target required**: When using GenBank format, you don't need to specify a viral target
+
+When using a GenBank file, simply provide it via the `--reference` parameter, and set `--features NONE` since the annotations are already included in the GenBank file.
+
+<!-- TODO: Consider adding guidance on where to find quality GenBank files (NCBI, etc.) -->
+
+---
+
+## Primer Files
 
 ViroConstrictor accepts two primer input formats: [BED](https://en.wikipedia.org/wiki/BED_(file_format)) and [FASTA](https://en.wikipedia.org/wiki/FASTA_format). The formatting of primer names directly impacts your analysis results.
 
-### Primers in FASTA format
+<!-- TODO: Explain what happens if primer names are formatted incorrectly -->
+
+### FASTA Format
 
 For optimal results, ensure that the FASTA headers in your primer file are formatted correctly.
 
-The FASTA headers for your primers should follow this format:  
-`>{primer-name}_{primer-number}_{orientation}`
+**Required format**: `>{primer-name}_{primer-number}_{orientation}`
 
-It is important that primers forming a single amplicon share the same primer name and number.
+**Key requirements**:
+- Primers forming a single amplicon must share the same primer name and number
+- Use consistent orientation keywords
 
-Orientation keywords for forward primers include: *"LEFT"*, *"PLUS"*, *"POSITIVE"*, and *"FORWARD"*.  
-Orientation keywords for reverse primers include: *"RIGHT"*, *"MINUS"*, *"NEGATIVE"*, and *"REVERSE"*.
+**Accepted orientation keywords**:
+- **Forward primers**: "LEFT", "PLUS", "POSITIVE", "FORWARD"
+- **Reverse primers**: "RIGHT", "MINUS", "NEGATIVE", "REVERSE"
+
+<!-- TODO: Clarify whether orientation keywords are case-sensitive -->
 
 !!! example "Example of formatted primer names from the ArticV3 SARS-CoV-2 sequencing protocol"
     ```markdown
@@ -34,11 +76,10 @@ Orientation keywords for reverse primers include: *"RIGHT"*, *"MINUS"*, *"NEGATI
     TAAGGATCAGTGCCAAGCTCGT
     ```
 
-If your protocol includes alternative primers, ensure the FASTA header contains the "alt" keyword in the following format:
+**Alternative primers format**: `>{primer-name}_{primer-number}_alt_{orientation}`
 
-`>{primer-name}_{primer-number}_alt_{orientation}`  
-
-The "alt" keyword must appear in the middle and not at the end of the header.
+!!! important "Alternative Primer Placement"
+    The "alt" keyword must appear in the middle of the header, not at the end.
 
 !!! example "Example of formatted primer names from the ArticV3 SARS-CoV-2 sequencing protocol with alternative primers included"
     ```markdown
@@ -64,23 +105,16 @@ The "alt" keyword must appear in the middle and not at the end of the header.
     ACTGTAGCTGGCACTTTGAGAGA
     ```
 
-### Primers in BED format
+### BED Format
 
-As with FASTA, it is important that the primer name in the BED file is formatted properly to determine which primers form a single amplicon. The 'strand' column is used to determine the orientation of the primer.
+BED format provides coordinate-based primer information. The primer name formatting follows the same rules as FASTA format.
 
-Please ensure the following:
+**Key requirements**:
+- **Column 1** (reference ID): Must match the identifier in your reference FASTA
+- **Column 4** (primer name): Use format `{primer-name}_{primer-number}_{orientation}` (or `{primer-name}_{primer-number}_alt_{orientation}` for alternatives)
+- **Column 6** (strand): `+` for forward primers, `-` for reverse primers
 
-* The first column (the reference ID column) must contain the identifier that matches the identifier in your reference FASTA.
-
-* The fourth column, which contains the primer name, should follow this format:  
-  `{primer-name}_{primer-number}_{orientation}`  
-    
-    !!! info ""
-        If your protocol includes alternative primers, ensure the primer name includes the "alt" keyword as follows:  
-        `{primer-name}_{primer-number}_alt_{orientation}`
-
-* The sixth column (the strand column) indicates the primer orientation:  
-  `+` for forward and `-` for reverse, relative to the reference.
+<!-- TODO: Add guidance on coordinate accuracy and 0-based vs 1-based indexing -->
 
 The table below illustrates what your BED file with primer information should look like (note that a real BED file does not include headers):
 
@@ -92,20 +126,25 @@ The table below illustrates what your BED file with primer information should lo
 | MN908947.3   | 644              | 666             | ncov-2019_3_LEFT   | .     | +      |
 | MN908947.3   | 705              | 727             | ncov-2019_2_RIGHT  | .     | -      |
 
-## Formatting your input reference FASTA
+---
 
-The formatting of your reference FASTA is straightforward, with no strict formatting requirements. However, ensure that your reference sequence has a proper identifier in the FASTA header, as this identifier is used during analysis.
+## Genomic Features (GFF3 Files)
 
-Nucleotide ambiguity codes in your reference FASTA are supported but generally discouraged, as they can negatively affect the primer removal process. You will receive a warning during pre-processing if ambiguous nucleotides are detected in your reference sequence.
+GFF3 files provide genomic feature annotations and are optional when using GenBank references.
 
-If your reference FASTA contains multiple sequences, analysis will be performed for each individual sequence, split based on the reference identifier. This feature can be useful for analysing segmented viruses such as Influenza.
+**When to use GFF3 files**:
+- Using FASTA reference files
+- Need amino acid translations from consensus sequences
+- Want custom feature annotations
 
-## Formatting your input GFF
+**Formatting requirements**:
+- Include either "Name" or "ID" attribute in the attributes column
+- Example: `Name="Nucleocapsid"` or `ID="N"`
+- This information groups extracted amino acid sequences during analysis
 
-Formatting the input GFF is usually optional and minimal.
+<!-- TODO: Add examples of common GFF3 formatting issues and how to fix them -->
 
-If you want proper extraction and translation of amino acids from the generated consensus sequence, ensure that the input GFF includes either a "Name" or an "ID" attribute in the attributes column.
-
-For example: `Name="Nucleocapsid"` or `ID="N"` in the GFF attributes column.
-
-This information is used to group the extracted amino acid sequences from samples during analysis.
+**When GFF3 files are not needed**:
+- Using GenBank reference files (annotations included)
+- Only interested in nucleotide consensus sequences
+- Using analysis presets that don't require amino acid translations
