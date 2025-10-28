@@ -3,13 +3,13 @@
 When you first run ViroConstrictor you will be asked to set some global configuration settings.  
 These settings are used every time you execute ViroConstrictor and dictate how the analysis, or even the entire application, should behave.
 
+ViroConstrictor stores these configuration settings in `~/.ViroConstrictor_defaultprofile.ini` so you won't have to provide them every time you run an analysis.
+
 There are three main sections of global configuration that need to be set up:
 
 1. The [computing settings](#setting-up-computing-settings) that ViroConstrictor uses when running the analysis.
 2. The [reproducibility settings](#setting-up-reproducibility-settings) that ensure the analysis is reproducible.
-3. The [updating settings](#updating-settings) for the ViroConstrictor application.
-
-ViroConstrictor will store the information you provide during this initial setup so you won't have to provide it every time you run an analysis.
+3. The [general settings](#general-settings) for the ViroConstrictor application.
 
 ## Setting up computing settings
 
@@ -24,6 +24,17 @@ The options are <u>local</u> or <u>grid</u> mode.
 
 ??? Question "What is grid execution mode?"
     Grid execution mode means that every step of the ViroConstrictor analysis will be performed on other computers within the computing infrastructure. This allows a large number of analysis steps to be performed in parallel.
+
+!!! tip "Automatic Grid System Detection"
+    ViroConstrictor can automatically detect available grid scheduling systems on your computing environment. The detection follows this priority order:
+
+    1. **Command-line argument**: If you specify a scheduler via command-line options
+    2. **Configuration file**: Settings from your `~/.ViroConstrictor_defaultprofile.ini` file
+    3. **Environment detection**: Automatic detection of SLURM (via `sbatch` command or `SLURM_JOB_ID` environment variable) or LSF (via `bsub` command or `LSB_JOBID` environment variable)
+    4. **DRMAA interface**: Detection through the Distributed Resource Management Application API
+    5. **Local mode**: Falls back to local execution if no grid system is detected
+
+    This automatic detection ensures ViroConstrictor runs optimally in your computing environment without manual configuration.
 
 If you choose the grid computing mode, you'll be asked a follow-up question regarding the computing queue.  
 High-performance computing infrastructures are often set up with task queues for their users. With these queues, it's possible to determine which (remote) computers execute the various analysis tasks and prioritize some tasks over others.  
@@ -41,7 +52,7 @@ It is recommended to use a dedicated directory for this purpose. If no path is p
     This way, containers can be reused and all users can benefit from them, resulting in the analysis being reproducible for everyone.  
     Additionally, please ensure that the path you provide is accessible by all users and that it is not automatically cleaned up by the system.
 
-## Updating settings
+## General settings
 
 ViroConstrictor is able to update itself to newer *minor* and *patch* versions.  
 During the initial configuration setup, you will be asked about your preferences regarding the auto-updating features.
