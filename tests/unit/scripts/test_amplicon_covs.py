@@ -9,7 +9,7 @@ from ViroConstrictor.workflow.main.scripts.amplicon_covs import AmpliconCovs
 
 @contextmanager
 def temporarily_modify_file(file_path: Path, new_line: str) -> Iterator[None]:
-    """Context manager that temporarily modifies the file in a file for testing purposes."""
+    """Context manager that temporarily modifies the contents of a file for testing purposes."""
     with open(file_path, "r", encoding="utf-8") as file:
         lines = file.readlines()
 
