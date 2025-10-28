@@ -287,7 +287,7 @@ class AmpliconCovs(BaseScript):
         """
         Opens a TSV file and returns its contents as a pandas DataFrame.
         """
-        df = pd.read_csv(filename, sep="\t", header=None, index_col=index_col)
+        df = pd.read_csv(filename, sep="\t", header=None, index_col=index_col, keep_default_na=False)
         if df.isnull().to_numpy().any():
             raise ValueError(f"File {filename} contains NaN values.")
         return df
