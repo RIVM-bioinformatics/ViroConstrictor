@@ -62,15 +62,17 @@ The main workflow is organized into logical processing stages:
 ```mermaid
 graph TD
     A[Input FASTQ Files] --> B[Pre-cleaning QC]
-    B --> C[Adapter Removal]
+    A --> C[Adapter Removal]
     C --> D[Data Filtering]
     D --> E[Primer Removal]
     E --> F[Post-cleaning QC]
-    F --> G[Reference Alignment]
+    E --> G[Reference Alignment]
     G --> H[Consensus Calling]
     H --> I[Feature Extraction]
     I --> J[Report Generation]
     J --> K[Final Results]
+    B --> J
+    F --> J
 ```
 
 ### Match-Reference Flow
