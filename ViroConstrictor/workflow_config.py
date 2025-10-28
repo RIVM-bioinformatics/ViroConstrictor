@@ -48,6 +48,17 @@ def correct_unidirectional_flag(samples_dict: dict[Hashable, Any], flags: Namesp
                 "This may lead to unexpected behavior. Setting unidirectional flag to False."
             )
             return False
+    if flags.platform == "illumina" and flags.unidirectional is False:
+        # check if the samples_dict has the INPUTFILE key, if it does, set the unidirectional flag to True
+        if any("INPUTFILE" in sample for sample in samples_dict.values()):
+            log.warning(
+                "Unidirectional flag is set to False, but only single-end illumina INPUTFILEs were found. "
+                "This may lead to unexpected behavior. Setting unidirectional flag to True."
+            )
+            return True
+        # check if the samples_dict has both R1 and R2 keys, if it does, set the unidirectional flag to False
+        elif any("R1" in sample and "R2" in sample for sample in samples_dict.values()):
+            return False
     return True  # Default to True if no specific conditions are met
 
 
