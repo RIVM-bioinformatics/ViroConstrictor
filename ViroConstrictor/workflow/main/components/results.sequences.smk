@@ -114,9 +114,13 @@ rule Translate_AminoAcids:
     benchmark:
         f"{logdir}{bench}Translate_AA_" "{Virus}.{RefID}.{sample}.txt"
     params:
-        feature_type=lambda wc: get_preset_parameter(
-            preset_name=SAMPLES[wc.sample]["PRESET"],
-            parameter_name="AminoExtract_FeatureType",
+        feature_type=lambda wc: " ".join(
+            [
+            get_preset_parameter(
+                preset_name=SAMPLES[wc.sample]["PRESET"],
+                parameter_name="AminoExtract_FeatureType",
+            ),
+            ]
         ),
         aminoextract_settings=lambda wc: get_preset_parameter(
             preset_name=SAMPLES[wc.sample]["PRESET"],
