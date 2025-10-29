@@ -122,7 +122,7 @@ def collapse_preset_group(preset_name: str, stages: List[str], stage_identifier:
     return temp_dict
 
 
-def get_preset_parameter(preset_name: str, parameter_name: str, stage_identifier: str = "") -> str:
+def get_preset_parameter(preset_name: str, parameter_name: str, stage_identifier: str = "") -> Any:
     """
     Flexibly get predefined tool-parameters from one or more presets.
 
