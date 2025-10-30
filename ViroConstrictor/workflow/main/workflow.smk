@@ -99,10 +99,10 @@ def construct_all_rule(p_space):
 
 wildcard_constraints:
     # regular expression to match only alphanumeric characters, underscores, dashes, and dots. exclude '/' and only match the first part of the string.
-    RefID="[\w\-\.\d]+",
-    Virus="[\w\-\.\d]+",
+    RefID=r"[\w\-\.\d]+",
+    Virus=r"[\w\-\.\d]+",
     # regular expression to match only alphanumeric characters, underscores, dashes. exclude '/' and only match the first part of the string.
-    sample="[\w\-\.\d]+",
+    sample=r"[\w\-\.\d]+",
 
 
 localrules:
