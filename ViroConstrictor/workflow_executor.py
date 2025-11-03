@@ -10,7 +10,6 @@ from ViroConstrictor.scheduler import Scheduler
 from ViroConstrictor.workflow_config import WorkflowConfig
 
 
-# TODO: Modify this method to re-add remote execution settings if they are set in the CLIparser or config file.
 def run_snakemake_workflow(inputs_obj: CLIparser, stage: str, scheduler: Scheduler) -> tuple[bool, WorkflowConfig]:
     """
     Run the snakemake workflow for the specified stage.
