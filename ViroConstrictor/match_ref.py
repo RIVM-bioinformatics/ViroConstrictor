@@ -93,7 +93,6 @@ def process_match_ref(parsed_inputs: CLIparser, scheduler: Scheduler) -> CLIpars
 
     log.info(f"{'='*20} [bold orange_red1] Starting Match-reference process [/bold orange_red1] {'='*20}")
 
-    # TODO: re-add the functionality to correctly work with remote execution (a HPC), such as DRMAA, SLURM, or LSF
     status, used_workflow_config = run_snakemake_workflow(inputs_obj_match_ref, stage="MR", scheduler=scheduler)
 
     workflow_state: Literal["Failed", "Success"] = "Failed" if status is False else "Success"
