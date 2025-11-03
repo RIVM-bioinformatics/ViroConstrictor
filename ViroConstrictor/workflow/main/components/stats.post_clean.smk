@@ -85,15 +85,7 @@ rule multiqc_report:
         mem_mb=high_memory_job,
         runtime=55,
     params:
-        conffile=(
-            workflow_script_path("configs/multiqc.yaml")
-            if (
-                DeploymentMethod.CONDA
-                in workflow.deployment_settings.deployment_method
-            )
-            is True
-            else "/configs/multiqc.yaml"
-        ),
+        conffile=workflow_script_path("configs/multiqc.yaml"),
         outdir=res,
     shell:
         """
