@@ -357,7 +357,7 @@ def _assign_resources_slurm(default_resource_setting: DefaultResources, queue: s
     # TODO: we don't have a SLURM cluster to properly test this on, will need to verify this later.
     if queue is None:
         log.error(
-            "HPC/Grid mode is set with SLURM as the job-scheduler, but no partition/queuename name could be found in the user configuration."
+            "HPC/Grid mode is set with SLURM as the job-scheduler, but no partition/queue name could be found in the user configuration."
             f"Please re-create the user configuration file with a valid partition or queue name using `{__prog__} --reset-user-config`."
         )
         sys.exit(1)
