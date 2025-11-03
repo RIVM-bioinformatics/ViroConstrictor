@@ -1,5 +1,6 @@
 import multiprocessing
 import os
+import yaml
 import sys
 from argparse import Namespace
 from configparser import ConfigParser
@@ -27,7 +28,6 @@ from snakemake_interface_logger_plugins.settings import LogHandlerSettingsBase
 from ViroConstrictor import __prog__
 from ViroConstrictor.logging import log
 from ViroConstrictor.parser import CLIparser
-from ViroConstrictor.runconfigs import WriteYaml
 from ViroConstrictor.scheduler import Scheduler
 from ViroConstrictor.workflow.helpers.containers import (
     construct_container_bind_args,
@@ -61,6 +61,45 @@ def correct_unidirectional_flag(samples_dict: dict[Hashable, Any], flags: Namesp
             return False
     return True  # Default to True if no specific conditions are met
 
+class MaxThreadsPerType:
+    """
+    Represents the maximum number of threads to use for each type of process.
+
+    Attributes
+    ----------
+    highcpu : int
+        Maximum number of threads for high CPU processes.
+    midcpu : int
+        Maximum number of threads for medium CPU processes.
+    lowcpu : int
+        Maximum number of threads for low CPU processes.
+    assignment : bool
+        A flag to indicate if the computing mode is grid or not.
+
+    Parameters
+    ----------
+    inputs_obj : CLIparser
+        An object containing the command line input flags, specifically the number of threads.
+    configuration : ConfigParser
+        An object containing the configuration settings, including the computing mode (grid or local).
+    """
+
+    def __init__(self, inputs_obj: CLIparser, configuration: ConfigParser):
+        self.assignment = False
+        # NOTE: I expect that we need to change how 'see' the configuration of either local or grid mode, but this depends on other modifications.
+        if configuration["COMPUTING"]["compmode"] == "grid":
+            self.assignment = True
+
+        if not self.assignment:
+            # Ensure calculated CPUs are at least 1 for non-grid mode
+            threads = inputs_obj.flags.threads
+            self.highcpu = max(1, min(int(threads - 2), 12))
+            self.midcpu = max(1, min(threads // 2, 6))
+            self.lowcpu = 1
+        else:  # Grid mode
+            self.highcpu = 12
+            self.midcpu = 6
+            self.lowcpu = 2
 
 class WorkflowConfig:
     """
@@ -135,8 +174,8 @@ class WorkflowConfig:
 
         assign_threads = MaxThreadsPerType(self.inputs, self.configuration)
 
-        # TODO: dryrun only seems to work if outputsettings.dryrun is set to True, the executor is set to "dryrun" and the quietness is set to "SUBPROCESS"
-        # Quite convoluted, but this is the only combination of settings that seems to actually run the workflow in true dryrun mode.
+        ## NOTE: dryrun only seems to work if outputsettings.dryrun is set to True, the executor is set to "dryrun" and the execmode is set to "SUBPROCESS"
+            # Quite convoluted, but this is the only combination of settings that seems to actually run the workflow in true dryrun mode.
         self.output_settings = OutputSettings(
             dryrun=self.dryrun,  # this doesn't seem to actually work all that much? if dryrun is set to True, it will still run the workflow and actually execute the tasks.
             printshellcmds=False,
@@ -148,14 +187,8 @@ class WorkflowConfig:
             keep_logger=False,
             stdout=False,
             benchmark_extended=False,
-            quiet={Quietness.ALL},
+            quiet={Quietness.ALL},  # needed for dryrun to actually work properly.
         )
-
-        # TODO: set resources dynamically based on the user configuration and the possible grid flags (remote executor plugins, like LSF, SLURM or other)
-        # NOTE: current resource settings are just an example for LSF but this should be lifted to a separate function
-        default_resource_setting = DefaultResources()
-        default_resource_setting.set_resource("lsf_queue", "bio")  # this should be set dynamically based on the user config
-        # default_resource_setting.set_resource("lsf_project", "PROJECT HERE") # this should be set dynamically as well, or be left empty if no default project can be found.
 
         self.resource_settings = ResourceSettings(
             cores=(300 if self.configuration["COMPUTING"]["compmode"] == "grid" else self._set_cores(self.inputs.flags.threads)),
@@ -163,6 +196,8 @@ class WorkflowConfig:
             nodes=200 if self.configuration["COMPUTING"]["compmode"] == "grid" else 1,
             default_resources=add_default_resource_settings(scheduler=self.inputs.scheduler, user_config=self.configuration),
         )
+        
+        
 
         self.storage_settings = StorageSettings()
 
@@ -195,7 +230,7 @@ class WorkflowConfig:
         )
 
         self.scheduling_settings = SchedulingSettings(
-            scheduler="greedy",
+            scheduler="greedy", # this is not the same as the HPC scheduler, but rather the DAG scheduling algorithm used by snakemake.
         )
 
         self.workflow_settings = WorkflowSettings(exec_mode=ExecMode.SUBPROCESS if self.dryrun else ExecMode.DEFAULT)
@@ -203,7 +238,7 @@ class WorkflowConfig:
         unidirectional = correct_unidirectional_flag(self.inputs.samples_dict, self.inputs.flags)
 
         self.snakemake_base_params = {
-            "sample_sheet": WriteYaml(
+            "sample_sheet": _write_yaml(
                 self.inputs.samples_dict,
                 f"{self.inputs.workdir}/{self.samplesheetfilename}.yaml",
             ),
@@ -226,7 +261,7 @@ class WorkflowConfig:
         }
 
         self.workflow_configsettings = ConfigSettings(
-            configfiles=[Path(WriteYaml(self.snakemake_base_params, f"{self.inputs.workdir}/config.yaml"))],
+            configfiles=[Path(_write_yaml(self.snakemake_base_params, f"{self.inputs.workdir}/config.yaml"))],
         )
 
         self.remote_execution_settings = RemoteExecutionSettings(
@@ -295,70 +330,59 @@ def add_default_resource_settings(scheduler: Scheduler, user_config: ConfigParse
         # All the resources are already set in the rest of the WorkflowConfig and in the workflows themselves.
         return default_resource_setting
     if scheduler == Scheduler.LSF:
-        # required settings: lsf_queue
-        # optional settings: lsf_project
-        if queue is None:
-            log.error(
-                "HPC/Grid mode is set with LSF as the job-scheduler, but no queue name could be found in the user configuration."
-                f"Please re-create the user configuration file with a valid queue name using `{__prog__} --reset-user-config`."
-            )
-            sys.exit(1)
-        default_resource_setting.set_resource("lsf_queue", queue)
-        # the project is optional, leaving it unassigned for now.
-        # This may be an issue if the LSF cluster doesn't have a default project configured by an admin.
+        default_resource_setting = _assign_resources_lsf(default_resource_setting, queue)
     if scheduler == Scheduler.SLURM:
-        # required settings: slurm_partition (this is the same as a queue for the LSF scheduler)
-        # optional settings: slurm_account, clusters
-        # TODO: we don't have a SLURM cluster to properly test this on, will need to verify this later.
-        if queue is None:
-            log.error(
-                "HPC/Grid mode is set with SLURM as the job-scheduler, but no partition/queuename name could be found in the user configuration."
-                f"Please re-create the user configuration file with a valid partition or queue name using `{__prog__} --reset-user-config`."
-            )
-            sys.exit(1)
-        default_resource_setting.set_resource("slurm_partition", queue)
-        # the account and the clusters are optional, leaving it unassigned for now.
-        # This may be an issue if the SLURM cluster doesn't have default values for these settings configured by an admin
+        default_resource_setting = _assign_resources_slurm(default_resource_setting, queue)
+    # Add other schedulers here as needed.
+    # Currently only LSF and SLURM are implemented.
     return default_resource_setting
 
+def _assign_resources_lsf(default_resource_setting: DefaultResources, queue: str | None) -> DefaultResources:
+    # required settings: lsf_queue
+    # optional settings: lsf_project
+    if queue is None:
+        log.error(
+            "HPC/Grid mode is set with LSF as the job-scheduler, but no queue name could be found in the user configuration."
+            f"Please re-create the user configuration file with a valid queue name using `{__prog__} --reset-user-config`."
+        )
+        sys.exit(1)
+    default_resource_setting.set_resource("lsf_queue", queue)
+    # the project is optional, leaving it unassigned for now.
+    # This may be an issue if the LSF cluster doesn't have a default project configured by an admin.
+    return default_resource_setting
 
-class MaxThreadsPerType:
-    """
-    Represents the maximum number of threads to use for each type of process.
+def _assign_resources_slurm(default_resource_setting: DefaultResources, queue: str | None) -> DefaultResources:
+    # required settings: slurm_partition (this is the same as a queue for the LSF scheduler)
+    # optional settings: slurm_account, clusters
+    # TODO: we don't have a SLURM cluster to properly test this on, will need to verify this later.
+    if queue is None:
+        log.error(
+            "HPC/Grid mode is set with SLURM as the job-scheduler, but no partition/queue name could be found in the user configuration."
+            f"Please re-create the user configuration file with a valid partition or queue name using `{__prog__} --reset-user-config`."
+        )
+        sys.exit(1)
+    default_resource_setting.set_resource("slurm_partition", queue)
+    # the account and the clusters are optional, leaving it unassigned for now.
+    # This may be an issue if the SLURM cluster doesn't have default values for these settings configured by an admin
+    return default_resource_setting
 
-    Attributes
-    ----------
-    highcpu : int
-        Maximum number of threads for high CPU processes.
-    midcpu : int
-        Maximum number of threads for medium CPU processes.
-    lowcpu : int
-        Maximum number of threads for low CPU processes.
-    assignment : bool
-        A flag to indicate if the computing mode is grid or not.
-
+def _write_yaml(data: dict, filepath: str) -> str:
+    """Write a dictionary to a filepath as a YAML file.
     Parameters
     ----------
-    inputs_obj : CLIparser
-        An object containing the command line input flags, specifically the number of threads.
-    configuration : ConfigParser
-        An object containing the configuration settings, including the computing mode (grid or local).
+    data : dict
+        The data to be written to the file.
+    filepath : str
+        The path to the file you want to write to.
+
+    Returns
+    -------
+    filepath : str
+        The filepath
+
     """
-
-    def __init__(self, inputs_obj: CLIparser, configuration: ConfigParser):
-        self.assignment = False
-        # NOTE: I expect that we need to change how 'see' the configuration of either local or grid mode, but this depends on other modifications.
-        if configuration["COMPUTING"]["compmode"] == "grid":
-            self.assignment = True
-
-        threads = inputs_obj.flags.threads
-
-        if not self.assignment:
-            # Ensure calculated CPUs are at least 1 for non-grid mode
-            self.highcpu = max(1, min(int(threads - 2), 12))
-            self.midcpu = max(1, min(threads // 2, 6))
-            self.lowcpu = 1
-        else:  # Grid mode
-            self.highcpu = 12
-            self.midcpu = 6
-            self.lowcpu = 2
+    if not os.path.exists(os.path.dirname(filepath)):
+        os.makedirs(os.path.dirname(filepath))
+    with open(filepath, "w") as file:
+        yaml.dump(data, file, default_flow_style=False)
+    return filepath

@@ -35,7 +35,6 @@ def _patch_debugger_for_snakemake() -> None:
 _patch_debugger_for_snakemake()
 
 
-# TODO: Modify this method to re-add remote execution settings if they are set in the CLIparser or config file.
 def run_snakemake_workflow(inputs_obj: CLIparser, stage: str, scheduler: Scheduler) -> tuple[bool, WorkflowConfig]:
     """
     Run the snakemake workflow for the specified stage.
