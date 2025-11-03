@@ -7,5 +7,4 @@ dependencies:
   - pysam==0.23.3 
   - pip
   - pip:
-    - cython
-    - git+https://github.com/RIVM-bioinformatics/TrueConsense@dev
+    - git+https://github.com/RIVM-bioinformatics/TrueConsense@v0.5.2
