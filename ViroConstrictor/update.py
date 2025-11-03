@@ -4,10 +4,10 @@ import json
 import os
 import subprocess
 import sys
-from distutils.version import LooseVersion
 from typing import Any, NoReturn
 from urllib import request
 
+import packaging.version
 from mamba.api import install as mamba_install
 from rich import print
 
@@ -58,7 +58,7 @@ def fetch_online_metadata() -> dict[str, Any] | None:
     return json.loads(online_metadata.read().decode("utf-8"))
 
 
-def post_install(sysargs: list[str], online_version: LooseVersion) -> NoReturn:
+def post_install(sysargs: list[str], online_version: packaging.version.Version) -> NoReturn:
     """This function prints a message indicating the updated version of ViroConstrictor and runs a
     subprocess of the original ViroConstrictor command before exiting the system.
 
@@ -78,7 +78,7 @@ def post_install(sysargs: list[str], online_version: LooseVersion) -> NoReturn:
 
 # TODO: split this into smaller functions
 def update(sysargs: list[str], conf: configparser.ConfigParser) -> None:
-    local_version = LooseVersion(__version__)
+    local_version = packaging.version.parse(__version__)
     online_version = None
 
     autocontinue = conf["GENERAL"]["auto_update"] == "yes"
@@ -93,7 +93,7 @@ def update(sysargs: list[str], conf: configparser.ConfigParser) -> None:
             return
         if latest_online_release := online_metadata.get("distributions", [])[0]:
             release_metadata = latest_online_release
-            online_version = LooseVersion(release_metadata.get("version"))
+            online_version = packaging.version.parse(release_metadata.get("version"))
 
             if online_version is not None and (local_version < online_version):
                 log.info(f"Updating ViroConstrictor to latest version: [bold yellow]{online_version}[/bold yellow]")
@@ -124,7 +124,7 @@ def update(sysargs: list[str], conf: configparser.ConfigParser) -> None:
     if online_metadata is None:
         return
     if latest_online_release := online_metadata.get("distributions", [])[0]:
-        online_version = LooseVersion(latest_online_release.get("version"))
+        online_version = packaging.version.parse(latest_online_release.get("version"))
 
         if local_version < online_version:
             if (

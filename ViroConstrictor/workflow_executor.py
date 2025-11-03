@@ -1,4 +1,6 @@
+import sys
 from pathlib import Path
+from typing import Any
 
 from snakemake.api import SnakemakeApi
 from snakemake.logging import logger, logger_manager
@@ -8,6 +10,29 @@ from ViroConstrictor.logging import log
 from ViroConstrictor.parser import CLIparser
 from ViroConstrictor.scheduler import Scheduler
 from ViroConstrictor.workflow_config import WorkflowConfig
+
+
+def _patch_debugger_for_snakemake() -> None:
+    # gettrace returns something only if debugger is active
+    if sys.gettrace() is None:
+        return
+
+    pydevd_file_utils = sys.modules.get("pydevd_file_utils", None)
+    if pydevd_file_utils is None:
+        return
+
+    original_abs_and_canonical = pydevd_file_utils._abs_and_canonical_path
+
+    # filename can be any string-like object
+    def patched_abs_and_canonical(filename: Any, NORM_PATHS_CONTAINER=pydevd_file_utils.NORM_PATHS_CONTAINER):
+        if filename.__class__.__name__ == "AnnotatedString":
+            filename = str(filename)
+        return original_abs_and_canonical(filename, NORM_PATHS_CONTAINER)
+
+    pydevd_file_utils._abs_and_canonical_path = patched_abs_and_canonical
+
+
+_patch_debugger_for_snakemake()
 
 
 def run_snakemake_workflow(inputs_obj: CLIparser, stage: str, scheduler: Scheduler) -> tuple[bool, WorkflowConfig]:
