@@ -167,8 +167,6 @@ def main(args: list[str] | None = None, settings: str | None = None) -> NoReturn
 
     status, used_workflow_config = run_snakemake_workflow(inputs_obj=parsed_input, stage="MAIN", scheduler=parsed_input.scheduler)
 
-    # if used_workflow_config.output_settings.dryrun is False and status is True:
-    #    #     TODO: add back the functionality to generate a snakemake report upon completion of the workflow
 
     workflow_state: Literal["Failed", "Success"] = "Failed" if status is False else "Success"
 
