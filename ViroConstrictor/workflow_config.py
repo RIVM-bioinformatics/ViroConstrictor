@@ -367,9 +367,7 @@ def _assign_resources_slurm(default_resource_setting: DefaultResources, queue: s
     return default_resource_setting
 
 def _write_yaml(data: dict, filepath: str) -> str:
-    """takes a dictionary and a filepath, and writes the given dictionary to the filepath as a yaml
-    file
-
+    """Write a dictionary to a filepath as a YAML file.
     Parameters
     ----------
     data : dict
