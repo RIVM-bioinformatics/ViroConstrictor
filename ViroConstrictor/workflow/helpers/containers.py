@@ -87,51 +87,22 @@ def calculate_hashes(file_list: List[str]) -> Dict[str, str]:
     return hashdict
 
 
-# def get_scripts_path_merged_hash(insert_path: str) -> str:
-#     """
-#     Generates a short hash representing the combined contents of script files in a specified directory.
-
-#     This function locates all script files within the `scripts` subdirectory of the given `insert_path`,
-#     calculates their individual hashes, sorts them, concatenates the hash values, and returns a 6-character
-#     SHA-256 hash of the result. This can be used to detect changes in the script environment.
-
-#     Parameters
-#     ----------
-#     insert_path : str
-#         The relative path to the directory containing the `scripts` subdirectory.
-
-#     Returns
-#     -------
-#     str
-#         A 6-character hexadecimal string representing the combined hash of all script files.
-
-#     Notes
-#     -----
-#     - The function depends on `fetch_scripts` to retrieve script file paths and `calculate_hashes` to compute file hashes.
-#     - Only the contents of the script files are considered for the hash; file names and other metadata are ignored.
-#     """
-#     script_files = sorted(fetch_scripts(f"{os.path.dirname(os.path.realpath(__file__))}/{insert_path}/scripts/"))
-
-#     # Calculate hashes for script files
-#     script_hashes = calculate_hashes(script_files)
-
-#     # Sort the hashes of the scripts and the configs
-#     script_hashes = dict(sorted(script_hashes.items()))
-
-#     # Join the hashes of the scripts and the configs, and create a new hash of the joined hashes
-#     return hashlib.sha256("".join(list(script_hashes.values())).encode()).hexdigest()[:6]
-
-
 def fetch_hashes() -> Dict[str, str]:
     """
-    Fetches and returns the hashes of recipe files, script files, and config files.
+    Fetches and returns the hashes of recipe files.
 
     Returns
     -------
-    tuple[Dict[str, str], str]
-        A tuple containing two elements:
-        - A dictionary where the keys are file paths and the values are hashes of the files.
-        - A string representing the merged hash of the scripts and configuration files.
+    Dict[str, str]
+        A dictionary where:
+        - Keys are the file paths of recipe files.
+        - Values are the first 6 characters of the SHA-256 hash of the file contents.
+
+    Notes
+    -----
+    - This function retrieves all recipe files from the `envs` directory located in the parent directory of the current file.
+    - The recipe files are sorted before calculating their hashes to ensure consistent results.
+    - The hashes are calculated based on the file contents.
     """
     # Fetch the recipe files, script files, and config files
     recipe_files = sorted(fetch_recipes(f"{Path(os.path.dirname(os.path.realpath(__file__))).parent}/envs/"))
@@ -141,19 +112,6 @@ def fetch_hashes() -> Dict[str, str]:
     for recipe_file in recipe_files:
         with open(recipe_file, "rb") as f:
             recipe_hash = hashlib.sha256(f.read()).hexdigest()[:6]
-            # if the recipe file *is* one of the 'scripts' recipes, then combine the recipe hash with the merged hash of the scripts and configs
-            # Subsequently, create a new hash of the joined hashes to avoid conflicts and end up with a singular tracker.
-            # if "core_scripts" in os.path.basename(recipe_file).split(".")[0].lower():
-            #     merged_hash = get_scripts_path_merged_hash("main")
-            #     file_hash = hashlib.sha256((recipe_hash + merged_hash).encode()).hexdigest()[:6]
-            #     hashes[recipe_file] = file_hash
-            #     continue
-            # if "mr_scripts" in os.path.basename(recipe_file).split(".")[0].lower():
-            #     merged_hash = get_scripts_path_merged_hash("main")
-            #     file_hash = hashlib.sha256((recipe_hash + merged_hash).encode()).hexdigest()[:6]
-            #     hashes[recipe_file] = file_hash
-            #     continue
-            # if the recipe file is not named 'scripts', then add the hash to the dictionary and continue
             hashes[recipe_file] = recipe_hash
             continue
 
