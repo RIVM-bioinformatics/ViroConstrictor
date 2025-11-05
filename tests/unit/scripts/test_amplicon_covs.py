@@ -5,8 +5,8 @@ from typing import Iterator
 
 import pytest
 
-project_root = Path(__file__).parent.parent.parent.parent
-sys.path.insert(0, str(project_root.joinpath("ViroConstrictor/workflow")))
+PROJECT_ROOT = Path(__file__).parent.parent.parent.parent
+sys.path.insert(0, str(PROJECT_ROOT.joinpath("ViroConstrictor/workflow")))
 from ViroConstrictor.workflow.main.scripts.amplicon_covs import AmpliconCovs  # isort:skip
 
 
@@ -29,9 +29,9 @@ def temporarily_modify_file(file_path: Path, new_line: str) -> Iterator[None]:
 
 def test_amplicon_covs(tmp_path: Path) -> None:
     """Test basic functionality of AmpliconCovs with valid input."""
-    input_file = "tests/unit/data/ESIB_EQA_2024_SARS1_01_primers.bed"
+    input_file = PROJECT_ROOT / "tests" / "unit" / "data" / "ESIB_EQA_2024_SARS1_01_primers.bed"
     output_file = tmp_path / "ESIB_EQA_2024_SARS1_01_primers_output.csv"
-    coverages_file = "tests/unit/data/ESIB_EQA_2024_SARS1_01_coverage.tsv"
+    coverages_file = PROJECT_ROOT / "tests" / "unit" / "data" / "ESIB_EQA_2024_SARS1_01_coverage.tsv"
     key = "ESIB_EQA_2024_SARS1_01"
 
     a = AmpliconCovs(input=input_file, output=output_file, key=key, coverages=coverages_file)
@@ -42,9 +42,9 @@ def test_amplicon_covs(tmp_path: Path) -> None:
 
 def test_primer_name_validation(tmp_path: Path) -> None:
     """Test validation of primer names - both valid and invalid formats."""
-    input_file = Path("tests/unit/data/ESIB_EQA_2024_SARS1_01_primers.bed")
+    input_file = PROJECT_ROOT / "tests" / "unit" / "data" / "ESIB_EQA_2024_SARS1_01_primers.bed"
     output_file = tmp_path / "test_output.csv"
-    coverages_file = "tests/unit/data/ESIB_EQA_2024_SARS1_01_coverage.tsv"
+    coverages_file = PROJECT_ROOT / "tests" / "unit" / "data" / "ESIB_EQA_2024_SARS1_01_coverage.tsv"
     key = "ESIB_EQA_2024_SARS1_01"
 
     # Test cases: (primer_name, should_succeed)

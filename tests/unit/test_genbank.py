@@ -4,22 +4,24 @@ import pytest
 
 from ViroConstrictor.genbank import GenBank
 
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+
 
 def get_happy_cases() -> list[dict[str, Path | str]]:
     """Returns a list of valid test cases."""
     return [
         {
             "id": "test_normal",
-            "input": Path("tests/unit/data/test_reference.gb"),
-            "expected_fasta": Path("tests/unit/data/test_reference.fasta"),
-            "expected_gff": Path("tests/unit/data/test_reference.gff"),
+            "input": PROJECT_ROOT / "tests" / "unit" / "data" / "test_reference.gb",
+            "expected_fasta": PROJECT_ROOT / "tests" / "unit" / "data" / "test_reference.fasta",
+            "expected_gff": PROJECT_ROOT / "tests" / "unit" / "data" / "test_reference.gff",
             "expected_target": "Influenza_A_virus",
         },
         {
             "id": "test_double",
-            "input": Path("tests/unit/data/test_reference_double.gb"),
-            "expected_fasta": Path("tests/unit/data/test_reference_double.fasta"),
-            "expected_gff": Path("tests/unit/data/test_reference_double.gff"),
+            "input": PROJECT_ROOT / "tests" / "unit" / "data" / "test_reference_double.gb",
+            "expected_fasta": PROJECT_ROOT / "tests" / "unit" / "data" / "test_reference_double.fasta",
+            "expected_gff": PROJECT_ROOT / "tests" / "unit" / "data" / "test_reference_double.gff",
             "expected_target": "Influenza_A_virus",
         },
     ]
@@ -77,7 +79,7 @@ def test_split_genbank(
         with pytest.raises(ValueError, match="Error opening GenBank file:"):
             GenBank.split_genbank(path)
     else:
-        actual_fasta, actual_gff, actual_target = GenBank.split_genbank(path)
+        actual_fasta, actual_gff, actual_target = GenBank.split_genbank(path, emit_target=True)
         assert actual_fasta == expected_fasta
         assert actual_gff == expected_gff
         assert actual_target == expected_target
