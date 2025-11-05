@@ -6,7 +6,7 @@ rule filter_references:
         temp(f"{datadir}{matchref}{wc_folder}" "{sample}_refs.fasta"),
     resources:
         mem_mb=low_memory_job,
-        runtime=55,  # TODO: this just sets a default runtime of 55 minutes. However this should be dynamic just like the memory.
+        runtime=low_runtime_job,
     threads: 1
     log:
         f"{logdir}prepare_refs" "{Virus}.{segment}.{sample}.log",

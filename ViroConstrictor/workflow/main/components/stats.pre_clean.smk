@@ -22,7 +22,7 @@ if config["platform"] in ["nanopore", "iontorrent"] or (
         threads: config["threads"]["QC"]
         resources:
             mem_mb=low_memory_job,
-            runtime=55,
+            runtime=medium_runtime_job,
         params:
             output_dir=f"{datadir}{qc_pre}",
             script=workflow_script_path("scripts/fastqc.sh")
@@ -52,7 +52,7 @@ if config["platform"] == "illumina" and config["unidirectional"] is False:
         threads: config["threads"]["QC"]
         resources:
             mem_mb=low_memory_job,
-            runtime=55,
+            runtime=medium_runtime_job,
         params:
             output_dir=f"{datadir}{qc_pre}",
             script=workflow_script_path("scripts/fastqc.sh")

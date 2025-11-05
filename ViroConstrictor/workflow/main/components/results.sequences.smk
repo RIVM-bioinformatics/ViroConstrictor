@@ -25,7 +25,7 @@ rule align_before_trueconsense:
     threads: config["threads"]["Alignments"]
     resources:
         mem_mb=medium_memory_job,
-        runtime=55,
+        runtime=medium_runtime_job,
     params:
         mapthreads=config["threads"]["Alignments"] - 1,
         mm2_alignment_preset=get_alignment_flags,
@@ -81,7 +81,7 @@ rule trueconsense:
     threads: config["threads"]["Consensus"]
     resources:
         mem_mb=medium_memory_job,
-        runtime=55,
+        runtime=high_runtime_job,
     shell:
         """
         TrueConsense --input {input.bam} \
@@ -108,7 +108,7 @@ rule Translate_AminoAcids:
         f"{container_base_path}/viroconstrictor_orf_analysis_{get_hash('ORF_analysis')}.sif"
     resources:
         mem_mb=low_memory_job,
-        runtime=55,
+        runtime=low_runtime_job,
     log:
         f"{logdir}Translate_AA_" "{Virus}.{RefID}.{sample}.log",
     benchmark:

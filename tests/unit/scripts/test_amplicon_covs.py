@@ -1,10 +1,13 @@
+import sys
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator
 
 import pytest
 
-from ViroConstrictor.workflow.main.scripts.amplicon_covs import AmpliconCovs
+project_root = Path(__file__).parent.parent.parent.parent
+sys.path.insert(0, str(project_root.joinpath("ViroConstrictor/workflow")))
+from ViroConstrictor.workflow.main.scripts.amplicon_covs import AmpliconCovs  # isort:skip
 
 
 @contextmanager

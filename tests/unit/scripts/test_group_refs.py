@@ -1,4 +1,9 @@
-from ViroConstrictor.workflow.match_ref.scripts.group_refs import GroupRefs
+import sys
+from pathlib import Path
+
+project_root = Path(__file__).parent.parent.parent.parent
+sys.path.insert(0, str(project_root.joinpath("ViroConstrictor/workflow")))
+from ViroConstrictor.workflow.match_ref.scripts.group_refs import GroupRefs  # isort:skip
 
 
 def test_group_refs():

@@ -1,6 +1,9 @@
+import sys
 from pathlib import Path
 
-from ViroConstrictor.workflow.main.scripts.group_aminoacids import GroupAminoAcids
+project_root = Path(__file__).parent.parent.parent.parent
+sys.path.insert(0, str(project_root.joinpath("ViroConstrictor/workflow")))
+from ViroConstrictor.workflow.main.scripts.group_aminoacids import GroupAminoAcids  # isort:skip
 
 # def test_group_amino_acids(tmp_path: Path) -> None:
 #     input = "tests/unit/data/aa.faa"

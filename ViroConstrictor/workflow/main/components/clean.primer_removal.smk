@@ -27,7 +27,7 @@ rule ampligone:
     threads: config["threads"]["PrimerRemoval"]
     resources:
         mem_mb=high_memory_job,
-        runtime=55,
+        runtime=high_runtime_job,
     params:
         amplicontype=config["amplicon_type"],
         primer_mismatch_rate=lambda wc: SAMPLES[wc.sample]["PRIMER-MISMATCH-RATE"],
@@ -73,7 +73,7 @@ rule move_fastq:
         ep=touch(f"{datadir}{wc_folder}{prim}" "{sample}_removedprimers.bed"),
     resources:
         mem_mb=low_memory_job,
-        runtime=55,
+        runtime=low_runtime_job,
     shell:
         """
         cp {input} {output.fq}

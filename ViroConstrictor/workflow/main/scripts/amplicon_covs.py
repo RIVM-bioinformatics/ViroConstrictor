@@ -58,7 +58,6 @@ from enum import Enum
 from pathlib import Path
 
 import pandas as pd
-
 from helpers.base_script_class import BaseScript  # type: ignore[import]  # noqa: F401,E402
 
 
