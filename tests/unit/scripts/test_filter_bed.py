@@ -1,6 +1,9 @@
+import sys
 from pathlib import Path
 
-from ViroConstrictor.workflow.main.scripts.filter_bed_input import FilterBedInput
+project_root = Path(__file__).parent.parent.parent.parent
+sys.path.insert(0, str(project_root.joinpath("ViroConstrictor/workflow")))
+from ViroConstrictor.workflow.main.scripts.filter_bed_input import FilterBedInput  # isort:skip
 
 
 def test_group_amino_acids(tmp_path: Path) -> None:

@@ -17,7 +17,7 @@ rule qc_filter:
     threads: config["threads"]["QC"]
     resources:
         mem_mb=low_memory_job,
-        runtime=55,
+        runtime=low_runtime_job,
     params:
         adapter_removal_settings=lambda wc: get_preset_parameter(
             preset_name=SAMPLES[wc.sample]["PRESET"],

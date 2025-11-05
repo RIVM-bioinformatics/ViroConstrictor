@@ -13,9 +13,11 @@ rule filter_best_matching_ref:
     threads: 1
     resources:
         mem_mb=low_memory_job,
-        runtime=55,
+        runtime=low_runtime_job,
     log:
         f"{logdir}FilterBR_" "{Virus}.{segment}.{sample}.log",
+    benchmark:
+        f"{logdir}{bench}FilterBR_""{Virus}.{segment}.{sample}.txt",
     params:
         script="-m match_ref.scripts.filter_best_matching_ref",
         pythonpath=f'{Path(workflow.basedir).parent}'
@@ -64,9 +66,11 @@ rule group_and_rename_refs:
     threads: 1
     resources:
         mem_mb=low_memory_job,
-        runtime=55,
+        runtime=low_runtime_job,
     log:
         f"{logdir}GroupRefs_" "{sample}.log",
+    benchmark:
+        f"{logdir}{bench}GroupRefs_" "{sample}.txt",
     params:
         script="-m match_ref.scripts.group_refs",
         pythonpath=f'{Path(workflow.basedir).parent}'

@@ -11,7 +11,7 @@ rule concat_sequences:
         f"{res}{wc_folder}consensus.fasta",
     resources:
         mem_mb=low_memory_job,
-        runtime=55,
+        runtime=low_runtime_job,
     shell:
         "cat {input} >> {output}"
 
@@ -56,7 +56,7 @@ rule make_pickle:
         temp(f"{datadir}sampleinfo.pkl"),
     resources:
         mem_mb=low_memory_job,
-        runtime=55,
+        runtime=low_runtime_job,
     threads: 1
     params:
         space=lambda wc: __import__("codecs")
@@ -81,11 +81,12 @@ rule concat_aminoacids:
         list_aminoacid_result_outputs(samples_df),
     resources:
         mem_mb=low_memory_job,
-        runtime=55,
+        runtime=low_runtime_job,
     conda:
         workflow_environment_path("core_scripts.yaml")
     container:
         f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
+
     threads: 1
     params:
         script="-m main.scripts.group_aminoacids",
@@ -116,7 +117,7 @@ rule concat_tsv_coverages:
         f"{res}{wc_folder}mutations.tsv",
     resources:
         mem_mb=low_memory_job,
-        runtime=55,
+        runtime=low_runtime_job,
     shell:
         """
         echo -e 'Sample\tReference_ID\tPosition\tReference_Base\tVariant_Base\tDepth' > {output}
@@ -133,7 +134,7 @@ rule concat_boc:
         f"{res}{wc_folder}Width_of_coverage.tsv",
     resources:
         mem_mb=low_memory_job,
-        runtime=55,
+        runtime=low_runtime_job,
     shell:
         """
         echo -e "Sample_name\tWidth_at_mincov_1\tWidth_at_mincov_5\tWidth_at_mincov_10\tWidth_at_mincov_50\tWidth_at_mincov_100" > {output}
@@ -152,11 +153,16 @@ rule concat_amplicon_cov:
         f"{res}{wc_folder}Amplicon_coverage.csv",
     resources:
         mem_mb=low_memory_job,
-        runtime=55,
+        runtime=low_runtime_job,
     conda:
         workflow_environment_path("core_scripts.yaml")
     container:
         f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
+    log:
+        f"{logdir}concat_amplicon_cov_" "{Virus}.{RefID}.log",
+    benchmark:
+        f"{logdir}{bench}concat_amplicon_cov_" "{Virus}.{RefID}.txt",
+    threads: 1
     params:
         script="-m main.scripts.concat_amplicon_covs",
         pythonpath=f'{Path(workflow.basedir).parent}',

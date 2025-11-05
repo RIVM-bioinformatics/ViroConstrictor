@@ -39,7 +39,9 @@ samples_df = samples_df.explode("segment")
 p_space = Paramspace(samples_df[["Virus", "segment", "sample"]], filename_params=["sample"])
 wc_folder = "/".join(p_space.wildcard_pattern.split("/")[:-1]) + "/"
 
-
+# These memory functions are tested in tests/unit/test_dynamic_memory.py
+# However, because this is a snakefile instead of a python file, they cannot be imported
+# So when these functions are changed, please make sure to also change them in the tests.
 def low_memory_job(wildcards, threads, attempt):
     if config["computing_execution"] == "local":
         return min(attempt * threads * 1 * 1000, config["max_local_mem"])
@@ -56,7 +58,15 @@ def high_memory_job(wildcards, threads, attempt):
     if config["computing_execution"] == "local":
         return min(attempt * threads * 4 * 1000, config["max_local_mem"])
     return attempt * threads * 4 * 1000
+    
+def low_runtime_job(wildcards, attempt):
+    return attempt * 2
 
+def medium_runtime_job(wildcards, attempt):
+    return attempt * 10
+
+def high_runtime_job(wildcards, attempt):
+    return attempt * 30
 
 def workflow_script_path(relative_path):
     basepath = workflow.basedir
@@ -120,7 +130,7 @@ rule concat_frames:
     threads: 1
     resources:
         mem_mb=low_memory_job,
-        runtime=55,
+        runtime=medium_runtime_job,
     shell:
         """
         python -c \"import pandas as pd; import sys; df = pd.concat([pd.read_csv(f, keep_default_na=False) for f in sys.argv[1:-1]]); df.to_pickle(sys.argv[-1])\" {input} {output}

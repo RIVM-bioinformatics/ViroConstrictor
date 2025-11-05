@@ -7,7 +7,7 @@ rule prepare_refs:
         f"{datadir}{wc_folder}" "{sample}_reference.fasta",
     resources:
         mem_mb=low_memory_job,
-        runtime=55,
+        runtime=low_runtime_job,
     threads: 1
     log:
         f"{logdir}prepare_refs_" "{Virus}.{RefID}.{sample}.log",

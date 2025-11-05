@@ -43,23 +43,33 @@ samples_df = get_aminoacid_features(samples_df.explode("RefID"))
 p_space = Paramspace(samples_df[["Virus", "RefID", "sample"]], filename_params=["sample"])
 wc_folder = "/".join(p_space.wildcard_pattern.split("/")[:-1]) + "/"
 
-
-def low_memory_job(wildcards, threads, attempt):
+# These memory functions are tested in tests/unit/test_dynamic_memory.py
+# However, because this is a snakefile instead of a python file, they cannot be imported
+# So when these functions are changed, please make sure to also change them in the tests.
+def low_memory_job(wildcards, threads, attempt): 
     if config["computing_execution"] == "local":
         return min(attempt * threads * 1 * 1000, config["max_local_mem"])
     return attempt * threads * 1 * 1000
-
 
 def medium_memory_job(wildcards, threads, attempt):
     if config["computing_execution"] == "local":
         return min(attempt * threads * 2 * 1000, config["max_local_mem"])
     return attempt * threads * 2 * 1000
 
-
 def high_memory_job(wildcards, threads, attempt):
     if config["computing_execution"] == "local":
         return min(attempt * threads * 4 * 1000, config["max_local_mem"])
     return attempt * threads * 4 * 1000
+
+def low_runtime_job(wildcards, attempt):
+    return attempt * 2
+
+def medium_runtime_job(wildcards, attempt):
+    return attempt * 10
+
+def high_runtime_job(wildcards, attempt):
+    return attempt * 30
+
 
 
 def workflow_script_path(relative_path):

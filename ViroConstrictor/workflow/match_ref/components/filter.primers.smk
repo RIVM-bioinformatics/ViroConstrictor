@@ -18,9 +18,11 @@ rule filter_fasta2bed:
     threads: 1
     resources:
         mem_mb=low_memory_job,
-        runtime=55,
+        runtime=low_runtime_job,
     log:
         f"{logdir}Fasta2Bed_" "{sample}.log",
+    benchmark:
+        f"{logdir}{bench}Fasta2Bed_" "{sample}.txt",
     params:
         pr_mm_rate=lambda wc: SAMPLES[wc.sample]["PRIMER-MISMATCH-RATE"],
     shell:
@@ -47,9 +49,11 @@ rule filter_bed:
     threads: 1
     resources:
         mem_mb=low_memory_job,
-        runtime=55,
+        runtime=low_runtime_job,
     log:
         f"{logdir}FilterBed_" "{sample}.log",
+    benchmark:
+        f"{logdir}{bench}FilterBed_" "{sample}.txt",
     conda:
         workflow_environment_path("mr_scripts.yaml")
     container:
@@ -77,7 +81,7 @@ rule touch_primers:
     threads: 1
     resources:
         mem_mb=low_memory_job,
-        runtime=55,
+        runtime=low_runtime_job,
     shell:
         """
         cp {input.refdata} {output.groupedstats}
