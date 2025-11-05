@@ -3,14 +3,7 @@ from typing import Callable, Generator
 
 import pytest
 
-from ViroConstrictor.validatefasta import (
-    ContainsAmbiguities,
-    ContainsSpecials,
-    IsValidFasta,
-    IsValidRef,
-)
-
-DATA_PATH = Path("tests/unit/data/temp/")
+from ViroConstrictor.validatefasta import ContainsAmbiguities, ContainsSpecials, IsValidFasta, IsValidRef
 
 
 @pytest.mark.parametrize(
@@ -98,24 +91,20 @@ def test_contains_ambiguities(sequence: str, expected: bool) -> None:
 
 
 @pytest.fixture(scope="module")
-def create_file_func() -> Generator[Callable, None, None]:
+def create_file_func(tmp_path_factory) -> Generator[Callable, None, None]:
 
-    DATA_PATH.mkdir(parents=True, exist_ok=True)
+    tmp_path = tmp_path_factory.mktemp("data")
 
     created_files = []
 
     def create_file(file_name: str, content: str) -> Path:
-        file_path = DATA_PATH / file_name
+        file_path = tmp_path / file_name
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(content)
         created_files.append(file_path)
         return file_path
 
     yield create_file
-    for file in created_files:
-        if file.exists():
-            file.unlink()
-    DATA_PATH.rmdir()
 
 
 @pytest.fixture(scope="module")
@@ -147,10 +136,13 @@ def temp_fasta_files(create_file_func) -> Generator[dict[Path, bool], None, None
     for file_name, content in happy_files + unhappy_files:
         create_file_func(file_name, content)
 
-    happy_dict = {DATA_PATH / path: True for path, _ in happy_files}
-    unhappy_dict = {DATA_PATH / path: False for path, _ in unhappy_files}
-    fasta_dict = {**happy_dict, **unhappy_dict}
-    yield fasta_dict
+    created_files = {}
+    for file_name, content in happy_files + unhappy_files:
+        file_path = create_file_func(file_name, content)
+        is_valid = file_name in [f[0] for f in happy_files]
+        created_files[file_path] = is_valid
+
+    yield created_files
 
 
 @pytest.fixture(scope="module")
@@ -176,13 +168,13 @@ def temp_ref_files(create_file_func) -> Generator[dict[Path, bool], None, None]:
             ">seq1\nACTG\r>seq2\nGTCAGTCA\n>seq3\nACTGACTG\n>seq4\n",
         ),
     ]
+    created_files = {}
     for file_name, content in happy_files + unhappy_files:
-        create_file_func(file_name, content)
+        file_path = create_file_func(file_name, content)
+        is_valid = file_name in [f[0] for f in happy_files]
+        created_files[file_path] = is_valid
 
-    happy_dict = {DATA_PATH / path: True for path, _ in happy_files}
-    unhappy_dict = {DATA_PATH / path: False for path, _ in unhappy_files}
-    fasta_dict = {**happy_dict, **unhappy_dict}
-    yield fasta_dict
+    yield created_files
 
 
 def test_is_valid_ref(temp_ref_files: dict[Path, bool]) -> None:
