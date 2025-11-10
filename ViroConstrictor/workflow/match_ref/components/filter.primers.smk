@@ -21,8 +21,6 @@ rule filter_fasta2bed:
         runtime=low_runtime_job,
     log:
         f"{logdir}Fasta2Bed_" "{sample}.log",
-    benchmark:
-        f"{logdir}{bench}Fasta2Bed_" "{sample}.txt",
     params:
         pr_mm_rate=lambda wc: SAMPLES[wc.sample]["PRIMER-MISMATCH-RATE"],
     shell:
@@ -52,8 +50,6 @@ rule filter_bed:
         runtime=low_runtime_job,
     log:
         f"{logdir}FilterBed_" "{sample}.log",
-    benchmark:
-        f"{logdir}{bench}FilterBed_" "{sample}.txt",
     conda:
         workflow_environment_path("mr_scripts.yaml")
     container:

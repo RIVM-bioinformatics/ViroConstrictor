@@ -18,8 +18,6 @@ if config["platform"] in ["nanopore", "iontorrent"] or (
             f"{container_base_path}/viroconstrictor_alignment_{get_hash('Alignment')}.sif"
         log:
             f"{logdir}AlignMR_" "{Virus}.{segment}.{sample}.log",
-        benchmark:
-            f"{logdir}{bench}AlignMR_" "{Virus}.{segment}.{sample}.txt"
         threads: config["threads"]["Alignments"]
         resources:
             mem_mb=medium_memory_job,
@@ -73,8 +71,6 @@ if config["platform"] == "illumina" and config["unidirectional"] is False:
             f"{container_base_path}/viroconstrictor_alignment_{get_hash('Alignment')}.sif"
         log:
             f"{logdir}" "AlignMR_{Virus}.{segment}.{sample}.log",
-        benchmark:
-            f"{logdir}{bench}" "AlignMR_{Virus}.{segment}.{sample}.log"
         threads: config["threads"]["Alignments"]
         resources:
             mem_mb=medium_memory_job,
@@ -127,8 +123,6 @@ rule count_mapped_reads:
         runtime=low_runtime_job,
     log:
         f"{logdir}CountMR_" "{Virus}.{segment}.{sample}.log",
-    benchmark:
-        f"{logdir}{bench}CountMR_""{Virus}.{segment}.{sample}.txt"
     params:
         script="-m match_ref.scripts.count_mapped_reads",
         pythonpath=f'{Path(workflow.basedir).parent}'

@@ -10,8 +10,6 @@ rule filter_references:
     threads: 1
     log:
         f"{logdir}prepare_refs" "{Virus}.{segment}.{sample}.log",
-    benchmark:
-        f"{logdir}{bench}MR_prepare_refs" "{Virus}.{segment}.{sample}.txt"
     conda:
         workflow_environment_path("mr_scripts.yaml")
     container:

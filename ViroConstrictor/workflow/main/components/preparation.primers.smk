@@ -14,8 +14,6 @@ rule prepare_primers:
         runtime=low_runtime_job,
     log:
         f"{logdir}prepare_primers_" "{Virus}.{RefID}.{sample}.log",
-    benchmark:
-        f"{logdir}{bench}prepare_primers_" "{Virus}.{RefID}.{sample}.txt"
     params:
         pr_mm_rate=lambda wc: SAMPLES[wc.sample]["PRIMER-MISMATCH-RATE"],
     conda:
@@ -46,8 +44,6 @@ rule filter_primer_bed:
         runtime=low_runtime_job,
     log:
         f"{logdir}prepare_primers_" "{Virus}.{RefID}.{sample}.log",
-    benchmark:
-        f"{logdir}{bench}prepare_primers_" "{Virus}.{RefID}.{sample}.txt"
     conda:
         workflow_environment_path("core_scripts.yaml")
     container:

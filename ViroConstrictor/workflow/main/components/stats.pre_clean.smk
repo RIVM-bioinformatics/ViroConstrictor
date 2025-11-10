@@ -17,8 +17,6 @@ if config["platform"] in ["nanopore", "iontorrent"] or (
             f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
         log:
             f"{logdir}QC_raw_data_" "{sample}.log",
-        benchmark:
-            f"{logdir}{bench}QC_raw_data_" "{sample}.txt"
         threads: config["threads"]["QC"]
         resources:
             mem_mb=low_memory_job,
@@ -47,8 +45,6 @@ if config["platform"] == "illumina" and config["unidirectional"] is False:
             f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
         log:
             f"{logdir}" "QC_raw_data_{sample}_{read}.log",
-        benchmark:
-            f"{logdir}{bench}" "QC_raw_data_{sample}_{read}.txt"
         threads: config["threads"]["QC"]
         resources:
             mem_mb=low_memory_job,

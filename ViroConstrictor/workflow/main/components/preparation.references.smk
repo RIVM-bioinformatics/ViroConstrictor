@@ -11,8 +11,6 @@ rule prepare_refs:
     threads: 1
     log:
         f"{logdir}prepare_refs_" "{Virus}.{RefID}.{sample}.log",
-    benchmark:
-        f"{logdir}{bench}prepare_refs_" "{Virus}.{RefID}.{sample}.txt"
     conda:
         workflow_environment_path("core_scripts.yaml")
     container:

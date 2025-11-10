@@ -11,8 +11,6 @@ rule qc_clean:
         f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     log:
         f"{logdir}QC_clean_" "{Virus}.{RefID}.{sample}.log",
-    benchmark:
-        f"{logdir}{bench}QC_clean_" "{Virus}.{RefID}.{sample}.txt"
     threads: config["threads"]["QC"]
     resources:
         mem_mb=low_memory_job,
@@ -79,8 +77,6 @@ rule multiqc_report:
         f"{container_base_path}/viroconstrictor_clean_{get_hash('Clean')}.sif"
     log:
         f"{logdir}MultiQC_report.log",
-    benchmark:
-        f"{logdir}{bench}MultiQC_report.txt"
     resources:
         mem_mb=high_memory_job,
         runtime=medium_runtime_job,

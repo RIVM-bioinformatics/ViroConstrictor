@@ -12,8 +12,6 @@ rule qc_filter:
         f"{container_base_path}/viroconstrictor_clean_{get_hash('Clean')}.sif"
     log:
         f"{logdir}QC_filter_" "{Virus}.{RefID}.{sample}.log",
-    benchmark:
-        f"{logdir}{bench}QC_filter_" "{Virus}.{RefID}.{sample}.txt"
     threads: config["threads"]["QC"]
     resources:
         mem_mb=low_memory_job,
