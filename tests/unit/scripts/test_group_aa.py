@@ -1,6 +1,9 @@
+import sys
 from pathlib import Path
 
-from ViroConstrictor.workflow.main.scripts.group_aminoacids import GroupAminoAcids
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT.joinpath("ViroConstrictor/workflow")))
+from ViroConstrictor.workflow.main.scripts.group_aminoacids import GroupAminoAcids  # isort:skip
 
 # def test_group_amino_acids(tmp_path: Path) -> None:
 #     input = "tests/unit/data/aa.faa"
@@ -12,21 +15,21 @@ from ViroConstrictor.workflow.main.scripts.group_aminoacids import GroupAminoAci
 
 
 def test_group_amino_acids2(tmp_path: Path) -> None:
-    input = "tests/unit/data/aa2.faa"
+    input = PROJECT_ROOT / "tests" / "unit" / "data" / "aa2.faa"
     result_string = (
-        "test/unit/data/ORF7b.faa "
-        "test/unit/data/S.faa "
-        "test/unit/data/ORF10.faa "
-        "test/unit/data/N.faa "
-        "test/unit/data/ORF6.faa "
-        "test/unit/data/ORF1ab.faa "
-        "test/unit/data/ORF3a.faa "
-        "test/unit/data/M.faa "
-        "test/unit/data/E.faa "
-        "test/unit/data/ORF8.faa "
-        "test/unit/data/ORF7a.faa"
+        PROJECT_ROOT / "tests" / "unit" / "data" / "ORF7b.faa",
+        PROJECT_ROOT / "tests" / "unit" / "data" / "S.faa",
+        PROJECT_ROOT / "tests" / "unit" / "data" / "ORF10.faa",
+        PROJECT_ROOT / "tests" / "unit" / "data" / "N.faa",
+        PROJECT_ROOT / "tests" / "unit" / "data" / "ORF6.faa",
+        PROJECT_ROOT / "tests" / "unit" / "data" / "ORF1ab.faa",
+        PROJECT_ROOT / "tests" / "unit" / "data" / "ORF3a.faa",
+        PROJECT_ROOT / "tests" / "unit" / "data" / "M.faa",
+        PROJECT_ROOT / "tests" / "unit" / "data" / "E.faa",
+        PROJECT_ROOT / "tests" / "unit" / "data" / "ORF8.faa",
+        PROJECT_ROOT / "tests" / "unit" / "data" / "ORF7a.faa",
     )
-    pkl = "tests/unit/data/sampleinfo2.pkl"
+    pkl = PROJECT_ROOT / "tests" / "unit" / "data" / "sampleinfo2.pkl"
 
-    a = GroupAminoAcids(input=input, output=result_string, space=pkl)
+    a = GroupAminoAcids(input=str(input), output=str(result_string), space=str(pkl))
     a.run()

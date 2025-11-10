@@ -1,9 +1,13 @@
+import sys
 from pathlib import Path
 
 from Bio import SeqIO
 
 from tests.utils.fasta_generator import generate_fasta_file
-from ViroConstrictor.workflow.main.scripts.prepare_refs import PrepareRefs
+
+project_root = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(project_root.joinpath("ViroConstrictor/workflow")))
+from ViroConstrictor.workflow.main.scripts.prepare_refs import PrepareRefs  # isort:skip
 
 
 def test_prepare_refs(tmp_path: Path) -> None:

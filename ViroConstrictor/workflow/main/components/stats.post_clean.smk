@@ -16,7 +16,7 @@ rule qc_clean:
     threads: config["threads"]["QC"]
     resources:
         mem_mb=low_memory_job,
-        runtime=55,
+        runtime=medium_runtime_job,
     params:
         outdir=f"{datadir}{wc_folder}{qc_post}",
         script=workflow_script_path("scripts/fastqc.sh")
@@ -83,7 +83,7 @@ rule multiqc_report:
         f"{logdir}{bench}MultiQC_report.txt"
     resources:
         mem_mb=high_memory_job,
-        runtime=55,
+        runtime=medium_runtime_job,
     params:
         conffile=workflow_script_path("configs/multiqc.yaml"),
         outdir=res,

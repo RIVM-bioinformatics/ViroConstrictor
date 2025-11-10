@@ -23,7 +23,7 @@ if config["platform"] in ["nanopore", "iontorrent"] or (
         threads: config["threads"]["Alignments"]
         resources:
             mem_mb=medium_memory_job,
-            runtime=55,
+            runtime=medium_runtime_job,
         params:
             mapthreads=config["threads"]["Alignments"] - 1,
             mm2_alignment_preset=base_mm2_preset,
@@ -78,7 +78,7 @@ if config["platform"] == "illumina" and config["unidirectional"] is False:
         threads: config["threads"]["Alignments"]
         resources:
             mem_mb=medium_memory_job,
-            runtime=55,
+            runtime=medium_runtime_job,
         params:
             mapthreads=config["threads"]["Alignments"] - 1,
             mm2_alignment_preset=base_mm2_preset,
@@ -124,9 +124,11 @@ rule count_mapped_reads:
     threads: 1
     resources:
         mem_mb=low_memory_job,
-        runtime=55,
+        runtime=low_runtime_job,
     log:
         f"{logdir}CountMR_" "{Virus}.{segment}.{sample}.log",
+    benchmark:
+        f"{logdir}{bench}CountMR_""{Virus}.{segment}.{sample}.txt"
     params:
         script="-m match_ref.scripts.count_mapped_reads",
         pythonpath=f'{Path(workflow.basedir).parent}'

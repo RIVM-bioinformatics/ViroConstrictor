@@ -23,7 +23,7 @@ if config["platform"] in ["nanopore", "iontorrent"] or (
         threads: config["threads"]["Alignments"]
         resources:
             mem_mb=medium_memory_job,
-            runtime=55,
+            runtime=medium_runtime_job,
         params:
             mapthreads=config["threads"]["Alignments"] - 1,
             mm2_alignment_preset=base_mm2_preset,
@@ -78,7 +78,7 @@ if config["platform"] == "illumina" and config["unidirectional"] is False:
         threads: config["threads"]["Alignments"]
         resources:
             mem_mb=medium_memory_job,
-            runtime=55,
+            runtime=medium_runtime_job,
         params:
             mapthreads=config["threads"]["Alignments"] - 1,
             mm2_alignment_preset=base_mm2_preset,
@@ -120,10 +120,14 @@ rule remove_adapters_p2:
         workflow_environment_path("core_scripts.yaml")
     container:
         f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
+    log:
+        f"{logdir}RemoveAdapters_p2_" "{Virus}.{RefID}.{sample}.log",
+    benchmark:
+        f"{logdir}{bench}RemoveAdapters_p2_" "{Virus}.{RefID}.{sample}.txt"
     threads: config["threads"]["AdapterRemoval"]
     resources:
         mem_mb=low_memory_job,
-        runtime=55,
+        runtime=medium_runtime_job,
     params:
         script="-m main.scripts.clipper",
         pythonpath = f'{Path(workflow.basedir).parent}',
