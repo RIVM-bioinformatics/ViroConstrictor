@@ -13,20 +13,14 @@ from itertools import zip_longest
 from typing import Literal, NoReturn
 
 import pandas as pd
-import snakemake
 
-import ViroConstrictor.logging
 from ViroConstrictor import __version__
 from ViroConstrictor.logging import log
 from ViroConstrictor.match_ref import process_match_ref
 from ViroConstrictor.parser import CLIparser
-from ViroConstrictor.runconfigs import GetSnakemakeRunDetails, WriteYaml
 from ViroConstrictor.runreport import WriteReport
 from ViroConstrictor.update import update
-from ViroConstrictor.workflow.containers import (
-    construct_container_bind_args,
-    download_containers,
-)
+from ViroConstrictor.workflow_executor import run_snakemake_workflow
 
 
 def get_preset_warning_list(
@@ -50,17 +44,12 @@ def get_preset_warning_list(
     preset_fallback_warnings = []
     preset_score_warnings = []
 
-    p_scorewarning_df = sample_info_df.loc[
-        (sample_info_df["PRESET_SCORE"] < 0.8) & (sample_info_df["PRESET_SCORE"] > 0.0)
-    ]
+    p_scorewarning_df = sample_info_df.loc[(sample_info_df["PRESET_SCORE"] < 0.8) & (sample_info_df["PRESET_SCORE"] > 0.0)]
     for _input, _preset in zip(
         list(set(p_scorewarning_df["VIRUS"].tolist())),
         list(set(p_scorewarning_df["PRESET"].tolist())),
     ):
-        filtered_df = p_scorewarning_df.loc[
-            (p_scorewarning_df["VIRUS"] == _input)
-            & (p_scorewarning_df["PRESET"] == _preset)
-        ]
+        filtered_df = p_scorewarning_df.loc[(p_scorewarning_df["VIRUS"] == _input) & (p_scorewarning_df["PRESET"] == _preset)]
         samples = [" * " + x + "\n" for x in filtered_df["SAMPLE"].tolist()]
         score = filtered_df["PRESET_SCORE"].tolist()[0]
 
@@ -73,10 +62,7 @@ This applies to the following samples:\n{''.join(samples)}"""
 
     # check if the preset score is larger or equal than 0.0 and smaller than 0.000001 (1e-6)
     # We do this because the preset score is a float and we want to check if it is within a certain range as floating point equality checks are not reliable
-    p_fallbackwarning_df = sample_info_df.loc[
-        (sample_info_df["PRESET_SCORE"] >= 0.0)
-        & (sample_info_df["PRESET_SCORE"] < 1e-6)
-    ]
+    p_fallbackwarning_df = sample_info_df.loc[(sample_info_df["PRESET_SCORE"] >= 0.0) & (sample_info_df["PRESET_SCORE"] < 1e-6)]
 
     targets, presets = (
         (
@@ -95,10 +81,7 @@ This applies to the following samples:\n{''.join(samples)}"""
         else ([], [])
     )
     for _input, _preset in zip(targets, presets):
-        filtered_df = p_fallbackwarning_df.loc[
-            (p_fallbackwarning_df["VIRUS"] == _input)
-            & (p_fallbackwarning_df["PRESET"] == _preset)
-        ]
+        filtered_df = p_fallbackwarning_df.loc[(p_fallbackwarning_df["VIRUS"] == _input) & (p_fallbackwarning_df["PRESET"] == _preset)]
         samples = [" * " + x + "\n" for x in filtered_df["SAMPLE"].tolist()]
 
         warn = f"""[red]The following information was given as an input-target: '[bold underline]{_input}[/bold underline]'.
@@ -110,9 +93,7 @@ It may also be possible that your input-target does not yet have an associated p
     return preset_fallback_warnings, preset_score_warnings
 
 
-def show_preset_warnings(
-    warnings: list[str], fallbacks: list[str], disabled: bool
-) -> None:
+def show_preset_warnings(warnings: list[str], fallbacks: list[str], disabled: bool, samples_df: pd.DataFrame) -> None:
     """This function logs warning and fallback messages if they exist and if the disabled flag is not set.
 
     Parameters
@@ -125,17 +106,38 @@ def show_preset_warnings(
         The "disabled" parameter is a boolean flag that indicates whether or not warning and fallback messages
     should be displayed. If it is set to True, then no warnings or fallbacks will be shown. If it is set
     to False, then warnings and fallbacks will be shown if there are any.
-
+    samples_df : pd.DataFrame
+        The "samples_df" parameter is a pandas DataFrame that contains information about the samples being
+    analyzed. It is used to check if there is a per-sample setting for disabling presets
     """
-    if warnings and not disabled:
-        for w in warnings:
-            log.warn(f"{w}")
-    if fallbacks and not disabled:
-        for w in fallbacks:
-            log.warn(f"{w}")
+    if samples_df.get("DISABLE-PRESETS") is not None:
+        # If per-sample DISABLE-PRESETS column exists, check per sample
+        for index, row in samples_df.iterrows():
+            sample_name = row["SAMPLE"]
+            # Only show warnings for this sample if presets are disabled (DISABLE-PRESETS is False)
+            if not row["DISABLE-PRESETS"]:
+                # Filter warnings and fallbacks that mention this specific sample
+                sample_warnings = [w for w in warnings if sample_name in w]
+                sample_fallbacks = [w for w in fallbacks if sample_name in w]
+                
+                if sample_warnings and not disabled:
+                    for w in sample_warnings:
+                        log.warning(f"{w}")
+                if sample_fallbacks and not disabled:
+                    for w in sample_fallbacks:
+                        log.warning(f"{w}")
+    else:
+        # If per-sample DISABLE-PRESETS column doesn't exists, use disable_presets flag
+        if not disabled:
+            if warnings and not disabled:
+                for w in warnings:
+                    log.warning(f"{w}")
+            if fallbacks and not disabled:
+                for w in fallbacks:
+                    log.warning(f"{w}")
 
 
-def main() -> NoReturn:
+def main(args: list[str] | None = None, settings: str | None = None) -> NoReturn:
     """
     ViroConstrictor starting point
     --> Fetch and parse arguments
@@ -144,135 +146,38 @@ def main() -> NoReturn:
     --> Change working directories and make necessary local files for snakemake
     --> Run snakemake with appropriate settings
     """
+    if args is None:
+        args = sys.argv[1:]
 
-    parsed_input = CLIparser(input_args=sys.argv[1:])
+    if settings is None:
+        settings = "~/.ViroConstrictor_defaultprofile.ini"
+    parsed_input = CLIparser(input_args=args, settings_path=settings)
 
-    preset_fallback_warnings, preset_score_warnings = get_preset_warning_list(
-        parsed_input.samples_df
-    )
+    preset_fallback_warnings, preset_score_warnings = get_preset_warning_list(parsed_input.samples_df)
     if not parsed_input.flags.skip_updates:
         update(sys.argv, parsed_input.user_config)
 
     # check if there's a value in the column 'MATCH-REF' set to True in the parsed_input.samples_df dataframe, if so, process the match-ref, else skip
     if parsed_input.samples_df["MATCH-REF"].any():
-        parsed_input = process_match_ref(parsed_input)
-
-    snakemake_run_details = GetSnakemakeRunDetails(
-        inputs_obj=parsed_input, samplesheetfilename="samples_main"
-    )
-
-    # if configured to use containers, check if they are available and download them if necessary
-    # TODO: add the verbosity flag to the download_containers function and update log message to reflect this
-    if (
-        snakemake_run_details.snakemake_run_conf["use-singularity"]
-        and download_containers(snakemake_run_details.snakemake_run_conf) != 0
-    ):
-        log.error(
-            "Failed to download containers required for workflow.\nPlease check the logs and your settings for more information and try again later."
-        )
-        sys.exit(1)
+        parsed_input = process_match_ref(parsed_input, scheduler=parsed_input.scheduler)
 
     log.info(f"{'='*20} [bold yellow] Starting Main Workflow [/bold yellow] {'='*20}")
 
     status: bool = False
-    if parsed_input.user_config["COMPUTING"]["compmode"] == "local":
-        status = snakemake.snakemake(
-            snakefile=parsed_input.snakefile,
-            workdir=parsed_input.workdir,
-            cores=snakemake_run_details.snakemake_run_conf["cores"],
-            use_conda=snakemake_run_details.snakemake_run_conf["use-conda"],
-            conda_frontend="mamba",
-            use_singularity=snakemake_run_details.snakemake_run_conf["use-singularity"],
-            singularity_args=construct_container_bind_args(parsed_input.samples_dict),
-            jobname=snakemake_run_details.snakemake_run_conf["jobname"],
-            latency_wait=snakemake_run_details.snakemake_run_conf["latency-wait"],
-            dryrun=snakemake_run_details.snakemake_run_conf["dryrun"],
-            force_incomplete=snakemake_run_details.snakemake_run_conf["force-incomplete"],
-            configfiles=[
-                WriteYaml(
-                    snakemake_run_details.snakemake_run_parameters,
-                    f"{parsed_input.workdir}/config/run_params.yaml",
-                ),
-                WriteYaml(
-                    snakemake_run_details.snakemake_run_conf,
-                    f"{parsed_input.workdir}/config/run_configs.yaml",
-                ),
-            ],
-            restart_times=snakemake_run_details.snakemake_run_conf["restart-times"],
-            keepgoing=snakemake_run_details.snakemake_run_conf["keep-going"],
-            quiet=["all"],  # type: ignore
-            log_handler=[
-                ViroConstrictor.logging.snakemake_logger(logfile=parsed_input.logfile)
-            ],
-            printshellcmds=snakemake_run_details.snakemake_run_conf["printshellcmds"],
-        )
-    if parsed_input.user_config["COMPUTING"]["compmode"] == "grid":
-        status = snakemake.snakemake(
-            snakefile=parsed_input.snakefile,
-            workdir=parsed_input.workdir,
-            cores=snakemake_run_details.snakemake_run_conf["cores"],
-            nodes=snakemake_run_details.snakemake_run_conf["cores"],
-            use_conda=snakemake_run_details.snakemake_run_conf["use-conda"],
-            conda_frontend="mamba",
-            use_singularity=snakemake_run_details.snakemake_run_conf["use-singularity"],
-            singularity_args=construct_container_bind_args(parsed_input.samples_dict),
-            jobname=snakemake_run_details.snakemake_run_conf["jobname"],
-            latency_wait=snakemake_run_details.snakemake_run_conf["latency-wait"],
-            drmaa=snakemake_run_details.snakemake_run_conf["drmaa"],
-            drmaa_log_dir=snakemake_run_details.snakemake_run_conf["drmaa-log-dir"],
-            dryrun=snakemake_run_details.snakemake_run_conf["dryrun"],
-            force_incomplete=snakemake_run_details.snakemake_run_conf["force-incomplete"],
-            configfiles=[
-                WriteYaml(
-                    snakemake_run_details.snakemake_run_parameters,
-                    f"{parsed_input.workdir}/config/run_params.yaml",
-                ),
-                WriteYaml(
-                    snakemake_run_details.snakemake_run_conf,
-                    f"{parsed_input.workdir}/config/run_configs.yaml",
-                ),
-            ],
-            restart_times=snakemake_run_details.snakemake_run_conf["restart-times"],
-            keepgoing=snakemake_run_details.snakemake_run_conf["keep-going"],
-            quiet=["all"],  # type: ignore
-            log_handler=[
-                ViroConstrictor.logging.snakemake_logger(logfile=parsed_input.logfile)
-            ],
-            printshellcmds=snakemake_run_details.snakemake_run_conf["printshellcmds"],
-        )
 
-    if snakemake_run_details.snakemake_run_conf["dryrun"] is False and status is True:
-        snakemake.snakemake(
-            snakefile=parsed_input.snakefile,
-            workdir=parsed_input.workdir,
-            report="results/snakemake_report.html",
-            configfiles=[
-                WriteYaml(
-                    snakemake_run_details.snakemake_run_parameters,
-                    f"{parsed_input.workdir}/config/run_params.yaml",
-                ),
-                WriteYaml(
-                    snakemake_run_details.snakemake_run_conf,
-                    f"{parsed_input.workdir}/config/run_configs.yaml",
-                ),
-            ],
-            quiet=["all"],  # type: ignore
-            log_handler=[
-                ViroConstrictor.logging.snakemake_logger(logfile=parsed_input.logfile)
-            ],
-        )
+    status, used_workflow_config = run_snakemake_workflow(inputs_obj=parsed_input, stage="MAIN", scheduler=parsed_input.scheduler)
 
-    workflow_state: Literal["Failed", "Success"] = (
-        "Failed" if status is False else "Success"
-    )
+
+    workflow_state: Literal["Failed", "Success"] = "Failed" if status is False else "Success"
 
     WriteReport(
         parsed_input.workdir,
         parsed_input.input_path,
         parsed_input.exec_start_path,
         parsed_input.user_config,
-        snakemake_run_details.snakemake_run_parameters,
-        snakemake_run_details.snakemake_run_conf,
+        used_workflow_config.resource_settings,
+        used_workflow_config.output_settings,
+        parsed_input,
         workflow_state,
     )
 
@@ -280,6 +185,7 @@ def main() -> NoReturn:
         preset_score_warnings,
         preset_fallback_warnings,
         parsed_input.flags.disable_presets,
+        parsed_input.samples_df,
     )
 
     if status is False:

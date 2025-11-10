@@ -1,49 +1,89 @@
-# Working with Presets
+# Analysis Presets
 
-Since [version 1.2.0](changelog.md#120-2023-01-18) ViroConstrictor has a 'preset' system in place.
-The primary goal of this system is to provide tailored analysis settings and methods specific to the pathogen or group of pathogens being analyzed.
-As an example, even though Influenza and SARS-CoV-2 are both respiratory viruses, they require some different analysis settings to ensure the best possible results as the viral genomes and the sequencing protocols are very different (segmented vs non-segmented).
+ViroConstrictor includes a preset system (available since [version 1.2.0](changelog.md#120-2023-01-18)) that provides optimized analysis settings for specific pathogens.
 
-A preset can be set both for an entire analysis run with the `--target/--preset` flag or on a per sample basis through the "Virus" column in the samplesheet.
-The input value does not have to completely correspond to a defined preset, the closest matching preset is chosen unless there is not enough certainty (<40%) to match the input to a preset.
-If there is not enough certainty to match the input to a preset then the "DEFAULT" preset/settings will be used as a fallback.
+## What Are Presets?
 
-!!! info "Disabling the use of presets"
-    The use of presets can be disabled by providing the `--disable-presets/-dp` flag. This will make sure the "DEFAULT" preset/settings will be used for all samples given in a run.  
-    Please refer to the [full list of commandline options](manual.md#overview-of-command-line-options) for more information.
+Presets are predefined analysis configurations tailored to specific viral families or pathogens. Different viruses require different analysis approaches - for example, segmented viruses like Influenza need different settings than non-segmented viruses like SARS-CoV-2.
 
-    Disabling the presets is especially useful if you're trying to analyze an in-progress sequencing protocol, or if you're trying to analyze data that cannot be associated with an existing preset [listed in the table below](presets.md#currently-available-presets)
+## How Presets Work
 
-## Currently available presets
+### Automatic Selection
+- **Input matching**: ViroConstrictor matches your viral target name to the closest preset
+- **Fuzzy matching**: Exact matches aren't required - the system finds the best fit
+- **Confidence threshold**: Matches below 40% confidence use DEFAULT settings
+- **Fallback**: Unknown targets automatically use DEFAULT preset
 
-Below you can find a brief summary of the currently available presets within ViroConstrictor.  
-!!! warning "Presets can change throughout ViroConstrictor versions"
-    Please note that additions, removals or changes in presets happen in ViroConstrictor releases.  
-    These docs correspond to a version of ViroConstrictor, the version of ViroConstrictor/docs that you are viewing right now can be seen at the top of this page. 
+### Usage Options
+- **Command-line**: Use `--target` or `--preset` flag for entire analysis
+- **Samplesheet**: Specify individual presets via the "Virus" column
+- **Disable**: Use `--disable-presets` / `-dp` to force DEFAULT settings
 
-| Preset    | Aliases | Notes |
-|-----------|-------|---------|
-| DEFAULT   | N/A | This is the default analysis mode for ViroConstrictor.<br>Read-filtering, read-alignment and consensus-calling will all use default settings |
-| SARSCOV2  | <ul><li>SARS-COV-2</li><li>SARS2</li><li>COVID</li><li>COV</li><li>SARSCOV</li><li>CORONAVIRUS</li></ul> | This preset is specific for the analysis of SARS-CoV-2 data.<br>Adjustments have been made to read-alignment settings for optimal mapping of reads against the reference genome. |
-| INFLUENZA | <ul><li>FLU</li><li>INF</li><li>INFLU</li><li>INFLUENZA</li><li>INFLUENZA_A</li><li>INFLUENZA_B</li></ul> | This preset is specific for the analysis of Influenza A and Influenza B data.<br>There are specific settings for read-filtering, and alignment-filtering to assure the best result for the segmented influenza genomes.<br>The settings are chosen with the amplicons produced by the MBTuni-12/13 universal influenza primers in mind.[^1] |
-| PARAMYXOVIRIDAE | <ul><li>MEASLES</li><li>MUMPS</li><li>MEV</li><li>MUV</li><li>MEASLES_VIRUS</li><li>MUMPS_VIRUS</li><li>PARAMYXOVIRUS</li><li>PARAMYXOVIRIDAE</li><li>MORBILLIVIRUS</li><li>RUBULAVIRINAE</li><li>ORTHORUBULAVIRUS</li></ul> | This preset is specific for the analysis of Paramyxoviridae data such as Measles and Mumps.<br>There are specific settings for alignment-filtering to assure the best result for all species under the Paramyxoviridae family.<br> |
-| HEPATOVIRUS | <ul><li>HEPATOVIRUS</li><li>HEPATITIS_A</li><li>HEPATITIS_A_VIRUS</li><li>HAV</li></ul> | This preset is specific for the Hepatovirus family, and more specifically focused on the Hepatitis A virus.<br>There specific settings for alignment-filtering to assure the best result for all species under the Hepatovirus family in amplicon based sequencing data and non-amplicon based sequencing data. |
+<!-- TODO: Add examples of successful and failed preset matching -->
 
-Presets are set based on the closest matching input-value relative to a preset alias, a 100% match is therefore not necessary.  
-As an example when the input `--target influenza_a_h3n2` is given, it will be matched to the alias `INFLUENZA_A` which corresponds to the "INFLUENZA" preset.
+!!! info "When to Disable Presets"
+    Use `--disable-presets` / `-dp` to force DEFAULT settings when:
+    
+    - Analyzing experimental or in-development sequencing protocols
+    - Working with pathogens not covered by existing presets
+    - Troubleshooting analysis issues
+    - Requiring consistent settings across diverse viral targets
 
-If there's a significant distance between your given input and the matched preset then ViroConstrictor will display a warning for this. This warning is shown **after** the analysis (or dryrun) is completed to ensure the warning stays clearly readable and is not pushed off-screen.
+---
 
-!!! warning "Please beware of unintentional preset matchings"
-    It may be possible that a preset gets assigned to a provided target unintentionally, as the preset matching happens based on your user-input, and because the closest matching alias will be used.  
-    Please inspect the possible preset-related warning carefully to see if this is the case.
+## Available Presets
 
-    We recommend running ViroConstrictor with the `--dryrun` flag first to make sure presets get assigned correctly.
+!!! warning "Version-Dependent Presets"
+    Preset availability and settings may change between ViroConstrictor versions. The information below corresponds to the current documentation version shown at the top of this page.
 
-    If any presets are not assigned correctly, consider running ViroConstrictor with the `--disable-presets` flag to always use the "DEFAULT" preset/settings.
+### Preset Matching Examples
+
+ViroConstrictor uses fuzzy matching, so exact names aren't required:
+
+* `--target influenza_a_h3n2` → matches **INFLUENZA** preset via `INFLUENZA_A` alias.
+* `--target sars-cov-2` → matches **SARSCOV2** preset via `SARS-COV-2` alias.
+* `--target measles_outbreak` → matches **PARAMYXOVIRIDAE** preset via `MEASLES` alias.
+
+<!-- TODO: Add more examples of edge cases and unexpected matches --> 
+
+### Preset Details
+
+| Preset                | Preset Aliases for matching  | Optimizations |
+|-----------------------|------------------------------|---------------|
+| **DEFAULT**           | N/A                          | Standard ViroConstrictor settings for general viral analysis.<br>Used when no specific preset matches or when presets are disabled. |
+| **SARSCOV2**          | SARS-COV-2, SARS2, COVID, COV, SARSCOV, CORONAVIRUS | Optimized read-alignment settings for SARS-CoV-2 reference mapping.<br>Tailored for SARS coronavirus 2 genome analysis. |
+| **INFLUENZA**         | FLU, INF, INFLU, INFLUENZA, INFLUENZA_A, INFLUENZA_B | Enhanced read-filtering and alignment-filtering for segmented Influenza genomes.<br>Built-in compatibility for MBTuni-12/13 universal influenza primer amplicons.[^1] |
+| **PARAMYXOVIRIDAE**   | MEASLES, MUMPS, MEV, MUV, MEASLES_VIRUS, MUMPS_VIRUS, PARAMYXOVIRUS, PARAMYXOVIRIDAE, MORBILLIVIRUS, RUBULAVIRINAE, ORTHORUBULAVIRUS | Specialized alignment-filtering for Paramyxoviridae family viruses with optimized settings to cover the non-coding region between Matrix and Fusion genes.<br>Covers Measles, Mumps, and related viruses. |
+| **HEPATOVIRUS**       | HEPATOVIRUS, HEPATITIS_A, HEPATITIS_A_VIRUS, HAV | Alignment-filtering optimized for Hepatovirus A. Includes specialized alignment-filtering settings for improved genome recovery to compensate for sequencing artefacts may result in Picornaviridae sequencing data.<br>Currently only tailored for Hepatovirus A. |
+
+---
+
+## Important Considerations
+
+### Matching Warnings
+
+ViroConstrictor displays warnings when:
+- **Low confidence matches**: Your input has <40% similarity to any preset
+- **Unexpected matches**: Your target matches a potentially unintended preset
+- **No match found**: Your input doesn't match any preset sufficiently
+
+!!! tip "Best Practices"
+    - Run with `--dryrun` first to verify preset assignments
+    - Check warnings carefully after analysis completion
+    - Use `--disable-presets` if matching seems incorrect
+
+<!-- TODO: Add guidance on interpreting preset matching confidence scores -->
 
 
-If you wish for another pathogen to get its own preset, or if you're working with the analysis of a specific virus that would benefit from a preset, please [request this through an issue on our GitHub](https://github.com/RIVM-bioinformatics/ViroConstrictor/issues/new/choose).
+### Requesting New Presets
 
+Need a preset for a pathogen not currently supported? [Submit a feature request on our GitHub](https://github.com/RIVM-bioinformatics/ViroConstrictor/issues/new/choose) with details about:
+
+- Target pathogen or viral family
+- Sequencing protocol used
+- Specific analysis challenges
+- Expected benefits from a custom preset
+
+---
 
 [^1]: [Zhou B, Donnelly ME, Scholes DT, et al. Single-Reaction Genomic Amplification Accelerates Sequencing and Vaccine Production for Classical and Swine Origin Human Influenza A Viruses. Journal of Virology. 83, 10309-10313.](https://doi.org/10.1128/JVI.01109-09)
