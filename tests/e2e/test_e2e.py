@@ -72,7 +72,7 @@ def test_main(prepare_files: dict[str, Path]) -> None:
     # os.rtests/e2e/data/output/.snakemake/locks
     with pytest.raises(SystemExit) as e:
         main(args, settings=prepare_files["settings"].as_posix())
-        assert e.value.code == 0, "Main function did not complete successfully"
+    assert e.value.code == 0, "Main function did not complete successfully"
 
 
 def test_main_genbank(prepare_files: dict[str, Path]) -> None:
@@ -93,7 +93,7 @@ def test_main_genbank(prepare_files: dict[str, Path]) -> None:
 
     with pytest.raises(SystemExit) as e:
         main(args, settings=prepare_files["settings"].as_posix())
-        assert e.value.code == 0, "Main function did not complete successfully"
+    assert e.value.code == 0, "Main function did not complete successfully"
 
 
 def test_match_ref(prepare_files: dict[str, Path]) -> None:
@@ -119,7 +119,7 @@ def test_match_ref(prepare_files: dict[str, Path]) -> None:
 
     with pytest.raises(SystemExit) as e:
         main(args, settings=prepare_files["settings"].as_posix())
-        assert e.value.code == 0, "Main function did not complete successfully"
+    assert e.value.code == 0, "Main function did not complete successfully"
 
 
 # def test_main_container(prepare_files: dict[str, Path]) -> None:
