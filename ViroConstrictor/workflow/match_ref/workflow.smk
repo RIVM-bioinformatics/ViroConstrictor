@@ -80,9 +80,9 @@ def workflow_environment_path(filename):
 
 wildcard_constraints:
     # regular expression to match only alphanumeric characters, underscores, dashes, and dots. exclude '/' and only match the first part of the string.
-    segment="[\w\-\.\d]+",
-    Virus="[\w\-\.\d]+",
-    sample="[\w\-\.\d]+",
+    segment=r"[\w\-\.\d]+",
+    Virus=r"[\w\-\.\d]+",
+    sample=r"[\w\-\.\d]+",
 
 
 localrules:

@@ -5,7 +5,7 @@ from typing import Iterator
 
 import pytest
 
-PROJECT_ROOT = Path(__file__).parent.parent.parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT.joinpath("ViroConstrictor/workflow")))
 from ViroConstrictor.workflow.main.scripts.amplicon_covs import AmpliconCovs  # isort:skip
 

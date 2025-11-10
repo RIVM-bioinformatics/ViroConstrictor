@@ -46,7 +46,7 @@ class TestMemoryAllocation:
 
         # test cap enforcement
         result = self.low_memory_job(mock_wildcards, threads=4, attempt=3, config=config)
-        assert result == 8000  # min(3 * 4 * 1 * 1000, 8000) = min(12000, 8000)
+        assert result == 8000
 
     def test_low_memory_job_cluster_execution(self, mock_wildcards):
         """Test low_memory_job function with cluster execution (no memory cap)."""
@@ -71,7 +71,7 @@ class TestMemoryAllocation:
 
         # Test memory cap enforcement
         result = self.medium_memory_job(mock_wildcards, threads=4, attempt=3, config=config)
-        assert result == 16000  # min(3 * 4 * 2 * 1000, 16000) = min(24000, 16000)
+        assert result == 16000
 
     def test_medium_memory_job_cluster_execution(self, mock_wildcards):
         """Test medium_memory_job function with cluster execution."""
@@ -92,7 +92,7 @@ class TestMemoryAllocation:
 
         # Test memory cap enforcement
         result = self.high_memory_job(mock_wildcards, threads=4, attempt=3, config=config)
-        assert result == 32000  # min(3 * 4 * 4 * 1000, 32000) = min(48000, 32000)
+        assert result == 32000
 
     def test_high_memory_job_cluster_execution(self, mock_wildcards):
         """Test high_memory_job function with cluster execution."""

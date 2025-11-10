@@ -4,7 +4,7 @@ import pytest
 
 from ViroConstrictor.genbank import GenBank
 
-PROJECT_ROOT = Path(__file__).parent.parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
 def get_happy_cases() -> list[dict[str, Path | str]]:

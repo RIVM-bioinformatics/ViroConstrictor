@@ -5,7 +5,7 @@ from Bio import SeqIO
 
 from tests.utils.fasta_generator import generate_fasta_file
 
-project_root = Path(__file__).parent.parent.parent.parent
+project_root = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(project_root.joinpath("ViroConstrictor/workflow")))
 from ViroConstrictor.workflow.main.scripts.prepare_refs import PrepareRefs  # isort:skip
 
