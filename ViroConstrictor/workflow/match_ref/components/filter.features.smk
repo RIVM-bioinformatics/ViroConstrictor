@@ -12,8 +12,6 @@ rule filter_gff:
         runtime=low_runtime_job,
     log:
         f"{logdir}FilterGFF_" "{sample}.log",
-    benchmark:
-        f"{logdir}{bench}FilterGFF_" "{sample}.txt",
     conda:
         workflow_environment_path("mr_scripts.yaml")
     container:

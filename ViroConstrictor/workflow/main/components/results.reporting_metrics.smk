@@ -14,8 +14,6 @@ rule vcf_to_tsv:
         runtime=low_runtime_job,
     log:
         f"{logdir}" "vcf_to_tsv_{Virus}.{RefID}.{sample}.log",
-    benchmark:
-        f"{logdir}{bench}" "vcf_to_tsv_{Virus}.{RefID}.{sample}.txt"
     params:
         script="-m main.scripts.vcf_to_tsv",
         pythonpath = f'{Path(workflow.basedir).parent}',
@@ -44,8 +42,6 @@ rule get_breadth_of_coverage:
         f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     log:
         f"{logdir}get_breadth_of_coverage_" "{Virus}.{RefID}.{sample}.log",
-    benchmark:
-        f"{logdir}{bench}get_breadth_of_coverage_" "{Virus}.{RefID}.{sample}.txt"
     params:
         script="-m main.scripts.boc",
         pythonpath = f'{Path(workflow.basedir).parent}',
@@ -68,8 +64,6 @@ rule calculate_amplicon_cov:
         f"{datadir}{wc_folder}{prim}" "{sample}_ampliconcoverage.csv",
     log:
         f"{logdir}" "calculate_amplicon_cov_{Virus}.{RefID}.{sample}.log",
-    benchmark:
-        f"{logdir}{bench}" "calculate_amplicon_cov_{Virus}.{RefID}.{sample}.txt"
     resources:
         mem_mb=low_memory_job,
         runtime=medium_runtime_job,

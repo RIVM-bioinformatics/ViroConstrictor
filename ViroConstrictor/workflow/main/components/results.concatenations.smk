@@ -160,8 +160,6 @@ rule concat_amplicon_cov:
         f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     log:
         f"{logdir}concat_amplicon_cov_" "{Virus}.{RefID}.log",
-    benchmark:
-        f"{logdir}{bench}concat_amplicon_cov_" "{Virus}.{RefID}.txt",
     threads: 1
     params:
         script="-m main.scripts.concat_amplicon_covs",

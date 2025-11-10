@@ -7,8 +7,6 @@ rule prepare_gffs:
         gff=f"{datadir}{wc_folder}{features}" "{sample}_features.gff",
     log:
         f"{logdir}prepare_gffs_" "{Virus}.{RefID}.{sample}.log",
-    benchmark:
-        f"{logdir}{bench}prepare_gffs_" "{Virus}.{RefID}.{sample}.txt"
     conda:
         workflow_environment_path("core_scripts.yaml")
     container:
@@ -41,8 +39,6 @@ rule prodigal:
         nt=f"{datadir}{wc_folder}{features}" "{sample}_features.nt.fasta",
     log:
         f"{logdir}prepare_gffs_" "{Virus}.{RefID}.{sample}.log",
-    benchmark:
-        f"{logdir}{bench}prepare_gffs_" "{Virus}.{RefID}.{sample}.txt"
     threads: config["threads"]["Index"]
     conda:
         workflow_environment_path("ORF_analysis.yaml")

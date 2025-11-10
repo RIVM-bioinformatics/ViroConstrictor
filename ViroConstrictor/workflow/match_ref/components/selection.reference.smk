@@ -16,8 +16,6 @@ rule filter_best_matching_ref:
         runtime=low_runtime_job,
     log:
         f"{logdir}FilterBR_" "{Virus}.{segment}.{sample}.log",
-    benchmark:
-        f"{logdir}{bench}FilterBR_""{Virus}.{segment}.{sample}.txt",
     params:
         script="-m match_ref.scripts.filter_best_matching_ref",
         pythonpath=f'{Path(workflow.basedir).parent}'
@@ -69,8 +67,6 @@ rule group_and_rename_refs:
         runtime=low_runtime_job,
     log:
         f"{logdir}GroupRefs_" "{sample}.log",
-    benchmark:
-        f"{logdir}{bench}GroupRefs_" "{sample}.txt",
     params:
         script="-m match_ref.scripts.group_refs",
         pythonpath=f'{Path(workflow.basedir).parent}'
