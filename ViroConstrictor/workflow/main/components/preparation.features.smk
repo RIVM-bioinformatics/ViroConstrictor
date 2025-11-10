@@ -15,7 +15,7 @@ rule prepare_gffs:
         f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     resources:
         mem_mb=low_memory_job,
-        runtime=55,
+        runtime=low_runtime_job,
     params:
         pythonpath = f'{Path(workflow.basedir).parent}',
         script="-m main.scripts.extract_gff"
@@ -50,7 +50,7 @@ rule prodigal:
         f"{container_base_path}/viroconstrictor_orf_analysis_{get_hash('ORF_analysis')}.sif"
     resources:
         mem_mb=medium_memory_job,
-        runtime=55,
+        runtime=medium_runtime_job,
     params:
         prodigal_method="meta",
         prodigal_outformat="gff",

@@ -9,9 +9,11 @@ rule filter_gff:
     threads: 1
     resources:
         mem_mb=low_memory_job,
-        runtime=55,
+        runtime=low_runtime_job,
     log:
         f"{logdir}FilterGFF_" "{sample}.log",
+    benchmark:
+        f"{logdir}{bench}FilterGFF_" "{sample}.txt",
     conda:
         workflow_environment_path("mr_scripts.yaml")
     container:
@@ -42,7 +44,7 @@ rule touch_gff:
     threads: 1
     resources:
         mem_mb=low_memory_job,
-        runtime=55,
+        runtime=low_runtime_job,
     shell:
         """
         cp {input.refdata} {output.groupedstats}

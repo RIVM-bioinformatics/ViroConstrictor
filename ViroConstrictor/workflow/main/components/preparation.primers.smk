@@ -11,7 +11,7 @@ rule prepare_primers:
         bed=f"{datadir}{wc_folder}{prim}" "{sample}_primers.bed",
     resources:
         mem_mb=low_memory_job,
-        runtime=55,
+        runtime=low_runtime_job,
     log:
         f"{logdir}prepare_primers_" "{Virus}.{RefID}.{sample}.log",
     benchmark:
@@ -43,7 +43,7 @@ rule filter_primer_bed:
         bed=f"{datadir}{wc_folder}{prim}" "{sample}_primers.bed",
     resources:
         mem_mb=low_memory_job,
-        runtime=55,
+        runtime=low_runtime_job,
     log:
         f"{logdir}prepare_primers_" "{Virus}.{RefID}.{sample}.log",
     benchmark:
@@ -70,6 +70,7 @@ rule create_empty_primers:
         bed=touch(f"{datadir}{wc_folder}{prim}" "{sample}_primers.bed"),
     resources:
         mem_mb=low_memory_job,
+        runtime=low_runtime_job,
     log:
         f"{logdir}prepare_primers_" "{Virus}.{RefID}.{sample}.log",
     shell:
