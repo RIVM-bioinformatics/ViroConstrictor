@@ -1,4 +1,5 @@
 import argparse
+import logging
 import multiprocessing
 import os
 import pathlib
@@ -12,30 +13,46 @@ import rich
 
 from ViroConstrictor import __prog__, __version__
 from ViroConstrictor.functions import FlexibleArgFormatter, RichParser
+from ViroConstrictor.genbank import GenBank
 from ViroConstrictor.logging import log, setup_logger
 from ViroConstrictor.samplesheet import GetSamples
+from ViroConstrictor.scheduler import Scheduler
 from ViroConstrictor.userprofile import ReadConfig
 from ViroConstrictor.validatefasta import CheckReferenceFile
-from ViroConstrictor.workflow.presets import match_preset_name
+from ViroConstrictor.workflow.helpers.presets import match_preset_name
 
 
 class CLIparser:
-    def __init__(self, input_args: list[str]) -> None:
+    def __init__(self, input_args: list[str], settings_path: str) -> None:
         self.flags: argparse.Namespace = self._get_args(input_args)
+        # Override standard logging when verbose option is given and add debug statements
+        if self.flags.verbose:
+            log.setLevel(logging.DEBUG)
         self.logfile = setup_logger(self.flags.output)
+
         log.info(f"ViroConstrictor version: [blue]{__version__}[/blue]")
+        log.debug(
+            f"Input handling :: Parser :: Getting arguments :: the parsed arguments are: {self.flags}"
+        )
+        log.debug(
+            "Input handling :: Parser :: Validate arguments :: checking all given command line arguments."
+        )
         self.cli_errors = self._validate_cli_args()
         if self.cli_errors:
             for err in self.cli_errors:
                 log.error(err)
             sys.exit(1)
-        self.user_config = ReadConfig(
-            pathlib.Path("~/.ViroConstrictor_defaultprofile.ini").expanduser()
+        self.user_config = ReadConfig(pathlib.Path(settings_path).expanduser())
+        self.scheduler = Scheduler.determine_scheduler(
+            self.flags.scheduler, self.user_config, self.flags.dryrun
         )
         self.flags.presets = self.flags.disable_presets is False
         self.samples_df = pd.DataFrame()
         self.samples_dict: dict[Hashable, Any] = {}
-        if self.flags.samplesheet is not None:
+        if self.flags.samplesheet is not None: # samplesheet is given
+            log.debug(
+                "Input handling :: Parser :: Getting samples :: getting samples from sample sheet."
+            )
             self._print_missing_asset_warning(self.flags, True)
             self.samples_dict = self._make_samples_dict(
                 self._check_sample_sheet(self.flags.samplesheet),
@@ -43,16 +60,21 @@ class CLIparser:
                 GetSamples(self.flags.input, self.flags.platform),
             )
             self.samples_df = pd.DataFrame.from_dict(self.samples_dict, orient="index")
-        else:
-            self._print_missing_asset_warning(self.flags, False)
-            self.samples_dict = self._make_samples_dict(
-                None, self.flags, GetSamples(self.flags.input, self.flags.platform)
+            log.debug(
+                "Input handling :: Parser :: Getting samples :: samples have been acquired successfully."
             )
+            converted_samples = convert_log_text(self.samples_dict)
+            log.debug(
+                f"Input handling :: Parser :: Getting samples :: the parsed samples are:\n{converted_samples}"
+            )
+        else: # samplesheet is not given
+            self._print_missing_asset_warning(self.flags, False)
+            if GenBank.is_genbank(pathlib.Path(self.flags.reference)):
+                self.parse_genbank(self.flags.reference)
+            self.samples_dict = self._make_samples_dict(None, self.flags, GetSamples(self.flags.input, self.flags.platform))
         if self.samples_df.empty:
             self.samples_df = pd.DataFrame.from_dict(self.samples_dict, orient="index")
-        self.samples_df = self.samples_df.reset_index(drop=False).rename(
-            columns={"index": "SAMPLE"}
-        )
+        self.samples_df = self.samples_df.reset_index(drop=False).rename(columns={"index": "SAMPLE"})
         (
             self.input_path,
             self.workdir,
@@ -63,79 +85,53 @@ class CLIparser:
         if not self.samples_dict:
             sys.exit(1)
         log.info("[green]Successfully parsed all command line arguments[/green]")
-        self._check_sample_properties(
-            self.samples_dict
-        )  # raises errors if stuff is not right
+        self._check_sample_properties(self.samples_dict)  # raises errors if stuff is not right
+
+    def parse_genbank(self, reference: str) -> None:
+        self.flags.reference, self.flags.features, self.flags.target = GenBank.split_genbank(pathlib.Path(reference), emit_target=True)
 
     def _validate_cli_args(self) -> list[str] | None:
         arg_errors = []
         if dir_path(self.flags.input) is False:
-            arg_errors.append(
-                f"'[magenta]{self.flags.input}[/magenta]' is not a directory."
-            )
+            arg_errors.append(f"'[magenta]{self.flags.input}[/magenta]' is not a directory.")
         if self.flags.samplesheet is not None:
             allowed_extensions = [".xls", ".xlsx", ".csv", ".tsv"]
             if file_exists(self.flags.samplesheet) is False:
-                arg_errors.append(
-                    f"'[magenta]{self.flags.samplesheet}[/magenta]' is not an existing file."
-                )
-            if (
-                check_file_extension(
-                    allowed_extensions=allowed_extensions, fname=self.flags.samplesheet
-                )
-                is False
-            ):
+                arg_errors.append(f"'[magenta]{self.flags.samplesheet}[/magenta]' is not an existing file.")
+            if check_file_extension(allowed_extensions=allowed_extensions, fname=self.flags.samplesheet) is False:
                 arg_errors.append(
                     f"'[magenta]{self.flags.samplesheet}[/magenta]' does not have a valid file extension.\nAllowed file extenstions for the samplesheet: {' '.join([f'[blue]{x}[/blue]' for x in allowed_extensions])}"
                 )
         if self.flags.reference is not None:
-            allowed_extensions = [".fasta", ".fa"]
+            allowed_extensions = [".fasta", ".fa", ".gb", ".gbk"]
             if self.flags.reference == "NONE":
-                arg_errors.append(
-                    f"'[magenta]{self.flags.reference}[/magenta]' cannot be given for the reference file."
-                )
+                arg_errors.append(f"'[magenta]{self.flags.reference}[/magenta]' cannot be given for the reference file.")
             if file_exists(self.flags.reference) is False:
-                arg_errors.append(
-                    f"'[magenta]{self.flags.reference}[/magenta]' is not an existing file."
-                )
-            if (
-                check_file_extension(
-                    allowed_extensions=allowed_extensions, fname=self.flags.reference
-                )
-                is False
-            ):
+                arg_errors.append(f"'[magenta]{self.flags.reference}[/magenta]' is not an existing file.")
+            if check_file_extension(allowed_extensions=allowed_extensions, fname=self.flags.reference) is False:
                 arg_errors.append(
                     f"'[magenta]{self.flags.reference}[/magenta]' does not have a valid file extension.\nAllowed file extenstions for the reference: {' '.join([f'[blue]{x}[/blue]' for x in allowed_extensions])}"
                 )
         if self.flags.primers is not None:
             allowed_extensions = [".fasta", ".fa", ".bed"]
             if file_exists(self.flags.primers) is False:
-                arg_errors.append(
-                    f"'[magenta]{self.flags.primers}[/magenta]' is not an existing file."
-                )
-            if (
-                check_file_extension(
-                    allowed_extensions=allowed_extensions, fname=self.flags.primers
-                )
-                is False
-            ):
+                arg_errors.append(f"'[magenta]{self.flags.primers}[/magenta]' is not an existing file.")
+            if check_file_extension(allowed_extensions=allowed_extensions, fname=self.flags.primers) is False:
                 arg_errors.append(
                     f"'[magenta]{self.flags.primers}[/magenta]' does not have a valid file extension.\nAllowed file extenstions for the primers: {' '.join([f'[blue]{x}[/blue]' for x in allowed_extensions])}"
                 )
         if self.flags.features is not None:
             allowed_extensions = [".gff", ".gff3"]
             if file_exists(self.flags.features) is False:
-                arg_errors.append(
-                    f"'[magenta]{self.flags.features}[/magenta]' is not an existing file."
-                )
-            if (
-                check_file_extension(
-                    allowed_extensions=allowed_extensions, fname=self.flags.features
-                )
-                is False
-            ):
+                arg_errors.append(f"'[magenta]{self.flags.features}[/magenta]' is not an existing file.")
+            if check_file_extension(allowed_extensions=allowed_extensions, fname=self.flags.features) is False:
                 arg_errors.append(
                     f"'[magenta]{self.flags.features}[/magenta]' does not have a valid file extension.\nAllowed file extenstions for the features: {' '.join([f'[blue]{x}[/blue]' for x in allowed_extensions])}"
+                )
+        if self.flags.scheduler is not None:
+            if not Scheduler.is_valid(self.flags.scheduler):
+                arg_errors.append(
+                    f"'[magenta]{self.flags.scheduler}[/magenta]' is not a valid scheduler. Please use one of the following: {Scheduler.supported_schedulers()}"
                 )
         return arg_errors
 
@@ -169,7 +165,7 @@ class CLIparser:
         """
         parser: argparse.ArgumentParser = RichParser(
             prog=f"[bold]{__prog__}[/bold]",
-            usage="%(prog)s \[required arguments] \[optional arguments]",
+            usage=r"%(prog)s \[required arguments] \[optional arguments]",
             description="%(prog)s: a pipeline for analysing Viral targeted (amplicon) sequencing data in order to generate a biologically valid consensus sequence.",
             formatter_class=FlexibleArgFormatter,
             add_help=False,
@@ -297,11 +293,28 @@ class CLIparser:
         )
 
         optional_args.add_argument(
+            "--unidirectional",
+            "-uni",
+            action="store_true",
+            default=False,
+            help="Use this flag to indicate that the (illumina) sequencing data is unidirectional (i.e. only R1 reads are available). This will cause the pipeline to not consider R2 reads for the analysis.\nCan only be combined with the illumina platform.",
+        )
+
+        optional_args.add_argument(
             "--disable-presets",
             "-dp",
             action="store_true",
             default=False,
             help="Disable the use of presets, this will cause all analysis settings to be set to default values",
+        )
+
+        optional_args.add_argument(
+            "--fragment-lookaround-size",
+            "-fls",
+            type=int,
+            default=None,
+            metavar="N",
+            help="Size of the fragment lookaround region (in bp) for the AmpliGone tool.",
         )
 
         optional_args.add_argument(
@@ -311,6 +324,18 @@ class CLIparser:
             metavar="N",
             type=int,
             help=f"Number of local threads that are available to use.\nDefault is the number of available threads in your system ({min(multiprocessing.cpu_count(), 128)})",
+        )
+
+        optional_args.add_argument(
+            "--scheduler",
+            "-s",
+            default="auto",
+            metavar="Str",
+            type=str,
+            help=(
+                f"The scheduler to use for the workflow, either 'auto', 'none', or any in the following list: {Scheduler.supported_schedulers()}.\n"
+                "Default is 'auto', which will try to determine the scheduler automatically."
+            ),
         )
 
         optional_args.add_argument(
@@ -341,6 +366,13 @@ class CLIparser:
             help="Skip the update check",
         )
 
+        optional_args.add_argument(
+            "--verbose",
+            "--debug",
+            action="store_true",
+            help="Adds extra information to the log file",
+        )
+
         if not givenargs:
             rich.print(
                 f"{parser.prog} was called but no arguments were given, please try again\nUse '[cyan]{parser.prog} -h[/cyan]' to see the help document"
@@ -368,17 +400,20 @@ class CLIparser:
         if not df.empty:
             df.columns = df.columns.str.upper()
             req_cols = check_samplesheet_columns(df)
+            df = check_samplesheet_empty_rows(df)
             if req_cols is False:
                 sys.exit(1)
             df = samplesheet_enforce_absolute_paths(df)
-            if df.get("PRESET") is None:
-                df[["PRESET", "PRESET_SCORE"]] = df.apply(
-                    lambda x: pd.Series(
-                        match_preset_name(x["VIRUS"], use_presets=self.flags.presets)
-                    ),
-                    axis=1,
-                )
-            return check_samplesheet_rows(df)
+            df = check_samplesheet_rows(df)
+            df = self._samplesheet_handle_presets(df)
+#           based on the _samplesheet_handle_presets function i commented out this section below under the assumption that it is now handled in the function.
+#           TODO: check if this needs to be changed
+#             if df.get("PRESET") is None:
+#                 df[["PRESET", "PRESET_SCORE"]] = df.apply(
+#                     lambda x: pd.Series(match_preset_name(x["VIRUS"], use_presets=self.flags.presets)),
+#                     axis=1,
+#                 )
+            return df
         return pd.DataFrame()
 
     def _make_samples_dict(
@@ -405,68 +440,275 @@ class CLIparser:
 
         """
         if not CheckInputFiles(args.input):
-            log.error(
-                f"'[magenta]{args.input}[/magenta]' does not contain any valid FastQ files. Exiting..."
-            )
+            log.error(f"'[magenta]{args.input}[/magenta]' does not contain any valid FastQ files. Exiting...")
             sys.exit(1)
-        log.info(
-            f"[green]Valid FastQ files were found in the input directory.[/green] ('[magenta]{args.input}[/magenta]')"
-        )
+        log.info(f"[green]Valid FastQ files were found in the input directory.[/green] ('[magenta]{args.input}[/magenta]')")
         indirFrame: pd.DataFrame = sampledir_to_df(filedict, args.platform)
-        if df is not None:
+        if df is not None and not df.empty:
             df.set_index("SAMPLE", inplace=True)
-            df = pd.merge(df, indirFrame, left_index=True, right_index=True)
+            df = pd.merge(df, indirFrame, left_index=True, right_index=True, how="inner")
             if df.empty:
                 log.error(
-                    "[bold red]The files given in the samplesheet do not match the files given in the input-directory. Please check your samplesheet or input directory and try again.[/bold red]"
+                    "[bold red]No samples in the samplesheet match the samples found in the input directory. Please check your samplesheet or input directory and try again.[/bold red]"
                 )
                 sys.exit(1)
             if len(indirFrame) > len(df):
-                log.error(
-                    "[bold red]Not all samples in the input directory are present in the given samplesheet. Please check your samplesheet or input directory and try again.[/bold red]"
+                unmatched_samples = indirFrame.index.difference(df.index).tolist()
+                log.warning(
+                    f"[yellow]Not all samples in the input directory are present in the given samplesheet. Missing samples: {unmatched_samples}. These will be ignored.[/yellow]"
                 )
-                sys.exit(1)
             if len(indirFrame) < len(df):
                 log.error(
                     "[bold red]Either not all samples in the samplesheet are present in the given input directory, or there are duplicate samples in the samplesheet. Please check your samplesheet or input directory and try again.[/bold red]"
                 )
                 sys.exit(1)
-            if df.get("PRIMER-MISMATCH-RATE") is None:
-                df["PRIMER-MISMATCH-RATE"] = args.primer_mismatch_rate
-            if df.get("MIN-COVERAGE") is None:
-                df["MIN-COVERAGE"] = args.min_coverage
-            if df.get("PRIMERS") is None:
-                df["PRIMERS"] = args.primers
-                if args.primers is None:
-                    log.error(
-                        "[bold red]No primer file specified in samplesheet or in command line options. Consider adding the -pr flag.[/bold red]"
-                    )
-                    sys.exit(1)
-            if df.get("FEATURES") is None:
-                df["FEATURES"] = args.features
-                if args.features is None:
-                    log.error(
-                        "[bold red]No features file specified in samplesheet or in command line options. Consider adding the -gff flag.[/bold red]"
-                    )
-                    sys.exit(1)
-            if df.get("PRESET") is None:
-                df[["PRESET", "PRESET_SCORE"]] = df.apply(
-                    lambda x: pd.Series(
-                        match_preset_name(x["VIRUS"], use_presets=args.presets)
-                    ),
-                    axis=1,
-                )
-            if df.get("MATCH-REF") is None:
-                df["MATCH-REF"] = args.match_ref
-            if df.get("SEGMENTED") is None:
-                df["SEGMENTED"] = args.segmented
-            df = pd.DataFrame.replace(df, np.nan, None)
+
+            final_columns = {
+                "SAMPLE": {
+                    "type": str,
+                    "default": None,
+                    "required": True,
+                    "path": False,
+                    "inferred": False,
+                    "inheritance_allowed": False,
+                    "empty_allowed": False,
+                },
+                "VIRUS": {
+                    "type": str,
+                    "default": None,
+                    "required": True,
+                    "path": False,
+                    "inferred": False,
+                    "inheritance_allowed": False,
+                    "empty_allowed": False,
+                },
+                "REFERENCE": {
+                    "type": str,
+                    "default": args.reference,
+                    "required": True,
+                    "path": True,
+                    "inferred": False,
+                    "inheritance_allowed": True,
+                    "empty_allowed": False,
+                },
+                "PRIMERS": {
+                    "type": str,
+                    "default": args.primers,
+                    "required": True,
+                    "path": True,
+                    "inferred": False,
+                    "inheritance_allowed": False,
+                    "empty_allowed": True
+                },
+                "FEATURES": {
+                    "type": str,
+                    "default": args.features,
+                    "required": False,
+                    "path": True,
+                    "inferred": False,
+                    "inheritance_allowed": True,
+                    "empty_allowed": True
+                },
+                "MIN-COVERAGE": {
+                    "type": int,
+                    "default": args.min_coverage,
+                    "required": False,
+                    "path": False,
+                    "inferred": False,
+                    "inheritance_allowed": False,
+                    "empty_allowed": False,
+                },
+                "MATCH-REF": {
+                    "type": bool,
+                    "default": args.match_ref,
+                    "required": False,
+                    "path": False,
+                    "inferred": False,
+                    "inheritance_allowed": False,
+                    "empty_allowed": False,
+                },
+                "SEGMENTED": {
+                    "type": bool,
+                    "default": args.segmented,
+                    "required": False,
+                    "path": False,
+                    "inferred": False,
+                    "inheritance_allowed": False,
+                    "empty_allowed": False,
+                },
+                "PRESET": {
+                    "type": str,
+                    "default": "DEFAULT",
+                    "required": False,
+                    "path": False,
+                    "inferred": True,
+                    "inheritance_allowed": False,
+                    "empty_allowed": False,
+                },
+                "PRESET_SCORE": {
+                    "type": float,
+                    "default": 0.0,
+                    "required": False,
+                    "path": False,
+                    "inferred": True,
+                    "inheritance_allowed": False,
+                    "empty_allowed": False,
+                },
+                "PRIMER-MISMATCH-RATE": {
+                    "type": float,
+                    "default": args.primer_mismatch_rate,
+                    "required": False,
+                    "path": False,
+                    "inferred": False,
+                    "inheritance_allowed": False,
+                    "empty_allowed": False,
+                },
+                "FRAGMENT-LOOKAROUND-SIZE": {
+                    "type": int,
+                    "default": args.fragment_lookaround_size,
+                    "required": False,
+                    "path": False,
+                    "inferred": False,
+                    "inheritance_allowed": False,
+                    "empty_allowed": False,
+                },
+                "DISABLE-PRESETS": {
+                    "type": bool,
+                    "default": args.disable_presets,
+                    "required": False,
+                    "path": False,
+                    "inferred": False,
+                    "inheritance_allowed": False,
+                    "empty_allowed": False,
+                },
+            }
+            # iterate over the existing df, adding missing columns with either default argument values, or overwrite values based on either genbank splitting or preset matching.
+            for sample_name in df.index:
+                for column, properties in final_columns.items():
+                    current_value = df.at[sample_name, column] if column in df.columns else None
+                    
+                    # Handle VIRUS column - must always be present and cannot be empty
+                    if column == "VIRUS":
+                        if current_value is None or current_value == "":
+                            log.error(f"[bold red]Virus name cannot be empty for sample '{sample_name}'[/bold red]")
+                            sys.exit(1)
+                    
+                    # Handle REFERENCE column - must be valid path, handle genbank splitting
+                    elif column == "REFERENCE":
+                        if current_value is None:
+                            if properties["default"] is None:
+                                log.error(f"[bold red]Reference file must be provided for sample '{sample_name}'[/bold red]")
+                                sys.exit(1)
+                            df.at[sample_name, column] = properties["default"]
+                        else:
+                            # Check if it's a genbank file and split if needed
+                            if GenBank.is_genbank(pathlib.Path(str(current_value))):
+                                split_ref, split_features, _ = GenBank.split_genbank(pathlib.Path(str(current_value)), emit_target=True)
+                                df.at[sample_name, column] = str(split_ref)
+                                # Also set features if not already set
+                                if "FEATURES" not in df.columns or pd.isna(df.at[sample_name, "FEATURES"]):
+                                    df.at[sample_name, "FEATURES"] = str(split_features)
+                    
+                    # Handle PRIMERS column - must be valid path or "NONE"
+                    elif column == "PRIMERS":
+                        if current_value is None or current_value == "":
+                            if properties["default"] is None:
+                                log.error(f"[bold red]Primers file must be provided for sample '{sample_name}' or set to 'NONE'[/bold red]")
+                                sys.exit(1)
+                            df.at[sample_name, column] = properties["default"]
+                        # Ensure column exists in dataframe
+                        if column not in df.columns:
+                            df[column] = properties["default"]
+                    
+                    # Handle FEATURES column - must be valid path or "NONE", consider genbank splitting
+                    elif column == "FEATURES":
+                        if current_value is None or current_value == "":
+                            # Check if reference is genbank and already processed
+                            ref_value = df.at[sample_name, "REFERENCE"] if "REFERENCE" in df.columns else None
+                            if ref_value and GenBank.is_genbank(pathlib.Path(str(ref_value))):
+                                # Features should have been set during reference processing
+                                pass
+                            elif properties["default"] is None:
+                                log.error(f"[bold red]Features file must be provided for sample '{sample_name}' or set to 'NONE'[/bold red]")
+                                sys.exit(1)
+                            else:
+                                df.at[sample_name, column] = properties["default"]
+                        # Ensure column exists in dataframe
+                        if column not in df.columns:
+                            df[column] = properties["default"]
+                    
+                    # Handle MIN-COVERAGE - use default if not provided
+                    elif column == "MIN-COVERAGE":
+                        if current_value is None:
+                            df.at[sample_name, column] = properties["default"]
+                        # Ensure column exists in dataframe
+                        if column not in df.columns:
+                            df[column] = properties["default"]
+                    
+                    elif column == "PRIMER-MISMATCH-RATE":
+                        if current_value is None:
+                            df.at[sample_name, column] = properties["default"]
+                        # Ensure column exists in dataframe
+                        if column not in df.columns:
+                            df[column] = properties["default"]
+                    
+                    # Handle MATCH-REF and SEGMENTED - use defaults if not provided
+                    elif column in ["MATCH-REF", "SEGMENTED"]:
+                        if current_value is None:
+                            df.at[sample_name, column] = properties["default"]
+                        # Ensure column exists in dataframe
+                        if column not in df.columns:
+                            df[column] = properties["default"]
+                    
+                    # Handle PRESET and PRESET_SCORE - use preset matching if not provided
+                    elif column in ["PRESET", "PRESET_SCORE"]:
+                        if current_value is None or (column == "PRESET" and current_value == ""):
+                            virus_value = df.at[sample_name, "VIRUS"] if "VIRUS" in df.columns else None
+                            if virus_value:
+                                preset_result = match_preset_name(str(virus_value), use_presets=self.flags.presets)
+                                if column == "PRESET":
+                                    df.at[sample_name, column] = preset_result[0]
+                                else:  # PRESET_SCORE
+                                    df.at[sample_name, column] = preset_result[1]
+                            else:
+                                df.at[sample_name, column] = properties["default"]
+                        # Ensure column exists in dataframe
+                        if column not in df.columns:
+                            if column == "PRESET":
+                                df[column] = "DEFAULT"
+                            else:  # PRESET_SCORE
+                                df[column] = 0.0
+                                
+                    # Handle FRAGMENT-LOOKAROUND-SIZE - use None if not fragmented amplicon type and
+                    # use default if not provided or invalid input is given
+                    elif column == "FRAGMENT-LOOKAROUND-SIZE":
+                        if args.amplicon_type != "fragmented":
+                            log.warning(f"[yellow]Fragment-lookaround-size is only relevant for 'fragmented' amplicon type. Ignoring value for sample '{sample_name}'.[/yellow]")
+                            df.at[sample_name, column] = None
+                        elif current_value is None or pd.isna(current_value):
+                            df.at[sample_name, column] = properties["default"]
+                        else:
+                            try:
+                                if int(current_value) != current_value:
+                                    log.warning(f"[yellow]Fragment-lookaround-size value for sample '{sample_name}' is not a valid input. Using default value for this sample.[/yellow]")
+                                    df.at[sample_name, column] = properties["default"]
+                            except ValueError:
+                                log.warning(f"[yellow]Fragment-lookaround-size value for sample '{sample_name}' is not a valid input. Using default value for this sample.[/yellow]")
+                                df.at[sample_name, column] = properties["default"]
+
+                    # Handle DISABLE-PRESETS - use defaults if not provided
+                    elif column == "DISABLE-PRESETS":
+                        if current_value is None or current_value == "" or pd.isna(current_value):
+                            df.at[sample_name, column] = properties["default"]
+                        elif str(current_value).upper() not in ["TRUE", "FALSE"]:
+                            log.warning(f"[yellow]The 'DISABLE-PRESETS' column for sample '{sample_name}' should be either TRUE or FALSE. Using command line value instead.[/yellow]")
+                            df.at[sample_name, column] = properties["default"]
+                            
+            df = df.replace({np.nan: None})
             return df.to_dict(orient="index")
         return args_to_df(args, indirFrame).to_dict(orient="index")
 
-    def _print_missing_asset_warning(
-        self, args: argparse.Namespace, sheet_present: bool
-    ) -> None:
+    def _print_missing_asset_warning(self, args: argparse.Namespace, sheet_present: bool) -> None:
         """If a sample sheet is present, print a warning that conflicting run-wide settings given through the commandline will be ignored.
         If no sample sheet is present, check if all required run-wide settings are given. If not, exit with a corresponding error message
 
@@ -491,20 +733,8 @@ class CLIparser:
                 log.warn(
                     "[yellow]Both a sample sheet and run-wide GFF file was given, the GFF file given through the commandline will be ignored[/yellow]"
                 )
-        if not sheet_present and any(
-            map(
-                lambda f: f is None,
-                {args.primers, args.reference, args.features, args.target},
-            )
-        ):
-            log.error(
-                f"[bold red]Run-wide analysis settings were not provided and no samplesheet was given either with per-sample run information.\nPlease either provide all required information ([underline]reference[/underline], [underline]primers[/underline], [underline]genomic features[/underline] and [underline]viral-target[/underline]) for a run-wide analysis or provide a samplesheet with per-sample run information[/bold red]"
-            )
-            sys.exit(1)
 
-    def _get_paths_for_workflow(
-        self, flags: argparse.Namespace
-    ) -> tuple[str, str, str, str, str]:
+    def _get_paths_for_workflow(self, flags: argparse.Namespace) -> tuple[str, str, str, str, str]:
         """Takes the input and output paths from the command line, and then creates the working directory if
         it doesn't exist. It then changes the current working directory to the working directory
 
@@ -521,12 +751,8 @@ class CLIparser:
         input_path: str = os.path.abspath(flags.input)
         working_directory: str = os.path.abspath(flags.output)
         exec_start_path: str = os.path.abspath(os.getcwd())
-        snakefile: str = os.path.join(
-            os.path.abspath(os.path.dirname(__file__)), "workflow", "workflow.smk"
-        )
-        match_ref_snakefile: str = os.path.join(
-            os.path.abspath(os.path.dirname(__file__)), "workflow", "match_ref.smk"
-        )
+        snakefile: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), "workflow", "main", "workflow.smk")
+        match_ref_snakefile: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), "workflow", "match_ref", "workflow.smk")
 
         if not os.path.exists(working_directory):
             os.makedirs(working_directory)
@@ -538,6 +764,54 @@ class CLIparser:
             snakefile,
             match_ref_snakefile,
         )
+
+    def _samplesheet_handle_presets(self, df: pd.DataFrame, ) -> pd.DataFrame:
+        """
+        Process the 'DISABLE-PRESETS' column in the input DataFrame and assign preset values.
+        This function ensures that the 'DISABLE-PRESETS' column contains boolean values or None/NaN,
+        converting string representations ("TRUE", "FALSE") to their respective boolean types.
+        It then applies the `match_preset_name` function to each row, using the value of
+        'DISABLE-PRESETS' to determine whether to use presets, and assigns the results to
+        the 'PRESET' and 'PRESET_SCORE' columns. When the 'DISABLE-PRESETS' column is not present,
+        the command line flag value is used instead.
+        
+        Parameters
+        ----------
+        df : pd.DataFrame
+            Input DataFrame containing at least the columns 'DISABLE-PRESETS' and 'VIRUS'.
+            
+        Returns
+        -------
+        pd.DataFrame
+            The modified DataFrame with updated 'DISABLE-PRESETS', 'PRESET', and 'PRESET_SCORE' columns.
+            
+        Notes
+        -----
+        - The function expects the presence of a `match_preset_name` function and a `self.flags.presets` attribute.
+        - Only rows with 'DISABLE-PRESETS' values of "TRUE" or "FALSE" (case-insensitive) are converted to boolean.
+        - If 'DISABLE-PRESETS' is not present or not a recognized value, the command line flag value is used.
+        """
+        # Make sure that the DISABLE-PRESETS column contains boolean values 
+        # ("FALSE" would otherwise be interpreted as True)
+        if df.get("DISABLE-PRESETS") is not None:
+            for index, row in df.iterrows():
+                if str(row["DISABLE-PRESETS"]).upper() in ["TRUE", "FALSE"]:
+                    if str(row["DISABLE-PRESETS"]).upper() == "TRUE":
+                        df.at[index, "DISABLE-PRESETS"] = True
+                    else:
+                        df.at[index, "DISABLE-PRESETS"] = False
+
+        df[["PRESET", "PRESET_SCORE"]] = df.apply(
+            lambda x: pd.Series(
+                # Allow only True or False inputs for the DISABLE-PRESETS column (None/NaN is also allowed)
+                # otherwise use the command line flag value
+                match_preset_name(x["VIRUS"], use_presets=not x["DISABLE-PRESETS"])
+                if df.get("DISABLE-PRESETS") is not None and str(x["DISABLE-PRESETS"]).upper() in ["TRUE", "FALSE"] 
+                else match_preset_name(x["VIRUS"], use_presets=self.flags.presets)
+            ),
+            axis=1,
+        )
+        return df
 
 
 def samplesheet_enforce_absolute_paths(df: pd.DataFrame) -> pd.DataFrame:
@@ -572,7 +846,7 @@ def samplesheet_enforce_absolute_paths(df: pd.DataFrame) -> pd.DataFrame:
     for column in columns_to_enforce:
         if column in df.columns:
             df[column] = df[column].apply(
-                lambda x: os.path.abspath(os.path.expanduser(x)) if x != "NONE" else x
+                lambda x: os.path.abspath(os.path.expanduser(x)) if not pd.isna(x) else x
             )
     return df
 
@@ -721,6 +995,33 @@ def check_samplesheet_columns(df: pd.DataFrame) -> bool:
     return True
 
 
+def check_samplesheet_empty_rows(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Removes completely empty rows from a pandas DataFrame.
+    
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The input DataFrame representing the samplesheet.
+        
+    Returns
+    -------
+    pandas.DataFrame
+        The DataFrame with all completely empty rows removed.
+        
+    Notes
+    -----
+    If any completely empty rows are found and removed, a warning is logged indicating
+    the number of rows removed.
+    """
+    rows_before = len(df)
+    df = df.dropna(how="all")
+    rows_after = len(df)
+    if rows_before > rows_after:
+        log.warning(f"[yellow]Some rows in the samplesheet were completely empty and have been removed. Number of removed rows: {rows_before - rows_after}[/yellow]")
+    return df
+
+
 def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
     """Checks whether the row-based contents of the samplesheet dataframe are valid.
 
@@ -732,20 +1033,20 @@ def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
     Returns
     -------
         A dataframe with the columns: SAMPLE, VIRUS, PRIMERS, REFERENCE, FEATURES, MATCH-REF, SEGMENTED, MIN-COVERAGE,
-    PRIMER-MISMATCH-RATE
+    PRIMER-MISMATCH-RATE, PRESET, PRESET_SCORE, FRAGMENT-LOOKAROUND-SIZE
 
     """
     formats = {
         "SAMPLE": {
             "dtype": str,
             "required": True,
-            "disallowed_characters": "[ @!#$%^&*()+=|\]\[{}':;,/?<>~`]",
+            "disallowed_characters": r"[ @!#$%^&*()+=|\]\[{}':;,/?<>~`]",
             "path": False,
         },
         "VIRUS": {
             "dtype": str,
             "required": True,
-            "disallowed_characters": "[ @!#$%^&*()+=|\]\[{}':;,/?<>~`]",
+            "disallowed_characters": r"[ @!#$%^&*()+=|\]\[{}':;,/?<>~`]",
             "path": False,
         },
         "PRIMERS": {
@@ -785,7 +1086,7 @@ def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
             "path": False,
         },
         "PRIMER-MISMATCH-RATE": {
-            "dtype": int,
+            "dtype": float,
             "required": False,
             "disallowed_characters": None,
             "path": False,
@@ -802,8 +1103,25 @@ def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
             "disallowed_characters": None,
             "path": False,
         },
+        "FRAGMENT-LOOKAROUND-SIZE": {
+            "dtype": int,
+            "required": False,
+            "disallowed_characters": None,
+            "path": False,
+        },
+        "DISABLE-PRESETS": {
+            "dtype": bool,
+            "required": False,
+            "disallowed_characters": None,
+            "path": False,
+        },
     }
     for colName, colValue in df.items():
+        if formats[colName]["dtype"] == int: 
+            # Convert integers back to integer type after pandas read them as floats 
+            # strings will be converted to NaN
+            df[colName] = pd.to_numeric(df[colName], downcast="integer", errors="coerce")
+            
         if colName not in formats:
             log.error(
                 f"[bold red]Unknown column '{colName}' in samplesheet.[/bold red]\n[yellow]Please check the column-headers in your samplesheet file and try again.\nAllowed column-headers are as follows: {' | '.join(list(formats))}[/yellow]"
@@ -821,10 +1139,7 @@ def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
                         f"[bold red]{colName} column contains invalid data type.[/bold red]\n[yellow]Please check your samplesheet file and try again.[/yellow]"
                     )
                     sys.exit(1)
-                if (
-                    formats[colName]["disallowed_characters"] is not None
-                    and formats[colName]["dtype"] == str
-                ):
+                if formats[colName]["disallowed_characters"] is not None and formats[colName]["dtype"] == str:
                     chars = re.compile(formats[colName]["disallowed_characters"])
                     if chars.search(val):
                         log.error(
@@ -904,14 +1219,10 @@ def CheckInputFiles(indir: str) -> bool:
         extensions = "".join(pathlib.Path(filenames).suffixes)
         foundfiles.append(extensions)
 
-    return any(
-        file
-        for file in foundfiles
-        if any(file.endswith(ext) for ext in allowedextensions)
-    )
+    return any(file for file in foundfiles if any(file.endswith(ext) for ext in allowedextensions))
 
 
-def args_to_df(args: argparse.Namespace, df: pd.DataFrame) -> pd.DataFrame:
+def args_to_df(args: argparse.Namespace, existing_df: pd.DataFrame) -> pd.DataFrame:
     """It takes the arguments from the command line and places them into a dataframe
 
     Parameters
@@ -926,24 +1237,29 @@ def args_to_df(args: argparse.Namespace, df: pd.DataFrame) -> pd.DataFrame:
         A dataframe with the arguments as columns.
 
     """
-    df["VIRUS"] = args.target
-    df["MATCH-REF"] = args.match_ref
-    df["SEGMENTED"] = args.segmented
-    df["PRIMERS"] = os.path.abspath(args.primers) if args.primers != "NONE" else "NONE"
-    df["REFERENCE"] = os.path.abspath(args.reference)
-    df["FEATURES"] = (
-        os.path.abspath(args.features) if args.features != "NONE" else "NONE"
+    df = pd.DataFrame(
+        [
+            {
+                "VIRUS": args.target,
+                "MATCH-REF": args.match_ref,
+                "SEGMENTED": args.segmented,
+                "PRIMERS": (os.path.abspath(args.primers) if args.primers != "NONE" else "NONE"),
+                "REFERENCE": os.path.abspath(args.reference),
+                "FEATURES": (os.path.abspath(args.features) if args.features != "NONE" else "NONE"),
+                "MIN-COVERAGE": args.min_coverage,
+                "PRIMER-MISMATCH-RATE": args.primer_mismatch_rate,
+                "PRESET": match_preset_name(args.target, args.presets)[0],
+                "PRESET_SCORE": match_preset_name(args.target, args.presets)[1],
+            }
+        ]
     )
-    df["MIN-COVERAGE"] = args.min_coverage
-    df["PRIMER-MISMATCH-RATE"] = args.primer_mismatch_rate
-    df[["PRESET", "PRESET_SCORE"]] = match_preset_name(args.target, args.presets)
-    df = pd.DataFrame.replace(df, np.nan, None)
-    return df
+    for col in df.columns:
+        existing_df[col] = df.iloc[0][col]
+    existing_df = pd.DataFrame.replace(existing_df, np.nan, None)
+    return existing_df
 
 
-def sampledir_to_df(
-    sampledict: dict[str, str] | dict[str, dict[str, str]], platform: str
-) -> pd.DataFrame:
+def sampledir_to_df(sampledict: dict[str, str] | dict[str, dict[str, str]], platform: str) -> pd.DataFrame:
     """Takes a dictionary of sample names and lists of input files, and returns a dataframe with the
     sample names as the index and the input files as the columns
 
@@ -962,9 +1278,46 @@ def sampledir_to_df(
     frame = pd.DataFrame.from_dict(sampledict, orient="index")
     if platform == "illumina":
         frame.index.rename("SAMPLE", inplace=True)
+        # If only R1 exists, rename it to INPUTFILE
+        if set(frame.columns) == {"R1"}:
+            frame.rename(columns={"R1": "INPUTFILE"}, inplace=True)
         return frame
     if platform in {"nanopore", "iontorrent"}:
         frame.index.rename("SAMPLE", inplace=True)
         frame.rename(columns={0: "INPUTFILE"}, inplace=True)
         return frame
     raise ValueError(f"Platform {platform} not supported")
+
+
+def convert_log_text(samples_dict: dict) -> str:
+    """
+    Converts a dictionary of sample information into a formatted log text string.
+
+    Parameters
+    ----------
+    samples_dict : dict
+        A dictionary where each key is a sample name and each value is another dictionary
+        containing sample information as key-value pairs.
+
+    Returns
+    -------
+    str
+        A formatted string where each sample is listed with its associated information
+        in the format:
+            sample_name:
+            key1=value1, key2=value2, ...
+    """
+
+    convert_samples = []
+    for sample, sample_info in samples_dict.items():
+        # Extract the sample information
+        convert_samples.append(f"{sample}:")
+        convert_samples.append(
+            ", ".join(
+                f"{sample_key}={sample_value}"
+                for sample_key, sample_value in sample_info.items()
+            )
+        )
+    # Combine the sample information into a single log string
+    converted_samples = "\n".join(convert_samples)
+    return converted_samples
