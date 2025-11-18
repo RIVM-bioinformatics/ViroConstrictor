@@ -4,11 +4,10 @@ channels:
   - bioconda
   - nodefaults
 dependencies:
-  - conda-forge::python>=3.10
-  - conda-forge::pandas>=2.0
-  - conda-forge::numpy>=2.0
-  - conda-forge::biopython==1.79
+  - conda-forge::python=3.10
+  - conda-forge::pandas=2.2
+  - conda-forge::biopython==1.84
 
-  - bioconda::pysam==0.21
-  - bioconda::fastqc==0.11.9
+  - bioconda::pysam==0.22.1
+  - bioconda::fastqc==0.12.1
   - bioconda::aminoextract==0.4.1
