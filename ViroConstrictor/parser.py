@@ -683,7 +683,8 @@ class CLIparser:
                     # use default if not provided or invalid input is given
                     elif column == "FRAGMENT-LOOKAROUND-SIZE":
                         if args.amplicon_type != "fragmented":
-                            log.warning(f"[yellow]Fragment-lookaround-size is only relevant for 'fragmented' amplicon type. Ignoring value for sample '{sample_name}'.[/yellow]")
+                            if not pd.isna(current_value) or properties["default"] is not None:
+                                log.warning(f"[yellow]Fragment-lookaround-size is only relevant for 'fragmented' amplicon type. Ignoring value for sample '{sample_name}'.[/yellow]")
                             df.at[sample_name, column] = None
                         elif current_value is None or pd.isna(current_value):
                             df.at[sample_name, column] = properties["default"]
