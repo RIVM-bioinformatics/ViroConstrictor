@@ -1,0 +1,1627 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>Workflow Visualization Guide - ViroConstrictor</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.618322db.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="light-blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#workflow-visualization-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ViroConstrictor" class="md-header__button md-logo" aria-label="ViroConstrictor" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 2h2v2c0 1.44.68 2.61 1.88 3.78.86.83 2.01 1.63 3.21 2.42l-1.83 1.19C8.27 10.72 7.31 10 6.5 9.21 5.07 7.82 4 6.1 4 4zm14 0h2v2c0 2.1-1.07 3.82-2.5 5.21-1.41 1.38-3.21 2.52-4.96 3.63-1.75 1.12-3.45 2.21-4.66 3.38C6.68 17.39 6 18.56 6 20v2H4v-2c0-2.1 1.07-3.82 2.5-5.21 1.41-1.38 3.21-2.52 4.96-3.63 1.75-1.12 3.45-2.21 4.66-3.38C17.32 6.61 18 5.44 18 4zm-3.26 10.61c.99.67 1.95 1.39 2.76 2.18C18.93 16.18 20 17.9 20 20v2h-2v-2c0-1.44-.68-2.61-1.88-3.78-.86-.83-2.01-1.63-3.21-2.42zM7 3h10v1l-.06.5H7.06L7 4zm.68 3h8.64c-.24.34-.52.69-.9 1.06l-.51.44H9.07l-.49-.44c-.38-.37-.66-.72-.9-1.06m1.41 10.5h5.84l.49.44c.38.37.66.72.9 1.06H7.68c.24-.34.52-.69.9-1.06zm-2.03 3h9.88l.06.5v1H7v-1z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ViroConstrictor
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Workflow Visualization Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="light-blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="orange"  aria-label="Switch light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/RIVM-bioinformatics/ViroConstrictor" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    RIVM-bioinformatics/ViroConstrictor
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../installation/" class="md-tabs__link">
+          
+  
+  
+  Getting started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../manual/" class="md-tabs__link">
+          
+  
+  
+  Usage
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../architecture/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../changelog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ViroConstrictor" class="md-nav__button md-logo" aria-label="ViroConstrictor" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 2h2v2c0 1.44.68 2.61 1.88 3.78.86.83 2.01 1.63 3.21 2.42l-1.83 1.19C8.27 10.72 7.31 10 6.5 9.21 5.07 7.82 4 6.1 4 4zm14 0h2v2c0 2.1-1.07 3.82-2.5 5.21-1.41 1.38-3.21 2.52-4.96 3.63-1.75 1.12-3.45 2.21-4.66 3.38C6.68 17.39 6 18.56 6 20v2H4v-2c0-2.1 1.07-3.82 2.5-5.21 1.41-1.38 3.21-2.52 4.96-3.63 1.75-1.12 3.45-2.21 4.66-3.38C17.32 6.61 18 5.44 18 4zm-3.26 10.61c.99.67 1.95 1.39 2.76 2.18C18.93 16.18 20 17.9 20 20v2h-2v-2c0-1.44-.68-2.61-1.88-3.78-.86-.83-2.01-1.63-3.21-2.42zM7 3h10v1l-.06.5H7.06L7 4zm.68 3h8.64c-.24.34-.52.69-.9 1.06l-.51.44H9.07l-.49-.44c-.38-.37-.66-.72-.9-1.06m1.41 10.5h5.84l.49.44c.38.37.66.72.9 1.06H7.68c.24-.34.52-.69.9-1.06zm-2.03 3h9.88l.06.5v1H7v-1z"/></svg>
+
+    </a>
+    ViroConstrictor
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/RIVM-bioinformatics/ViroConstrictor" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    RIVM-bioinformatics/ViroConstrictor
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Download & installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Usage
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../manual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manual
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../input-formatting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formatting inputs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis types
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Analysis types
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../single-target-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Single-target-analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../multi-target-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-target-analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../multi-reference-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-reference-analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../presets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Working with analysis presets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../amplicons/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Explanation of amplicon types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dependencies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Software dependencies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Start
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quick Start">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-the-dag-generation-script" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using the DAG Generation Script
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manual-dag-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manual DAG Generation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#types-of-visualizations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Types of Visualizations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Types of Visualizations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-detailed-workflow-dag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Detailed Workflow DAG
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-rule-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Rule Graph
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-file-dependency-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. File Dependency Graph
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prerequisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#required-software" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required Software
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#snakemake-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Snakemake Environment
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#customizing-visualizations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Customizing Visualizations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Customizing Visualizations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enhanced-svg-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enhanced SVG Output
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#styled-dag-with-colors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Styled DAG with Colors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#large-workflow-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Large Workflow Optimization
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integration-with-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration with Documentation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Integration with Documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#embedding-in-markdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Embedding in Markdown
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#creating-interactive-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creating Interactive Documentation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automated-documentation-updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automated Documentation Updates
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Common Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dot-command-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "dot command not found"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#config-file-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Config file errors"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#memory-errors-with-large-dags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Memory errors with large DAGs"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#svg-files-too-large" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "SVG files too large"
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Tips
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#documentation-standards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation Standards
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version Control
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#maintenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Maintenance
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="workflow-visualization-guide">Workflow Visualization Guide<a class="headerlink" href="#workflow-visualization-guide" title="Permanent link">&para;</a></h1>
+<p>This guide explains how to generate and use visual documentation for the ViroConstrictor Snakemake workflow.</p>
+<h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
+<h3 id="using-the-dag-generation-script">Using the DAG Generation Script<a class="headerlink" href="#using-the-dag-generation-script" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Generate all DAG visualizations with default settings</span>
+./generate_dag.sh
+
+<span class="c1"># Use a specific config file</span>
+./generate_dag.sh<span class="w"> </span>--config<span class="w"> </span>path/to/your/config.yaml
+
+<span class="c1"># Specify custom output directory</span>
+./generate_dag.sh<span class="w"> </span>--output<span class="w"> </span>docs/images/
+</code></pre></div>
+<h3 id="manual-dag-generation">Manual DAG Generation<a class="headerlink" href="#manual-dag-generation" title="Permanent link">&para;</a></h3>
+<p>If you prefer manual control, you can generate DAGs directly with Snakemake:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Detailed workflow DAG (shows all jobs)</span>
+snakemake<span class="w"> </span>--snakefile<span class="w"> </span>ViroConstrictor/workflow/main/workflow.smk<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--configfile<span class="w"> </span>your_config.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--dag<span class="w"> </span><span class="p">|</span><span class="w"> </span>dot<span class="w"> </span>-Tpng<span class="w"> </span>-Gdpi<span class="o">=</span><span class="m">300</span><span class="w"> </span>&gt;<span class="w"> </span>workflow_dag.png
+
+<span class="c1"># Rule graph (shows rule relationships)</span>
+snakemake<span class="w"> </span>--snakefile<span class="w"> </span>ViroConstrictor/workflow/main/workflow.smk<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--configfile<span class="w"> </span>your_config.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--rulegraph<span class="w"> </span><span class="p">|</span><span class="w"> </span>dot<span class="w"> </span>-Tpng<span class="w"> </span>-Gdpi<span class="o">=</span><span class="m">300</span><span class="w"> </span>&gt;<span class="w"> </span>rules_dag.png
+
+<span class="c1"># File dependency graph</span>
+snakemake<span class="w"> </span>--snakefile<span class="w"> </span>ViroConstrictor/workflow/main/workflow.smk<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--configfile<span class="w"> </span>your_config.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--filegraph<span class="w"> </span><span class="p">|</span><span class="w"> </span>dot<span class="w"> </span>-Tpng<span class="w"> </span>-Gdpi<span class="o">=</span><span class="m">300</span><span class="w"> </span>&gt;<span class="w"> </span>files_dag.png
+</code></pre></div>
+<h2 id="types-of-visualizations">Types of Visualizations<a class="headerlink" href="#types-of-visualizations" title="Permanent link">&para;</a></h2>
+<h3 id="1-detailed-workflow-dag">1. Detailed Workflow DAG<a class="headerlink" href="#1-detailed-workflow-dag" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: Shows every job that will be executed</li>
+<li><strong>Best for</strong>: Understanding the complete execution plan</li>
+<li><strong>File size</strong>: Large (can be very detailed)</li>
+<li><strong>Use case</strong>: Debugging, comprehensive workflow understanding</li>
+</ul>
+<h3 id="2-rule-graph">2. Rule Graph<a class="headerlink" href="#2-rule-graph" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: Shows relationships between rules (simplified)</li>
+<li><strong>Best for</strong>: Understanding workflow logic and dependencies</li>
+<li><strong>File size</strong>: Medium</li>
+<li><strong>Use case</strong>: Documentation, presentations, architecture overview</li>
+</ul>
+<h3 id="3-file-dependency-graph">3. File Dependency Graph<a class="headerlink" href="#3-file-dependency-graph" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purpose</strong>: Shows file inputs and outputs</li>
+<li><strong>Best for</strong>: Understanding data flow</li>
+<li><strong>File size</strong>: Medium to large</li>
+<li><strong>Use case</strong>: Data lineage, troubleshooting file dependencies</li>
+</ul>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<h3 id="required-software">Required Software<a class="headerlink" href="#required-software" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Install Graphviz (for DOT visualization)</span>
+<span class="c1"># Ubuntu/Debian</span>
+sudo<span class="w"> </span>apt-get<span class="w"> </span>update<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>graphviz
+
+<span class="c1"># macOS</span>
+brew<span class="w"> </span>install<span class="w"> </span>graphviz
+
+<span class="c1"># Conda</span>
+conda<span class="w"> </span>install<span class="w"> </span>graphviz
+
+<span class="c1"># Verify installation</span>
+dot<span class="w"> </span>-V
+</code></pre></div>
+<h3 id="snakemake-environment">Snakemake Environment<a class="headerlink" href="#snakemake-environment" title="Permanent link">&para;</a></h3>
+<p>Ensure you have Snakemake installed and accessible:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Check Snakemake version</span>
+snakemake<span class="w"> </span>--version
+
+<span class="c1"># Should be &gt;= 7.0 for best compatibility</span>
+</code></pre></div>
+<h2 id="customizing-visualizations">Customizing Visualizations<a class="headerlink" href="#customizing-visualizations" title="Permanent link">&para;</a></h2>
+<h3 id="enhanced-svg-output">Enhanced SVG Output<a class="headerlink" href="#enhanced-svg-output" title="Permanent link">&para;</a></h3>
+<p>For higher quality, scalable images:</p>
+<div class="highlight"><pre><span></span><code>snakemake<span class="w"> </span>--dag<span class="w"> </span><span class="p">|</span><span class="w"> </span>dot<span class="w"> </span>-Tsvg<span class="w"> </span>-Gsize<span class="o">=</span><span class="s2">&quot;12,10!&quot;</span><span class="w"> </span>-Gdpi<span class="o">=</span><span class="m">300</span><span class="w"> </span>&gt;<span class="w"> </span>workflow.svg
+</code></pre></div>
+<h3 id="styled-dag-with-colors">Styled DAG with Colors<a class="headerlink" href="#styled-dag-with-colors" title="Permanent link">&para;</a></h3>
+<p>Create a custom DOT style file (<code>dag_style.dot</code>):</p>
+<div class="highlight"><pre><span></span><code><span class="k">digraph</span><span class="w"> </span><span class="nt">snakemake_dag</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">graph</span><span class="p">[</span><span class="na">bgcolor</span><span class="p">=</span><span class="s">white</span><span class="p">,</span><span class="w"> </span><span class="na">margin</span><span class="p">=</span><span class="m">0</span><span class="p">];</span>
+<span class="w">    </span><span class="k">node</span><span class="p">[</span><span class="na">shape</span><span class="p">=</span><span class="s">box</span><span class="p">,</span><span class="w"> </span><span class="na">style</span><span class="p">=</span><span class="s">rounded</span><span class="p">,</span><span class="w"> </span><span class="na">fontname</span><span class="p">=</span><span class="s2">&quot;Arial&quot;</span><span class="p">];</span>
+<span class="w">    </span><span class="k">edge</span><span class="p">[</span><span class="na">fontname</span><span class="p">=</span><span class="s2">&quot;Arial&quot;</span><span class="p">];</span>
+
+<span class="w">    </span><span class="c1">// Color scheme for different rule types</span>
+<span class="w">    </span><span class="k">node</span><span class="p">[</span><span class="na">fillcolor</span><span class="p">=</span><span class="s">lightblue</span><span class="p">,</span><span class="w"> </span><span class="na">style</span><span class="p">=</span><span class="s2">&quot;rounded,filled&quot;</span><span class="p">]</span><span class="w"> </span><span class="nt">preparation</span><span class="p">;</span>
+<span class="w">    </span><span class="k">node</span><span class="p">[</span><span class="na">fillcolor</span><span class="p">=</span><span class="s">lightgreen</span><span class="p">,</span><span class="w"> </span><span class="na">style</span><span class="p">=</span><span class="s2">&quot;rounded,filled&quot;</span><span class="p">]</span><span class="w"> </span><span class="nt">cleaning</span><span class="p">;</span>
+<span class="w">    </span><span class="k">node</span><span class="p">[</span><span class="na">fillcolor</span><span class="p">=</span><span class="s">lightyellow</span><span class="p">,</span><span class="w"> </span><span class="na">style</span><span class="p">=</span><span class="s2">&quot;rounded,filled&quot;</span><span class="p">]</span><span class="w"> </span><span class="nt">analysis</span><span class="p">;</span>
+<span class="w">    </span><span class="k">node</span><span class="p">[</span><span class="na">fillcolor</span><span class="p">=</span><span class="s">lightcoral</span><span class="p">,</span><span class="w"> </span><span class="na">style</span><span class="p">=</span><span class="s2">&quot;rounded,filled&quot;</span><span class="p">]</span><span class="w"> </span><span class="nt">results</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="large-workflow-optimization">Large Workflow Optimization<a class="headerlink" href="#large-workflow-optimization" title="Permanent link">&para;</a></h3>
+<p>For very large workflows, filter to specific parts:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Generate DAG for specific target</span>
+snakemake<span class="w"> </span>--snakefile<span class="w"> </span>ViroConstrictor/workflow/main/workflow.smk<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--configfile<span class="w"> </span>your_config.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--dag<span class="w"> </span>results/sample1/consensus.fasta<span class="w"> </span><span class="p">|</span><span class="w"> </span>dot<span class="w"> </span>-Tpng<span class="w"> </span>&gt;<span class="w"> </span>sample1_dag.png
+</code></pre></div>
+<h2 id="integration-with-documentation">Integration with Documentation<a class="headerlink" href="#integration-with-documentation" title="Permanent link">&para;</a></h2>
+<h3 id="embedding-in-markdown">Embedding in Markdown<a class="headerlink" href="#embedding-in-markdown" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>![<span class="nt">Workflow Overview</span>](<span class="na">images/workflow_rules.png</span>)
+
+<span class="ge">*Figure 1: ViroConstrictor workflow rule dependencies*</span>
+</code></pre></div>
+<h3 id="creating-interactive-documentation">Creating Interactive Documentation<a class="headerlink" href="#creating-interactive-documentation" title="Permanent link">&para;</a></h3>
+<p>Use tools like MkDocs with the DAG images:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># mkdocs.yml</span>
+<span class="nt">nav</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Architecture</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">architecture.md</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Workflow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">workflow.md</span>
+
+<span class="nt">markdown_extensions</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">attr_list</span><span class="w">  </span><span class="c1"># For image sizing</span>
+</code></pre></div>
+<h3 id="automated-documentation-updates">Automated Documentation Updates<a class="headerlink" href="#automated-documentation-updates" title="Permanent link">&para;</a></h3>
+<p>Add DAG generation to your CI/CD pipeline:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># .github/workflows/docs.yml</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Generate DAG images</span>
+<span class="w">  </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">    </span><span class="no">./generate_dag.sh --output docs/images/</span>
+<span class="w">    </span><span class="no">git add docs/images/</span>
+<span class="w">    </span><span class="no">git commit -m &quot;Update workflow DAGs&quot; || exit 0</span>
+</code></pre></div>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<h3 id="common-issues">Common Issues<a class="headerlink" href="#common-issues" title="Permanent link">&para;</a></h3>
+<h4 id="dot-command-not-found">"dot command not found"<a class="headerlink" href="#dot-command-not-found" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># Install Graphviz</span>
+sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>graphviz<span class="w">  </span><span class="c1"># Linux</span>
+brew<span class="w"> </span>install<span class="w"> </span>graphviz<span class="w">          </span><span class="c1"># macOS</span>
+</code></pre></div>
+<h4 id="config-file-errors">"Config file errors"<a class="headerlink" href="#config-file-errors" title="Permanent link">&para;</a></h4>
+<p>The DAG generation script creates a minimal config file automatically. If you're using your own config, ensure all required fields are present.</p>
+<h4 id="memory-errors-with-large-dags">"Memory errors with large DAGs"<a class="headerlink" href="#memory-errors-with-large-dags" title="Permanent link">&para;</a></h4>
+<p>For very large workflows:
+<div class="highlight"><pre><span></span><code><span class="c1"># Increase DOT memory limit</span>
+dot<span class="w"> </span>-Tpng<span class="w"> </span>-Gmaxiter<span class="o">=</span><span class="m">2000</span><span class="w"> </span>-Gnslimit<span class="o">=</span><span class="m">2</span><span class="w"> </span>&lt;<span class="w"> </span>workflow.dot<span class="w"> </span>&gt;<span class="w"> </span>workflow.png
+</code></pre></div></p>
+<h4 id="svg-files-too-large">"SVG files too large"<a class="headerlink" href="#svg-files-too-large" title="Permanent link">&para;</a></h4>
+<p>Use PNG for large workflows:
+<div class="highlight"><pre><span></span><code>snakemake<span class="w"> </span>--rulegraph<span class="w"> </span><span class="p">|</span><span class="w"> </span>dot<span class="w"> </span>-Tpng<span class="w"> </span>-Gdpi<span class="o">=</span><span class="m">150</span><span class="w"> </span>&gt;<span class="w"> </span>workflow.png
+</code></pre></div></p>
+<h3 id="performance-tips">Performance Tips<a class="headerlink" href="#performance-tips" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Use rule graphs</strong> for documentation (simpler than detailed DAGs)</li>
+<li><strong>Generate SVGs</strong> for scalable images in documentation</li>
+<li><strong>Filter large workflows</strong> to specific samples or rules</li>
+<li><strong>Cache generated images</strong> to avoid regenerating unchanged workflows</li>
+</ol>
+<h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<h3 id="documentation-standards">Documentation Standards<a class="headerlink" href="#documentation-standards" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Always include a rule graph</strong> in your architecture documentation</li>
+<li><strong>Use descriptive filenames</strong> (e.g., <code>viroconstrictor_main_workflow.png</code>)</li>
+<li><strong>Update visualizations</strong> when workflow changes significantly</li>
+<li><strong>Include legends</strong> explaining color coding or symbols used</li>
+</ol>
+<h3 id="version-control">Version Control<a class="headerlink" href="#version-control" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Don't commit large DAG images</strong> to git (use <code>.gitignore</code>)</li>
+<li><strong>Generate images in CI/CD</strong> for documentation builds</li>
+<li><strong>Tag major workflow changes</strong> with corresponding DAG updates</li>
+</ol>
+<h3 id="maintenance">Maintenance<a class="headerlink" href="#maintenance" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Regenerate DAGs</strong> after major workflow updates</li>
+<li><strong>Test DAG generation</strong> as part of your testing pipeline</li>
+<li><strong>Document any custom styling</strong> or generation parameters used</li>
+</ol>
+<p>This visualization approach will help users understand your pipeline architecture and assist in development, debugging, and documentation maintenance.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright © 2021 RIVM
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.instant", "navigation.top", "content.code.copy"], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+    
+  </body>
+</html>
