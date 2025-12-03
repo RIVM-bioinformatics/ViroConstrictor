@@ -4,16 +4,17 @@ channels:
   - bioconda
   - nodefaults
 dependencies:
-  - conda-forge::python>=3.10
-  - conda-forge::pandas>=2.2
+  - conda-forge::python=3.12
+  - conda-forge::pandas=2.2
   - conda-forge::openjdk=11.0.23
   - conda-forge::biopython==1.84
+  - conda-forge::procps-ng==4.0.4
 
-  - bioconda::fastp==0.23.2
+  - bioconda::fastp==1.0.1
   - bioconda::mappy==2.28
   - bioconda::fastqc==0.12.1
-  - bioconda::multiqc==1.11
+  - bioconda::multiqc==1.32
   - bioconda::samtools==1.21
-  - bioconda::bedtools==2.30.0
+  - bioconda::bedtools==2.31.1
   - bioconda::minimap2==2.28
-  - bioconda::ampligone==2.0.1
+  - bioconda::ampligone==2.0.2

@@ -22,9 +22,7 @@ def illumina_sheet(inputdir: pathlib.Path) -> dict[str, dict[str, str]]:
     dictionary has the read number as the key and the file path as the value.
 
     """
-    illuminapattern: re.Pattern = re.compile(
-        r"(.*)(_|\.)R?(1|2)(?:_.*\.|\..*\.|\.)f(ast)?q(\.gz)?"
-    )
+    illuminapattern: re.Pattern = re.compile(r"(.*)(_|\.)R?(1|2)(?:_.*\.|\..*\.|\.)f(ast)?q(\.gz)?")
     samples: dict[str, dict[str, str]] = {}
     for dirname, subdir, filename in os.walk(inputdir):
         for files in filename:
@@ -83,9 +81,7 @@ def iontorrent_sheet(inputdir: pathlib.Path) -> dict[str, str]:
     return samples
 
 
-def GetSamples(
-    inputdir: pathlib.Path, platform: str
-) -> dict[str, str] | dict[str, dict[str, str]]:
+def GetSamples(inputdir: pathlib.Path, platform: str) -> dict[str, str] | dict[str, dict[str, str]]:
     """Wrapping function taking in a directory and sequencing platform, triggers appropriate sub-function and returns a dictionary of samples
 
     Parameters

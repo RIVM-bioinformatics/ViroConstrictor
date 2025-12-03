@@ -1,0 +1,12 @@
+name: mr_custom_scripts
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - conda-forge::python=3.10
+  - conda-forge::pandas=2.2
+  - conda-forge::biopython==1.84
+
+  - bioconda::pysam==0.22.1
+  - bioconda::aminoextract==0.4.1

@@ -2,29 +2,29 @@
 
 ViroConstrictor is available only on Linux (or Linux-based) operating systems. MacOS may also work, but it has not been tested. ViroConstrictor will *not work* on Windows.  
 
+---
+
 ## Prerequisites
 
 ViroConstrictor requires the following software to be installed on your system:
 
 - [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) or [Mamba](https://mamba.readthedocs.io/en/latest/installation.html)
+- [Apptainer](https://apptainer.org/) (optional but recommended)
 
-### Recommended (Optional)
-
-- [Apptainer](https://apptainer.org/)
+---
 
 ## Installation with Conda
 
 ViroConstrictor releases are published on Bioconda to allow for easy installation.
 
-If you already have [Mamba](https://mamba.readthedocs.io/en/latest/installation.html) installed, please use the command below:
 ```bash
+# Recommended: Install with Mamba (faster)
 mamba install -c conda-forge -c bioconda viroconstrictor
 ```
-
-??? info "Click here if you don't have mamba installed in your system already"
-    ```bash
-    conda install -c conda-forge -c bioconda viroconstrictor
-    ```
+```bash
+# Alternative: Install with Conda
+conda install -c conda-forge -c bioconda viroconstrictor
+```
 
 Installation through Mamba/Conda is the recommended method for installing ViroConstrictor.
 
@@ -33,14 +33,19 @@ Installation through Mamba/Conda is the recommended method for installing ViroCo
 
     You can create a dedicated environment and install ViroConstrictor in it using a single command with either Mamba or Conda.
 
-    The following command will use **Mamba** to create a new environment named `pipeline_env` with ViroConstrictor installed:
+    The following command will use **Mamba** to create a new environment named `viroconstrictor` with ViroConstrictor installed:
     ```bash
-    mamba create --name pipeline_env -c conda-forge -c bioconda viroconstrictor
+    mamba create --name viroconstrictor -c conda-forge -c bioconda viroconstrictor
+    mamba activate viroconstrictor
     ```
 
     You can replace "mamba" with "conda" in the command above if you prefer to use Conda or if Mamba is not installed on your system.
 
+### Why Apptainer is Recommended
 
+Apptainer (formerly Singularity) runs bioinformatics tools in containers, which helps avoid software conflicts between different tool versions. ViroConstrictor can use its pre-built containers for its analysis tools when Apptainer is available. This reduces the need to install individual tools on your system.
+
+---
 
 ## Download and installation from source
 
@@ -74,5 +79,6 @@ Once you have downloaded the ViroConstrictor repository and created a Conda envi
 pip install .
 ```
 
-ViroConstrictor should now be installed!
+---
+## Verify the installation
 You can verify if the installation was successful by typing `viroconstrictor --version` on the command line; this should display the installed ViroConstrictor version.
