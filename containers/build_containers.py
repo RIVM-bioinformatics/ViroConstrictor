@@ -95,6 +95,7 @@ LABEL org.opencontainers.image.source=https://github.com/RIVM-bioinformatics/{__
                 check=True,
             )
             # move the container file to the current working directory
+            print(f"Saving built container '{container_basename}:{VersionHash}' to docker tar file (local)")
             subprocess.run(
                 [
                     "docker",
@@ -104,6 +105,10 @@ LABEL org.opencontainers.image.source=https://github.com/RIVM-bioinformatics/{__
                     f"{container_basename}:{VersionHash}",
                 ]
             )
+            
+            # Remove the image from the local docker registry to free up space on the runner
+            print(f"Removing local image {container_basename}:{VersionHash} to free up space")
+            subprocess.run(["docker", "rmi", f"{container_basename}:{VersionHash}"], check=False)
 
         builtcontainers.append(f"{container_basename}:{VersionHash}")
 
