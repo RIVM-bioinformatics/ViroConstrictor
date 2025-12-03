@@ -14,6 +14,7 @@ authors = [
     { name = "Karim Hajji" },
     { name = "Gino Raaijmakers" },
     { name = "Dennis Schmitz" },
+    { name = "Margo Raijmakers" },
     { name = "Annelies Kroneman" },
     { email = "ids-bioinformatics@rivm.nl" },
 ]
