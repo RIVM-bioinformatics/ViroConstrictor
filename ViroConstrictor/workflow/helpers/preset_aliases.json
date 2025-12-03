@@ -35,5 +35,16 @@
         "HEPATITIS_A",
         "HEPATITIS_A_VIRUS",
         "HAV"
+    ],
+    "PNEUMOVIRIDAE": [
+        "PNEUMOVIRIDAE",
+        "RSV",
+        "RESPIRATORY_SYNCYTIAL_VIRUS",
+        "RESPIRATORY_SYNCYTIAL_VIRUS_A",
+        "RESPIRATORY_SYNCYTIAL_VIRUS_B",
+        "HMPV",
+        "METAPNEUMOVIRUS",
+        "HUMAN_METAPNEUMOVIRUS",
+        "PNEUMOVIRUS"
     ]
 }

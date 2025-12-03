@@ -114,5 +114,28 @@
             "AmpliGone_ExtraSettings_illumina": "--virtual-primers",
             "AmpliGone_ExtraSettings_iontorrent": "--virtual-primers"
         }
+    },
+    "PNEUMOVIRIDAE": {
+        "STAGE_GLOBAL": {},
+        "STAGE_MATCHREF": {
+            "Samtools_Filters_nanopore": "-q 10",
+            "Samtools_Filters_illumina": "-q 10",
+            "Samtools_Filters_iontorrent": "-q 10"
+        },
+        "STAGE_MAIN": {
+            "Minimap2_Settings": "--frag=no",
+            "Minimap2_RawAlignParams_nanopore": "--splice",
+            "Minimap2_RawAlignParams_illumina": "--splice",
+            "Minimap2_RawAlignParams_iontorrent": "--splice",
+            "Clipper_FilterParams_nanopore": "--exclude-spliced --spliced-length-threshold 100",
+            "Clipper_FilterParams_illumina": "--exclude-spliced --spliced-length-threshold 100",
+            "Clipper_FilterParams_iontorrent": "--exclude-spliced --spliced-length-threshold 100",
+            "AmpliGone_ExtraSettings_nanopore": "--virtual-primers",
+            "AmpliGone_ExtraSettings_illumina": "--virtual-primers",
+            "AmpliGone_ExtraSettings_iontorrent": "--virtual-primers",
+            "Fastp_MinReadLength_Settings_nanopore": "--length_required 400",
+            "Fastp_MinReadLength_Settings_illumina": "--length_required 100",
+            "Fastp_MinReadLength_Settings_iontorrent": "--length_required 100"
+        }
     }
 }
