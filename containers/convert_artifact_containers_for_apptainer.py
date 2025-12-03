@@ -23,6 +23,10 @@ if __name__ == "__main__":
         trimmed_name_sif = trimmed_name.replace(":", "_")
         print(f"Converting {original_name} to Apptainer .sif format")
         subprocess.run(
+            "apptainer cache clean -f",
+            shell=True,
+        )
+        subprocess.run(
             f"apptainer build {base_path_to_container_defs}/{trimmed_name_sif}.sif docker-archive://{base_path_to_container_defs}/{trimmed_name}.tar",
             shell=True,
         )
