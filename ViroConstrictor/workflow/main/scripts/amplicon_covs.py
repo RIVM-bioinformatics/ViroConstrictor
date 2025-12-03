@@ -265,7 +265,11 @@ class AmpliconCovs(BaseScript):
         """
         Calculates amplicon coverage and writes the results to the output file.
         """
-        primers = self._open_tsv_file(self.input)
+        primers = self._open_tsv_file(self.input) # _open_tsv_file handles empty files, will return empty df
+        if primers.empty:
+            final_df = pd.DataFrame(columns=[], index=[self.key])
+            self._write_output(final_df, self.output)
+            return
         primers = self._split_primer_names(primers)
         amplicon_sizes = self._calculate_amplicon_start_end(primers)
 
@@ -286,7 +290,11 @@ class AmpliconCovs(BaseScript):
         """
         Opens a TSV file and returns its contents as a pandas DataFrame.
         """
-        df = pd.read_csv(filename, sep="\t", header=None, index_col=index_col, keep_default_na=False)
+        try:
+            df = pd.read_csv(filename, sep="\t", header=None, index_col=index_col, keep_default_na=False)
+        except pd.errors.EmptyDataError:
+            return pd.DataFrame()
+
         if df.isnull().to_numpy().any():
             raise ValueError(f"File {filename} contains NaN values.")
         return df
