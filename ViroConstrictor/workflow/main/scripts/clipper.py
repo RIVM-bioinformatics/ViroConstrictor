@@ -123,7 +123,23 @@ class Clipper(BaseScript):
                 trimmed_qual = read.qual[read_start:read_end]
 
                 if read.is_reverse:
-                    complement = {"A": "T", "C": "G", "G": "C", "T": "A", "N": "N"}
+                    complement = {
+                        "A": "T",
+                        "C": "G",
+                        "G": "C",
+                        "T": "A",
+                        "R": "Y",
+                        "Y": "R",
+                        "K": "M",
+                        "M": "K",
+                        "S": "S",
+                        "W": "W",
+                        "B": "V",
+                        "V": "B",
+                        "D": "H",
+                        "H": "D",
+                        "N": "N"
+                    }
                     bases = [complement[base] for base in trimmed_seq]
                     trimmed_seq = "".join(bases[::-1])
                     trimmed_qual = trimmed_qual[::-1]

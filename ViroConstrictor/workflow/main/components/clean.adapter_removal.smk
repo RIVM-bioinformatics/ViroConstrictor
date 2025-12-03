@@ -136,5 +136,5 @@ rule remove_adapters_p2:
         --input {input} \
         --output {output} \
         {params.clipper_filterparams} \
-        --threads {threads}
+        --threads {threads} >> {log} 2>&1
         """

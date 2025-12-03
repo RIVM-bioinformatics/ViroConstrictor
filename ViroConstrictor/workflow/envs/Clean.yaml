@@ -8,6 +8,7 @@ dependencies:
   - conda-forge::pandas=2.2
   - conda-forge::openjdk=11.0.23
   - conda-forge::biopython==1.84
+  - conda-forge::procps-ng==4.0.4
 
   - bioconda::fastp==1.0.1
   - bioconda::mappy==2.28
