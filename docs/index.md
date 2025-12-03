@@ -35,7 +35,8 @@ ViroConstrictor is available under the [AGPLv3 licence](https://www.gnu.org/lice
 * Gino Raaijmakers
 * Iveta Krskova
 * Annelies Kroneman
+* Margo Raijmakers
 
 
 If you use ViroConstrictor in your work, please cite:
-> Zwagemaker, F., Hajji, K., Schmitz, D., Kroneman, A., & The RIVM-IDS Bioinformatics team. ViroConstrictor [Computer software]. https://doi.org/10.5281/zenodo.7688035 
+> Zwagemaker, F., Hajji, K., Raaijmakers, G., Schmitz, D., Raijmakers, M., Kršková, I., Kroneman, A., & The RIVM-IDS Bioinformatics team. ViroConstrictor [Computer software]. https://doi.org/10.5281/zenodo.7688035 
