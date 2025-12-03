@@ -1,5 +1,92 @@
 # Changelog
 
+## [1.6.0](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.5.5...v1.6.0) (2025-12-03)
+
+
+### Features
+
+* add command line argument for Ampligone's fragment-lookaround-size ([20d2cc5](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/20d2cc58c3943637007c1bea17ea956dcf18f303))
+* add pneumoviridae preset ([7d74f6e](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/7d74f6ee8aec5c845d4414e08904f285998ed013))
+* added dynamic runtime assigment ([6ec047d](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/6ec047d59882224d3b1437d3ad48f0ee1dca003a))
+* added genbank support ([724d3ea](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/724d3ea43936ba482783d43defc5cf02dab695c1))
+* added per sample preset disabling in sample sheet with input handling ([56b6cdb](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/56b6cdb965fc83515a5edf9b40b48243a1163912))
+* added per-sample setting of AmpliGone's fragment lookaround size in sample sheet with input handling ([9621b73](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/9621b7350c884bfa37ff797f7c73a0afe45f7605))
+* added verbose option; add run details to debug messages in general log file ([04878f3](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/04878f39fcd65ccf1d5b536618200e52b92d257e))
+
+
+### Bug Fixes
+
+* add ambiguity complement bases in clipper.py in order to handle edge cases ([2056c8c](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/2056c8c73486bb01b9853824a25d4b558862f2d5))
+* changed default in preset params ([61cb0c8](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/61cb0c868d407ee3ef093c0f2d5d7ff24d7102c2))
+* correct the inputs and outputs for all python modules in the match_ref workflow ([d288438](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/d288438fcdc2e6960fbd78e145f4df6002e74a43))
+* correctly handle empty primers file in `amplicon_covs.py` when given `--primers NONE` ([2056c8c](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/2056c8c73486bb01b9853824a25d4b558862f2d5))
+* correctly output logging of clipper script ([2056c8c](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/2056c8c73486bb01b9853824a25d4b558862f2d5))
+* dependency error in consensus.yaml ([61cb0c8](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/61cb0c868d407ee3ef093c0f2d5d7ff24d7102c2))
+* do not infer "NA" value in a table as NaN ([325fb8f](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/325fb8f21240f5e47d35293f69e48c5c91a852eb))
+* dockerfiles - added adduser command because it is no longer in base ([19f4e28](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/19f4e28e72a353b9bc1edab612de5e4548c5087c))
+* enhance genbank parsing with FEATURES column in samplesheet being allowed to inherit from reference genbank file ([54db5a1](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/54db5a18b17ab3cf1b48fd36297981f262eacb34))
+* ensure correct feature_type parameter assignment in Translate_AminoAcids rule ([1cd6ae4](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/1cd6ae442cfccba870190e1866fdf743eae2f118))
+* fixed amplicon_covs import error ([724d3ea](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/724d3ea43936ba482783d43defc5cf02dab695c1))
+* fixed imports in script tests ([6ec047d](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/6ec047d59882224d3b1437d3ad48f0ee1dca003a))
+* fixed some copilot PR review spotted errors ([d49b539](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/d49b5399361ae564f81209c4c5a084de3e4f4f91))
+* handle empty rows in between rows in sample sheet ([631f633](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/631f633f7a55a245ae548ccdbeb995d76153a103))
+* IDSBIO-1334 amplicon covs too strict naming ([d842721](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/d842721bb672ee10f5022f432e880b01f6500c4c))
+* improve correction of unidirectional flag logic for illumina platform based on sample input ([9faf0c8](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/9faf0c848ed930bce940f91f53194ad9be9c4aa3))
+* **logging:** remove snakemake logrecords from the records_to_emit list when the levelno is lower than the current log level ([a8fe02c](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/a8fe02cbdc2b19645198786b1d05462ef2bcc89c))
+* **logging:** set log level for shell and file handlers in ViroConstrictorBaseLogHandler ([a8fe02c](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/a8fe02cbdc2b19645198786b1d05462ef2bcc89c))
+* made primer name parsing more stable ([3921e27](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/3921e27af2c4155b4d59285330894b7bbb6cc340))
+* match_ref.workflow - regex patterns should be raw strings ([d761cdd](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/d761cddacb252529906231e94a8dfdf962e6250d))
+* **presets:** change default feature type to 'gene' and enhance get_preset_parameter function so output AA structures can be found dynamically on a per-preset / per-sample basis ([baede05](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/baede05b90a7369c034e4dbe6675bd525b4e4f68))
+* remove own path and remove complexity from amplicon_covs ([e1db2e2](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/e1db2e218dab19f1bd9602116391da8b36b60a62))
+* removed "" around snakemake input ([b5ae840](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/b5ae840ff79bf62448c0fd0d33ec39616b7fd9bd))
+* replace unnecessary f-strings with normal strings ([d49b539](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/d49b5399361ae564f81209c4c5a084de3e4f4f91))
+* resolve path of multiqc config file ([daf0174](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/daf0174dc64ed562ff4b9994c72c4a8cf07db413))
+* resolved lambda positional argument error when calling memory requirements function ([63b47ab](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/63b47abdfb1f1dc20476b1e7da5dab99be542261))
+* runreport.py - ln=1 was deprecated ([0a87176](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/0a87176fad134a5388612953462bc8ae4e484f5b))
+* test_e2e - fixed assertion statements ([d761cdd](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/d761cddacb252529906231e94a8dfdf962e6250d))
+* ugly fix for annotated string bug. It edits part of the debugger code to transform snakemake.AnnotatedString types in str types. Could not find an easier way of doing this. ([0398a21](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/0398a21260b4e9cdf6f74dcfacbbf2d8016a1c33))
+* update dependencies ([eb70e92](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/eb70e9208e316f5079c20d72658cff486a457c5d))
+* update import path for BaseScript in group_refs.py ([881d4fc](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/881d4fc1ae32f52481a6463e23b110f7b4da29a1))
+* update script path for filter_bed rule in filter.primers.smk ([2d75a53](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/2d75a53fad6842c134de3390079f4959f946ff45))
+* Update ViroConstrictor/workflow/main/scripts/amplicon_covs.py ([d9143e3](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/d9143e392a52e1795b34f8c53e1d5a09ba2c1276))
+* update.py - distutils Version classes are deprecated ([0a87176](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/0a87176fad134a5388612953462bc8ae4e484f5b))
+* use the new AminoExtract api functions in GFF related scripts ([d288438](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/d288438fcdc2e6960fbd78e145f4df6002e74a43))
+* used bool instead of enum for binary state in PrimerInfo class ([cc922cb](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/cc922cb4a22afe15a4868a1133bdf543f057f89c))
+* workflow.smk - regex expression should be raw strings ([0a87176](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/0a87176fad134a5388612953462bc8ae4e484f5b))
+
+
+### Performance Improvements
+
+* slightly reduce size of containers ([a6dfdc9](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/a6dfdc9937fa01695b9869c53ccfb1425be75fe9))
+
+
+### Dependencies
+
+* also update aminoextract in consensus sequence environment ([bdc7160](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/bdc71605cc57f400c492aad3a083866a3ba555a3))
+* change biovalid installation to the bioconda channel and pin version, update pyproject.toml accordingly ([d0fb7c9](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/d0fb7c9cd8de6e7a1f7221a0d9b8d1c6b40a1764))
+* fix bug with multiqc where it requires `ps aux` when processing large datasets ([2056c8c](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/2056c8c73486bb01b9853824a25d4b558862f2d5))
+* include snakemake executor plugins as base dependencies ([7e3e09d](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/7e3e09df640e4fd99d3ec1b4214f50f39f6cf22e))
+* synchronize biopython package through all downstream envs to v1.84 ([ad7f324](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/ad7f324c6e44cbc4172cf7be5cdee04021ab4d18))
+* update ampligone to v2.0.2 ([ad7f324](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/ad7f324c6e44cbc4172cf7be5cdee04021ab4d18))
+* update bedtools to v2.31.1 ([ad7f324](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/ad7f324c6e44cbc4172cf7be5cdee04021ab4d18))
+* update dependencies for all workflow conda environments/containers ([ad7f324](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/ad7f324c6e44cbc4172cf7be5cdee04021ab4d18))
+* update dependencies to use AminoExtract version 0.4.0 ([1137c3d](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/1137c3d4d1b33453de846dd4aa09ff545ec75b6a))
+* update fastp to v1.0.1 ([ad7f324](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/ad7f324c6e44cbc4172cf7be5cdee04021ab4d18))
+* update fastqc to v0.12.1 ([ad7f324](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/ad7f324c6e44cbc4172cf7be5cdee04021ab4d18))
+* update minimap2 to v2.28 ([ad7f324](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/ad7f324c6e44cbc4172cf7be5cdee04021ab4d18))
+* update multiqc to v1.32 ([ad7f324](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/ad7f324c6e44cbc4172cf7be5cdee04021ab4d18))
+* update samtools to v1.21 ([ad7f324](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/ad7f324c6e44cbc4172cf7be5cdee04021ab4d18))
+* update TrueConsense to v0.5.2 ([daf0174](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/daf0174dc64ed562ff4b9994c72c4a8cf07db413))
+* use AminoExtract version 0.4.1 ([ac75670](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/ac756700f623a3816332c4d53548a17fea0549f0))
+
+
+### Documentation
+
+* minor changes to presets table and architecture mermaid graphs ([2ad94f5](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/2ad94f5dadfee4dd4df868a2eff6364c606d512c))
+* re-wrote most of the docs ([09404d0](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/09404d0cda4446423152b4d0145f30ce3cd488b2))
+* re-wrote most of the docs ([42edf4b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/42edf4b99af61bc06c7b55cd7105fe8fead19bbf))
+* render lists as actual lists and minor linguistic changes ([ac546ea](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/ac546ea252ba4d73f7fe5faf7a168d35d9aa101f))
+
 ## [1.5.5](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.5.4...v1.5.5) (2025-07-28)
 
 
