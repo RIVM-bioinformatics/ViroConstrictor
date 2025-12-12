@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.1](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.6.0...v1.6.1) (2025-12-12)
+
+
+### Bug Fixes
+
+* adjust the SARS-CoV-2 preset for proper recovery of +800bp deletion in ORFs 7a, 7b, and 8 ([437fc09](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/437fc09bb829d8fa67f333ef9550fbfaebf70bf9))
+
 ## [1.6.0](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.5.5...v1.6.0) (2025-12-03)
 
 
