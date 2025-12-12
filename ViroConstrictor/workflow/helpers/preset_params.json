@@ -59,7 +59,8 @@
         "STAGE_GLOBAL": {},
         "STAGE_MATCHREF": {},
         "STAGE_MAIN": {
-            "Minimap2_AlignmentParams_nanopore": "-E2,0 -O8,24 -A4 -B4",
+            "Minimap2_RawAlignParams_nanopore": "-r 2000,20k -E2,0",
+            "Minimap2_AlignmentParams_nanopore": "-r 2000,20k -E2,0 -O8,24 -A4 -B4",
             "AmpliGone_AlignmentMatrix_nanopore": "-as match=4 mismatch=4 gap_o1=8 gap_e1=2 gap_o2=24 gap_e2=0",
             "AmpliGone_ExtraSettings_nanopore": "--virtual-primers",
             "AmpliGone_ExtraSettings_illumina": "--virtual-primers",
