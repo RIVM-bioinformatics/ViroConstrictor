@@ -100,10 +100,8 @@ def WriteReport(
 
     pdf.ln(5)
 
-
     pdf = analysis_details(pdf, "Sequencing platform:", inputs_config.flags.platform)
     pdf = analysis_details(pdf, "Selected amplicon type:", inputs_config.flags.amplicon_type)
-
 
     pdf.ln(5)
 

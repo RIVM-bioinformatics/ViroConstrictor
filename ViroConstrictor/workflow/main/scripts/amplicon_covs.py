@@ -265,7 +265,7 @@ class AmpliconCovs(BaseScript):
         """
         Calculates amplicon coverage and writes the results to the output file.
         """
-        primers = self._open_tsv_file(self.input) # _open_tsv_file handles empty files, will return empty df
+        primers = self._open_tsv_file(self.input)  # _open_tsv_file handles empty files, will return empty df
         if primers.empty:
             final_df = pd.DataFrame(columns=[], index=[self.key])
             self._write_output(final_df, self.output)
