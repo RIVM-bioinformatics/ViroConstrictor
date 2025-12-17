@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.2](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.6.1...v1.6.2) (2025-12-17)
+
+
+### Bug Fixes
+
+* small fixes related to samples df ([#166](https://github.com/RIVM-bioinformatics/ViroConstrictor/issues/166)) ([b018472](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/b018472ab443add8ff0584e9f820addeddf92a91))
+
 ## [1.6.1](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.6.0...v1.6.1) (2025-12-12)
 
 
