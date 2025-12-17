@@ -3,7 +3,6 @@ from pathlib import Path
 
 import pandas as pd
 from Bio import SeqIO
-
 from helpers.base_script_class import BaseScript  # type: ignore[import]  # noqa: F401,E402
 
 

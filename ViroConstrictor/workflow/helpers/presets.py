@@ -194,7 +194,5 @@ def get_preset_parameter(preset_name: str, parameter_name: str, stage_identifier
 
         return preset_params[f"{_stage_identifier}_{parameter_name}"]
 
-    log.debug(
-        f"Parameter handling :: Preset :: Using {preset_name} specific parameter '[yellow]{_stage_identifier}_{parameter_name}[/yellow]'"
-    )
+    log.debug(f"Parameter handling :: Preset :: Using {preset_name} specific parameter '[yellow]{_stage_identifier}_{parameter_name}[/yellow]'")
     return parameter

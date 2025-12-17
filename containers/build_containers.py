@@ -105,7 +105,7 @@ LABEL org.opencontainers.image.source=https://github.com/RIVM-bioinformatics/{__
                     f"{container_basename}:{VersionHash}",
                 ]
             )
-            
+
             # Remove the image from the local docker registry to free up space on the runner
             print(f"Removing local image {container_basename}:{VersionHash} to free up space")
             subprocess.run(["docker", "rmi", f"{container_basename}:{VersionHash}"], check=False)
