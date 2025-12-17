@@ -31,28 +31,20 @@ class CLIparser:
         self.logfile = setup_logger(self.flags.output)
 
         log.info(f"ViroConstrictor version: [blue]{__version__}[/blue]")
-        log.debug(
-            f"Input handling :: Parser :: Getting arguments :: the parsed arguments are: {self.flags}"
-        )
-        log.debug(
-            "Input handling :: Parser :: Validate arguments :: checking all given command line arguments."
-        )
+        log.debug(f"Input handling :: Parser :: Getting arguments :: the parsed arguments are: {self.flags}")
+        log.debug("Input handling :: Parser :: Validate arguments :: checking all given command line arguments.")
         self.cli_errors = self._validate_cli_args()
         if self.cli_errors:
             for err in self.cli_errors:
                 log.error(err)
             sys.exit(1)
         self.user_config = ReadConfig(pathlib.Path(settings_path).expanduser())
-        self.scheduler = Scheduler.determine_scheduler(
-            self.flags.scheduler, self.user_config, self.flags.dryrun
-        )
+        self.scheduler = Scheduler.determine_scheduler(self.flags.scheduler, self.user_config, self.flags.dryrun)
         self.flags.presets = self.flags.disable_presets is False
         self.samples_df = pd.DataFrame()
         self.samples_dict: dict[Hashable, Any] = {}
-        if self.flags.samplesheet is not None: # samplesheet is given
-            log.debug(
-                "Input handling :: Parser :: Getting samples :: getting samples from sample sheet."
-            )
+        if self.flags.samplesheet is not None:  # samplesheet is given
+            log.debug("Input handling :: Parser :: Getting samples :: getting samples from sample sheet.")
             self._print_missing_asset_warning(self.flags, True)
             self.samples_dict = self._make_samples_dict(
                 self._check_sample_sheet(self.flags.samplesheet),
@@ -60,14 +52,10 @@ class CLIparser:
                 GetSamples(self.flags.input, self.flags.platform),
             )
             self.samples_df = pd.DataFrame.from_dict(self.samples_dict, orient="index")
-            log.debug(
-                "Input handling :: Parser :: Getting samples :: samples have been acquired successfully."
-            )
+            log.debug("Input handling :: Parser :: Getting samples :: samples have been acquired successfully.")
             converted_samples = convert_log_text(self.samples_dict)
-            log.debug(
-                f"Input handling :: Parser :: Getting samples :: the parsed samples are:\n{converted_samples}"
-            )
-        else: # samplesheet is not given
+            log.debug(f"Input handling :: Parser :: Getting samples :: the parsed samples are:\n{converted_samples}")
+        else:  # samplesheet is not given
             self._print_missing_asset_warning(self.flags, False)
             if GenBank.is_genbank(pathlib.Path(self.flags.reference)):
                 self.parse_genbank(self.flags.reference)
@@ -406,13 +394,13 @@ class CLIparser:
             df = samplesheet_enforce_absolute_paths(df)
             df = check_samplesheet_rows(df)
             df = self._samplesheet_handle_presets(df)
-#           based on the _samplesheet_handle_presets function i commented out this section below under the assumption that it is now handled in the function.
-#           TODO: check if this needs to be changed
-#             if df.get("PRESET") is None:
-#                 df[["PRESET", "PRESET_SCORE"]] = df.apply(
-#                     lambda x: pd.Series(match_preset_name(x["VIRUS"], use_presets=self.flags.presets)),
-#                     axis=1,
-#                 )
+            #           based on the _samplesheet_handle_presets function i commented out this section below under the assumption that it is now handled in the function.
+            #           TODO: check if this needs to be changed
+            #             if df.get("PRESET") is None:
+            #                 df[["PRESET", "PRESET_SCORE"]] = df.apply(
+            #                     lambda x: pd.Series(match_preset_name(x["VIRUS"], use_presets=self.flags.presets)),
+            #                     axis=1,
+            #                 )
             return df
         return pd.DataFrame()
 
@@ -498,7 +486,7 @@ class CLIparser:
                     "path": True,
                     "inferred": False,
                     "inheritance_allowed": False,
-                    "empty_allowed": True
+                    "empty_allowed": True,
                 },
                 "FEATURES": {
                     "type": str,
@@ -507,7 +495,7 @@ class CLIparser:
                     "path": True,
                     "inferred": False,
                     "inheritance_allowed": True,
-                    "empty_allowed": True
+                    "empty_allowed": True,
                 },
                 "MIN-COVERAGE": {
                     "type": int,
@@ -586,13 +574,13 @@ class CLIparser:
             for sample_name in df.index:
                 for column, properties in final_columns.items():
                     current_value = df.at[sample_name, column] if column in df.columns else None
-                    
+
                     # Handle VIRUS column - must always be present and cannot be empty
                     if column == "VIRUS":
                         if current_value is None or current_value == "":
                             log.error(f"[bold red]Virus name cannot be empty for sample '{sample_name}'[/bold red]")
                             sys.exit(1)
-                    
+
                     # Handle REFERENCE column - must be valid path, handle genbank splitting
                     elif column == "REFERENCE":
                         if current_value is None:
@@ -608,7 +596,7 @@ class CLIparser:
                                 # Also set features if not already set
                                 if "FEATURES" not in df.columns or pd.isna(df.at[sample_name, "FEATURES"]):
                                     df.at[sample_name, "FEATURES"] = str(split_features)
-                    
+
                     # Handle PRIMERS column - must be valid path or "NONE"
                     elif column == "PRIMERS":
                         if current_value is None or current_value == "":
@@ -619,7 +607,7 @@ class CLIparser:
                         # Ensure column exists in dataframe
                         if column not in df.columns:
                             df[column] = properties["default"]
-                    
+
                     # Handle FEATURES column - must be valid path or "NONE", consider genbank splitting
                     elif column == "FEATURES":
                         if current_value is None or current_value == "":
@@ -636,7 +624,7 @@ class CLIparser:
                         # Ensure column exists in dataframe
                         if column not in df.columns:
                             df[column] = properties["default"]
-                    
+
                     # Handle MIN-COVERAGE - use default if not provided
                     elif column == "MIN-COVERAGE":
                         if current_value is None:
@@ -644,14 +632,14 @@ class CLIparser:
                         # Ensure column exists in dataframe
                         if column not in df.columns:
                             df[column] = properties["default"]
-                    
+
                     elif column == "PRIMER-MISMATCH-RATE":
-                        if current_value is None:
+                        if current_value is None or pd.isna(current_value):
                             df.at[sample_name, column] = properties["default"]
                         # Ensure column exists in dataframe
                         if column not in df.columns:
                             df[column] = properties["default"]
-                    
+
                     # Handle MATCH-REF and SEGMENTED - use defaults if not provided
                     elif column in ["MATCH-REF", "SEGMENTED"]:
                         if current_value is None:
@@ -659,7 +647,7 @@ class CLIparser:
                         # Ensure column exists in dataframe
                         if column not in df.columns:
                             df[column] = properties["default"]
-                    
+
                     # Handle PRESET and PRESET_SCORE - use preset matching if not provided
                     elif column in ["PRESET", "PRESET_SCORE"]:
                         if current_value is None or (column == "PRESET" and current_value == ""):
@@ -678,23 +666,29 @@ class CLIparser:
                                 df[column] = "DEFAULT"
                             else:  # PRESET_SCORE
                                 df[column] = 0.0
-                                
+
                     # Handle FRAGMENT-LOOKAROUND-SIZE - use None if not fragmented amplicon type and
                     # use default if not provided or invalid input is given
                     elif column == "FRAGMENT-LOOKAROUND-SIZE":
                         if args.amplicon_type != "fragmented":
                             if not pd.isna(current_value) or properties["default"] is not None:
-                                log.warning(f"[yellow]Fragment-lookaround-size is only relevant for 'fragmented' amplicon type. Ignoring value for sample '{sample_name}'.[/yellow]")
+                                log.warning(
+                                    f"[yellow]Fragment-lookaround-size is only relevant for 'fragmented' amplicon type. Ignoring value for sample '{sample_name}'.[/yellow]"
+                                )
                             df.at[sample_name, column] = None
                         elif current_value is None or pd.isna(current_value):
                             df.at[sample_name, column] = properties["default"]
                         else:
                             try:
                                 if int(current_value) != current_value:
-                                    log.warning(f"[yellow]Fragment-lookaround-size value for sample '{sample_name}' is not a valid input. Using default value for this sample.[/yellow]")
+                                    log.warning(
+                                        f"[yellow]Fragment-lookaround-size value for sample '{sample_name}' is not a valid input. Using default value for this sample.[/yellow]"
+                                    )
                                     df.at[sample_name, column] = properties["default"]
                             except ValueError:
-                                log.warning(f"[yellow]Fragment-lookaround-size value for sample '{sample_name}' is not a valid input. Using default value for this sample.[/yellow]")
+                                log.warning(
+                                    f"[yellow]Fragment-lookaround-size value for sample '{sample_name}' is not a valid input. Using default value for this sample.[/yellow]"
+                                )
                                 df.at[sample_name, column] = properties["default"]
 
                     # Handle DISABLE-PRESETS - use defaults if not provided
@@ -702,9 +696,11 @@ class CLIparser:
                         if current_value is None or current_value == "" or pd.isna(current_value):
                             df.at[sample_name, column] = properties["default"]
                         elif str(current_value).upper() not in ["TRUE", "FALSE"]:
-                            log.warning(f"[yellow]The 'DISABLE-PRESETS' column for sample '{sample_name}' should be either TRUE or FALSE. Using command line value instead.[/yellow]")
+                            log.warning(
+                                f"[yellow]The 'DISABLE-PRESETS' column for sample '{sample_name}' should be either TRUE or FALSE. Using command line value instead.[/yellow]"
+                            )
                             df.at[sample_name, column] = properties["default"]
-                            
+
             df = df.replace({np.nan: None})
             return df.to_dict(orient="index")
         return args_to_df(args, indirFrame).to_dict(orient="index")
@@ -766,7 +762,10 @@ class CLIparser:
             match_ref_snakefile,
         )
 
-    def _samplesheet_handle_presets(self, df: pd.DataFrame, ) -> pd.DataFrame:
+    def _samplesheet_handle_presets(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.DataFrame:
         """
         Process the 'DISABLE-PRESETS' column in the input DataFrame and assign preset values.
         This function ensures that the 'DISABLE-PRESETS' column contains boolean values or None/NaN,
@@ -775,24 +774,24 @@ class CLIparser:
         'DISABLE-PRESETS' to determine whether to use presets, and assigns the results to
         the 'PRESET' and 'PRESET_SCORE' columns. When the 'DISABLE-PRESETS' column is not present,
         the command line flag value is used instead.
-        
+
         Parameters
         ----------
         df : pd.DataFrame
             Input DataFrame containing at least the columns 'DISABLE-PRESETS' and 'VIRUS'.
-            
+
         Returns
         -------
         pd.DataFrame
             The modified DataFrame with updated 'DISABLE-PRESETS', 'PRESET', and 'PRESET_SCORE' columns.
-            
+
         Notes
         -----
         - The function expects the presence of a `match_preset_name` function and a `self.flags.presets` attribute.
         - Only rows with 'DISABLE-PRESETS' values of "TRUE" or "FALSE" (case-insensitive) are converted to boolean.
         - If 'DISABLE-PRESETS' is not present or not a recognized value, the command line flag value is used.
         """
-        # Make sure that the DISABLE-PRESETS column contains boolean values 
+        # Make sure that the DISABLE-PRESETS column contains boolean values
         # ("FALSE" would otherwise be interpreted as True)
         if df.get("DISABLE-PRESETS") is not None:
             for index, row in df.iterrows():
@@ -807,7 +806,7 @@ class CLIparser:
                 # Allow only True or False inputs for the DISABLE-PRESETS column (None/NaN is also allowed)
                 # otherwise use the command line flag value
                 match_preset_name(x["VIRUS"], use_presets=not x["DISABLE-PRESETS"])
-                if df.get("DISABLE-PRESETS") is not None and str(x["DISABLE-PRESETS"]).upper() in ["TRUE", "FALSE"] 
+                if df.get("DISABLE-PRESETS") is not None and str(x["DISABLE-PRESETS"]).upper() in ["TRUE", "FALSE"]
                 else match_preset_name(x["VIRUS"], use_presets=self.flags.presets)
             ),
             axis=1,
@@ -846,9 +845,7 @@ def samplesheet_enforce_absolute_paths(df: pd.DataFrame) -> pd.DataFrame:
     columns_to_enforce: List[str] = ["PRIMERS", "FEATURES", "REFERENCE"]
     for column in columns_to_enforce:
         if column in df.columns:
-            df[column] = df[column].apply(
-                lambda x: os.path.abspath(os.path.expanduser(x)) if not pd.isna(x) else x
-            )
+            df[column] = df[column].apply(lambda x: os.path.abspath(os.path.expanduser(x)) if not pd.isna(x) else x)
     return df
 
 
@@ -999,17 +996,17 @@ def check_samplesheet_columns(df: pd.DataFrame) -> bool:
 def check_samplesheet_empty_rows(df: pd.DataFrame) -> pd.DataFrame:
     """
     Removes completely empty rows from a pandas DataFrame.
-    
+
     Parameters
     ----------
     df : pandas.DataFrame
         The input DataFrame representing the samplesheet.
-        
+
     Returns
     -------
     pandas.DataFrame
         The DataFrame with all completely empty rows removed.
-        
+
     Notes
     -----
     If any completely empty rows are found and removed, a warning is logged indicating
@@ -1019,7 +1016,9 @@ def check_samplesheet_empty_rows(df: pd.DataFrame) -> pd.DataFrame:
     df = df.dropna(how="all")
     rows_after = len(df)
     if rows_before > rows_after:
-        log.warning(f"[yellow]Some rows in the samplesheet were completely empty and have been removed. Number of removed rows: {rows_before - rows_after}[/yellow]")
+        log.warning(
+            f"[yellow]Some rows in the samplesheet were completely empty and have been removed. Number of removed rows: {rows_before - rows_after}[/yellow]"
+        )
     return df
 
 
@@ -1118,11 +1117,11 @@ def check_samplesheet_rows(df: pd.DataFrame) -> pd.DataFrame:
         },
     }
     for colName, colValue in df.items():
-        if formats[colName]["dtype"] == int: 
-            # Convert integers back to integer type after pandas read them as floats 
+        if formats[colName]["dtype"] == int:
+            # Convert integers back to integer type after pandas read them as floats
             # strings will be converted to NaN
             df[colName] = pd.to_numeric(df[colName], downcast="integer", errors="coerce")
-            
+
         if colName not in formats:
             log.error(
                 f"[bold red]Unknown column '{colName}' in samplesheet.[/bold red]\n[yellow]Please check the column-headers in your samplesheet file and try again.\nAllowed column-headers are as follows: {' | '.join(list(formats))}[/yellow]"
@@ -1313,12 +1312,7 @@ def convert_log_text(samples_dict: dict) -> str:
     for sample, sample_info in samples_dict.items():
         # Extract the sample information
         convert_samples.append(f"{sample}:")
-        convert_samples.append(
-            ", ".join(
-                f"{sample_key}={sample_value}"
-                for sample_key, sample_value in sample_info.items()
-            )
-        )
+        convert_samples.append(", ".join(f"{sample_key}={sample_value}" for sample_key, sample_value in sample_info.items()))
     # Combine the sample information into a single log string
     converted_samples = "\n".join(convert_samples)
     return converted_samples

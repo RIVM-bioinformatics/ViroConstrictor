@@ -224,9 +224,7 @@ class ViroConstrictorBaseLogHandler(logging.Handler):
                 self.instance_file_handler.close()
         super().close()
 
-    def _dispatch_log_record_formatter(
-        self, record: logging.LogRecord
-    ) -> list[dict[str, Any]] | None:
+    def _dispatch_log_record_formatter(self, record: logging.LogRecord) -> list[dict[str, Any]] | None:
         """
         Formats a log record based on its content, applying specific transformations or filters.
         This method inspects the log record's level, message, event, and associated log file,
@@ -291,10 +289,7 @@ class ViroConstrictorBaseLogHandler(logging.Handler):
                 (rule_output, list),
                 (shellcmd, str),
             ]
-            if all(
-                isinstance(value, expected_type)
-                for value, expected_type in expected_types
-            ):
+            if all(isinstance(value, expected_type) for value, expected_type in expected_types):
                 records_to_emit.append(
                     handle_job_debug_message(
                         log_record.copy(),
@@ -574,18 +569,10 @@ def handle_job_debug_message(
     rich logging output and is logged at the DEBUG level.
     """
     # Replace the record's wildcard, rule input & output and shellcmd with a formatted string containing the job details
-    wildcards = ", ".join(
-        f"{key}: [blue]{value}[/blue]" for key, value in wildcards.items()
-    )
-    rule_input = ", ".join(
-        f"[magenta]{input_path}[/magenta]" for input_path in rule_input
-    )
-    rule_output = ", ".join(
-        f"[magenta]{output_path}[/magenta]" for output_path in rule_output
-    )
-    shellcmd = re.sub(
-        r" +", " ", shellcmd.strip()
-    )  # remove extra spaces and leading & trailing characters from the shell command
+    wildcards = ", ".join(f"{key}: [blue]{value}[/blue]" for key, value in wildcards.items())
+    rule_input = ", ".join(f"[magenta]{input_path}[/magenta]" for input_path in rule_input)
+    rule_output = ", ".join(f"[magenta]{output_path}[/magenta]" for output_path in rule_output)
+    shellcmd = re.sub(r" +", " ", shellcmd.strip())  # remove extra spaces and leading & trailing characters from the shell command
     # Create the debug message
     record["msg"] = (
         f"Snakemake workflow :: {rule_name} :: {wildcards} :: JobID: [cyan]{rule_id}[/cyan]\nInput: {rule_input}\nOutput: {rule_output}\nFull command:\n{shellcmd}"
