@@ -1,3 +1,4 @@
+import logging
 from argparse import ArgumentParser
 from pathlib import Path
 
@@ -60,9 +61,10 @@ class BaseScript:
     >>>     MyScript.main()
     """
 
-    def __init__(self, input: Path | str, output: Path | str) -> None:
+    def __init__(self, input: Path | str, output: Path | str, log_level: str = "INFO") -> None:
         self.input = input
         self.output = output
+        self.logger = self._setup_logging(log_level)
 
     def run(self) -> None:
         raise NotImplementedError("Subclasses should implement this method.")
@@ -84,6 +86,14 @@ class BaseScript:
             required=True,
         )
 
+        parser.add_argument(
+            "--log-level",
+            metavar="Level",
+            help="Logging level (e.g., DEBUG, INFO, WARNING, ERROR, CRITICAL).",
+            type=str,
+            default="INFO",
+        )
+
     @classmethod
     def main(cls) -> None:
         parser = ArgumentParser(description=f"Run the {cls.__name__} script.")
@@ -93,3 +103,41 @@ class BaseScript:
         # Pass parsed arguments to the script
         script = cls(**vars(args))
         script.run()
+
+    def _setup_logging(self, log_level: str) -> logging.Logger:
+        """
+        Besides snakemake rules, there should be logging for each script.
+        The snakemake logs are written to logs/{rule_name}.{sample_name}.log
+        Scripts will be logged to logs/scripts/{script_name}.log
+        """
+        numeric_level = getattr(logging, log_level.upper(), None)
+        if not isinstance(numeric_level, int):
+            # logging is not set yet, so we use print here
+            print(f"Warning: Invalid log level: {log_level}. Using INFO instead.")
+            numeric_level = logging.INFO
+
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.setLevel(numeric_level)
+
+        log_dir = Path("logs/scripts")
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_file = log_dir / f"{self.__class__.__name__}.log"
+
+        file_handler = logging.FileHandler(log_file, mode="a")  # a means append mode
+        console_handler = logging.StreamHandler()
+
+        formatter = logging.Formatter("[%(asctime)s] %(levelname)s in %(module)s: %(message)s")
+        file_handler.setFormatter(formatter)
+        console_handler.setFormatter(formatter)
+
+        logger.addHandler(file_handler)
+        logger.addHandler(console_handler)
+
+        return logger
+
+    def log(self, message: str, level: int = logging.INFO) -> None:
+        """
+        Log a message at the specified logging level.
+        Default level is INFO.
+        """
+        self.logger.log(level, message)
