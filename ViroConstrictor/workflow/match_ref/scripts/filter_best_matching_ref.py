@@ -33,8 +33,9 @@ class FilterBestMatchingRef(BaseScript):
         inputref: Path | str,
         filtref: Path | str,
         output: Path | str,
+        log_level: str = "INFO",
     ) -> None:
-        super().__init__(input, output)
+        super().__init__(input, output, log_level)
         self.inputref = inputref
         self.filtref = filtref
 

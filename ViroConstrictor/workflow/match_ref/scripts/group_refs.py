@@ -37,8 +37,9 @@ class GroupRefs(BaseScript):
         output: Path | str,
         output_stats: Path | str,
         sample: str,
+        log_level: str = "INFO",
     ) -> None:
-        super().__init__(input_refs, output)
+        super().__init__(input_refs, output, log_level)
         self.input_stats = input_stats
         self.output_stats = output_stats
         self.sample = sample

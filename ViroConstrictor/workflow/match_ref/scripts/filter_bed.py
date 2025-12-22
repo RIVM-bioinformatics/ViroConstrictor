@@ -34,8 +34,9 @@ class FilterBed(BaseScript):
         refdata: Path | str,
         output: Path | str,
         updatedstats: Path | str,
+        log_level: str = "INFO",
     ) -> None:
-        super().__init__(input, output)
+        super().__init__(input, output, log_level)
         self.refdata = refdata
         self.updatedstats = updatedstats
 
