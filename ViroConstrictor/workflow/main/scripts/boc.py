@@ -7,14 +7,8 @@ from helpers.base_script_class import BaseScript  # type: ignore[import]  # noqa
 
 
 class Boc(BaseScript):
-    def __init__(
-        self,
-        input: Path | str,
-        output: Path | str,
-        samplename: str,
-        coverage: Path | str,
-    ) -> None:
-        super().__init__(input, output)
+    def __init__(self, input: Path | str, output: Path | str, samplename: str, coverage: Path | str, log_level: str = "INFO") -> None:
+        super().__init__(input, output, log_level)
         self.samplename = samplename
         self.coverages = coverage
 

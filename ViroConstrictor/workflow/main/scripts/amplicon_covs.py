@@ -234,8 +234,8 @@ class AmpliconCovs(BaseScript):
         Executes the amplicon coverage calculation.
     """
 
-    def __init__(self, input: Path | str, coverages: Path | str, key: str, output: Path | str) -> None:
-        super().__init__(input, output)
+    def __init__(self, input: Path | str, coverages: Path | str, key: str, output: Path | str, log_level: str = "INFO") -> None:
+        super().__init__(input, output, log_level)
         self.coverages = coverages
         self.key = key
         self.parser = PrimerNameParser()  # Initialize the parser

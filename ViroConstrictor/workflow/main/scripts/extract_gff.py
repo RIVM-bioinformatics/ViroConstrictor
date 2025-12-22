@@ -28,8 +28,8 @@ class ExtractGff(BaseScript):
         Reference ID of the GFF record to extract.
     """
 
-    def __init__(self, input: Path | str, output: Path | str, ref_id: str) -> None:
-        super().__init__(input, output)
+    def __init__(self, input: Path | str, output: Path | str, ref_id: str, log_level: str = "INFO") -> None:
+        super().__init__(input, output, log_level)
         self.ref_id = ref_id
 
     @classmethod

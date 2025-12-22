@@ -22,8 +22,8 @@ class ConcatAmpliconCovs(BaseScript):
         Executes the concatenation of amplicon coverage files.
     """
 
-    def __init__(self, input: list[Path | str], input_coverages: list[Path | str], output: Path | str) -> None:
-        super().__init__(input_coverages, output)
+    def __init__(self, input: list[Path | str], input_coverages: list[Path | str], output: Path | str, log_level: str = "INFO") -> None:
+        super().__init__(input_coverages, output, log_level)
         self.input_coverages = input_coverages
 
     @classmethod

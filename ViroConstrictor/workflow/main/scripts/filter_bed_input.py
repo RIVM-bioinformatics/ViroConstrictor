@@ -12,8 +12,8 @@ class FilterBedInput(BaseScript):
     and writes the filtered data to an output file.
     """
 
-    def __init__(self, input: str, output: str, reference_id: str) -> None:
-        super().__init__(input, output)
+    def __init__(self, input: str, output: str, reference_id: str, log_level: str = "INFO") -> None:
+        super().__init__(input, output, log_level)
         self.reference_id = reference_id
 
     @classmethod

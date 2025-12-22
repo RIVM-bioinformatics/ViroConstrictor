@@ -44,8 +44,9 @@ class Clipper(BaseScript):
         max_aligned_length: float = 0,
         only_include_region: str | None = None,
         threads: int = 1,
+        log_level: str = "INFO",
     ) -> None:
-        super().__init__(input, output)
+        super().__init__(input, output, log_level)
         self.exclude_spliced = exclude_spliced
         self.spliced_length_threshold = spliced_length_threshold
         self.min_aligned_length = min_aligned_length

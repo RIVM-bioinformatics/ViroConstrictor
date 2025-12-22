@@ -14,8 +14,8 @@ class PrepareRefs(BaseScript):
     and writes it to an output file if the reference ID matches.
     """
 
-    def __init__(self, input: Path, output: Path, reference_id: str) -> None:
-        super().__init__(input, output)
+    def __init__(self, input: Path, output: Path, reference_id: str, log_level: str = "INFO") -> None:
+        super().__init__(input, output, log_level)
 
         self.reference_id = reference_id
 
