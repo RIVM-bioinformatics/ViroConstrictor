@@ -61,7 +61,7 @@ class BaseScript:
     >>>     MyScript.main()
     """
 
-    def __init__(self, input: Path | str, output: Path | str, log_level: str = "INFO") -> None:
+    def __init__(self, input: Path | str, output: Path | str, log_level: str = "DEBUG") -> None:
         self.input = input
         self.output = output
         self.logger = self._setup_logging(log_level)
