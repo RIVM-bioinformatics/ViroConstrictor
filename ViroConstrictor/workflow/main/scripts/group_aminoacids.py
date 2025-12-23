@@ -44,7 +44,7 @@ class GroupAminoAcids(BaseScript):
         Internal method to perform the grouping and writing of sequences.
     """
 
-    def __init__(self, input: str, output: str, space: str, log_level: str = "INFO") -> None:
+    def __init__(self, input: str, output: str, space: str, log_level: str = "DEBUG") -> None:
         super().__init__(input, output, log_level)
         self.space = Path(space)
 
@@ -126,6 +126,14 @@ class GroupAminoAcids(BaseScript):
         ) -> None:
             output_path = f"results/Virus~{virus}/RefID~{ref_id}/aminoacids/{feature_name}.faa"
 
+            self.log(f"Attempting to write sequences for {virus}/{ref_id}/{feature_name}", logging.DEBUG)
+            self.log(f"Constructed output path: {output_path}", logging.DEBUG)
+            self.log(f"Output files list has {len(output_files)} entries", logging.DEBUG)
+
+            # Debug: Show first few expected output files for comparison
+            if output_files:
+                self.log(f"First few expected output files: {output_files[:3]}", logging.DEBUG)
+
             if output_path in output_files:
                 filtered_data = seq_records_df.loc[
                     (seq_records_df["Virus"] == virus) & (seq_records_df["RefID"] == ref_id) & (seq_records_df["AA_FEAT_NAMES"] == feature_name)
@@ -138,6 +146,7 @@ class GroupAminoAcids(BaseScript):
                     return
 
                 file_path = Path(output_path)
+                self.log(f"Creating directory: {file_path.parent}", logging.DEBUG)
                 file_path.parent.mkdir(parents=True, exist_ok=True)
 
                 try:
@@ -145,11 +154,27 @@ class GroupAminoAcids(BaseScript):
                         for _, row in filtered_data.iterrows():
                             file.write(f">{row['sample']}.{row['AA_FEAT_NAMES']}\n{row['AA_SEQ']}\n")
                     self.log(f"Successfully wrote sequences to: {output_path}", logging.DEBUG)
+
+                    # Verify file was actually created
+                    if file_path.exists():
+                        file_size = file_path.stat().st_size
+                        self.log(f"File verification: {output_path} exists with size {file_size} bytes", logging.DEBUG)
+                    else:
+                        self.log(f"File verification FAILED: {output_path} does not exist after write!", logging.ERROR)
+
                 except Exception as e:
                     self.log(f"Error writing to file {output_path}: {str(e)}", logging.ERROR)
                     raise
             else:
-                self.log(f"Output path not in expected files: {output_path}", logging.DEBUG)
+                self.log(f"Output path not in expected files: {output_path}", logging.WARNING)
+                self.log(f"Looking for exact matches in output_files list...", logging.DEBUG)
+
+                # Debug: Look for similar paths
+                similar_paths = [f for f in output_files if feature_name in f and virus in f and ref_id in f]
+                if similar_paths:
+                    self.log(f"Found similar paths: {similar_paths}", logging.DEBUG)
+                else:
+                    self.log(f"No similar paths found containing {feature_name}, {virus}, {ref_id}", logging.DEBUG)
 
         seq_records_df = pd.DataFrame()
         total_records_processed = 0
