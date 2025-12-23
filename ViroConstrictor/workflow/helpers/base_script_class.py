@@ -110,13 +110,25 @@ class BaseScript:
         The snakemake logs are written to logs/{rule_name}.{sample_name}.log
         Scripts will be logged to logs/scripts/{script_name}.log
         """
+
+        logger = logging.getLogger(self.__class__.__name__)
+
+        # The logging is used across different scripts, so we clear them to make sure it all works
+        for handler in logger.handlers[:]:
+            handler.close()
+            logger.removeHandler(handler)
+        logger.setLevel(logging.NOTSET)
+        logger.filters.clear()
+        logger.disabled = False
+        logger.propagate = False
+
+        # From here we set it up again
         numeric_level = getattr(logging, log_level.upper(), None)
         if not isinstance(numeric_level, int):
             # logging is not set yet, so we use print here
             print(f"Warning: Invalid log level: {log_level}. Using INFO instead.")
             numeric_level = logging.INFO
-
-        logger = logging.getLogger(self.__class__.__name__)
+        logger.setLevel(numeric_level)
 
         log_dir = Path("logs/scripts")
         log_dir.mkdir(parents=True, exist_ok=True)
@@ -134,6 +146,12 @@ class BaseScript:
 
         logger.addHandler(file_handler)
         logger.addHandler(console_handler)
+
+        logger.debug(f"Logger initialized for {self.__class__.__name__} with level {log_level}")
+
+        # Does this do anything?
+        file_handler.flush()
+        console_handler.flush()
 
         return logger
 
