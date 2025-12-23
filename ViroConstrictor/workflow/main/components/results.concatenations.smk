@@ -97,7 +97,8 @@ rule concat_aminoacids:
         python {params.script} \
         --input "{input.files}" \
         --output "{output}" \
-        --space {input.sampleinfo}
+        --space {input.sampleinfo} \
+        --log_level DEBUG
         """
 
 def group_items(wildcards, folder, filename):
