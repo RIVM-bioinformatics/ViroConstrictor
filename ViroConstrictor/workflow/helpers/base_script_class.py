@@ -1,4 +1,5 @@
 import logging
+import os
 from argparse import ArgumentParser
 from pathlib import Path
 
@@ -65,6 +66,7 @@ class BaseScript:
         self.input = input
         self.output = output
         self.logger = self._setup_logging(log_level)
+        self._log_some_basic_info()
 
     def run(self) -> None:
         raise NotImplementedError("Subclasses should implement this method.")
@@ -154,6 +156,27 @@ class BaseScript:
         console_handler.flush()
 
         return logger
+
+    def _log_some_basic_info(self) -> None:
+        """Log some basic information for debugging purposes."""
+        self.log(f"Input path: {self.input}", logging.DEBUG)
+        self.log(f"Output path: {self.output}", logging.DEBUG)
+
+        cwd = os.getcwd()
+        self.log(f"Current working directory: {cwd}", logging.DEBUG)
+        self.log(f"Environment PYTHONPATH: {os.environ.get('PYTHONPATH', 'Not set')}", logging.DEBUG)
+
+        if os.path.exists("/.singularity.d"):
+            self.log("Running inside Singularity/Apptainer container", logging.DEBUG)
+
+        conda_config = os.environ.get("CONDA_DEFAULT_ENV", "Not set")
+        self.log(f"Conda environment: {conda_config}", logging.DEBUG)
+
+        if os.path.isdir(".") and os.access(".", os.R_OK):
+            dir_contents = os.listdir(".")
+            self.log(f"Current directory contents: {dir_contents[:10]}", logging.DEBUG)
+        else:
+            self.log("Current path is either not a directory or not readable", logging.DEBUG)
 
     def log(self, message: str, level: int = logging.INFO) -> None:
         """

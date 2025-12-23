@@ -83,6 +83,25 @@ class GroupAminoAcids(BaseScript):
         space_data: pd.DataFrame = pd.read_pickle(self.space)
         self.log(f"Loaded space data with {len(space_data)} records", logging.INFO)
 
+        # Debug the space data structure
+        if not space_data.empty:
+            self.log(f"Space data columns: {list(space_data.columns)}", logging.DEBUG)
+
+            # Show unique AA_FEAT_NAMES to see what features are expected
+            if "AA_FEAT_NAMES" in space_data.columns:
+                all_features = []
+                for _, row in space_data.iterrows():
+                    if pd.notna(row["AA_FEAT_NAMES"]):
+                        if isinstance(row["AA_FEAT_NAMES"], list):
+                            all_features.extend(row["AA_FEAT_NAMES"])
+                        else:
+                            all_features.append(row["AA_FEAT_NAMES"])
+                unique_features = list(set(all_features))
+                self.log(f"Unique AA_FEAT_NAMES from space data: {unique_features}", logging.DEBUG)
+
+            # Show sample of space data
+            self.log(f"Sample space data:\n{space_data.head()}", logging.DEBUG)
+
         def feature_in_id(feature: str, record_id: str) -> bool:
             pattern = rf"(?:^|[.\-_ ]){re.escape(feature)}(?:$|[.\-_ ])"
             return re.search(pattern, record_id, re.IGNORECASE) is not None
