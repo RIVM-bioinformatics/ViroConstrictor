@@ -117,7 +117,6 @@ class BaseScript:
             numeric_level = logging.INFO
 
         logger = logging.getLogger(self.__class__.__name__)
-        logger.setLevel(numeric_level)
 
         log_dir = Path("logs/scripts")
         log_dir.mkdir(parents=True, exist_ok=True)
@@ -125,6 +124,9 @@ class BaseScript:
 
         file_handler = logging.FileHandler(log_file, mode="a")  # a means append mode
         console_handler = logging.StreamHandler()
+
+        file_handler.setLevel(numeric_level)
+        console_handler.setLevel(numeric_level)
 
         formatter = logging.Formatter("[%(asctime)s] %(levelname)s in %(module)s: %(message)s")
         file_handler.setFormatter(formatter)
