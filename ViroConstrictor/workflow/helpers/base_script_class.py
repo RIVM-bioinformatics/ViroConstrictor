@@ -2,6 +2,7 @@ import logging
 import os
 from argparse import ArgumentParser
 from pathlib import Path
+from typing import Any
 
 
 class BaseScript:
@@ -142,14 +143,14 @@ class BaseScript:
         file_handler.setLevel(numeric_level)
         console_handler.setLevel(numeric_level)
 
-        formatter = logging.Formatter("[%(asctime)s] %(levelname)s in %(module)s: %(message)s")
+        formatter = logging.Formatter("[%(asctime)s] %(levelname)s in %(name)s: %(message)s")
         file_handler.setFormatter(formatter)
         console_handler.setFormatter(formatter)
 
         logger.addHandler(file_handler)
         logger.addHandler(console_handler)
 
-        logger.debug(f"Logger initialized for {self.__class__.__name__} with level {log_level}")
+        logger.debug("Logger initialized for %s with level %s", self.__class__.__name__, log_level)
 
         # Does this do anything?
         file_handler.flush()
@@ -159,28 +160,29 @@ class BaseScript:
 
     def _log_some_basic_info(self) -> None:
         """Log some basic information for debugging purposes."""
-        self.log(f"Input path: {self.input}", logging.DEBUG)
-        self.log(f"Output path: {self.output}", logging.DEBUG)
+        self.log(logging.DEBUG, "Input path: %s", self.input)
+        self.log(logging.DEBUG, "Output path: %s", self.output)
 
         cwd = os.getcwd()
-        self.log(f"Current working directory: {cwd}", logging.DEBUG)
-        self.log(f"Environment PYTHONPATH: {os.environ.get('PYTHONPATH', 'Not set')}", logging.DEBUG)
+        self.log(logging.DEBUG, "Current working directory: %s", cwd)
+        self.log(logging.DEBUG, "Environment PYTHONPATH: %s", os.environ.get("PYTHONPATH", "Not set"))
 
         if os.path.exists("/.singularity.d"):
-            self.log("Running inside Singularity/Apptainer container", logging.DEBUG)
+            self.log(logging.DEBUG, "Running inside Singularity/Apptainer container")
+        else:
+            self.log(logging.DEBUG, "Not running inside Singularity/Apptainer container")
 
         conda_config = os.environ.get("CONDA_DEFAULT_ENV", "Not set")
-        self.log(f"Conda environment: {conda_config}", logging.DEBUG)
+        self.log(logging.DEBUG, "Conda environment: %s", conda_config)
 
         if os.path.isdir(".") and os.access(".", os.R_OK):
             dir_contents = os.listdir(".")
-            self.log(f"Current directory contents: {dir_contents[:10]}", logging.DEBUG)
+            self.log(logging.DEBUG, "Current directory contents: %s", dir_contents[:10])
         else:
-            self.log("Current path is either not a directory or not readable", logging.DEBUG)
+            self.log(logging.DEBUG, "Current path is either not a directory or not readable")
 
-    def log(self, message: str, level: int = logging.INFO) -> None:
+    def log(self, level: int, message: str, *args: Any) -> None:
         """
         Log a message at the specified logging level.
-        Default level is INFO.
         """
-        self.logger.log(level, message)
+        self.logger.log(level, message, *args)
