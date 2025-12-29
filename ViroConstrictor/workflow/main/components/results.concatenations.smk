@@ -62,7 +62,8 @@ rule make_pickle:
         space=lambda wc: __import__("codecs")
         .encode(
             __import__("pickle").dumps(
-                samples_df[~samples_df["AA_FEAT_NAMES"].isnull()]
+                # Sort by sample, Virus, RefID to ensure consistent ordering
+                samples_df[~samples_df["AA_FEAT_NAMES"].isnull()].sort_values(['sample', 'Virus', 'RefID']).reset_index(drop=True)
             ),
             "base64",
         )
