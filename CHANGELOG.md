@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.3](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.6.2...v1.6.3) (2025-12-29)
+
+
+### Bug Fixes
+
+* add additional primer name option (MuV-NGS_19-alt22_LEFT) ([#169](https://github.com/RIVM-bioinformatics/ViroConstrictor/issues/169)) ([94056f8](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/94056f87c338c028e27beafc0cfd9cb1aace3c23))
+
 ## [1.6.2](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.6.1...v1.6.2) (2025-12-17)
 
 
