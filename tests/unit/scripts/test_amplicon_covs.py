@@ -65,6 +65,9 @@ def test_primer_name_validation(tmp_path: Path) -> None:
         ("ncov-2019_2_RIGHT", True),
         ("ncov-2019_2_alt_LEFT", True),
         ("ncov-2019_2_right_ALT1", True),
+        ("virus_strain_1_LEFT", True),
+        ("virus_strain_1_alt_RIGHT", True),
+        ("MuV-NGS_19-alt22_LEFT", True),
         # Invalid primer names
         ("wrong_name", False),  # Missing required components
         ("ncov-2019_LEFT", False),  # Missing primer number
