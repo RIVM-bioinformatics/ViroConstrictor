@@ -138,7 +138,7 @@ class Clipper(BaseScript):
                         "V": "B",
                         "D": "H",
                         "H": "D",
-                        "N": "N"
+                        "N": "N",
                     }
                     bases = [complement[base] for base in trimmed_seq]
                     trimmed_seq = "".join(bases[::-1])

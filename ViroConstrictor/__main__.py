@@ -113,13 +113,13 @@ def show_preset_warnings(warnings: list[str], fallbacks: list[str], disabled: bo
     if samples_df.get("DISABLE-PRESETS") is not None:
         # If per-sample DISABLE-PRESETS column exists, check per sample
         for index, row in samples_df.iterrows():
-            sample_name = row["SAMPLE"]
+            sample_name = index
             # Only show warnings for this sample if presets are disabled (DISABLE-PRESETS is False)
             if not row["DISABLE-PRESETS"]:
                 # Filter warnings and fallbacks that mention this specific sample
                 sample_warnings = [w for w in warnings if sample_name in w]
                 sample_fallbacks = [w for w in fallbacks if sample_name in w]
-                
+
                 if sample_warnings and not disabled:
                     for w in sample_warnings:
                         log.warning(f"{w}")
@@ -166,7 +166,6 @@ def main(args: list[str] | None = None, settings: str | None = None) -> NoReturn
     status: bool = False
 
     status, used_workflow_config = run_snakemake_workflow(inputs_obj=parsed_input, stage="MAIN", scheduler=parsed_input.scheduler)
-
 
     workflow_state: Literal["Failed", "Success"] = "Failed" if status is False else "Success"
 
