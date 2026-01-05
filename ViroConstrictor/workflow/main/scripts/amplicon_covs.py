@@ -45,6 +45,8 @@ Supported primer name formats:
 - name_number_direction_alt (e.g., "ncov-2019_1_LEFT_alt1")
 - Complex alt formats (e.g., "HAV_1_alt-IB_LEFT")
 - Multiple underscores in names (e.g., "virus_strain_1_LEFT")
+- Multiple underscores with alt (e.g., "virus_strain_1_alt_LEFT")
+- name_number-alt_direction (e.g., "MuV-NGS_19-alt22_LEFT
 
 Valid direction indicators: FW, F, LEFT, POSITIVE, FORWARD, PLUS (forward)
                            RV, R, RIGHT, NEGATIVE, REVERSE, MINUS (reverse)
@@ -129,6 +131,8 @@ class PrimerNameParser:
             r"^(.+)_(\d+)_([^_]+)$",
             # Pattern 6: Multiple underscores with alt (e.g., "virus_strain_1_alt_LEFT")
             r"^(.+)_(\d+)_(alt\w*)_([^_]+)$",
+            # Pattern 7: name_number-alt_direction (e.g., "MuV-NGS_19-alt22_LEFT")
+            r"^([^_]+)_(\d+)-(alt\w*)_([^_]+)$",
         ]
 
     def parse(self, primer_name: str) -> PrimerInfo:
@@ -265,7 +269,7 @@ class AmpliconCovs(BaseScript):
         """
         Calculates amplicon coverage and writes the results to the output file.
         """
-        primers = self._open_tsv_file(self.input) # _open_tsv_file handles empty files, will return empty df
+        primers = self._open_tsv_file(self.input)  # _open_tsv_file handles empty files, will return empty df
         if primers.empty:
             final_df = pd.DataFrame(columns=[], index=[self.key])
             self._write_output(final_df, self.output)

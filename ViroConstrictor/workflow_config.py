@@ -1,12 +1,12 @@
 import multiprocessing
 import os
-import yaml
 import sys
 from argparse import Namespace
 from configparser import ConfigParser
 from pathlib import Path
 from typing import Any, Hashable
 
+import yaml
 from snakemake.api import (
     ConfigSettings,
     DAGSettings,
@@ -61,6 +61,7 @@ def correct_unidirectional_flag(samples_dict: dict[Hashable, Any], flags: Namesp
             return False
     return True  # Default to True if no specific conditions are met
 
+
 class MaxThreadsPerType:
     """
     Represents the maximum number of threads to use for each type of process.
@@ -100,6 +101,7 @@ class MaxThreadsPerType:
             self.highcpu = 12
             self.midcpu = 6
             self.lowcpu = 2
+
 
 class WorkflowConfig:
     """
@@ -175,7 +177,7 @@ class WorkflowConfig:
         assign_threads = MaxThreadsPerType(self.inputs, self.configuration)
 
         ## NOTE: dryrun only seems to work if outputsettings.dryrun is set to True, the executor is set to "dryrun" and the execmode is set to "SUBPROCESS"
-            # Quite convoluted, but this is the only combination of settings that seems to actually run the workflow in true dryrun mode.
+        # Quite convoluted, but this is the only combination of settings that seems to actually run the workflow in true dryrun mode.
         self.output_settings = OutputSettings(
             dryrun=self.dryrun,  # this doesn't seem to actually work all that much? if dryrun is set to True, it will still run the workflow and actually execute the tasks.
             printshellcmds=False,
@@ -196,8 +198,6 @@ class WorkflowConfig:
             nodes=200 if self.configuration["COMPUTING"]["compmode"] == "grid" else 1,
             default_resources=add_default_resource_settings(scheduler=self.inputs.scheduler, user_config=self.configuration),
         )
-        
-        
 
         self.storage_settings = StorageSettings()
 
@@ -230,7 +230,7 @@ class WorkflowConfig:
         )
 
         self.scheduling_settings = SchedulingSettings(
-            scheduler="greedy", # this is not the same as the HPC scheduler, but rather the DAG scheduling algorithm used by snakemake.
+            scheduler="greedy",  # this is not the same as the HPC scheduler, but rather the DAG scheduling algorithm used by snakemake.
         )
 
         self.workflow_settings = WorkflowSettings(exec_mode=ExecMode.SUBPROCESS if self.dryrun else ExecMode.DEFAULT)
@@ -337,6 +337,7 @@ def add_default_resource_settings(scheduler: Scheduler, user_config: ConfigParse
     # Currently only LSF and SLURM are implemented.
     return default_resource_setting
 
+
 def _assign_resources_lsf(default_resource_setting: DefaultResources, queue: str | None) -> DefaultResources:
     # required settings: lsf_queue
     # optional settings: lsf_project
@@ -350,6 +351,7 @@ def _assign_resources_lsf(default_resource_setting: DefaultResources, queue: str
     # the project is optional, leaving it unassigned for now.
     # This may be an issue if the LSF cluster doesn't have a default project configured by an admin.
     return default_resource_setting
+
 
 def _assign_resources_slurm(default_resource_setting: DefaultResources, queue: str | None) -> DefaultResources:
     # required settings: slurm_partition (this is the same as a queue for the LSF scheduler)
@@ -365,6 +367,7 @@ def _assign_resources_slurm(default_resource_setting: DefaultResources, queue: s
     # the account and the clusters are optional, leaving it unassigned for now.
     # This may be an issue if the SLURM cluster doesn't have default values for these settings configured by an admin
     return default_resource_setting
+
 
 def _write_yaml(data: dict, filepath: str) -> str:
     """Write a dictionary to a filepath as a YAML file.
