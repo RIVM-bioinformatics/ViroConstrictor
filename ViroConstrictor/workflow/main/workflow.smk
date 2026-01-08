@@ -61,15 +61,17 @@ def high_memory_job(wildcards, threads, attempt):
         return min(attempt * threads * 4 * 1000, config["max_local_mem"])
     return attempt * threads * 4 * 1000
 
+# time allocation functions. These are logarithmic to compensate for O(n^2) algorithms in some steps.
+# most steps will not need more than a couple of minutes for the average dataset.
+# However, to accommodate the occasional very large sample, we scale up the time allocation quickly with each attempt.
 def low_runtime_job(wildcards, attempt):
-    return attempt * 2
+    return attempt * attempt * 2
 
 def medium_runtime_job(wildcards, attempt):
-    return attempt * 10
+    return attempt * attempt * 15
 
 def high_runtime_job(wildcards, attempt):
-    return attempt * 30
-
+    return attempt * attempt * 30
 
 
 def workflow_script_path(relative_path):
