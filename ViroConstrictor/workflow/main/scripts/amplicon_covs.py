@@ -329,38 +329,63 @@ class AmpliconCovs(BaseScript):
     @staticmethod
     def _calculate_amplicon_start_end(primers: pd.DataFrame) -> pd.DataFrame:
         """
-        Calculates the start and end positions of amplicons based on primer data.
+        Calculates non-overlapping start and end positions of amplicons based on primer data.
         
-        The amplicon region is defined as the sequence between the inner edges of the primers:
-        - Start: end position of the LEFT/FORWARD primer
-        - End: start position of the RIGHT/REVERSE primer
+        The amplicon regions are partitioned to avoid overlaps:
+        - Start: end position of the PREVIOUS amplicon's RIGHT primer 
+                 (or current LEFT primer's end for first amplicon)
+        - End: start position of the NEXT amplicon's LEFT primer 
+               (or current RIGHT primer's start for last amplicon)
         
-        This ensures the overlapping regions are excluded for accurate coverage calculation.
+        This ensures true non-overlapping amplicon regions for accurate coverage calculation.
         """
-        df = pd.DataFrame(primers["count"].unique(), columns=["amplicon_number"])
-
-        for amplicon_number in df["amplicon_number"]:
+        amplicon_numbers = sorted(primers["count"].unique())
+        df = pd.DataFrame(amplicon_numbers, columns=["amplicon_number"])
+        
+        for idx, amplicon_number in enumerate(amplicon_numbers):
             amplicon_group = primers[primers["count"] == amplicon_number]
             
             # Get forward (LEFT) and reverse (RIGHT) primers for this amplicon
             forward_primers = amplicon_group[amplicon_group["direction"] == ReadDirection.FORWARD]
             reverse_primers = amplicon_group[amplicon_group["direction"] == ReadDirection.REVERSE]
             
-            # Calculate start: take the maximum end position of forward primers
-            # (this is the inner edge of the left primer, accounting for alt primers)
-            if not forward_primers.empty:
-                amplicon_start = forward_primers[2].max()  # Column 2 is the end position
+            # Determine start position
+            if idx == 0:
+                # First amplicon: start at end of own LEFT primer
+                if not forward_primers.empty:
+                    amplicon_start = forward_primers[2].max()  # Column 2 is the end position
+                else:
+                    amplicon_start = amplicon_group[1].min()
             else:
-                # Fallback if no forward primer found (shouldn't happen with valid data)
-                amplicon_start = amplicon_group[1].min()
+                # Subsequent amplicons: start at end of previous amplicon's RIGHT primer
+                prev_amplicon_number = amplicon_numbers[idx - 1]
+                prev_amplicon_group = primers[primers["count"] == prev_amplicon_number]
+                prev_reverse_primers = prev_amplicon_group[prev_amplicon_group["direction"] == ReadDirection.REVERSE]
+                
+                if not prev_reverse_primers.empty:
+                    amplicon_start = prev_reverse_primers[2].max()  # Column 2 is the end position
+                else:
+                    # Fallback to own LEFT primer end
+                    amplicon_start = forward_primers[2].max() if not forward_primers.empty else amplicon_group[1].min()
             
-            # Calculate end: take the minimum start position of reverse primers
-            # (this is the inner edge of the right primer, accounting for alt primers)
-            if not reverse_primers.empty:
-                amplicon_end = reverse_primers[1].min()  # Column 1 is the start position
+            # Determine end position
+            if idx == len(amplicon_numbers) - 1:
+                # Last amplicon: end at start of own RIGHT primer
+                if not reverse_primers.empty:
+                    amplicon_end = reverse_primers[1].min()  # Column 1 is the start position
+                else:
+                    amplicon_end = amplicon_group[2].max()
             else:
-                # Fallback if no reverse primer found (shouldn't happen with valid data)
-                amplicon_end = amplicon_group[2].max()
+                # Non-last amplicons: end at start of next amplicon's LEFT primer
+                next_amplicon_number = amplicon_numbers[idx + 1]
+                next_amplicon_group = primers[primers["count"] == next_amplicon_number]
+                next_forward_primers = next_amplicon_group[next_amplicon_group["direction"] == ReadDirection.FORWARD]
+                
+                if not next_forward_primers.empty:
+                    amplicon_end = next_forward_primers[1].min()  # Column 1 is the start position
+                else:
+                    # Fallback to own RIGHT primer start
+                    amplicon_end = reverse_primers[1].min() if not reverse_primers.empty else amplicon_group[2].max()
             
             # Validate that start < end
             if amplicon_start >= amplicon_end:
