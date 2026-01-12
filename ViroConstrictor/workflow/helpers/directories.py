@@ -50,3 +50,6 @@ chunks = "html_chunks/"
 trims = "trimmed/"
 
 filt = "filt/"
+combined = "combined/"
+by_sample = "by_sample/"
+all_samples = "all_samples/"
