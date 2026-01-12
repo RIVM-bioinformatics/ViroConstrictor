@@ -386,9 +386,10 @@ class AmpliconCovs(BaseScript):
     def _create_amplicon_names_list(primers: pd.DataFrame) -> list[str]:
         """
         Creates a list of unique amplicon names based on the primers DataFrame.
+        Amplicon numbers are zero-padded to 3 digits for proper sorting.
         """
         amplicon_name = primers.loc[0, "name"]
-        return [f"{amplicon_name}_{x}" for x in primers["count"].unique()]
+        return [f"{amplicon_name}_{str(x).zfill(3)}" for x in primers["count"].unique()]
 
     @staticmethod
     def _write_output(df: pd.DataFrame, output_file: Path | str) -> None:
