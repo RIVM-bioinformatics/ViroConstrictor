@@ -326,6 +326,7 @@ class AmpliconCovs(BaseScript):
         df = df.apply(_process_primer_row, axis=1)
         return df
 
+    # TODO: reduce complexity of this function
     @staticmethod
     def _calculate_amplicon_start_end(primers: pd.DataFrame) -> pd.DataFrame:
         """
