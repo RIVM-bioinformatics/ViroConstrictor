@@ -105,8 +105,29 @@ def construct_all_rule(p_space):
             "Amplicon_coverage.csv",
         ],
     )
+    
+    # Add combined results by virus as targets (in existing Virus~ directories)
+    # Note: combined is a Python variable from directories.py, not a Snakemake wildcard
+    combined_by_virus = expand(
+        f"{res}Virus~{{Virus}}/{combined}{{file}}",
+        Virus=samples_df["Virus"].unique(),
+        file=[
+            "consensus.fasta",
+            "mutations.tsv",
+            "Width_of_coverage.tsv",
+            "Amplicon_coverage.csv",
+        ],
+    )
+    
+    # Add combined results for all samples as targets
+    combined_all_samples = [
+        f"{res}{combined}{all_samples}all_consensus.fasta",
+        f"{res}{combined}{all_samples}all_mutations.tsv",
+        f"{res}{combined}{all_samples}all_width_of_coverage.tsv",
+        f"{res}{combined}{all_samples}all_amplicon_coverage.csv",
+    ]
 
-    return [multiqc] + base_results_files + aa_feat_files
+    return [multiqc] + base_results_files + aa_feat_files + combined_by_virus + combined_all_samples
 
 
 wildcard_constraints:
@@ -137,6 +158,7 @@ include: workflow.source_path("components/stats.post_clean.smk")
 include: workflow.source_path("components/results.sequences.smk")
 include: workflow.source_path("components/results.reporting_metrics.smk")
 include: workflow.source_path("components/results.concatenations.smk")
+include: workflow.source_path("components/results.combined.smk")
 
 
 onsuccess:
