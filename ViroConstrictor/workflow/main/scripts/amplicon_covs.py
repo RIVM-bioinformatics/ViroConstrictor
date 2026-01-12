@@ -380,7 +380,7 @@ class AmpliconCovs(BaseScript):
         """
         Calculates the mean coverage for a given amplicon.
         """
-        return coverages.iloc[int(input_array["start"]) - 1 : int(input_array["end"])].mean().values[0]
+        return round(float(coverages.iloc[int(input_array["start"]) - 1 : int(input_array["end"])].mean().values[0]), 2)
 
     @staticmethod
     def _create_amplicon_names_list(primers: pd.DataFrame) -> list[str]:
