@@ -330,12 +330,49 @@ class AmpliconCovs(BaseScript):
     def _calculate_amplicon_start_end(primers: pd.DataFrame) -> pd.DataFrame:
         """
         Calculates the start and end positions of amplicons based on primer data.
+        
+        The amplicon region is defined as the sequence between the inner edges of the primers:
+        - Start: end position of the LEFT/FORWARD primer
+        - End: start position of the RIGHT/REVERSE primer
+        
+        This ensures the overlapping regions are excluded for accurate coverage calculation.
         """
         df = pd.DataFrame(primers["count"].unique(), columns=["amplicon_number"])
+
         for amplicon_number in df["amplicon_number"]:
             amplicon_group = primers[primers["count"] == amplicon_number]
-            df.loc[df["amplicon_number"] == amplicon_number, "start"] = amplicon_group[1].min()
-            df.loc[df["amplicon_number"] == amplicon_number, "end"] = amplicon_group[2].max()
+            
+            # Get forward (LEFT) and reverse (RIGHT) primers for this amplicon
+            forward_primers = amplicon_group[amplicon_group["direction"] == ReadDirection.FORWARD]
+            reverse_primers = amplicon_group[amplicon_group["direction"] == ReadDirection.REVERSE]
+            
+            # Calculate start: take the maximum end position of forward primers
+            # (this is the inner edge of the left primer, accounting for alt primers)
+            if not forward_primers.empty:
+                amplicon_start = forward_primers[2].max()  # Column 2 is the end position
+            else:
+                # Fallback if no forward primer found (shouldn't happen with valid data)
+                amplicon_start = amplicon_group[1].min()
+            
+            # Calculate end: take the minimum start position of reverse primers
+            # (this is the inner edge of the right primer, accounting for alt primers)
+            if not reverse_primers.empty:
+                amplicon_end = reverse_primers[1].min()  # Column 1 is the start position
+            else:
+                # Fallback if no reverse primer found (shouldn't happen with valid data)
+                amplicon_end = amplicon_group[2].max()
+            
+            # Validate that start < end
+            if amplicon_start >= amplicon_end:
+                raise ValueError(
+                    f"Invalid amplicon {amplicon_number}: start position ({amplicon_start}) "
+                    f"is greater than or equal to end position ({amplicon_end}). "
+                    f"This may indicate malformed primer data."
+                )
+            
+            df.loc[df["amplicon_number"] == amplicon_number, "start"] = amplicon_start
+            df.loc[df["amplicon_number"] == amplicon_number, "end"] = amplicon_end
+
         return df
 
     @staticmethod
