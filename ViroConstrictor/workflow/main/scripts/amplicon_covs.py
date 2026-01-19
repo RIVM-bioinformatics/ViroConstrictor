@@ -48,8 +48,9 @@ Supported primer name formats:
 - Multiple underscores with alt (e.g., "virus_strain_1_alt_LEFT")
 - name_number-alt_direction (e.g., "MuV-NGS_19-alt22_LEFT
 
-Valid direction indicators: FW, F, LEFT, POSITIVE, FORWARD, PLUS (forward)
-                           RV, R, RIGHT, NEGATIVE, REVERSE, MINUS (reverse)
+Valid direction indicators: 
+    FW, F, LEFT, POSITIVE, FORWARD, PLUS (forward)
+    RV, R, RIGHT, NEGATIVE, REVERSE, MINUS (reverse)
 
 """
 
@@ -334,9 +335,9 @@ class AmpliconCovs(BaseScript):
         
         The amplicon regions are partitioned to avoid overlaps:
         - Start: end position of the PREVIOUS amplicon's RIGHT primer 
-                 (or current LEFT primer's end for first amplicon)
+            (or current LEFT primer's end for first amplicon)
         - End: start position of the NEXT amplicon's LEFT primer 
-               (or current RIGHT primer's start for last amplicon)
+            (or current RIGHT primer's start for last amplicon)
         
         This ensures true non-overlapping amplicon regions for accurate coverage calculation.
         """
