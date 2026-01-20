@@ -169,6 +169,62 @@ rule combine_amplicon_coverage_by_sample:
         """
 
 
+# Helper function to get all unique features for a sample
+def get_sample_features(sample):
+    sample_rows = samples_df[samples_df["sample"] == sample]
+    if sample_rows.empty:
+        return []
+    all_features = []
+    for _, row in sample_rows.iterrows():
+        aa_feat_names = row.get("AA_FEAT_NAMES")
+        if pd.notna(aa_feat_names) and isinstance(aa_feat_names, (list, tuple)):
+            all_features.extend(aa_feat_names)
+    return list(set(all_features))
+
+
+# Rule to combine aminoacids by sample (one file per feature)
+rule combine_aminoacids_by_sample:
+    input:
+        lambda wc: [
+            f"{res}Virus~{row['Virus']}/RefID~{row['RefID']}/{amino}{wc.feature}.faa"
+            for _, row in samples_df[samples_df["sample"] == wc.sample].iterrows()
+            if (
+                pd.notna(row.get("AA_FEAT_NAMES")) and 
+                isinstance(row["AA_FEAT_NAMES"], (list, tuple)) and 
+                wc.feature in row["AA_FEAT_NAMES"]
+            )
+        ]
+    output:
+        f"{res}{combined}{by_sample}" "{sample}/aminoacids/{feature}.faa"
+    resources:
+        mem_mb=low_memory_job,
+        runtime=low_runtime_job,
+    conda:
+        workflow_environment_path("core_scripts.yaml")
+    container:
+        f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
+    log:
+        f"{logdir}combine_aminoacids_by_sample_" "{sample}.{feature}.log",
+    params:
+        script="-m main.scripts.extract_sample_from_fasta",
+        pythonpath=f'{Path(workflow.basedir).parent}',
+    shell:
+        """
+        mkdir -p $(dirname {output})
+        if [ -n "{input}" ]; then
+            PYTHONPATH={params.pythonpath} \
+            python {params.script} \
+            --input "empty" \
+            --input_files {input} \
+            --sample_name {wildcards.sample} \
+            --output {output} >> {log} 2>&1
+        else
+            echo "No input files found for sample {wildcards.sample} and feature {wildcards.feature}" >> {log}
+            touch {output}
+        fi
+        """
+
+
 # ===========================
 # BY VIRUS AGGREGATION RULES
 # ===========================
@@ -335,6 +391,50 @@ rule combine_amplicon_coverage_by_virus:
         """
 
 
+# Helper function to get all unique features for a virus
+def get_virus_features(virus):
+    virus_rows = samples_df[samples_df["Virus"] == virus]
+    if virus_rows.empty:
+        return []
+    all_features = []
+    for _, row in virus_rows.iterrows():
+        aa_feat_names = row.get("AA_FEAT_NAMES")
+        if pd.notna(aa_feat_names) and isinstance(aa_feat_names, (list, tuple)):
+            all_features.extend(aa_feat_names)
+    return list(set(all_features))
+
+
+# Rule to combine aminoacids by virus (one file per feature)
+rule combine_aminoacids_by_virus:
+    input:
+        lambda wc: [
+            f"{res}Virus~{wc.Virus}/RefID~{row['RefID']}/{amino}{wc.feature}.faa"
+            for _, row in samples_df[samples_df["Virus"] == wc.Virus].iterrows()
+            if (
+                pd.notna(row.get("AA_FEAT_NAMES")) and
+                isinstance(row["AA_FEAT_NAMES"], (list, tuple)) and 
+                wc.feature in row["AA_FEAT_NAMES"]
+            )
+        ]
+    output:
+        f"{res}Virus~{{Virus}}/{combined}aminoacids/{{feature}}.faa"
+    resources:
+        mem_mb=low_memory_job,
+        runtime=low_runtime_job,
+    log:
+        f"{logdir}combine_aminoacids_by_virus_" "{Virus}.{feature}.log",
+    shell:
+        """
+        mkdir -p $(dirname {output})
+        if [ -n "{input}" ]; then
+            cat {input} > {output} 2>> {log}
+        else
+            echo "No input files found for virus {wildcards.Virus} and feature {wildcards.feature}" >> {log}
+            touch {output}
+        fi
+        """
+
+
 # =============================
 # ALL SAMPLES AGGREGATION RULES
 # =============================
@@ -453,4 +553,39 @@ rule combine_all_amplicon_coverage:
         --file_type amplicon_coverage \
         --separator , \
         --output {output} >> {log} 2>&1
+        """
+
+
+# Helper function to get all unique features across all samples
+def get_all_features():
+    all_features = []
+    for _, row in samples_df.iterrows():
+        aa_feat_names = row.get("AA_FEAT_NAMES")
+        if pd.notna(aa_feat_names) and isinstance(aa_feat_names, (list, tuple)):
+            all_features.extend(aa_feat_names)
+    return list(set(all_features))
+
+
+# Global aggregation rule for aminoacids (from by_sample results, one file per feature)
+rule combine_all_aminoacids:
+    input:
+        lambda wc: [
+            f"{res}{combined}{by_sample}{sample}/aminoacids/{wc.feature}.faa"
+            for sample in samples_df["sample"].unique()
+            if wc.feature in get_sample_features(sample)
+        ]
+    output:
+        f"{res}{combined}{all_samples}aminoacids/{{feature}}.faa"
+    resources:
+        mem_mb=low_memory_job,
+        runtime=low_runtime_job,
+    shell:
+        """
+        mkdir -p $(dirname {output})
+        if [ -n "{input}" ]; then
+            cat {input} > {output}
+        else
+            echo "No input files found for feature {wildcards.feature}"
+            touch {output}
+        fi
         """
