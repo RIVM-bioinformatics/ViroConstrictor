@@ -126,8 +126,66 @@ def construct_all_rule(p_space):
         f"{res}{combined}{all_samples}all_width_of_coverage.tsv",
         f"{res}{combined}{all_samples}all_amplicon_coverage.csv",
     ]
+    
+    # Helper function to get all unique features across all samples
+    def get_all_features():
+        all_features = []
+        for _, row in samples_df.iterrows():
+            aa_feat_names = row.get("AA_FEAT_NAMES")
+            if pd.notna(aa_feat_names) and isinstance(aa_feat_names, (list, tuple)):
+                all_features.extend(aa_feat_names)
+        return list(set(all_features))
+    
+    # Helper function to get all unique features for a sample
+    def get_sample_features(sample):
+        sample_rows = samples_df[samples_df["sample"] == sample]
+        if sample_rows.empty:
+            return []
+        all_features = []
+        for _, row in sample_rows.iterrows():
+            aa_feat_names = row.get("AA_FEAT_NAMES")
+            if pd.notna(aa_feat_names) and isinstance(aa_feat_names, (list, tuple)):
+                all_features.extend(aa_feat_names)
+        return list(set(all_features))
+    
+    # Helper function to get all unique features for a virus
+    def get_virus_features(virus):
+        virus_rows = samples_df[samples_df["Virus"] == virus]
+        if virus_rows.empty:
+            return []
+        all_features = []
+        for _, row in virus_rows.iterrows():
+            aa_feat_names = row.get("AA_FEAT_NAMES")
+            if pd.notna(aa_feat_names) and isinstance(aa_feat_names, (list, tuple)):
+                all_features.extend(aa_feat_names)
+        return list(set(all_features))
+    
+    # Add combined aminoacid results by sample
+    combined_aa_by_sample = []
+    for sample in samples_df["sample"].unique():
+        sample_features = get_sample_features(sample)
+        combined_aa_by_sample.extend([
+            f"{res}{combined}{by_sample}{sample}/aminoacids/{feature}.faa"
+            for feature in sample_features
+        ])
+    
+    # Add combined aminoacid results by virus
+    combined_aa_by_virus = []
+    for virus in samples_df["Virus"].unique():
+        virus_features = get_virus_features(virus)
+        combined_aa_by_virus.extend([
+            f"{res}Virus~{virus}/{combined}aminoacids/{feature}.faa"
+            for feature in virus_features
+        ])
+    
+    # Add combined aminoacid results for all samples
+    all_features = get_all_features()
+    combined_aa_all_samples = [
+        f"{res}{combined}{all_samples}aminoacids/{feature}.faa"
+        for feature in all_features
+    ]
 
-    return [multiqc] + base_results_files + aa_feat_files + combined_by_virus + combined_all_samples
+    return [multiqc] + base_results_files + aa_feat_files + combined_by_virus + combined_all_samples + combined_aa_by_sample + combined_aa_by_virus + combined_aa_all_samples
 
 
 wildcard_constraints:
