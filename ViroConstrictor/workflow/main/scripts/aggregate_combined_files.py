@@ -69,7 +69,7 @@ class AggregateCombinedFiles(BaseScript):
         This is a thin public wrapper around the private _aggregate_files implementation.
         """
         self._aggregate_files()
-        
+
     def _read_files(self, infile_paths: list[Path | str]) -> list[pd.DataFrame]:
         """
         Read multiple CSV files into pandas DataFrames.
@@ -109,7 +109,7 @@ class AggregateCombinedFiles(BaseScript):
                     if not df.empty:
                         dfs.append(df)
                 except pd.errors.EmptyDataError:
-                    
+
                     continue
         return dfs
 
