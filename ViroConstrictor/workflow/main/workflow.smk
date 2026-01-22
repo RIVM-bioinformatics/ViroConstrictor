@@ -16,9 +16,12 @@ import ViroConstrictor
 from ViroConstrictor.workflow.helpers.containers import get_hash
 from ViroConstrictor.workflow.helpers.directories import *
 from ViroConstrictor.workflow.helpers.generic_workflow_methods import (
-    get_aminoacid_features,
-    get_reference_header,
-    list_aminoacid_result_outputs,
+    get_aminoacid_features, # used in construction of samples_df
+    get_reference_header, # used in construction of samples_df
+    list_aminoacid_result_outputs, # used in construct_all_rule & results.concatenations.smk
+    get_features_all_samples, # used in construct_all_rule & results.combined.smk
+    get_features_per_virus, # used in construct_all_rule & results.combined.smk
+    get_features_per_sample, # used in construct_all_rule & results.combined.smk
 )
 from ViroConstrictor.workflow.helpers.presets import get_preset_parameter
 
@@ -127,59 +130,26 @@ def construct_all_rule(p_space):
         f"{res}{combined}{all_samples}all_amplicon_coverage.csv",
     ]
     
-    # Helper function to get all unique features across all samples
-    def get_all_features():
-        all_features = []
-        for _, row in samples_df.iterrows():
-            aa_feat_names = row.get("AA_FEAT_NAMES")
-            if pd.notna(aa_feat_names) and isinstance(aa_feat_names, (list, tuple)):
-                all_features.extend(aa_feat_names)
-        return list(set(all_features))
-    
-    # Helper function to get all unique features for a sample
-    def get_sample_features(sample):
-        sample_rows = samples_df[samples_df["sample"] == sample]
-        if sample_rows.empty:
-            return []
-        all_features = []
-        for _, row in sample_rows.iterrows():
-            aa_feat_names = row.get("AA_FEAT_NAMES")
-            if pd.notna(aa_feat_names) and isinstance(aa_feat_names, (list, tuple)):
-                all_features.extend(aa_feat_names)
-        return list(set(all_features))
-    
-    # Helper function to get all unique features for a virus
-    def get_virus_features(virus):
-        virus_rows = samples_df[samples_df["Virus"] == virus]
-        if virus_rows.empty:
-            return []
-        all_features = []
-        for _, row in virus_rows.iterrows():
-            aa_feat_names = row.get("AA_FEAT_NAMES")
-            if pd.notna(aa_feat_names) and isinstance(aa_feat_names, (list, tuple)):
-                all_features.extend(aa_feat_names)
-        return list(set(all_features))
-    
     # Add combined aminoacid results by sample
     combined_aa_by_sample = []
     for sample in samples_df["sample"].unique():
-        sample_features = get_sample_features(sample)
+        sample_features = get_features_per_sample(sample, samples_df)
         combined_aa_by_sample.extend([
             f"{res}{combined}{by_sample}{sample}/aminoacids/{feature}.faa"
             for feature in sample_features
         ])
-    
+
     # Add combined aminoacid results by virus
     combined_aa_by_virus = []
     for virus in samples_df["Virus"].unique():
-        virus_features = get_virus_features(virus)
+        virus_features = get_features_per_virus(virus, samples_df)
         combined_aa_by_virus.extend([
             f"{res}Virus~{virus}/{combined}aminoacids/{feature}.faa"
             for feature in virus_features
         ])
-    
+
     # Add combined aminoacid results for all samples
-    all_features = get_all_features()
+    all_features = get_features_all_samples(samples_df)
     combined_aa_all_samples = [
         f"{res}{combined}{all_samples}aminoacids/{feature}.faa"
         for feature in all_features
