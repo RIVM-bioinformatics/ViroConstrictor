@@ -97,16 +97,19 @@ class CombineFasta(BaseScript):
                     # Original header format: >sampleID mincov=X
                     # New format: >sampleID Virus RefID mincov=X
                     header_parts = record.description.split()
-                    if len(header_parts) >= 2 and "mincov=" in header_parts[-1]:
-                        sample_id = header_parts[0]
-                        mincov_part = header_parts[-1]
-                        new_header = f"{sample_id} {virus} {refid} {mincov_part}"
-                        record.id = sample_id
+                    sample_id = header_parts[0] if header_parts else record.id
+                    extra_parts = header_parts[1:] if len(header_parts) > 1 else []
+                    if extra_parts and "mincov=" in extra_parts[-1]:
+                        mincov_part = extra_parts[-1]
+                        # description body should not repeat the sample_id because SeqIO writes ">id description"
+                        description_body = f"{virus} {refid} {mincov_part}"
+                    elif extra_parts:
+                        extra = " ".join(extra_parts)
+                        description_body = f"{extra} {virus} {refid}"
                     else:
-                        # Fallback: just append Virus and RefID
-                        new_header = f"{record.description} {virus} {refid}"
-
-                    record.description = new_header
+                        description_body = f"{virus} {refid}"
+                    record.id = sample_id
+                    record.description = description_body
                     SeqIO.write(record, out_handle, "fasta")
 
 
