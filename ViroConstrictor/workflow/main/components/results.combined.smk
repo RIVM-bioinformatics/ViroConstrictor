@@ -218,9 +218,9 @@ rule combine_aminoacids_by_sample_empty:
         f"{logdir}combine_aminoacids_by_sample_empty_" "{sample}.{feature}.log",
     shell:
         """
-        mkdir -p $(dirname {output})
-        echo "No input files found for sample {wildcards.sample} and feature {wildcards.feature}" >> {log}
-        touch {output}
+        mkdir -p $(dirname {output:q})
+        echo "No input files found for sample {wildcards.sample} and feature {wildcards.feature}" >> {log:q}
+        touch {output:q}
         """
 
 
