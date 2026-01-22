@@ -109,3 +109,82 @@ def segmented_ref_groups(df: pd.DataFrame) -> pd.DataFrame:
     # TODO: Check this later to see if this can be done in the first pass (when the values are being set in the first place) instead of fixing afterwards.
     # TODO: Not entirely sure why the values are being generated as a list with a set inside one time and just as a normal set the other time.
     return df
+
+
+def get_features_all_samples(samples_df: pd.DataFrame) -> list[str]:
+    """
+    Extracts and returns a list of unique amino acid feature names across all samples.
+
+    Parameters
+    ----------
+    samples_df : pd.DataFrame
+        A pandas DataFrame containing sample data. Each row may contain a column
+        "AA_FEAT_NAMES" with a list or tuple of amino acid feature names.
+
+    Returns
+    -------
+    list of str
+        A list of unique amino acid feature names found across all samples.
+    """
+    all_features = []
+    for _, row in samples_df.iterrows():
+        aa_feat_names = row.get("AA_FEAT_NAMES")
+        if pd.notna(aa_feat_names) and isinstance(aa_feat_names, (list, tuple)):
+            all_features.extend(aa_feat_names)
+    return list(set(all_features))
+
+
+def get_features_per_sample(sample: str, samples_df: pd.DataFrame) -> list[str]:
+    """
+    Extracts and returns a list of unique amino acid feature names for a sample.
+
+    Parameters
+    ----------
+    sample : str
+        Sample identifier.
+    samples_df : pd.DataFrame
+        A pandas DataFrame containing sample data.
+
+    Returns
+    -------
+    list of str
+        A list of unique amino acid feature names for the sample.
+    """
+    sample_rows = samples_df[samples_df["sample"] == sample]
+    if sample_rows.empty:
+        return []
+    all_features = []
+    for _, row in sample_rows.iterrows():
+        aa_feat_names = row.get("AA_FEAT_NAMES")
+        if pd.notna(aa_feat_names) and isinstance(aa_feat_names, (list, tuple)):
+            all_features.extend(aa_feat_names)
+    return list(set(all_features))
+
+# Helper function to get all unique features for a virus
+def get_features_per_virus(virus: str, samples_df: pd.DataFrame) -> list[str]:
+    """
+    Retrieve a list of unique amino acid feature names for a given virus from a DataFrame.
+
+    Parameters
+    ----------
+    virus : str
+        The name or identifier of the virus to filter the DataFrame.
+    samples_df : pd.DataFrame
+        A pandas DataFrame containing at least the columns "Virus" and "AA_FEAT_NAMES".
+        The "AA_FEAT_NAMES" column should contain lists or tuples of feature names.
+
+    Returns
+    -------
+    list of str
+        A list of unique amino acid feature names associated with the specified virus.
+        Returns an empty list if the virus is not found or no features are present.
+    """
+    virus_rows = samples_df[samples_df["Virus"] == virus]
+    if virus_rows.empty:
+        return []
+    all_features = []
+    for _, row in virus_rows.iterrows():
+        aa_feat_names = row.get("AA_FEAT_NAMES")
+        if pd.notna(aa_feat_names) and isinstance(aa_feat_names, (list, tuple)):
+            all_features.extend(aa_feat_names)
+    return list(set(all_features))
