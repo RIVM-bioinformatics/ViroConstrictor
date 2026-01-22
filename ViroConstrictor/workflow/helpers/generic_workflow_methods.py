@@ -161,7 +161,7 @@ def get_features_per_sample(sample: str, samples_df: pd.DataFrame) -> list[str]:
     return list(set(all_features))
 
 # Helper function to get all unique features for a virus
-def get_features_per_virus(virus, samples_df: pd.DataFrame) -> list[str]:
+def get_features_per_virus(virus: str, samples_df: pd.DataFrame) -> list[str]:
     """
     Retrieve a list of unique amino acid feature names for a given virus from a DataFrame.
 
