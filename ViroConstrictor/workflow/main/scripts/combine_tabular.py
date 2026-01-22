@@ -187,7 +187,7 @@ class CombineTabular(BaseScript):
             return combined_df[cols]
         return combined_df
 
-    def _iter_nonempty_files(self) -> Generator[Path | str]:
+    def _iter_nonempty_files(self) -> Generator[Path | str, None, None]:
         """
         Yields input files that exist and are not empty.
 
@@ -202,6 +202,15 @@ class CombineTabular(BaseScript):
         for infile in self.input_files:
             if os.path.exists(infile) and os.path.getsize(infile) > 0:
                 yield infile
+
+    @staticmethod
+    def _drop_header_row_if_present(df: pd.DataFrame, expected_header: list[str]) -> pd.DataFrame:
+        if df.empty:
+            return df
+        first_row = df.iloc[0].astype(str).tolist()
+        if first_row[: len(expected_header)] == expected_header:
+            return df.iloc[1:].reset_index(drop=True)
+        return df
 
     def _combine_coverage(self, file_map: dict[str | Path, tuple[str, str]]) -> None:
         """
@@ -231,8 +240,11 @@ class CombineTabular(BaseScript):
         ]
         dfs = []
         for infile in self._iter_nonempty_files():
-            df = self._read_tabular_file(infile, names=column_names)
+            df = self._read_tabular_file(infile, header=None, names=column_names)
             if df is not None:
+                df = self._drop_header_row_if_present(df, column_names)
+                if df.empty:
+                    continue
                 virus, refid = file_map.get(infile, ("Unknown", "Unknown"))
                 df["Virus"] = virus
                 df["Reference_ID"] = refid
@@ -276,17 +288,38 @@ class CombineTabular(BaseScript):
         None
             This method does not return a value. The combined mutations data is written to the output file.
         """
+        column_names = [
+            "Sample",
+            "Reference_ID",
+            "Position",
+            "Reference_Base",
+            "Variant_Base",
+            "Depth",
+        ]
         dfs = []
         for infile in self._iter_nonempty_files():
-            df = self._read_tabular_file(infile)
+            df = self._read_tabular_file(infile, header=None, names=column_names)
             if df is not None:
+                df = self._drop_header_row_if_present(df, column_names)
+                if df.empty:
+                    continue
                 virus, _ = file_map.get(infile, ("Unknown", "Unknown"))
                 df["Virus"] = virus
                 dfs.append(df)
 
         if dfs:
             combined_df = pd.concat(dfs, ignore_index=True)
-            combined_df = self._reorder_mutations_columns(combined_df)
+            combined_df = combined_df[
+                [
+                    "Sample",
+                    "Virus",
+                    "Reference_ID",
+                    "Position",
+                    "Reference_Base",
+                    "Variant_Base",
+                    "Depth",
+                ]
+            ]
             combined_df.to_csv(self.output, sep=self.separator, index=False)
         else:
             self._write_empty_tabular("mutations")
