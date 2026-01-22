@@ -430,9 +430,9 @@ rule combine_aminoacids_by_virus_empty:
         f"{logdir}combine_aminoacids_by_virus_empty_" "{Virus}.{feature}.log",
     shell:
         """
-        mkdir -p $(dirname {output})
-        echo "No input files found for virus {wildcards.Virus} and feature {wildcards.feature}" >> {log}
-        touch {output}
+        mkdir -p $(dirname {output:q})
+        echo "No input files found for virus {wildcards.Virus} and feature {wildcards.feature}" >> {log:q}
+        touch {output:q}
         """
 
 
@@ -592,9 +592,9 @@ rule combine_all_aminoacids_empty:
         f"{logdir}combine_all_aminoacids_empty_" "{feature}.log",
     shell:
         """
-        mkdir -p $(dirname {output})
-        echo "No input files found for feature {wildcards.feature}" >> {log}
-        touch {output}
+        mkdir -p $(dirname {output:q})
+        echo "No input files found for feature {wildcards.feature}" >> {log:q}
+        touch {output:q}
         """
 
 
