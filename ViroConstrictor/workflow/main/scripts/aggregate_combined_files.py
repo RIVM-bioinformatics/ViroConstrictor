@@ -109,7 +109,6 @@ class AggregateCombinedFiles(BaseScript):
                     if not df.empty:
                         dfs.append(df)
                 except pd.errors.EmptyDataError:
-
                     continue
         return dfs
 
