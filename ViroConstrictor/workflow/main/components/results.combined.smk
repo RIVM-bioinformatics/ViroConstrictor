@@ -172,15 +172,16 @@ rule combine_amplicon_coverage_by_sample:
 # Rule to combine aminoacids by sample when input files exist (one file per feature)
 rule combine_aminoacids_by_sample:
     input:
-        lambda wc: [
-            f"{res}Virus~{row['Virus']}/RefID~{row['RefID']}/{amino}{wc.feature}.faa"
+        lambda wc: list(set(
+            f"{res}Virus~{row['Virus']}/RefID~{row['RefID']}/{amino}{feature}.faa"
             for _, row in samples_df[samples_df["sample"] == wc.sample].iterrows()
+            for feature in get_features_per_sample(wc.sample, samples_df)
             if (
-                pd.notna(row.get("AA_FEAT_NAMES")) and 
-                isinstance(row["AA_FEAT_NAMES"], (list, tuple)) and 
-                wc.feature in row["AA_FEAT_NAMES"]
+                pd.notna(row.get("AA_FEAT_NAMES")) and
+                isinstance(row["AA_FEAT_NAMES"], (list, tuple)) and
+                feature in row["AA_FEAT_NAMES"]
             )
-        ]
+        ))
     output:
         f"{res}{combined}{by_sample}" "{sample}/aminoacids/{feature}.faa"
     resources:
