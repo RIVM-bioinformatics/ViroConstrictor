@@ -113,18 +113,20 @@ def segmented_ref_groups(df: pd.DataFrame) -> pd.DataFrame:
 
 def get_features_all_samples(samples_df: pd.DataFrame) -> list[str]:
     """
-    Extracts and returns a list of unique amino acid feature names across all samples.
+    Extracts and returns a list of unique amino acid feature names across all samples  
+    in the provided DataFrame.  
 
-    Parameters
-    ----------
-    samples_df : pd.DataFrame
-        A pandas DataFrame containing sample data. Each row may contain a column
-        "AA_FEAT_NAMES" with a list or tuple of amino acid feature names.
+    Parameters  
+    ----------  
+    samples_df : pd.DataFrame  
+        A pandas DataFrame containing data for multiple samples. Each row may contain  
+        a column "AA_FEAT_NAMES" with a list or tuple of amino acid feature names.  
 
-    Returns
-    -------
-    list of str
-        A list of unique amino acid feature names found across all samples.
+    Returns  
+    -------  
+    list of str  
+        A list of unique amino acid feature names found across all samples in  
+        ``samples_df``.
     """
     all_features = []
     for _, row in samples_df.iterrows():
