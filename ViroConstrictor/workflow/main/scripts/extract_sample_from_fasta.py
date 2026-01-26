@@ -39,7 +39,7 @@ class ExtractSampleFromFasta(BaseScript):
 
     def run(self) -> None:
         """
-        Executes the extraction of sequences from the input FASTA file.
+        Executes the extraction of sequences from the input FASTA files.
 
         This method calls the internal `_extract_sequences` function to perform the extraction
         of specific sample sequences from a FASTA file and handles any necessary processing.
