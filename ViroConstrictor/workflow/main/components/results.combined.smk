@@ -40,8 +40,8 @@ rule combine_consensus_by_sample:
         python {params.script} \
         --input "empty" \
         --input_files {input} \
-        --virus_list {params.virus_list:q} \
-        --refid_list {params.refid_list:q} \
+        --virus_list {params.virus_list} \
+        --refid_list {params.refid_list} \
         --output {output} >> {log} 2>&1
         """
 
@@ -79,8 +79,8 @@ rule combine_mutations_by_sample:
         python {params.script} \
         --input "empty" \
         --input_files {input} \
-        --virus_list {params.virus_list:q} \
-        --refid_list {params.refid_list:q} \
+        --virus_list {params.virus_list} \
+        --refid_list {params.refid_list} \
         --file_type mutations \
         --separator $'\\t' \
         --output {output} >> {log} 2>&1
@@ -120,8 +120,8 @@ rule combine_coverage_by_sample:
         python {params.script} \
         --input "empty" \
         --input_files {input} \
-        --virus_list {params.virus_list:q} \
-        --refid_list {params.refid_list:q} \
+        --virus_list {params.virus_list} \
+        --refid_list {params.refid_list} \
         --file_type coverage \
         --separator $'\\t' \
         --output {output} >> {log} 2>&1
@@ -161,8 +161,8 @@ rule combine_amplicon_coverage_by_sample:
         python {params.script} \
         --input "empty" \
         --input_files {input} \
-        --virus_list {params.virus_list:q} \
-        --refid_list {params.refid_list:q} \
+        --virus_list {params.virus_list} \
+        --refid_list {params.refid_list} \
         --file_type amplicon_coverage \
         --separator , \
         --output {output} >> {log} 2>&1
@@ -219,9 +219,9 @@ rule combine_aminoacids_by_sample_empty:
         f"{logdir}combine_aminoacids_by_sample_empty_" "{sample}.{feature}.log",
     shell:
         """
-        mkdir -p $(dirname {output:q})
-        echo "No input files found for sample {wildcards.sample} and feature {wildcards.feature}" >> {log:q}
-        touch {output:q}
+        mkdir -p $(dirname {output})
+        echo "No input files found for sample {wildcards.sample} and feature {wildcards.feature}" >> {log}
+        touch {output}
         """
 
 
@@ -265,8 +265,8 @@ rule combine_consensus_by_virus:
         python {params.script} \
         --input "empty" \
         --input_files {input} \
-        --virus_list {params.virus_list:q} \
-        --refid_list {params.refid_list:q} \
+        --virus_list {params.virus_list} \
+        --refid_list {params.refid_list} \
         --output {output} >> {log} 2>&1
         """
 
@@ -304,8 +304,8 @@ rule combine_mutations_by_virus:
         python {params.script} \
         --input "empty" \
         --input_files {input} \
-        --virus_list {params.virus_list:q} \
-        --refid_list {params.refid_list:q} \
+        --virus_list {params.virus_list} \
+        --refid_list {params.refid_list} \
         --file_type mutations \
         --separator $'\\t' \
         --output {output} >> {log} 2>&1
@@ -345,8 +345,8 @@ rule combine_coverage_by_virus:
         python {params.script} \
         --input "empty" \
         --input_files {input} \
-        --virus_list {params.virus_list:q} \
-        --refid_list {params.refid_list:q} \
+        --virus_list {params.virus_list} \
+        --refid_list {params.refid_list} \
         --file_type coverage \
         --separator $'\\t' \
         --output {output} >> {log} 2>&1
@@ -386,8 +386,8 @@ rule combine_amplicon_coverage_by_virus:
         python {params.script} \
         --input "empty" \
         --input_files {input} \
-        --virus_list {params.virus_list:q} \
-        --refid_list {params.refid_list:q} \
+        --virus_list {params.virus_list} \
+        --refid_list {params.refid_list} \
         --file_type amplicon_coverage \
         --separator , \
         --output {output} >> {log} 2>&1
@@ -521,7 +521,7 @@ rule combine_all_coverage:
         PYTHONPATH={params.pythonpath} \
         python {params.script} \
         --input "empty" \
-        --input_files {input} \
+        --input_files {input:q} \
         --file_type coverage \
         --separator $'\\t' \
         --output {output} >> {log} 2>&1
@@ -554,7 +554,7 @@ rule combine_all_amplicon_coverage:
         PYTHONPATH={params.pythonpath} \
         python {params.script} \
         --input "empty" \
-        --input_files {input} \
+        --input_files {input:q} \
         --file_type amplicon_coverage \
         --separator , \
         --output {output} >> {log} 2>&1
