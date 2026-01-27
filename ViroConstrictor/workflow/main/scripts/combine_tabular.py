@@ -108,7 +108,7 @@ class CombineTabular(BaseScript):
             sep = self.separator
 
         try:
-            df = pd.read_csv(infile, sep=sep, header=header, names=names)
+            df = pd.read_csv(infile, sep=sep, header=header, names=names, keep_default_na=False, na_filter=False)
         except pd.errors.EmptyDataError:
             return None
         return None if df.empty else df
@@ -247,11 +247,12 @@ class CombineTabular(BaseScript):
                     continue
                 virus, refid = file_map.get(infile, ("Unknown", "Unknown"))
                 df["Virus"] = virus
-                df["Reference_ID"] = refid
+                df["Reference_ID"] = str(refid)  # Convert to string to preserve "NA"
                 dfs.append(df)
 
         if dfs:
             combined_df = pd.concat(dfs, ignore_index=True)
+            combined_df["Reference_ID"] = combined_df["Reference_ID"].astype(str)
             combined_df = combined_df[
                 [
                     "Sample_name",
@@ -280,8 +281,7 @@ class CombineTabular(BaseScript):
         Parameters
         ----------
         file_map : dict[str | Path, tuple[str, str]]
-            A mapping from input file paths to a tuple containing the virus name and an additional string
-            (unused in this method). The virus name is added as a column to each DataFrame.
+            A mapping from input file paths to a tuple containing the virus name and reference ID.
 
         Returns
         -------
@@ -300,15 +300,21 @@ class CombineTabular(BaseScript):
         for infile in self._iter_nonempty_files():
             df = self._read_tabular_file(infile, header=None, names=column_names)
             if df is not None:
+                # Convert Reference_ID to string BEFORE checking for header row
+                df["Reference_ID"] = df["Reference_ID"].astype(str)
                 df = self._drop_header_row_if_present(df, column_names)
                 if df.empty:
                     continue
-                virus, _ = file_map.get(infile, ("Unknown", "Unknown"))
+                virus, refid = file_map.get(infile, ("Unknown", "Unknown"))
                 df["Virus"] = virus
+                # Overwrite Reference_ID with the known value from file_map to preserve "NA" RefIDs
+                df["Reference_ID"] = str(refid)
                 dfs.append(df)
 
         if dfs:
             combined_df = pd.concat(dfs, ignore_index=True)
+            # Ensure Reference_ID remains string after concatenation
+            combined_df["Reference_ID"] = combined_df["Reference_ID"].astype(str)
             combined_df = combined_df[
                 [
                     "Sample",
@@ -349,11 +355,12 @@ class CombineTabular(BaseScript):
             if df is not None:
                 virus, refid = file_map.get(infile, ("Unknown", "Unknown"))
                 df["Virus"] = virus
-                df["Reference_ID"] = refid
+                df["Reference_ID"] = str(refid)  # Convert to string to preserve "NA"
                 dfs.append(df)
 
         if dfs:
             combined_df = pd.concat(dfs, ignore_index=True)
+            combined_df["Reference_ID"] = combined_df["Reference_ID"].astype(str)
             combined_df = self._reorder_amplicon_columns(combined_df)
             combined_df.to_csv(self.output, index=False)
         else:

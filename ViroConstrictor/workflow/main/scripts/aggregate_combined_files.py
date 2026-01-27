@@ -102,9 +102,9 @@ class AggregateCombinedFiles(BaseScript):
             if os.path.exists(infile) and os.path.getsize(infile) > 0:
                 try:
                     if self.file_type == "amplicon_coverage":
-                        df = pd.read_csv(infile)
+                        df = pd.read_csv(infile, keep_default_na=False, na_filter=False)
                     else:
-                        df = pd.read_csv(infile, sep=self.separator)
+                        df = pd.read_csv(infile, sep=self.separator, keep_default_na=False, na_filter=False)
 
                     if not df.empty:
                         dfs.append(df)
