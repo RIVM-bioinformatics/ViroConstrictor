@@ -138,5 +138,14 @@
             "Fastp_MinReadLength_Settings_illumina": "--length_required 100",
             "Fastp_MinReadLength_Settings_iontorrent": "--length_required 100"
         }
+    },
+    "ORTHOHEPADNAVIRUS":{
+        "STAGE_GLOBAL": {},
+        "STAGE_MATCHREF": {},
+        "STAGE_MAIN": {
+            "Fastp_MinReadLength_Settings_nanopore": "--length_required 1000"
+        }
+
     }
+
 }
