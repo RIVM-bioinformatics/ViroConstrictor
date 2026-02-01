@@ -53,5 +53,18 @@
         "HEPATITIS_B",
         "HEPATITIS_B_VIRUS",
         "ORTHOHEPADNAVIRUS"
+    ],
+    "ENTEROVIRUS": [
+        "ENTEROVIRUS",
+        "EV",
+        "ECHO",
+        "ECHOVIRUS",
+        "COX",
+        "COXSACKIE",
+        "COXSACKIEVIRUS",
+        "RHINOVIRUS",
+        "RHINO",
+        "POLIO",
+        "POLIOVIRUS"
     ]
 }

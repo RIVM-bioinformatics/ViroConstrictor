@@ -145,7 +145,17 @@
         "STAGE_MAIN": {
             "Fastp_MinReadLength_Settings_nanopore": "--length_required 1000"
         }
-
+    },
+    "ENTEROVIRUS":{
+        "STAGE_GLOBAL": {},
+        "STAGE_MATCHREF": {
+            "Samtools_Filters_nanopore": "-q 20",
+            "Samtools_Filters_illumina": "-q 20",
+            "Samtools_Filters_iontorrent": "-q 20"
+        },
+        "STAGE_MAIN": {
+            "Fastp_MinReadLength_Settings_nanopore": "--length_required 200",
+            "Clipper_FilterParams_nanopore": "--min-aligned-length 0.3"
+        }
     }
-
 }
