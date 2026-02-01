@@ -131,9 +131,15 @@ def construct_all_rule(p_space):
     ]
     
     # Add combined aminoacid results by sample
+    # Create outputs only for sample-feature combinations that actually exist
     combined_aa_by_sample = []
     for sample in samples_df["sample"].unique():
-        sample_features = get_features_per_sample(sample, samples_df)
+        sample_rows = samples_df[samples_df["sample"] == sample]
+        sample_features = set()
+        for _, row in sample_rows.iterrows():
+            aa_feat_names = row.get("AA_FEAT_NAMES")
+            if pd.notna(aa_feat_names) and isinstance(aa_feat_names, (list, tuple)):
+                sample_features.update(aa_feat_names)
         combined_aa_by_sample.extend([
             f"{res}{combined}{by_sample}{sample}/aminoacids/{feature}.faa"
             for feature in sample_features
@@ -168,6 +174,7 @@ wildcard_constraints:
 
 localrules:
     all,
+    make_pickle,
 
 
 rule all:
