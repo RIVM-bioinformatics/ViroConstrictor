@@ -173,13 +173,12 @@ rule combine_amplicon_coverage_by_sample:
 rule combine_aminoacids_by_sample:
     input:
         lambda wc: list(set(
-            f"{res}Virus~{row['Virus']}/RefID~{row['RefID']}/{amino}{feature}.faa"
+            f"{res}Virus~{row['Virus']}/RefID~{row['RefID']}/{amino}{wc.feature}.faa"
             for _, row in samples_df[samples_df["sample"] == wc.sample].iterrows()
-            for feature in get_features_per_sample(wc.sample, samples_df)
             if (
                 pd.notna(row.get("AA_FEAT_NAMES")) and
                 isinstance(row["AA_FEAT_NAMES"], (list, tuple)) and
-                feature in row["AA_FEAT_NAMES"]
+                wc.feature in row["AA_FEAT_NAMES"]
             )
         ))
     output:
@@ -566,7 +565,12 @@ rule combine_all_aminoacids:
         lambda wc: [
             f"{res}{combined}{by_sample}{sample}/aminoacids/{wc.feature}.faa"
             for sample in samples_df["sample"].unique()
-            if wc.feature in get_features_all_samples(samples_df)
+            if any(
+                pd.notna(row.get("AA_FEAT_NAMES")) and
+                isinstance(row["AA_FEAT_NAMES"], (list, tuple)) and
+                wc.feature in row["AA_FEAT_NAMES"]
+                for _, row in samples_df[samples_df["sample"] == sample].iterrows()
+            )
         ]
     output:
         f"{res}{combined}{all_samples}aminoacids/{{feature}}.faa"
