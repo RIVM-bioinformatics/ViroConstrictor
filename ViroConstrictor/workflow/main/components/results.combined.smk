@@ -3,6 +3,9 @@
 # rather than by Virus/RefID, making it easier to navigate when working with
 # many references per sample.
 
+# TODO: investigate shell quotation and escaping to avoid issues with special characters in paths. Acceptable for release 1.6.4, should be improved in future.
+# TODO: also improve the consistency across this component. Rules here often have a similar structure and function but there are small differences that make it harder to maintain.
+
 # ===========================
 # BY SAMPLE AGGREGATION RULES
 # ===========================

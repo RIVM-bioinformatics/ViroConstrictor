@@ -110,7 +110,7 @@ def segmented_ref_groups(df: pd.DataFrame) -> pd.DataFrame:
     # TODO: Not entirely sure why the values are being generated as a list with a set inside one time and just as a normal set the other time.
     return df
 
-
+#TODO: all functions below this lack proper unit tests. This is acceptable (at time of writing) for the current release. However, proper unit tests should be added in the near future.
 def get_features_all_samples(samples_df: pd.DataFrame) -> list[str]:
     """
     Extracts and returns a list of unique amino acid feature names across all samples  
