@@ -80,10 +80,11 @@ class ExtractSampleFromFasta(BaseScript):
                 continue
 
             for record in SeqIO.parse(infile, "fasta"):
-                # Check if the sequence ID starts with the sample name
-                # Format is: sampleID.featureName
-                seq_id_parts = record.id.split(".")
-                if seq_id_parts[0] == self.sample_name:
+                # Check if the sequence ID corresponds to the sample name
+                # Supported formats:
+                #   - Exact match: sampleID
+                #   - Prefixed feature: sampleID.featureName
+                if record.id == self.sample_name or record.id.startswith(f"{self.sample_name}."):
                     extracted_records.append(record)
 
         # Write extracted records to output
