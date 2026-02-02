@@ -206,37 +206,37 @@ class TestRuntimeAllocation:
         return wildcards
 
     def low_runtime_job(self, wildcards: Any, attempt: int) -> int:
-        return attempt * 2
+        return attempt * attempt * 2
 
     def medium_runtime_job(self, wildcards: Any, attempt: int) -> int:
-        return attempt * 10
+        return attempt * attempt * 15
 
     def high_runtime_job(self, wildcards: Any, attempt: int) -> int:
-        return attempt * 30
+        return attempt * attempt * 30
 
     def test_low_runtime_job(self, mock_wildcards):
         """Test low_runtime_job function."""
         result = self.low_runtime_job(mock_wildcards, attempt=1)
-        assert result == 2  # 1 * 2
+        assert result == 2  # 1 * 1 * 2
 
         result = self.low_runtime_job(mock_wildcards, attempt=3)
-        assert result == 6  # 3 * 2
+        assert result == 18  # 3 * 3 * 2
 
     def test_medium_runtime_job(self, mock_wildcards):
         """Test medium_runtime_job function."""
         result = self.medium_runtime_job(mock_wildcards, attempt=1)
-        assert result == 10  # 1 * 10
+        assert result == 15  # 1 * 1 * 15
 
         result = self.medium_runtime_job(mock_wildcards, attempt=3)
-        assert result == 30  # 3 * 10
+        assert result == 135  # 3 * 3 * 15
 
     def test_high_runtime_job(self, mock_wildcards):
         """Test high_runtime_job function."""
         result = self.high_runtime_job(mock_wildcards, attempt=1)
-        assert result == 30  # 1 * 30
+        assert result == 30  # 1 * 1 * 30
 
         result = self.high_runtime_job(mock_wildcards, attempt=3)
-        assert result == 90  # 3 * 30
+        assert result == 270  # 3 * 3 * 30
 
     def test_runtime_functions_as_snakemake_resources(self, mock_wildcards):
         """Test that runtime functions work when used as Snakemake resource functions."""
@@ -245,9 +245,9 @@ class TestRuntimeAllocation:
         medium_result = self.medium_runtime_job(mock_wildcards, attempt=2)
         high_result = self.high_runtime_job(mock_wildcards, attempt=2)
 
-        assert low_result == 4  # 2 * 2
-        assert medium_result == 20  # 2 * 10
-        assert high_result == 60  # 2 * 30
+        assert low_result == 8  # 2 * 2 * 2
+        assert medium_result == 60  # 2 * 2 * 15
+        assert high_result == 120  # 2 * 2 * 30
 
         # Test that result can be used as runtime allocation (positive integer)
         assert low_result > 0
