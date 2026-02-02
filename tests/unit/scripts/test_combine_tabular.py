@@ -18,8 +18,8 @@ def test_combine_tabular_mutations(tmp_path: Path) -> None:
     input2 = tmp_path / "mutations2.tsv"
     output = tmp_path / "combined_mutations.tsv"
 
-    input1.write_text("Sample\tPosition\tReference_Base\tVariant_Base\tDepth\nsample1\t100\tA\tT\t50\n")
-    input2.write_text("Sample\tPosition\tReference_Base\tVariant_Base\tDepth\nsample2\t200\tC\tG\t60\n")
+    input1.write_text("Sample\tReference_ID\tPosition\tReference_Base\tVariant_Base\tDepth\nsample1\tRefA\t100\tA\tT\t50\n")
+    input2.write_text("Sample\tReference_ID\tPosition\tReference_Base\tVariant_Base\tDepth\nsample2\tRefB\t200\tC\tG\t60\n")
 
     combiner = CombineTabular(
         input="",
@@ -46,8 +46,14 @@ def test_combine_tabular_coverage(tmp_path: Path) -> None:
     input2 = tmp_path / "coverage2.tsv"
     output = tmp_path / "combined_coverage.tsv"
 
-    input1.write_text("Sample_name\t100\t200\t300\t400\t500\nsample1\t10\t20\t30\t40\t50\n")
-    input2.write_text("Sample_name\t100\t200\t300\t400\t500\nsample2\t15\t25\t35\t45\t55\n")
+    input1.write_text(
+        "Sample_name\tWidth_at_mincov_1\tWidth_at_mincov_5\tWidth_at_mincov_10\tWidth_at_mincov_50\tWidth_at_mincov_100\n"
+        "sample1\t10\t20\t30\t40\t50\n"
+    )
+    input2.write_text(
+        "Sample_name\tWidth_at_mincov_1\tWidth_at_mincov_5\tWidth_at_mincov_10\tWidth_at_mincov_50\tWidth_at_mincov_100\n"
+        "sample2\t15\t25\t35\t45\t55\n"
+    )
 
     combiner = CombineTabular(
         input="",

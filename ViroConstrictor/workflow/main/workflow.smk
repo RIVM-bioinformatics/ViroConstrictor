@@ -21,7 +21,7 @@ from ViroConstrictor.workflow.helpers.generic_workflow_methods import (
     list_aminoacid_result_outputs, # used in construct_all_rule & results.concatenations.smk
     get_features_all_samples, # used in construct_all_rule & results.combined.smk
     get_features_per_virus, # used in construct_all_rule & results.combined.smk
-    get_features_per_sample, # used in construct_all_rule & results.combined.smk
+
 )
 from ViroConstrictor.workflow.helpers.presets import get_preset_parameter
 
