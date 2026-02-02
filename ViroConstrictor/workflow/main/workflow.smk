@@ -16,9 +16,12 @@ import ViroConstrictor
 from ViroConstrictor.workflow.helpers.containers import get_hash
 from ViroConstrictor.workflow.helpers.directories import *
 from ViroConstrictor.workflow.helpers.generic_workflow_methods import (
-    get_aminoacid_features,
-    get_reference_header,
-    list_aminoacid_result_outputs,
+    get_aminoacid_features, # used in construction of samples_df
+    get_reference_header, # used in construction of samples_df
+    list_aminoacid_result_outputs, # used in construct_all_rule & results.concatenations.smk
+    get_features_all_samples, # used in construct_all_rule & results.combined.smk
+    get_features_per_virus, # used in construct_all_rule & results.combined.smk
+
 )
 from ViroConstrictor.workflow.helpers.presets import get_preset_parameter
 
@@ -61,15 +64,17 @@ def high_memory_job(wildcards, threads, attempt):
         return min(attempt * threads * 4 * 1000, config["max_local_mem"])
     return attempt * threads * 4 * 1000
 
+# time allocation functions. These are quadratic in the attempt number to compensate for O(n^2) algorithms in some steps.
+# most steps will not need more than a couple of minutes for the average dataset.
+# However, to accommodate the occasional very large sample, we scale up the time allocation quickly with each attempt.
 def low_runtime_job(wildcards, attempt):
-    return attempt * 2
+    return attempt * attempt * 2
 
 def medium_runtime_job(wildcards, attempt):
-    return attempt * 10
+    return attempt * attempt * 15
 
 def high_runtime_job(wildcards, attempt):
-    return attempt * 30
-
+    return attempt * attempt * 30
 
 
 def workflow_script_path(relative_path):
@@ -103,8 +108,60 @@ def construct_all_rule(p_space):
             "Amplicon_coverage.csv",
         ],
     )
+    
+    # Add combined results by virus as targets (in existing Virus~ directories)
+    # Note: combined is a Python variable from directories.py, not a Snakemake wildcard
+    combined_by_virus = expand(
+        f"{res}Virus~{{Virus}}/{combined}{{file}}",
+        Virus=samples_df["Virus"].unique(),
+        file=[
+            "consensus.fasta",
+            "mutations.tsv",
+            "Width_of_coverage.tsv",
+            "Amplicon_coverage.csv",
+        ],
+    )
+    
+    # Add combined results for all samples as targets
+    combined_all_samples = [
+        f"{res}{combined}{all_samples}all_consensus.fasta",
+        f"{res}{combined}{all_samples}all_mutations.tsv",
+        f"{res}{combined}{all_samples}all_width_of_coverage.tsv",
+        f"{res}{combined}{all_samples}all_amplicon_coverage.csv",
+    ]
+    
+    # Add combined aminoacid results by sample
+    # Create outputs only for sample-feature combinations that actually exist
+    combined_aa_by_sample = []
+    for sample in samples_df["sample"].unique():
+        sample_rows = samples_df[samples_df["sample"] == sample]
+        sample_features = set()
+        for _, row in sample_rows.iterrows():
+            aa_feat_names = row.get("AA_FEAT_NAMES")
+            if pd.notna(aa_feat_names) and isinstance(aa_feat_names, (list, tuple)):
+                sample_features.update(aa_feat_names)
+        combined_aa_by_sample.extend([
+            f"{res}{combined}{by_sample}{sample}/aminoacids/{feature}.faa"
+            for feature in sample_features
+        ])
 
-    return [multiqc] + base_results_files + aa_feat_files
+    # Add combined aminoacid results by virus
+    combined_aa_by_virus = []
+    for virus in samples_df["Virus"].unique():
+        virus_features = get_features_per_virus(virus, samples_df)
+        combined_aa_by_virus.extend([
+            f"{res}Virus~{virus}/{combined}aminoacids/{feature}.faa"
+            for feature in virus_features
+        ])
+
+    # Add combined aminoacid results for all samples
+    all_features = get_features_all_samples(samples_df)
+    combined_aa_all_samples = [
+        f"{res}{combined}{all_samples}aminoacids/{feature}.faa"
+        for feature in all_features
+    ]
+
+    return [multiqc] + base_results_files + aa_feat_files + combined_by_virus + combined_all_samples + combined_aa_by_sample + combined_aa_by_virus + combined_aa_all_samples
 
 
 wildcard_constraints:
@@ -117,6 +174,7 @@ wildcard_constraints:
 
 localrules:
     all,
+    make_pickle,
 
 
 rule all:
@@ -135,6 +193,7 @@ include: workflow.source_path("components/stats.post_clean.smk")
 include: workflow.source_path("components/results.sequences.smk")
 include: workflow.source_path("components/results.reporting_metrics.smk")
 include: workflow.source_path("components/results.concatenations.smk")
+include: workflow.source_path("components/results.combined.smk")
 
 
 onsuccess:

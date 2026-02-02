@@ -139,7 +139,6 @@ tests/e2e/**/.snakemake/*
 tests/e2e/**/output/*
 
 tests/unit/**/output/*
-.github/copilot-instructions.md
 
 test/
 

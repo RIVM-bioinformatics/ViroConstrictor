@@ -122,7 +122,12 @@ def process_match_ref(parsed_inputs: CLIparser, scheduler: Scheduler) -> CLIpars
         df["Feat_file"] = "NONE"
 
     # keep only columns "sample", "Reference", "Reference_file", "Primer_file" and "Feat_file" from df
-    filt_df = df[["sample", "Reference", "Reference_file", "Primer_file", "Feat_file"]]
+    filt_df = df[["sample", "Reference", "Reference_file", "Primer_file", "Feat_file"]].copy()
+
+    # replace any cell in columns "Primer_file" and "Feat_file" that contains a NaN or None value with the string "NONE"
+    filt_df.loc[:, "Primer_file"] = filt_df["Primer_file"].fillna("NONE")
+    filt_df.loc[:, "Feat_file"] = filt_df["Feat_file"].fillna("NONE")
+
     imploded_df = filt_df.groupby("sample").agg(set).reset_index()
 
     # replace all the sets with just one value to only that value (without the set) except for the Reference column

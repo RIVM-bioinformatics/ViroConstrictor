@@ -51,6 +51,7 @@ def group_aminoacids_inputs(wildcards):
 
 
 # this rule cannot and should not run in a separate environment/container as the sole purpose is to transfer data of the paramspace into something that can then be used in a later rule.
+# TODO: this rule should probably be moved to core workflow.smk as it is not specific to concatenations.
 rule make_pickle:
     output:
         temp(f"{datadir}sampleinfo.pkl"),
@@ -58,19 +59,11 @@ rule make_pickle:
         mem_mb=low_memory_job,
         runtime=low_runtime_job,
     threads: 1
-    params:
-        space=lambda wc: __import__("codecs")
-        .encode(
-            __import__("pickle").dumps(
-                samples_df[~samples_df["AA_FEAT_NAMES"].isnull()]
-            ),
-            "base64",
-        )
-        .decode(),
-    shell:
-        """
-        python -c "import pickle, codecs, pandas; df = pickle.loads(codecs.decode('''{params.space}'''.encode(), 'base64')); df.to_pickle('{output}', compression=None)"
-        """
+    run:
+        import pandas as pd
+        # select rows with aminoacid feature names and write pickle in the current (Snakemake) runtime
+        df = samples_df[~samples_df["AA_FEAT_NAMES"].isnull()]
+        df.to_pickle(output[0], compression=None)
 
 
 rule concat_aminoacids:
@@ -79,6 +72,8 @@ rule concat_aminoacids:
         sampleinfo=rules.make_pickle.output,
     output:
         list_aminoacid_result_outputs(samples_df),
+    log:
+        f"{logdir}concat_aminoacids.log",
     resources:
         mem_mb=low_memory_job,
         runtime=low_runtime_job,
@@ -86,7 +81,6 @@ rule concat_aminoacids:
         workflow_environment_path("core_scripts.yaml")
     container:
         f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
-
     threads: 1
     params:
         script="-m main.scripts.group_aminoacids",
@@ -97,7 +91,7 @@ rule concat_aminoacids:
         python {params.script} \
         --input "{input.files}" \
         --output "{output}" \
-        --space {input.sampleinfo}
+        --space {input.sampleinfo} > {log} 2>&1
         """
 
 def group_items(wildcards, folder, filename):
