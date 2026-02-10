@@ -1,5 +1,52 @@
 # Changelog
 
+## [1.6.4](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.6.3...v1.6.4) (2026-02-10)
+
+
+### Features
+
+* add a combined results folder with aggregates ([f52a2dc](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/f52a2dcf046462afb9e5307142dd75f57c3540e7))
+* add combined results structure for more human friendly interpretation when dealing with many references. ([246e3ed](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/246e3ed79b4c46a0dccf787ae9b2fd0ff99d0c31))
+* add enterovirus preset aliases and parameters for workflow(s) ([86c09a3](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/86c09a36dd07a834ca2418f19c3019f934755fd2))
+* add functionality to combine amino acid results by sample and virus, including helper functions for feature extraction ([3e8507f](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/3e8507fe9d697ff8c6e5b0e73899b59c7a2c87c7))
+* add hbv preset ([89089f7](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/89089f74d26a6bf4c31c490be1fb75d28d868839))
+
+
+### Bug Fixes
+
+* add various small changes in unit test and validation behaviour ([2b16a8b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/2b16a8b0696822be9a005c1eaa738f4a0b2e5edc))
+* adjust time allocations to accommodate for O(n^2) situation for (very) large samples ([d4418dd](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/d4418ddee18e596e5d62150368b44fe42ede2a08))
+* amplicon_covs - zero-pad amplicon numbers to 3 digits for proper sorting ([197e339](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/197e3399341a9353ef814d3e5796502e21271049))
+* enhance amplicon start and end calculations to ensure overlapping regions are excluded ([080722a](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/080722ae9dc23342952e9fa0db5d8c1138d088d1))
+* ensure feature lists are constructed on a per-sample basis in `construct_rule_all` ([515ae64](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/515ae643403552504d4ff44367b3d77935cea72f))
+* ensure mean coverage per amplicon is calculated excluding the amplicon-overlaps ([b2e4d9d](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/b2e4d9d129469a1a39e75272abf25affecbbc2c1))
+* ensure NaN values in Primer_file and Feat_file columns are replaced with string "NONE" ([7352a64](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/7352a64c864b4d70b13785f788247313cc28de78))
+* escape parameters in virus and refid lists for proper handling ([f4fefd9](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/f4fefd92c55c86ac2afb7723524b382700861517))
+* refactor make_pickle rule to simplify pickle creation and add logging in concat_aminoacids rule ([5e35714](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/5e357144fe6bce408c04fec391a450e3c55aae16))
+* remove quoting for virus and refid parameters in aggregation rules which had an unintentional side effect ([25f7674](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/25f76748d29ffb0368257d65da26ba0442f1c26d))
+* resolve header row handling for mutations and width_of_coverage files ([036a2be](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/036a2be2c875b1b4aaff0dfc1bbc96e90e54d81f))
+* round mean coverage calculation to two decimal places. ([fbf43f9](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/fbf43f993b060c72ed7e0ef4ba16416ac950ccdd))
+* update `combine_aminoacids_by_sample` rule to handle features correctly ([5135558](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/513555861af67363ebb5d0090b8925946699b946))
+* update amino acid feature checks to use correct variable references in aggregation rules ([c531e02](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/c531e0292a0fa319c815ea6145cc3c5c6812230b))
+* update amplicon start and end calculations to ensure overlapping regions are excluded ([b38a8d0](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/b38a8d04c0470077a644702b0bc78dc3eb37e28d))
+* update CSV reading to handle NA values correctly in AggregateCombinedFiles and CombineTabular ([a534def](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/a534def53092b0d4d6dde9b3de1ca2e4e126dd9c))
+* update fasta header formatting to always include Virus and RefID information ([3073dea](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/3073deada1618b6a00b79727b9f90b461db865ae))
+* update runtime function tests to reflect quadratic scaling ([c5d1da7](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/c5d1da742870e629322d4f008765949944f462a5))
+
+
+### Documentation
+
+* addition of docstrings in `aggregate_combined_files.py` ([6002df5](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/6002df565108d876bb448c839896f73172510131))
+* addition of docstrings in `combine_fasta.py` ([f91be72](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/f91be722392148ddc13a55e060f157195ebcd98f))
+* addition of docstrings in `combine_tabular.py` ([63b761b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/63b761b50417635cd1038da9257ffb39ac2eac77))
+* addition of docstrings in `extract_sample_from_fasta.py` ([62461a8](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/62461a8c30abefa76ade240ed1d150deb4f03ffd))
+* update presets documentation with new virus categories and optimized settings ([2b7c4cd](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/2b7c4cdf8918ac6c4ef72bce922df183bf3adb43))
+
+
+### Miscellaneous Chores
+
+* **release:** empty commit ([9a0aeba](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/9a0aeba04d60e5eeb7c0123a85c1dafe20a3f45b))
+
 ## [1.6.3](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.6.2...v1.6.3) (2025-12-29)
 
 
