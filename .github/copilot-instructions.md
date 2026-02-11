@@ -5,6 +5,85 @@ ViroConstrictor is a viral amplicon-sequencing pipeline built on **Snakemake 9.5
 
 **Key technologies**: Python 3.10+, Snakemake 9.5+, Pandas, Biopython, Pysam, Apptainer/Singularity containers.
 
+## General installation and setup
+
+### For AI Agents: Environment Setup
+
+ViroConstrictor requires different setup approaches depending on the execution environment:
+
+#### Prerequisites Detection
+Before proceeding, check if the following are available:
+- **Conda/Mamba**: Run `conda --version` or `mamba --version`
+- **Apptainer/Singularity**: Run `apptainer --version` or `singularity --version`
+- **Python 3.10+**: Run `python --version`
+
+#### Setup Strategy A: Local Development (Dependencies Already Present)
+If working in an environment where ViroConstrictor is already installed:
+
+1. **Check available environments**: Run `conda env list` to see if a `viroconstrictor` (or 'ViroConstrictor') environment exists
+2. **Activate existing environment** (if using Conda):
+    ```bash
+    conda activate ViroConstrictor  # or mamba activate ViroConstrictor
+    ```
+3. **Verify ViroConstrictor installation**:
+    ```bash
+    viroconstrictor --version
+    ```
+
+4. **Install in development mode** (if you have the source code and want to make changes):
+    ```bash
+    pip install -e .
+    ```
+
+#### Setup Strategy B: Clean Virtual Machine/Container
+For clean environments without dependencies:
+
+1. **Install Conda/Mamba** (if not present):
+    ```bash
+    # Miniforge (includes Mamba) - recommended
+    wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
+    bash Miniforge3-Linux-x86_64.sh -b -p $HOME/miniforge3
+    source $HOME/miniforge3/bin/activate
+    ```
+
+2. **Create Conda environment from recipe**:
+    ```bash
+    mamba env create -f env.yml
+    mamba activate ViroConstrictor
+    ```
+
+3. **Install package in development mode**:
+    ```bash
+    pip install -e .
+    ```
+
+#### Verification Steps (All Strategies)
+After installation, verify the setup:
+
+1. **Check ViroConstrictor version**:
+    ```bash
+    viroconstrictor --version
+    ```
+
+2. **Verify Python dependencies**:
+    ```bash
+    python -c "import snakemake, pandas, biopython; print('Dependencies OK')"
+    ```
+
+4. **Test basic functionality**:
+    ```bash
+    viroconstrictor --help
+    ```
+
+#### Container vs Conda Environments
+- **With Apptainer**: ViroConstrictor uses pre-built `.sif` containers for bioinformatics tools (faster, isolated)
+- **Without Apptainer**: Falls back to Conda environments defined in `ViroConstrictor/workflow/envs/` (slower first run, requires more disk space)
+
+#### Troubleshooting Common Issues
+- **"conda: command not found"**: Conda/Mamba not in PATH - source the conda initialization script
+- **"Module not found" errors**: Wrong Python environment active - ensure ViroConstrictor environment is activated
+
+
 ## Entry Flow
 ```
 ViroConstrictor/__main__.py 
@@ -131,6 +210,26 @@ shell:
 ```
 
 ## Conventions
+
+### Commit messages
+All commits should follow the Conventional Commits format:
+```
+<type>(<scope>): <description>
+```
+This specifically follows the conventional commits specification for python projects, with the following types:
+- **feat**: A new feature for the user
+- **fix**: A bug fix for the user
+- **docs**: Documentation only changes
+- **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+- **refactor**: A code change that neither fixes a bug nor adds a feature
+- **perf**: A code change that improves performance
+- **test**: Adding missing tests or correcting existing tests
+- **build**: Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)
+- **ci**: Changes to our CI configuration files and scripts (example scopes: Travis, Circle, BrowserStack, SauceLabs)
+- **chore**: Other changes that don't modify src or test files in a meaningful way
+- **revert**: Reverts a previous commit
+- **deps**: Adding or updating dependencies (not a standard conventional commit type, but used in this project for clarity)
+
 
 ### Preset System
 Presets auto-configure tool parameters (Minimap2, Fastp, AmpliGone) per virus type. Use fuzzy matching in `match_preset_name()` with ≥40% similarity threshold. Always fall back to "DEFAULT" preset.
