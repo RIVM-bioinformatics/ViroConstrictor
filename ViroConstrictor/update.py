@@ -18,28 +18,9 @@ from ViroConstrictor.userprofile import AskPrompts
 repo_channels = ("bioconda", "conda-forge")
 api_url = f"https://api.anaconda.org/release/bioconda/{__prog__.lower()}/latest"
 
+#TODO: current implementation contains a lot of code duplication. We should refactor this to avoid that but it is acceptable for the current release. Target release for fixing this is 1.7.0
 
-@contextlib.contextmanager
-def silence_stdout_stderr():
-    """
-    This function temporarily redirects stdout and stderr to a null device to silence them.
-    """
-    sderr_fd = sys.stderr.fileno()
-    sdout_fd = sys.stdout.fileno()
-    orig_stderr_fd = os.dup(sderr_fd)
-    orig_stdout_fd = os.dup(sdout_fd)
-    null_fd = os.open(os.devnull, os.O_WRONLY)
-    os.dup2(null_fd, sdout_fd)
-    os.dup2(null_fd, sderr_fd)
-    try:
-        yield
-    finally:
-        os.dup2(orig_stdout_fd, sdout_fd)
-        os.dup2(orig_stderr_fd, sderr_fd)
-        os.close(null_fd)
-        os.close(orig_stderr_fd)
-        os.close(orig_stdout_fd)
-
+#TODO: Current implementation is too complex with one huge updating method. This should be fixed in a future release, but acceptable for now. Target release for fixiing this is 1.7.0
 
 def fetch_online_metadata() -> dict[str, Any] | None:
     """This function fetches online metadata from the Anaconda API URL and returns it as a dictionary, or returns
