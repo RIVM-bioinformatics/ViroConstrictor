@@ -137,7 +137,7 @@ class PrimerNameParser:
             # Pattern 8: schemeName_ampliconNumber_direction_primerNumber (e.g., "SARS-CoV-2_12_RIGHT_0")
             # PrimerNumber refers to the version of the primer, e.g., 0 for original, 1 for version 1, 2 for version 2, etc.
             # primer pool information is not included in the primer name, but instead is included in column 5 of the BED file (1 or 2)
-            r"^([^_]+)_(\d+)_([^_]+)_(\d+)$",
+            r"^([^_]+)_(\d+)_([^_]+)_(?:\d+)$",
         ]
 
     def parse(self, primer_name: str) -> PrimerInfo:
