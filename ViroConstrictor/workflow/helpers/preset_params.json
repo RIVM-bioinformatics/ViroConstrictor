@@ -81,7 +81,10 @@
             "Minimap2_RawAlignParams_iontorrent": "--splice",
             "Clipper_FilterParams_nanopore": "--exclude-spliced --spliced-length-threshold 50 --min-aligned-length 0.5",
             "Clipper_FilterParams_illumina": "--exclude-spliced --spliced-length-threshold 50",
-            "Clipper_FilterParams_iontorrent": "--exclude-spliced --spliced-length-threshold 50 --min-aligned-length 0.5"
+            "Clipper_FilterParams_iontorrent": "--exclude-spliced --spliced-length-threshold 50 --min-aligned-length 0.5",
+            "Fastp_MinReadLength_Settings_nanopore": "--length_required 200",
+            "Fastp_MinReadLength_Settings_illumina": "--length_required 200",
+            "Fastp_MinReadLength_Settings_iontorrent": "--length_required 200"
         }
     },
     "PARAMYXOVIRIDAE": {

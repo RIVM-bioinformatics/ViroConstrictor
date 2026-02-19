@@ -9,7 +9,7 @@ def get_alignment_flags(_wildcards):
 
 rule align_before_trueconsense:
     input:
-        fq=f"{datadir}{wc_folder}{cln}{prdir}" "{sample}.fastq",  #rules.ampligone.output.fq,
+        fq=rules.qc_filter.output.fq,
         ref=rules.prepare_refs.output,
     output:
         bam=f"{datadir}{wc_folder}{aln}{bf}" "{sample}.bam",

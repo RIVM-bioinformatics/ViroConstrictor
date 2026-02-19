@@ -1,7 +1,7 @@
 
 rule qc_filter:
     input:
-        rules.remove_adapters_p2.output,
+        rules.ampligone.output.fq,
     output:
         fq=f"{datadir}{wc_folder}{cln}{qcfilt}" "{sample}.fastq",
         html=f"{datadir}{wc_folder}{cln}{qcfilt}{html}" "{sample}_fastp.html",

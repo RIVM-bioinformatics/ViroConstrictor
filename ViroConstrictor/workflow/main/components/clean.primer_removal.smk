@@ -10,7 +10,7 @@ def get_primers_output(wildcards):
 
 rule ampligone:
     input:
-        fq=rules.qc_filter.output.fq,
+        fq=rules.remove_adapters_p2.output,
         pr=lambda wc: get_primers_output(wc),
         ref=rules.prepare_refs.output,
     output:
@@ -65,7 +65,7 @@ ruleorder: ampligone > move_fastq
 # If no primers are given (e.g. with illumina runs), this rule makes sure the fastq's end up in the right place
 rule move_fastq:
     input:
-        rules.qc_filter.output.fq,
+        rules.remove_adapters_p2.output,
     output:
         fq=f"{datadir}{wc_folder}{cln}{prdir}" "{sample}.fastq",
         ep=touch(f"{datadir}{wc_folder}{prim}" "{sample}_removedprimers.bed"),
