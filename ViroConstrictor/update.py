@@ -1,5 +1,14 @@
+"""
+Utilities for checking and updating ViroConstrictor from conda channels.
+
+This module provides helpers to fetch package metadata from the Anaconda
+API, perform an update using `conda` or `mamba`, and re-execute the updated
+`viroconstrictor` binary.
+
+Only docstring and formatting changes were made by the docstring updater.
+"""
+
 import configparser
-import contextlib
 import json
 import os
 import shutil
@@ -9,7 +18,6 @@ from typing import Any, NoReturn
 from urllib import request
 
 import packaging.version
-from rich import print
 
 from ViroConstrictor import __prog__, __version__
 from ViroConstrictor.logging import log
@@ -18,18 +26,24 @@ from ViroConstrictor.userprofile import AskPrompts
 repo_channels = ("bioconda", "conda-forge")
 api_url = f"https://api.anaconda.org/release/bioconda/{__prog__.lower()}/latest"
 
-#TODO: current implementation contains a lot of code duplication. We should refactor this to avoid that but it is acceptable for the current release. Target release for fixing this is 1.7.0
+# TODO: current implementation contains a lot of code duplication. We should refactor this to avoid that but it is acceptable for the current release. Target release for fixing this is 1.7.0
 
-#TODO: Current implementation is too complex with one huge updating method. This should be fixed in a future release, but acceptable for now. Target release for fixiing this is 1.7.0
+# TODO: Current implementation is too complex with one huge updating method. This should be fixed in a future release, but acceptable for now. Target release for fixing this is 1.7.0
+
 
 def fetch_online_metadata() -> dict[str, Any] | None:
-    """This function fetches online metadata from the Anaconda API URL and returns it as a dictionary, or returns
-    None if there is an exception.
+    """
+    Fetch online metadata for the package from the Anaconda API.
+
+    The function performs a blocking HTTP request to the Anaconda API URL
+    configured in `api_url` and returns the parsed JSON response.
 
     Returns
     -------
-        A dictionary with string keys and values of any type, or `None` if an exception occurs while trying to connect to the Anaconda API.
-
+    dict[str, Any] | None
+        Parsed JSON metadata returned by the Anaconda API, or ``None`` if the
+        request failed. A warning is logged when a connection or parsing
+        error occurs.
     """
     try:
         online_metadata = request.urlopen(api_url)
@@ -40,25 +54,36 @@ def fetch_online_metadata() -> dict[str, Any] | None:
 
 
 def post_install(sysargs: list[str], online_version: packaging.version.Version) -> NoReturn:
-    """This function prints a message indicating the updated version of ViroConstrictor and replaces
-    the current process with a new one running the updated ViroConstrictor command.
+    """
+    Notify the user about a successful update and re-execute the updated binary.
 
     Parameters
     ----------
     sysargs : list[str]
-        A list of command-line arguments to be passed to the new process.
-    online_version : LooseVersion
-        The version number of the updated ViroConstrictor package that is available online.
+        Command-line argument vector to pass to the new `viroconstrictor`
+        process when re-executing the program.
+    online_version : packaging.version.Version
+        The version that was installed.
 
+    Raises
+    ------
+    SystemExit
+        If the `viroconstrictor` executable cannot be located after the
+        update, the function logs an error and exits the process.
+
+    Notes
+    -----
+    The function uses :func:`os.execv` to replace the running process so the
+    updated code is loaded into memory.
     """
     log.info(f"ViroConstrictor updated to version [bold yellow]{online_version}[/bold yellow]")
-    
+
     # Find the viroconstrictor executable path in the updated environment
     viroconstrictor_path = shutil.which("viroconstrictor")
     if viroconstrictor_path is None:
         log.error("Could not find viroconstrictor executable after update")
         sys.exit(1)
-    
+
     # Use os.execv to replace the current process with the new viroconstrictor process
     # This ensures the updated code is loaded
     os.execv(viroconstrictor_path, sysargs)
@@ -66,6 +91,37 @@ def post_install(sysargs: list[str], online_version: packaging.version.Version) 
 
 # TODO: split this into smaller functions
 def update(sysargs: list[str], conf: configparser.ConfigParser) -> None:
+    """
+    Check for and optionally install updates for ViroConstrictor.
+
+    The function consults the local package version and the Anaconda API to
+    determine whether an update is available. Behavior is controlled by the
+    provided configuration parser in the `GENERAL` section:
+
+    - If ``auto_update`` is ``yes``, the update is attempted automatically.
+    - If ``auto_update`` is ``no`` and ``ask_for_update`` is ``yes``, the user
+      is prompted before updating.
+
+    Parameters
+    ----------
+    sysargs : list[str]
+        Command line arguments passed to the current process; used when
+        re-executing the program after a successful update.
+    conf : configparser.ConfigParser
+        Configuration with a `GENERAL` section that may contain
+        ``auto_update`` and ``ask_for_update`` keys.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    On success the function calls :func:`post_install` which replaces the
+    running process with the updated ``viroconstrictor`` executable. Errors
+    during the update process are logged and the function returns without
+    changing the running process.
+    """
     local_version = packaging.version.parse(__version__)
     online_version = None
 
@@ -89,34 +145,28 @@ def update(sysargs: list[str], conf: configparser.ConfigParser) -> None:
                 try:
                     # Always use mamba/conda for updates
                     # First, uninstall any pip-installed version to avoid conflicts
-                    subprocess.run(
-                        [sys.executable, "-m", "pip", "uninstall", "-y", __prog__.lower()],
-                        capture_output=True,
-                        check=False
-                    )
-                    
+                    subprocess.run([sys.executable, "-m", "pip", "uninstall", "-y", __prog__.lower()], capture_output=True, check=False)
+
                     # Determine whether to use mamba or conda
                     conda_exe = "mamba" if shutil.which("mamba") else "conda"
-                    
+
                     # Build the install command (use install, not update, to force reinstallation)
                     update_cmd = [
                         conda_exe,
                         "install",
                         "-y",
-                        "-p", os.environ["CONDA_PREFIX"],
-                        "-c", "bioconda",
-                        "-c", "conda-forge",
+                        "-p",
+                        os.environ["CONDA_PREFIX"],
+                        "-c",
+                        "bioconda",
+                        "-c",
+                        "conda-forge",
                         "--force-reinstall",
-                        f"{__prog__.lower()}={online_version}"
+                        f"{__prog__.lower()}={online_version}",
                     ]
-                    
-                    result = subprocess.run(
-                        update_cmd,
-                        capture_output=True,
-                        text=True,
-                        check=False
-                    )
-                    
+
+                    result = subprocess.run(update_cmd, capture_output=True, text=True, check=False)
+
                     update_succesfull = result.returncode == 0
                 except Exception as e:
                     log.error(
@@ -162,34 +212,28 @@ Latest version: [bold green]{online_version}[/bold green]\n""",
                 try:
                     # Always use mamba/conda for updates
                     # First, uninstall any pip-installed version to avoid conflicts
-                    subprocess.run(
-                        [sys.executable, "-m", "pip", "uninstall", "-y", __prog__.lower()],
-                        capture_output=True,
-                        check=False
-                    )
-                    
+                    subprocess.run([sys.executable, "-m", "pip", "uninstall", "-y", __prog__.lower()], capture_output=True, check=False)
+
                     # Determine whether to use mamba or conda
                     conda_exe = "mamba" if shutil.which("mamba") else "conda"
-                    
+
                     # Build the install command (use install, not update, to force reinstallation)
                     update_cmd = [
                         conda_exe,
                         "install",
                         "-y",
-                        "-p", os.environ["CONDA_PREFIX"],
-                        "-c", "bioconda",
-                        "-c", "conda-forge",
+                        "-p",
+                        os.environ["CONDA_PREFIX"],
+                        "-c",
+                        "bioconda",
+                        "-c",
+                        "conda-forge",
                         "--force-reinstall",
-                        f"{__prog__.lower()}={online_version}"
+                        f"{__prog__.lower()}={online_version}",
                     ]
-                    
-                    result = subprocess.run(
-                        update_cmd,
-                        capture_output=True,
-                        text=True,
-                        check=False
-                    )
-                    
+
+                    result = subprocess.run(update_cmd, capture_output=True, text=True, check=False)
+
                     update_succesfull = result.returncode == 0
                 except Exception as e:
                     update_succesfull = False
