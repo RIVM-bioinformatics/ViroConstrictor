@@ -9,37 +9,7 @@ from urllib.error import URLError
 import packaging.version
 import pytest
 
-from ViroConstrictor.update import fetch_online_metadata, post_install, silence_stdout_stderr, update
-
-
-class TestSilenceStdoutStderr:
-    """Test the silence_stdout_stderr context manager."""
-
-    def test_silence_stdout_stderr_context_manager(self):
-        """Test that stdout and stderr are silenced within the context."""
-        print("Before context")
-
-        with silence_stdout_stderr():
-            print("This should be silenced")
-            sys.stderr.write("This error should be silenced\n")
-
-        print("After context")
-
-    def test_silence_stdout_stderr_exception_handling(self, capsys):
-        """Test that file descriptors are properly restored even if exception occurs."""
-        print("Before context")
-
-        with pytest.raises(ValueError):
-            with silence_stdout_stderr():
-                print("This should be silenced")
-                raise ValueError("Test exception")
-
-        print("After context")
-
-        captured = capsys.readouterr()
-        assert "Before context" in captured.out
-        assert "After context" in captured.out
-        assert "This should be silenced" not in captured.out
+from ViroConstrictor.update import fetch_online_metadata, post_install, update
 
 
 class TestFetchOnlineMetadata:
