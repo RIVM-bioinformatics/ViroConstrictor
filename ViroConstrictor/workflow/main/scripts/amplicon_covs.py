@@ -48,7 +48,7 @@ Supported primer name formats:
 - Multiple underscores with alt (e.g., "virus_strain_1_alt_LEFT")
 - name_number-alt_direction (e.g., "MuV-NGS_19-alt22_LEFT
 
-Valid direction indicators: 
+Valid direction indicators:
     FW, F, LEFT, POSITIVE, FORWARD, PLUS (forward)
     RV, R, RIGHT, NEGATIVE, REVERSE, MINUS (reverse)
 
@@ -134,6 +134,10 @@ class PrimerNameParser:
             r"^(.+)_(\d+)_(alt\w*)_([^_]+)$",
             # Pattern 7: name_number-alt_direction (e.g., "MuV-NGS_19-alt22_LEFT")
             r"^([^_]+)_(\d+)-(alt\w*)_([^_]+)$",
+            # Pattern 8: schemeName_ampliconNumber_direction_primerNumber (e.g., "SARS-CoV-2_12_RIGHT_0")
+            # PrimerNumber refers to the version of the primer, e.g., 0 for original, 1 for version 1, 2 for version 2, etc.
+            # primer pool information is not included in the primer name, but instead is included in column 5 of the BED file (1 or 2)
+            r"^([^_]+)_(\d+)_([^_]+)_(?:\d+)$",
         ]
 
     def parse(self, primer_name: str) -> PrimerInfo:
@@ -332,25 +336,25 @@ class AmpliconCovs(BaseScript):
     def _calculate_amplicon_start_end(primers: pd.DataFrame) -> pd.DataFrame:
         """
         Calculates non-overlapping start and end positions of amplicons based on primer data.
-        
+
         The amplicon regions are partitioned to avoid overlaps:
-        - Start: end position of the PREVIOUS amplicon's RIGHT primer 
+        - Start: end position of the PREVIOUS amplicon's RIGHT primer
             (or current LEFT primer's end for first amplicon)
-        - End: start position of the NEXT amplicon's LEFT primer 
+        - End: start position of the NEXT amplicon's LEFT primer
             (or current RIGHT primer's start for last amplicon)
-        
+
         This ensures true non-overlapping amplicon regions for accurate coverage calculation.
         """
         amplicon_numbers = sorted(primers["count"].unique())
         df = pd.DataFrame(amplicon_numbers, columns=["amplicon_number"])
-        
+
         for idx, amplicon_number in enumerate(amplicon_numbers):
             amplicon_group = primers[primers["count"] == amplicon_number]
-            
+
             # Get forward (LEFT) and reverse (RIGHT) primers for this amplicon
             forward_primers = amplicon_group[amplicon_group["direction"] == ReadDirection.FORWARD]
             reverse_primers = amplicon_group[amplicon_group["direction"] == ReadDirection.REVERSE]
-            
+
             # Determine start position
             if idx == 0:
                 # First amplicon: start at end of own LEFT primer
@@ -363,13 +367,13 @@ class AmpliconCovs(BaseScript):
                 prev_amplicon_number = amplicon_numbers[idx - 1]
                 prev_amplicon_group = primers[primers["count"] == prev_amplicon_number]
                 prev_reverse_primers = prev_amplicon_group[prev_amplicon_group["direction"] == ReadDirection.REVERSE]
-                
+
                 if not prev_reverse_primers.empty:
                     amplicon_start = prev_reverse_primers[2].max()  # Column 2 is the end position
                 else:
                     # Fallback to own LEFT primer end
                     amplicon_start = forward_primers[2].max() if not forward_primers.empty else amplicon_group[1].min()
-            
+
             # Determine end position
             if idx == len(amplicon_numbers) - 1:
                 # Last amplicon: end at start of own RIGHT primer
@@ -382,13 +386,13 @@ class AmpliconCovs(BaseScript):
                 next_amplicon_number = amplicon_numbers[idx + 1]
                 next_amplicon_group = primers[primers["count"] == next_amplicon_number]
                 next_forward_primers = next_amplicon_group[next_amplicon_group["direction"] == ReadDirection.FORWARD]
-                
+
                 if not next_forward_primers.empty:
                     amplicon_end = next_forward_primers[1].min()  # Column 1 is the start position
                 else:
                     # Fallback to own RIGHT primer start
                     amplicon_end = reverse_primers[1].min() if not reverse_primers.empty else amplicon_group[2].max()
-            
+
             # Validate that start < end
             if amplicon_start >= amplicon_end:
                 raise ValueError(
@@ -396,7 +400,7 @@ class AmpliconCovs(BaseScript):
                     f"is greater than or equal to end position ({amplicon_end}). "
                     f"This may indicate malformed primer data."
                 )
-            
+
             df.loc[df["amplicon_number"] == amplicon_number, "start"] = amplicon_start
             df.loc[df["amplicon_number"] == amplicon_number, "end"] = amplicon_end
 

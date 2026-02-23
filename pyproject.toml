@@ -67,20 +67,35 @@ packages = [
 "ViroConstrictor/workflow" = "ViroConstrictor/workflow"
 "snakemake_logger_plugin_viroconstrictor" = "snakemake_logger_plugin_viroconstrictor"
 
-[tool.pylint]
-max-line-length = 150
-
 [tool.black]
 line-length = 150
-target-version = ['py310']
+target-version = ["py310"]
 
 [tool.isort]
 profile = "black"
 line_length = 150
+py_version = 310
+float_to_top = true
 
-[tool.pytest.ini_options]
-pythonpath = ["."]
-testpaths = ["tests"]
-python_files = ["test_*.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
+[tool.mypy]
+python_version = "3.10"
+pretty = true
+show_error_codes = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+disallow_untyped_defs = false
+check_untyped_defs = true
+ignore_missing_imports = true
+exclude = [
+  "^tests/e2e/",
+]
+
+[tool.pylint.main]
+py-version = "3.10"
+jobs = 0
+ignore-paths = [
+  "^tests/e2e/.*$",
+]
+
+[tool.pylint.format]
+max-line-length = 150
