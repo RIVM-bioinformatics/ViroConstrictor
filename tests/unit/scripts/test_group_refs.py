@@ -1,3 +1,11 @@
+"""
+Unit tests for the `GroupRefs` workflow script.
+
+These tests exercise grouping logic used by the match-ref workflow's
+`group_refs` script. Each test is small and focused; parameters are
+documented where helpful.
+"""
+
 import sys
 from pathlib import Path
 from typing import List, cast
@@ -12,6 +20,19 @@ from ViroConstrictor.workflow.match_ref.scripts.group_refs import GroupRefs  # i
 
 
 def test_group_refs_segmented_mode(tmp_path: Path) -> None:
+    """
+    Verify grouping when multiple segmented reference files are provided.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Temporary directory provided by pytest.
+
+    Returns
+    -------
+    None
+    """
+
     _input_refs = [
         str(PROJECT_ROOT / "tests" / "unit" / "data" / "group_refs" / "HA_INF1024_B34_4312201729_squiggle_best_ref.fasta"),
         str(PROJECT_ROOT / "tests" / "unit" / "data" / "group_refs" / "MP_INF1024_B34_4312201729_squiggle_best_ref.fasta"),
@@ -52,6 +73,19 @@ def test_group_refs_segmented_mode(tmp_path: Path) -> None:
 
 
 def test_group_refs_non_segmented_mode_keeps_id(tmp_path: Path) -> None:
+    """
+    Ensure a single non-segmented reference keeps its original sequence id.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Temporary directory provided by pytest.
+
+    Returns
+    -------
+    None
+    """
+
     input_ref = str(PROJECT_ROOT / "tests" / "unit" / "data" / "group_refs" / "HA_INF1024_B34_4312201729_squiggle_best_ref.fasta")
     input_stat = str(PROJECT_ROOT / "tests" / "unit" / "data" / "group_refs" / "HA_INF1024_B34_4312201729_squiggle_best_ref.csv")
 
@@ -80,6 +114,19 @@ def test_group_refs_non_segmented_mode_keeps_id(tmp_path: Path) -> None:
 
 
 def test_group_refs_invalid_input_refs_type_raises(tmp_path: Path) -> None:
+    """
+    Passing a non-list for `input_refs` raises an AssertionError.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Temporary directory provided by pytest.
+
+    Returns
+    -------
+    None
+    """
+
     output = tmp_path / "output_refs.fasta"
     output_stats = tmp_path / "output_stats.csv"
     input_stat = str(PROJECT_ROOT / "tests" / "unit" / "data" / "group_refs" / "HA_INF1024_B34_4312201729_squiggle_best_ref.csv")
@@ -98,6 +145,19 @@ def test_group_refs_invalid_input_refs_type_raises(tmp_path: Path) -> None:
 
 
 def test_group_refs_invalid_input_stats_type_raises(tmp_path: Path) -> None:
+    """
+    Passing a non-list for `input_stats` raises an AssertionError.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Temporary directory provided by pytest.
+
+    Returns
+    -------
+    None
+    """
+
     output = tmp_path / "output_refs.fasta"
     output_stats = tmp_path / "output_stats.csv"
     input_ref = str(PROJECT_ROOT / "tests" / "unit" / "data" / "group_refs" / "HA_INF1024_B34_4312201729_squiggle_best_ref.fasta")
@@ -116,6 +176,19 @@ def test_group_refs_invalid_input_stats_type_raises(tmp_path: Path) -> None:
 
 
 def test_group_refs_missing_input_ref_file_raises(tmp_path: Path) -> None:
+    """
+    A missing reference file should raise FileNotFoundError.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Temporary directory provided by pytest.
+
+    Returns
+    -------
+    None
+    """
+
     output = tmp_path / "output_refs.fasta"
     output_stats = tmp_path / "output_stats.csv"
     missing_ref = tmp_path / "missing_ref.fasta"
@@ -135,6 +208,19 @@ def test_group_refs_missing_input_ref_file_raises(tmp_path: Path) -> None:
 
 
 def test_group_refs_missing_input_stats_file_raises(tmp_path: Path) -> None:
+    """
+    A missing stats CSV file should raise FileNotFoundError.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Temporary directory provided by pytest.
+
+    Returns
+    -------
+    None
+    """
+
     output = tmp_path / "output_refs.fasta"
     output_stats = tmp_path / "output_stats.csv"
     missing_stats = tmp_path / "missing_stats.csv"
@@ -154,6 +240,19 @@ def test_group_refs_missing_input_stats_file_raises(tmp_path: Path) -> None:
 
 
 def test_group_refs_stats_without_reference_column_raises(tmp_path: Path) -> None:
+    """
+    If the stats CSV lacks a `Reference` column, a KeyError is raised.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Temporary directory provided by pytest.
+
+    Returns
+    -------
+    None
+    """
+
     input_ref = str(PROJECT_ROOT / "tests" / "unit" / "data" / "group_refs" / "HA_INF1024_B34_4312201729_squiggle_best_ref.fasta")
     invalid_stats = tmp_path / "invalid_stats.csv"
     output = tmp_path / "output_refs.fasta"
@@ -181,6 +280,19 @@ def test_group_refs_stats_without_reference_column_raises(tmp_path: Path) -> Non
 
 
 def test_group_refs_empty_fasta_without_records_raises(tmp_path: Path) -> None:
+    """
+    An empty FASTA file (no records) should cause an IndexError.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Temporary directory provided by pytest.
+
+    Returns
+    -------
+    None
+    """
+
     empty_ref = tmp_path / "empty.fasta"
     input_stat = str(PROJECT_ROOT / "tests" / "unit" / "data" / "group_refs" / "HA_INF1024_B34_4312201729_squiggle_best_ref.csv")
     output = tmp_path / "output_refs.fasta"
