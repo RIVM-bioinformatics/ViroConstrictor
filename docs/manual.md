@@ -7,8 +7,8 @@ Before starting your analysis, ensure your input files are properly formatted ac
 You can run analyses in different ways:
 
 - **Single-target analysis**: Single-target analysis with uniform parameters across all samples
-- **Multi-target analysis**: Use samplesheets to apply different settings per sample (see [samplesheet documentation](samplesheet.md))
-- **Multi-reference analysis**: Let ViroConstrictor choose the best reference for each sample (see [multi-reference guide](multi-reference.md))
+- **Multi-target analysis**: Use samplesheets to apply different settings per sample (see [Multi-target analysis documentation](multi-target-analysis.md))
+- **Multi-reference analysis**: Let ViroConstrictor choose the best reference for each sample (see [Multi-reference analysis guide](multi-reference-analysis.md))
 - **Preset configurations**: Use predefined settings for common viral targets (see [presets documentation](presets.md))
 
 For a quick start, see the [quickstart](quickstart.md) which includes a basic command template.

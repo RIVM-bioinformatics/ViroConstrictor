@@ -1,0 +1,46 @@
+name: Run Unit Tests
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+jobs:
+  Run_unit_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Mamba
+        uses: mamba-org/setup-micromamba@v2
+        with:
+          cache-environment: true
+          post-cleanup: 'all'
+          environment-file: env.yml
+          init-shell: bash
+
+      - name: Install local python package
+        run: |
+          pip install . --no-deps
+        shell: micromamba-shell {0}
+
+      - name: Run unit tests
+        run: |
+          pytest --junit-xml=test-report.xml tests/unit
+        shell: micromamba-shell {0}
+      
+      - name: Test Report
+        uses: dorny/test-reporter@v2
+        if: ${{ !cancelled() }}       # run this step even if previous step failed
+        with:
+          name: Unit Tests            # Name of the check run which will be created
+          path: test-report.xml       # Path to test results
+          reporter: python-xunit        # Format of test results

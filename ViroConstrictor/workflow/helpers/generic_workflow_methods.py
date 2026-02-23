@@ -110,22 +110,23 @@ def segmented_ref_groups(df: pd.DataFrame) -> pd.DataFrame:
     # TODO: Not entirely sure why the values are being generated as a list with a set inside one time and just as a normal set the other time.
     return df
 
-#TODO: all functions below this lack proper unit tests. This is acceptable (at time of writing) for the current release. However, proper unit tests should be added in the near future.
+
+# TODO: all functions below this lack proper unit tests. This is acceptable (at time of writing) for the current release. However, proper unit tests should be added in the near future.
 def get_features_all_samples(samples_df: pd.DataFrame) -> list[str]:
     """
-    Extracts and returns a list of unique amino acid feature names across all samples  
-    in the provided DataFrame.  
+    Extracts and returns a list of unique amino acid feature names across all samples
+    in the provided DataFrame.
 
-    Parameters  
-    ----------  
-    samples_df : pd.DataFrame  
-        A pandas DataFrame containing data for multiple samples. Each row may contain  
-        a column "AA_FEAT_NAMES" with a list or tuple of amino acid feature names.  
+    Parameters
+    ----------
+    samples_df : pd.DataFrame
+        A pandas DataFrame containing data for multiple samples. Each row may contain
+        a column "AA_FEAT_NAMES" with a list or tuple of amino acid feature names.
 
-    Returns  
-    -------  
-    list of str  
-        A list of unique amino acid feature names found across all samples in  
+    Returns
+    -------
+    list of str
+        A list of unique amino acid feature names found across all samples in
         ``samples_df``.
     """
     all_features = []
@@ -161,6 +162,7 @@ def get_features_per_sample(sample: str, samples_df: pd.DataFrame) -> list[str]:
         if pd.notna(aa_feat_names) and isinstance(aa_feat_names, (list, tuple)):
             all_features.extend(aa_feat_names)
     return list(set(all_features))
+
 
 # Helper function to get all unique features for a virus
 def get_features_per_virus(virus: str, samples_df: pd.DataFrame) -> list[str]:
