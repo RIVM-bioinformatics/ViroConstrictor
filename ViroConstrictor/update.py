@@ -5,7 +5,6 @@ This module provides helpers to fetch package metadata from the Anaconda
 API, perform an update using `conda` or `mamba`, and re-execute the updated
 `viroconstrictor` binary.
 
-Only docstring and formatting changes were made by the docstring updater.
 """
 
 import configparser
@@ -84,9 +83,9 @@ def post_install(sysargs: list[str], online_version: packaging.version.Version) 
         log.error("Could not find viroconstrictor executable after update")
         sys.exit(1)
 
-    # Use os.execv to replace the current process with the new viroconstrictor process
-    # This ensures the updated code is loaded
-    os.execv(viroconstrictor_path, sysargs)
+    # Use os.execv to replace the current process with the new viroconstrictor process.
+    # Ensure that argv[0] matches the executable path by rebuilding the argument list.
+    os.execv(viroconstrictor_path, [viroconstrictor_path] + sysargs[1:])
 
 
 # TODO: split this into smaller functions
@@ -150,13 +149,24 @@ def update(sysargs: list[str], conf: configparser.ConfigParser) -> None:
                     # Determine whether to use mamba or conda
                     conda_exe = "mamba" if shutil.which("mamba") else "conda"
 
+                    # Determine target conda environment prefix
+                    conda_prefix = os.environ.get("CONDA_PREFIX")
+                    if not conda_prefix:
+                        log.error(
+                            "ViroConstrictor update requires an active Conda or Mamba environment "
+                            "(environment variable CONDA_PREFIX is not set). "
+                            "Please activate the ViroConstrictor environment and retry the update."
+                        )
+                        log.warning(f"Continuing with current version: [bold red]{local_version}[/bold red]")
+                        return
+
                     # Build the install command (use install, not update, to force reinstallation)
                     update_cmd = [
                         conda_exe,
                         "install",
                         "-y",
                         "-p",
-                        os.environ["CONDA_PREFIX"],
+                        conda_prefix,
                         "-c",
                         "bioconda",
                         "-c",
@@ -166,11 +176,22 @@ def update(sysargs: list[str], conf: configparser.ConfigParser) -> None:
                     ]
 
                     result = subprocess.run(update_cmd, capture_output=True, text=True, check=False)
+                    if result.returncode != 0:
+                        # Surface solver/installation errors from conda/mamba to help debugging
+                        if result.stderr:
+                            log.error(
+                                "Conda/mamba reported the following error during the ViroConstrictor update:\n"
+                                f"{result.stderr.strip()}"
+                            )
+                        else:
+                            log.error("Conda/mamba update command failed but did not produce any error output.")
 
                     update_succesfull = result.returncode == 0
                 except Exception as e:
                     log.error(
-                        f"ViroConstrictor update process to version [bold yellow]{online_version}[/bold yellow] failed at package solver stage.\nThis might indicate that a new version of ViroConstrictor is uploaded to bioconda but download-servers are not ready yet.\nPlease try again later."
+                        f"ViroConstrictor update process to version [bold yellow]{online_version}[/bold yellow] failed at package solver stage.\n"
+                        f"This might indicate that a new version of ViroConstrictor is uploaded to bioconda but download-servers are not ready yet.\n"
+                        f"Please try again later.\n[red]Exception details:[/red] {e}"
                     )
 
                     log.warning(f"Continuing with current version: [bold red]{local_version}[/bold red]")
@@ -217,13 +238,24 @@ Latest version: [bold green]{online_version}[/bold green]\n""",
                     # Determine whether to use mamba or conda
                     conda_exe = "mamba" if shutil.which("mamba") else "conda"
 
+                    # Determine target conda environment prefix
+                    conda_prefix = os.environ.get("CONDA_PREFIX")
+                    if not conda_prefix:
+                        log.error(
+                            "Unable to perform self-update: ViroConstrictor must be running inside a conda or mamba "
+                            "environment so that CONDA_PREFIX is defined. Please activate the appropriate environment "
+                            "and rerun ViroConstrictor with the update option."
+                        )
+                        log.warning(f"Skipping update; continuing with current version: [bold red]{local_version}[/bold red]")
+                        return
+
                     # Build the install command (use install, not update, to force reinstallation)
                     update_cmd = [
                         conda_exe,
                         "install",
                         "-y",
                         "-p",
-                        os.environ["CONDA_PREFIX"],
+                        conda_prefix,
                         "-c",
                         "bioconda",
                         "-c",
@@ -235,7 +267,7 @@ Latest version: [bold green]{online_version}[/bold green]\n""",
                     result = subprocess.run(update_cmd, capture_output=True, text=True, check=False)
 
                     update_succesfull = result.returncode == 0
-                except Exception as e:
+                except Exception:
                     update_succesfull = False
 
                     log.error(
