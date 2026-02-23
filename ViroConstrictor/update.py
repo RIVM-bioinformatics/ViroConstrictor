@@ -140,7 +140,7 @@ def update(sysargs: list[str], conf: configparser.ConfigParser) -> None:
 
             if online_version is not None and (local_version < online_version):
                 log.info(f"Updating ViroConstrictor to latest version: [bold yellow]{online_version}[/bold yellow]")
-                update_succesfull = False
+                update_successful = False
                 try:
                     # Always use mamba/conda for updates
                     # First, uninstall any pip-installed version to avoid conflicts
@@ -186,7 +186,7 @@ def update(sysargs: list[str], conf: configparser.ConfigParser) -> None:
                         else:
                             log.error("Conda/mamba update command failed but did not produce any error output.")
 
-                    update_succesfull = result.returncode == 0
+                    update_successful = result.returncode == 0
                 except Exception as e:
                     log.error(
                         f"ViroConstrictor update process to version [bold yellow]{online_version}[/bold yellow] failed at package solver stage.\n"
@@ -196,7 +196,7 @@ def update(sysargs: list[str], conf: configparser.ConfigParser) -> None:
 
                     log.warning(f"Continuing with current version: [bold red]{local_version}[/bold red]")
                     return
-                if update_succesfull:
+                if update_successful:
                     post_install(sysargs, online_version)
                 else:
                     log.error(
@@ -229,7 +229,7 @@ Latest version: [bold green]{online_version}[/bold green]\n""",
             ):
                 log.info(f"Updating ViroConstrictor to latest version: [bold yellow]{online_version}[/bold yellow]")
 
-                update_succesfull = False
+                update_successful = False
                 try:
                     # Always use mamba/conda for updates
                     # First, uninstall any pip-installed version to avoid conflicts
@@ -266,15 +266,15 @@ Latest version: [bold green]{online_version}[/bold green]\n""",
 
                     result = subprocess.run(update_cmd, capture_output=True, text=True, check=False)
 
-                    update_succesfull = result.returncode == 0
+                    update_successful = result.returncode == 0
                 except Exception:
-                    update_succesfull = False
+                    update_successful = False
 
                     log.error(
                         f"ViroConstrictor update process to version [bold yellow]{online_version}[/bold yellow] failed at package solver stage.\nThis might indicate that a new version of ViroConstrictor is uploaded to bioconda but download-servers are not ready yet.\nPlease try again later."
                     )
                     log.warning(f"Continuing with current version: [bold red]{local_version}[/bold red]")
-                if update_succesfull:
+                if update_successful:
                     post_install(sysargs, online_version)
                 else:
                     log.error(
