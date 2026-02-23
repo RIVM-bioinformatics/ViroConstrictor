@@ -325,7 +325,7 @@ There's a new version of ViroConstrictor available.
 
 Current version: [bold red]{local_version}[/bold red]
 Latest version: [bold green]{online_version}[/bold green]\n""",
-            "Do you want to update? [yes/no] ",
+            "Do you want to update? \[yes/no] ",
             ["yes", "no"],
             fixedchoices=True,
         )
