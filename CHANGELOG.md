@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.6.5](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.6.4...v1.6.5) (2026-02-23)
+
+
+### Bug Fixes
+
+* add url parsing and audit before opening the url in updater process ([7f221d0](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/7f221d08241c6e4c9f356a81b5d42930ed583316))
+* expand primer regex patterns to include artic v5.4.2 scheme ([2b898e8](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/2b898e8d9752af6d99ed8652938fd13f826194cb))
+* improve the updater-process to use no longer use the mamba api in order to circumvent solver errors ([cb76f34](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/cb76f34730efd4c6f7737613417003af24f9ccd0))
+* update primer regex pattern to allow for optional primer version in naming ([6b165e4](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/6b165e446f468813b0c5bdb2f6eb714167576582))
+* update repo_root path to reference the correct parent directory ([7a98e8c](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/7a98e8ce793b358aa1c5300da8370b4854e3ef96))
+
+
+### Documentation
+
+* add docstrings in numpy style to `test_group_refs.py` ([a37d156](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/a37d156457844426e6b275fc9467d98639c42064))
+* add docstrings to `test_update.py` in numpy docstring style ([7b86595](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/7b86595452ddcbe54ab3aaaca3e638e03f0bed4e))
+* added and/or updated all docstrings in `update.py` in numpy docstrings style ([b59f7c8](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/b59f7c897ee2a98e337263e6dd10f9b05ca15b00))
+* fix typo in presets documentation ([18c2ecc](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/18c2ecc60989744b8f3ca0dfea1574eb5cfd298b))
+* update docstrings and formatting in update.py ([8b14e12](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/8b14e12d6abcdd68245bcbfca44686d2420de8a3))
+* update links in manual.md to point to existing files ([33167d9](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/33167d97ca8f01f1bab194503a35ddb07f0a4840))
+
 ## [1.6.4](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.6.3...v1.6.4) (2026-02-10)
 
 
