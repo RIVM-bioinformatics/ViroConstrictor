@@ -15,13 +15,13 @@ import subprocess
 import sys
 from typing import Any, NoReturn
 from urllib import request
+from urllib.parse import urlparse
 
 import packaging.version
 
 from ViroConstrictor import __prog__, __version__
 from ViroConstrictor.logging import log
 from ViroConstrictor.userprofile import AskPrompts
-from urllib.parse import urlparse
 
 api_url = f"https://api.anaconda.org/release/bioconda/{__prog__.lower()}/latest"
 
