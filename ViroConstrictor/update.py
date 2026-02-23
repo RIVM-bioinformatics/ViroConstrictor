@@ -22,13 +22,7 @@ from ViroConstrictor import __prog__, __version__
 from ViroConstrictor.logging import log
 from ViroConstrictor.userprofile import AskPrompts
 
-repo_channels = ("bioconda", "conda-forge")
 api_url = f"https://api.anaconda.org/release/bioconda/{__prog__.lower()}/latest"
-
-# TODO: current implementation contains a lot of code duplication. We should refactor this to avoid that but it is acceptable for the current release. Target release for fixing this is 1.7.0
-
-# TODO: Current implementation is too complex with one huge updating method. This should be fixed in a future release, but acceptable for now. Target release for fixing this is 1.7.0
-
 
 def fetch_online_metadata() -> dict[str, Any] | None:
     """
@@ -45,7 +39,7 @@ def fetch_online_metadata() -> dict[str, Any] | None:
         error occurs.
     """
     try:
-        online_metadata = request.urlopen(api_url)
+        online_metadata = request.urlopen(api_url, timeout=60)
     except Exception as e:
         log.warning("Unable to connect to Anaconda API\n" f"{e}")
         return None
@@ -88,6 +82,124 @@ def post_install(sysargs: list[str], online_version: packaging.version.Version) 
     os.execv(viroconstrictor_path, [viroconstrictor_path] + sysargs[1:])
 
 
+def _get_online_version() -> packaging.version.Version | None:
+    online_metadata = fetch_online_metadata()
+    if online_metadata is None:
+        return None
+    if latest_online_release := online_metadata.get("distributions", [])[0]:
+        if version := latest_online_release.get("version"):
+            return packaging.version.parse(version)
+    return None
+
+
+def _get_conda_prefix() -> str | None:
+    conda_prefix = os.environ.get("CONDA_PREFIX")
+    return conda_prefix or None
+
+
+def _build_update_cmd(online_version: packaging.version.Version, conda_prefix: str) -> list[str]:
+    conda_exe = "mamba" if shutil.which("mamba") else "conda"
+    return [
+        conda_exe,
+        "install",
+        "-y",
+        "-p",
+        conda_prefix,
+        "-c",
+        "bioconda",
+        "-c",
+        "conda-forge",
+        "--force-reinstall",
+        f"{__prog__.lower()}={online_version}",
+    ]
+
+
+def _run_update(online_version: packaging.version.Version) -> bool:
+    subprocess.run([sys.executable, "-m", "pip", "uninstall", "-y", __prog__.lower()], capture_output=True, check=False)
+    conda_prefix = _get_conda_prefix()
+    if not conda_prefix:
+        log.error(
+            "ViroConstrictor update requires an active Conda or Mamba environment "
+            "(environment variable CONDA_PREFIX is not set). "
+            "Please activate the ViroConstrictor environment and retry the update."
+        )
+        return False
+
+    update_cmd = _build_update_cmd(online_version, conda_prefix)
+    result = subprocess.run(update_cmd, capture_output=True, text=True, check=False)
+
+    if result.returncode != 0:
+        if result.stderr:
+            log.error(
+                "Conda/mamba reported the following error during the ViroConstrictor update:\n"
+                f"{result.stderr.strip()}"
+            )
+        else:
+            log.error("Conda/mamba update command failed but did not produce any error output.")
+    return result.returncode == 0
+
+
+def _handle_update_result(sysargs: list[str], online_version: packaging.version.Version, update_successful: bool) -> None:
+    if update_successful:
+        post_install(sysargs, online_version)
+        return
+    log.error(
+        f"ViroConstrictor update process to version [bold yellow]{online_version}[/bold yellow] failed at package solver stage.\n"
+        "This might indicate that a new version of ViroConstrictor is uploaded to bioconda but download-servers are not ready yet.\n"
+        "Please try again later."
+    )
+
+
+def _update_if_available(sysargs: list[str], local_version: packaging.version.Version) -> None:
+    online_version = _get_online_version()
+    if not online_version or local_version >= online_version:
+        return
+
+    log.info(f"Updating ViroConstrictor to latest version: [bold yellow]{online_version}[/bold yellow]")
+    try:
+        update_successful = _run_update(online_version)
+    except Exception as exc:
+        log.error(
+            f"ViroConstrictor update process to version [bold yellow]{online_version}[/bold yellow] failed at package solver stage.\n"
+            "This might indicate that a new version of ViroConstrictor is uploaded to bioconda but download-servers are not ready yet.\n"
+            "Please try again later.\n"
+            f"[red]Exception details:[/red] {exc}"
+        )
+        log.warning(f"Continuing with current version: [bold red]{local_version}[/bold red]")
+        return
+
+    if update_successful:
+        post_install(sysargs, online_version)
+        return
+
+    _handle_update_result(sysargs, online_version, update_successful)
+    log.warning(f"Continuing with current version: [bold red]{local_version}[/bold red]")
+
+
+def _prompt_for_update(local_version: packaging.version.Version) -> packaging.version.Version | None:
+    online_version = _get_online_version()
+    if not online_version or local_version >= online_version:
+        return None
+
+    if (
+        AskPrompts(
+            f"""
+There's a new version of ViroConstrictor available.
+
+Current version: [bold red]{local_version}[/bold red]
+Latest version: [bold green]{online_version}[/bold green]\n""",
+            "Do you want to update? [yes/no] ",
+            ["yes", "no"],
+            fixedchoices=True,
+        )
+        == "yes"
+    ):
+        return online_version
+
+    log.info(f"Skipping update to version: [bold yellow]{online_version}[/bold yellow]")
+    return None
+
+
 # TODO: split this into smaller functions
 def update(sysargs: list[str], conf: configparser.ConfigParser) -> None:
     """
@@ -99,7 +211,7 @@ def update(sysargs: list[str], conf: configparser.ConfigParser) -> None:
 
     - If ``auto_update`` is ``yes``, the update is attempted automatically.
     - If ``auto_update`` is ``no`` and ``ask_for_update`` is ``yes``, the user
-      is prompted before updating.
+        is prompted before updating.
 
     Parameters
     ----------
@@ -122,166 +234,34 @@ def update(sysargs: list[str], conf: configparser.ConfigParser) -> None:
     changing the running process.
     """
     local_version = packaging.version.parse(__version__)
-    online_version = None
 
-    autocontinue = conf["GENERAL"]["auto_update"] == "yes"
-
-    ask_prompt = None
-    if autocontinue == False:
-        ask_prompt = conf["GENERAL"]["ask_for_update"] == "yes"
+    autocontinue = conf.getboolean("GENERAL", "auto_update", fallback=False)
+    ask_prompt = False if autocontinue else conf.getboolean("GENERAL", "ask_for_update", fallback=False)
 
     if autocontinue:
-        online_metadata = fetch_online_metadata()
-        if online_metadata is None:
-            return
-        if latest_online_release := online_metadata.get("distributions", [])[0]:
-            release_metadata = latest_online_release
-            online_version = packaging.version.parse(release_metadata.get("version"))
+        _update_if_available(sysargs, local_version)
+        return
 
-            if online_version is not None and (local_version < online_version):
-                log.info(f"Updating ViroConstrictor to latest version: [bold yellow]{online_version}[/bold yellow]")
-                update_successful = False
-                try:
-                    # Always use mamba/conda for updates
-                    # First, uninstall any pip-installed version to avoid conflicts
-                    subprocess.run([sys.executable, "-m", "pip", "uninstall", "-y", __prog__.lower()], capture_output=True, check=False)
-
-                    # Determine whether to use mamba or conda
-                    conda_exe = "mamba" if shutil.which("mamba") else "conda"
-
-                    # Determine target conda environment prefix
-                    conda_prefix = os.environ.get("CONDA_PREFIX")
-                    if not conda_prefix:
-                        log.error(
-                            "ViroConstrictor update requires an active Conda or Mamba environment "
-                            "(environment variable CONDA_PREFIX is not set). "
-                            "Please activate the ViroConstrictor environment and retry the update."
-                        )
-                        log.warning(f"Continuing with current version: [bold red]{local_version}[/bold red]")
-                        return
-
-                    # Build the install command (use install, not update, to force reinstallation)
-                    update_cmd = [
-                        conda_exe,
-                        "install",
-                        "-y",
-                        "-p",
-                        conda_prefix,
-                        "-c",
-                        "bioconda",
-                        "-c",
-                        "conda-forge",
-                        "--force-reinstall",
-                        f"{__prog__.lower()}={online_version}",
-                    ]
-
-                    result = subprocess.run(update_cmd, capture_output=True, text=True, check=False)
-                    if result.returncode != 0:
-                        # Surface solver/installation errors from conda/mamba to help debugging
-                        if result.stderr:
-                            log.error(
-                                "Conda/mamba reported the following error during the ViroConstrictor update:\n"
-                                f"{result.stderr.strip()}"
-                            )
-                        else:
-                            log.error("Conda/mamba update command failed but did not produce any error output.")
-
-                    update_successful = result.returncode == 0
-                except Exception as e:
-                    log.error(
-                        f"ViroConstrictor update process to version [bold yellow]{online_version}[/bold yellow] failed at package solver stage.\n"
-                        f"This might indicate that a new version of ViroConstrictor is uploaded to bioconda but download-servers are not ready yet.\n"
-                        f"Please try again later.\n[red]Exception details:[/red] {e}"
-                    )
-
-                    log.warning(f"Continuing with current version: [bold red]{local_version}[/bold red]")
-                    return
-                if update_successful:
-                    post_install(sysargs, online_version)
-                else:
-                    log.error(
-                        f"ViroConstrictor update process to version [bold yellow]{online_version}[/bold yellow] failed at package solver stage.\nThis might indicate that a new version of ViroConstrictor is uploaded to bioconda but download-servers are not ready yet.\nPlease try again later."
-                    )
-                    log.warning(f"Continuing with current version: [bold red]{local_version}[/bold red]")
-                return
     if not ask_prompt:
         return
 
-    online_metadata = fetch_online_metadata()
-    if online_metadata is None:
+    online_version = _prompt_for_update(local_version)
+    if not online_version:
         return
-    if latest_online_release := online_metadata.get("distributions", [])[0]:
-        online_version = packaging.version.parse(latest_online_release.get("version"))
 
-        if local_version < online_version:
-            if (
-                AskPrompts(
-                    f"""
-There's a new version of ViroConstrictor available.
-
-Current version: [bold red]{local_version}[/bold red]
-Latest version: [bold green]{online_version}[/bold green]\n""",
-                    "Do you want to update? \[yes/no] ",
-                    ["yes", "no"],
-                    fixedchoices=True,
-                )
-                == "yes"
-            ):
-                log.info(f"Updating ViroConstrictor to latest version: [bold yellow]{online_version}[/bold yellow]")
-
-                update_successful = False
-                try:
-                    # Always use mamba/conda for updates
-                    # First, uninstall any pip-installed version to avoid conflicts
-                    subprocess.run([sys.executable, "-m", "pip", "uninstall", "-y", __prog__.lower()], capture_output=True, check=False)
-
-                    # Determine whether to use mamba or conda
-                    conda_exe = "mamba" if shutil.which("mamba") else "conda"
-
-                    # Determine target conda environment prefix
-                    conda_prefix = os.environ.get("CONDA_PREFIX")
-                    if not conda_prefix:
-                        log.error(
-                            "Unable to perform self-update: ViroConstrictor must be running inside a conda or mamba "
-                            "environment so that CONDA_PREFIX is defined. Please activate the appropriate environment "
-                            "and rerun ViroConstrictor with the update option."
-                        )
-                        log.warning(f"Skipping update; continuing with current version: [bold red]{local_version}[/bold red]")
-                        return
-
-                    # Build the install command (use install, not update, to force reinstallation)
-                    update_cmd = [
-                        conda_exe,
-                        "install",
-                        "-y",
-                        "-p",
-                        conda_prefix,
-                        "-c",
-                        "bioconda",
-                        "-c",
-                        "conda-forge",
-                        "--force-reinstall",
-                        f"{__prog__.lower()}={online_version}",
-                    ]
-
-                    result = subprocess.run(update_cmd, capture_output=True, text=True, check=False)
-
-                    update_successful = result.returncode == 0
-                except Exception:
-                    update_successful = False
-
-                    log.error(
-                        f"ViroConstrictor update process to version [bold yellow]{online_version}[/bold yellow] failed at package solver stage.\nThis might indicate that a new version of ViroConstrictor is uploaded to bioconda but download-servers are not ready yet.\nPlease try again later."
-                    )
-                    log.warning(f"Continuing with current version: [bold red]{local_version}[/bold red]")
-                if update_successful:
-                    post_install(sysargs, online_version)
-                else:
-                    log.error(
-                        f"ViroConstrictor update process to version [bold yellow]{online_version}[/bold yellow] failed at package solver stage.\nThis might indicate that a new version of ViroConstrictor is uploaded to bioconda but download-servers are not ready yet.\nPlease try again later."
-                    )
-                    log.warning(f"Continuing with current version: [bold red]{local_version}[/bold red]")
-                return
-            log.info(f"Skipping update to version: [bold yellow]{online_version}[/bold yellow]")
-            return
+    log.info(f"Updating ViroConstrictor to latest version: [bold yellow]{online_version}[/bold yellow]")
+    try:
+        update_successful = _run_update(online_version)
+    except Exception:
+        log.error(
+            f"ViroConstrictor update process to version [bold yellow]{online_version}[/bold yellow] failed at package solver stage.\n"
+            "This might indicate that a new version of ViroConstrictor is uploaded to bioconda but download-servers are not ready yet.\n"
+            "Please try again later."
+        )
+        log.warning(f"Continuing with current version: [bold red]{local_version}[/bold red]")
         return
+
+    _handle_update_result(sysargs, online_version, update_successful)
+    if update_successful:
+        return
+    log.warning(f"Continuing with current version: [bold red]{local_version}[/bold red]")
