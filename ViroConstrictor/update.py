@@ -21,6 +21,7 @@ import packaging.version
 from ViroConstrictor import __prog__, __version__
 from ViroConstrictor.logging import log
 from ViroConstrictor.userprofile import AskPrompts
+from urllib.parse import urlparse
 
 api_url = f"https://api.anaconda.org/release/bioconda/{__prog__.lower()}/latest"
 
@@ -40,6 +41,11 @@ def fetch_online_metadata() -> dict[str, Any] | None:
         error occurs.
     """
     try:
+        parsed = urlparse(api_url)
+        if parsed.scheme not in ("http", "https"):
+            log.warning(f"Refusing to open URL with unsupported scheme: {parsed.scheme}")
+            return None
+
         online_metadata = request.urlopen(api_url, timeout=60)
     except Exception as e:
         log.warning("Unable to connect to Anaconda API\n" f"{e}")
