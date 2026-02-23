@@ -24,6 +24,7 @@ from ViroConstrictor.userprofile import AskPrompts
 
 api_url = f"https://api.anaconda.org/release/bioconda/{__prog__.lower()}/latest"
 
+
 def fetch_online_metadata() -> dict[str, Any] | None:
     """
     Fetch online metadata for the package from the Anaconda API.
@@ -83,6 +84,21 @@ def post_install(sysargs: list[str], online_version: packaging.version.Version) 
 
 
 def _get_online_version() -> packaging.version.Version | None:
+    """
+    Retrieve the latest package version from the Anaconda API metadata.
+
+    The function queries the online metadata via :func:`fetch_online_metadata`
+    and parses the version string from the first distribution entry if
+    available.
+
+    Returns
+    -------
+    packaging.version.Version | None
+        A parsed :class:`packaging.version.Version` instance for the latest
+        available release, or ``None`` when metadata could not be fetched or
+        no version could be determined.
+    """
+
     online_metadata = fetch_online_metadata()
     if online_metadata is None:
         return None
@@ -93,11 +109,38 @@ def _get_online_version() -> packaging.version.Version | None:
 
 
 def _get_conda_prefix() -> str | None:
+    """
+    Get the active Conda/Mamba environment prefix from the environment.
+
+    Returns
+    -------
+    str | None
+        The value of the ``CONDA_PREFIX`` environment variable if set,
+        otherwise ``None``.
+    """
+
     conda_prefix = os.environ.get("CONDA_PREFIX")
     return conda_prefix or None
 
 
 def _build_update_cmd(online_version: packaging.version.Version, conda_prefix: str) -> list[str]:
+    """
+    Construct the Conda/Mamba command used to perform the package update.
+
+    Parameters
+    ----------
+    online_version : packaging.version.Version
+        The target version to install.
+    conda_prefix : str
+        Path to the active Conda/Mamba environment (``CONDA_PREFIX``).
+
+    Returns
+    -------
+    list[str]
+        A command line argument list suitable for passing to
+        :func:`subprocess.run` to perform the environment install.
+    """
+
     conda_exe = "mamba" if shutil.which("mamba") else "conda"
     return [
         conda_exe,
@@ -115,6 +158,31 @@ def _build_update_cmd(online_version: packaging.version.Version, conda_prefix: s
 
 
 def _run_update(online_version: packaging.version.Version) -> bool:
+    """
+    Execute the update workflow to install the specified version.
+
+    This function first attempts to uninstall any pip-installed instance of
+    the program, then runs a Conda/Mamba install into the active environment
+    determined by ``CONDA_PREFIX``.
+
+    Parameters
+    ----------
+    online_version : packaging.version.Version
+        The version to install.
+
+    Returns
+    -------
+    bool
+        ``True`` when the update command returned a successful exit code,
+        otherwise ``False``.
+
+    Notes
+    -----
+    Any errors from the Conda/Mamba command are logged; the function does
+    not raise on failure but returns ``False`` to allow the caller to handle
+    post-failure behaviour.
+    """
+
     subprocess.run([sys.executable, "-m", "pip", "uninstall", "-y", __prog__.lower()], capture_output=True, check=False)
     conda_prefix = _get_conda_prefix()
     if not conda_prefix:
@@ -130,16 +198,37 @@ def _run_update(online_version: packaging.version.Version) -> bool:
 
     if result.returncode != 0:
         if result.stderr:
-            log.error(
-                "Conda/mamba reported the following error during the ViroConstrictor update:\n"
-                f"{result.stderr.strip()}"
-            )
+            log.error("Conda/mamba reported the following error during the ViroConstrictor update:\n" f"{result.stderr.strip()}")
         else:
             log.error("Conda/mamba update command failed but did not produce any error output.")
     return result.returncode == 0
 
 
 def _handle_update_result(sysargs: list[str], online_version: packaging.version.Version, update_successful: bool) -> None:
+    """
+    Handle the result of an attempted update.
+
+    Parameters
+    ----------
+    sysargs : list[str]
+        Command-line arguments passed to the current process; forwarded to
+        :func:`post_install` when the update succeeded.
+    online_version : packaging.version.Version
+        The attempted target version.
+    update_successful : bool
+        ``True`` if the update command reported success.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    On success the function delegates to :func:`post_install` which
+    replaces the running process; on failure it logs an error describing
+    possible transient solver issues.
+    """
+
     if update_successful:
         post_install(sysargs, online_version)
         return
@@ -151,6 +240,28 @@ def _handle_update_result(sysargs: list[str], online_version: packaging.version.
 
 
 def _update_if_available(sysargs: list[str], local_version: packaging.version.Version) -> None:
+    """
+    Check for an available update and run it automatically if newer.
+
+    Parameters
+    ----------
+    sysargs : list[str]
+        Command-line arguments forwarded to the re-executed binary on success.
+    local_version : packaging.version.Version
+        Currently installed local version.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    If an online version is found and is newer than ``local_version``, the
+    function attempts to perform the update and will call
+    :func:`post_install` on success. Errors are logged and the function
+    returns without modifying the running process.
+    """
+
     online_version = _get_online_version()
     if not online_version or local_version >= online_version:
         return
@@ -177,6 +288,26 @@ def _update_if_available(sysargs: list[str], local_version: packaging.version.Ve
 
 
 def _prompt_for_update(local_version: packaging.version.Version) -> packaging.version.Version | None:
+    """
+    Prompt the user to confirm updating to a newer online version.
+
+    The function fetches the latest online version and, if it is newer
+    than ``local_version``, displays a prompt using :class:`AskPrompts` to
+    request consent. When the user consents the parsed online
+    :class:`packaging.version.Version` is returned.
+
+    Parameters
+    ----------
+    local_version : packaging.version.Version
+        Currently installed package version.
+
+    Returns
+    -------
+    packaging.version.Version | None
+        The online version to update to when the user agrees, or ``None``
+        when no update is available or the user declines.
+    """
+
     online_version = _get_online_version()
     if not online_version or local_version >= online_version:
         return None
@@ -200,7 +331,6 @@ Latest version: [bold green]{online_version}[/bold green]\n""",
     return None
 
 
-# TODO: split this into smaller functions
 def update(sysargs: list[str], conf: configparser.ConfigParser) -> None:
     """
     Check for and optionally install updates for ViroConstrictor.
