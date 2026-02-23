@@ -3,8 +3,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator
 
-import pytest
 import pandas as pd
+import pytest
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT.joinpath("ViroConstrictor/workflow")))
