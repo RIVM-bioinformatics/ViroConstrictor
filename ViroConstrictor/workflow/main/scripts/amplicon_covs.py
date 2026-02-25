@@ -134,11 +134,11 @@ class PrimerNameParser:
             r"^(.+)_(\d+)_(alt\w*)_([^_]+)$",
             # Pattern 7: name_number-alt_direction (e.g., "MuV-NGS_19-alt22_LEFT")
             r"^([^_]+)_(\d+)-(alt\w*)_([^_]+)$",
-            # Pattern 8: schemeName_ampliconNumber_direction_primerNumber (e.g., "SARS-CoV-2_12_RIGHT_0")
-            # Pattern 9: schemeName_insertSize_ampliconNumber_direction_primerNumber (e.g., "SARS-CoV-2_400_1_LEFT_1")
             # PrimerNumber refers to the version of the primer, e.g., 0 for original, 1 for version 1, 2 for version 2, etc.
             # primer pool information is not included in the primer name, but instead is included in column 5 of the BED file (1 or 2)
+            # Pattern 8: schemeName_ampliconNumber_direction_primerNumber (e.g., "SARS-CoV-2_12_RIGHT_0")
             r"^([^_]+)_(\d+)_([^_]+)_(?:\d+)$",
+            # Pattern 9: schemeName_insertSize_ampliconNumber_direction_primerNumber (e.g., "SARS-CoV-2_400_1_LEFT_1")
             r"^([^_]+)_(\d+)_(\d+)_([^_]+)_(?:\d+)$",
         ]
 
