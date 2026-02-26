@@ -265,7 +265,7 @@ def test_args_to_df_populates_existing_df_and_presets(tmp_path: Path, monkeypatc
     assert result.loc["sample1", "REFERENCE"] == str(Path(args.reference).resolve())
     assert result.loc["sample1", "PRIMERS"] == "NONE"
     assert result.loc["sample1", "PRESET"] == "DEFAULT"
-    assert result.loc["sample1", "PRESET_SCORE"] == 0.42
+    assert result.loc["sample1", "PRESET_SCORE"] == pytest.approx(0.42)
 
 
 def test_sampledir_to_df_illumina_and_nanopore() -> None:
@@ -411,7 +411,7 @@ def test_make_samples_dict_with_samplesheet_fills_defaults(tmp_path: Path, monke
 
     assert "sample1" in result
     assert result["sample1"]["MIN-COVERAGE"] == 55
-    assert result["sample1"]["PRIMER-MISMATCH-RATE"] == 0.2
+    assert result["sample1"]["PRIMER-MISMATCH-RATE"] == pytest.approx(0.2)
     assert result["sample1"]["PRESET"] == "DEFAULT"
     assert result["sample1"]["FRAGMENT-LOOKAROUND-SIZE"] is None
 
