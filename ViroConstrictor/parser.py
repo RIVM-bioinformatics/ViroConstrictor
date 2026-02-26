@@ -727,9 +727,25 @@ class CLIparser:
                     "[yellow]Both a sample sheet and run-wide reference fasta was given, the reference fasta given through the commandline will be ignored[/yellow]"
                 )
             if args.features is not None:
-                log.warn(
+                log.warning(
                     "[yellow]Both a sample sheet and run-wide GFF file was given, the GFF file given through the commandline will be ignored[/yellow]"
                 )
+        if not sheet_present:
+            missing_assets = []
+            if args.primers is None:
+                missing_assets.append("primers")
+            if args.reference is None:
+                missing_assets.append("reference fasta")
+            if args.features is None:
+                missing_assets.append("GFF file")
+            if args.target is None:
+                missing_assets.append("target/preset")
+            if missing_assets:
+                log.error(
+                    f"[bold red]No sample sheet was provided and the following required assets were not given through the commandline: {', '.join(missing_assets)}. "
+                    "Please provide these assets through either a sample sheet or the commandline and try again.[/bold red]"
+                )
+                sys.exit(1)
 
     def _get_paths_for_workflow(self, flags: argparse.Namespace) -> tuple[str, str, str, str, str]:
         """Takes the input and output paths from the command line, and then creates the working directory if
