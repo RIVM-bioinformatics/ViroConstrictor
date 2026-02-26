@@ -106,6 +106,9 @@ def test_primer_name_validation() -> None:
         ("virus_strain_1_alt_RIGHT", True),
         ("MuV-NGS_19-alt22_LEFT", True),
         ("SARS-CoV-2_12_RIGHT_0", True),
+        ("SARS-COV-2_1_LEFT_1", True),
+        ("SARS-COV-2_400_1_RIGHT_0", True),
+        ("SARS-COV-2_1200_100_LEFT_2", True),
         # Invalid primer names
         ("wrong_name", False),  # Missing required components
         ("ncov-2019_LEFT", False),  # Missing primer number
@@ -113,6 +116,7 @@ def test_primer_name_validation() -> None:
         ("ncov-2019_2_RIHTT", False),  # Misspelled direction
     ]
 
+    keywords = ["Primer", "Unrecognized read direction", "does not match expected formats"]
     for primer_name, should_succeed in test_cases:
         if should_succeed:
             info = parser.parse(primer_name)
@@ -123,9 +127,8 @@ def test_primer_name_validation() -> None:
                 parser.parse(primer_name)
 
             error_msg = str(exc_info.value)
-            assert any(
-                keyword in error_msg for keyword in ["Primer", "Unrecognized read direction", "does not match expected formats"]
-            ), f"Unexpected error message for {primer_name}: {error_msg}"
+
+            assert any(keyword in error_msg for keyword in keywords), f"Unexpected error message for {primer_name}: {error_msg}"
 
 
 def _write_bed(tmp_path: Path, lines: list[str]) -> Path:
