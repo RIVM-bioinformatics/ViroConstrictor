@@ -8,6 +8,8 @@ Coverage focus:
 
 from argparse import Namespace
 from pathlib import Path
+import tempfile
+import uuid
 
 import pandas as pd
 import pytest
@@ -619,7 +621,7 @@ def test_check_sample_sheet_empty_returns_empty_df(monkeypatch: pytest.MonkeyPat
 
 def test_check_sample_properties_missing_reference_exits() -> None:
     parser_obj = CLIparser.__new__(CLIparser)
-    sampleinfo = {"s1": {"REFERENCE": "/tmp/does_not_exist.fasta"}}
+    sampleinfo = {"s1": {"REFERENCE": str(Path(tempfile.gettempdir()) / f"missing_{uuid.uuid4().hex}.fasta")}}
 
     with pytest.raises(SystemExit):
         parser_obj._check_sample_properties(sampleinfo)
