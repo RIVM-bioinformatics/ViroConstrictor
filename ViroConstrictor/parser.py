@@ -743,7 +743,7 @@ class CLIparser:
             if missing_assets:
                 log.error(
                     f"[bold red]No sample sheet was provided and the following required assets were not given through the commandline: {', '.join(missing_assets)}. "
-                    "Please provide these assets through either a sample sheet or the commandline and try again.[/bold red]"
+                    "Please provide these assets through either a sample sheet or the commandline (or, for primers/features, disable them explicitly with '--primers NONE' and/or '--features NONE') and try again.[/bold red]"
                 )
                 sys.exit(1)
 
