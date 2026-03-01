@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.6.6](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.6.5...v1.6.6) (2026-03-01)
+
+
+### Bug Fixes
+
+* change log.warn to log.warning for deprecationwarning ([c39f41e](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/c39f41e281daf259ebd0d2d5314121c4ad77cbf4))
+* enhance primer name parsing to support insert size format ([4e4eff3](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/4e4eff3835f1e2851c533cc92d1ca7c1bc23b70f))
+* handle missing required assets in CLIparser ([c39f41e](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/c39f41e281daf259ebd0d2d5314121c4ad77cbf4))
+
 ## [1.6.5](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.6.4...v1.6.5) (2026-02-23)
 
 
