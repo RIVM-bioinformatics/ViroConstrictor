@@ -134,10 +134,12 @@ class PrimerNameParser:
             r"^(.+)_(\d+)_(alt\w*)_([^_]+)$",
             # Pattern 7: name_number-alt_direction (e.g., "MuV-NGS_19-alt22_LEFT")
             r"^([^_]+)_(\d+)-(alt\w*)_([^_]+)$",
-            # Pattern 8: schemeName_ampliconNumber_direction_primerNumber (e.g., "SARS-CoV-2_12_RIGHT_0")
             # PrimerNumber refers to the version of the primer, e.g., 0 for original, 1 for version 1, 2 for version 2, etc.
             # primer pool information is not included in the primer name, but instead is included in column 5 of the BED file (1 or 2)
+            # Pattern 8: schemeName_ampliconNumber_direction_primerNumber (e.g., "SARS-CoV-2_12_RIGHT_0")
             r"^([^_]+)_(\d+)_([^_]+)_(?:\d+)$",
+            # Pattern 9: schemeName_insertSize_ampliconNumber_direction_primerNumber (e.g., "SARS-CoV-2_400_1_LEFT_1")
+            r"^([^_]+)_(\d+)_(\d+)_([^_]+)_(?:\d+)$",
         ]
 
     def parse(self, primer_name: str) -> PrimerInfo:
@@ -172,14 +174,28 @@ class PrimerNameParser:
         if read_direction is None:
             raise ValueError(f"Unrecognized read direction in primer name: {original_string}")
 
-        for k, group in enumerate(groups):
-            if group.isdigit():
-                count = int(group)
-                break
-        if count is None:
+        # Prefer the numeric group that is immediately before the direction group (handles insert-size formats
+        # like name_insert_amplicon_direction_primerNumber), otherwise fall back to the last numeric group.
+        numeric_indices = [idx for idx, group in enumerate(groups) if group.isdigit()]
+        k = None
+        # find numeric index < j and closest to j
+        candidates = [idx for idx in numeric_indices if idx < j]
+        if candidates:
+            k = max(candidates)
+            count = int(groups[k])
+        elif numeric_indices:
+            # fallback to last numeric group
+            k = numeric_indices[-1]
+            count = int(groups[k])
+        else:
             raise ValueError(f"Primer number not found in primer name: {original_string}")
 
-        name_parts = [group for idx, group in enumerate(groups) if idx not in (i, j, k)]
+        # Exclude any purely-numeric groups (e.g., insert sizes) from the name, as well as alt and direction groups
+        name_parts = [
+            group
+            for idx, group in enumerate(groups)
+            if idx not in (i, j, k) and not group.isdigit()
+        ]
 
         name = "_".join(name_parts) if name_parts else "unknown"
 
