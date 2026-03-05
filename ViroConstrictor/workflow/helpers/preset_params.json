@@ -143,7 +143,14 @@
         "STAGE_GLOBAL": {},
         "STAGE_MATCHREF": {},
         "STAGE_MAIN": {
-            "Fastp_MinReadLength_Settings_nanopore": "--length_required 1000"
+            "Minimap2_RawAlignParams_nanopore": "--splice",
+            "Minimap2_RawAlignParams_illumina": "--splice",
+            "Minimap2_RawAlignParams_iontorrent": "--splice",
+            "Clipper_FilterParams_nanopore": "--exclude-spliced --spliced-length-threshold 200",
+            "Clipper_FilterParams_illumina": "--exclude-spliced --spliced-length-threshold 200",
+            "Clipper_FilterParams_iontorrent": "--exclude-spliced --spliced-length-threshold 200",
+            "Fastp_MinReadLength_Settings_nanopore": "--length_required 1000",
+            "AminoExtract_FeatureType": ["gene"]
         }
     },
     "ENTEROVIRUS":{
