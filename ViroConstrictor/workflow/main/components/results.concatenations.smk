@@ -73,7 +73,7 @@ rule concat_aminoacids:
     output:
         list_aminoacid_result_outputs(samples_df),
     log:
-        f"{logdir}{get_rule_name()}/concat_aminoacids.log",
+        f"{logdir}concat_aminoacids.log",
     resources:
         mem_mb=low_memory_job,
         runtime=low_runtime_job,
@@ -153,7 +153,7 @@ rule concat_amplicon_cov:
     container:
         f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     log:
-        f"{logdir}{get_rule_name()}/concat_amplicon_cov_" "{Virus}.{RefID}.log",
+        f"{logdir}concat_amplicon_cov_" "{Virus}.{RefID}.log",
     threads: 1
     params:
         script="-m main.scripts.concat_amplicon_covs",
