@@ -1,8 +1,9 @@
 import AminoExtract
 import numpy as np
 import pandas as pd
+import inspect
+import re
 from Bio import SeqIO, SeqRecord
-
 from ViroConstrictor.workflow.helpers.directories import *
 from ViroConstrictor.workflow.helpers.presets import get_preset_parameter
 
@@ -192,3 +193,39 @@ def get_features_per_virus(virus: str, samples_df: pd.DataFrame) -> list[str]:
         if pd.notna(aa_feat_names) and isinstance(aa_feat_names, (list, tuple)):
             all_features.extend(aa_feat_names)
     return list(set(all_features))
+
+def get_rule_name() -> str | None:
+    """
+    Return the name of the closest Snakemake rule above the current line
+    by inspecting the code string and using the rule decorator lineno.
+    """
+    # Go 2 frames back to reach the rule definition context
+    frame_locals = inspect.currentframe().f_back.f_back.f_locals
+    code = frame_locals.get("code", "")
+    if not code:
+        return None
+
+    # Current line number inside the rule function
+    current_lineno = inspect.currentframe().f_back.f_lineno
+
+    # Find all @workflow.rule(name='...', lineno=N)
+    rule_matches = list(re.finditer(
+        r"@workflow\.rule\(name=['\"]([^'\"]+)['\"],\s*lineno=(\d+)",
+        code
+    ))
+
+    if not rule_matches:
+        return None
+
+    # Convert to list of (name, lineno)
+    rules_info = [(m.group(1), int(m.group(2))) for m in rule_matches]
+
+    # Find the closest rule whose lineno is <= current line
+    rule_name = None
+    for name, lineno in rules_info:
+        if lineno <= current_lineno:
+            rule_name = name
+        else:
+            break
+
+    return rule_name
