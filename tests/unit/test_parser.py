@@ -6,17 +6,17 @@ Coverage focus:
 - key CLIparser internal methods with mocked dependencies
 """
 
-from argparse import Namespace
-from pathlib import Path
 import tempfile
 import uuid
+from argparse import Namespace
+from pathlib import Path
 
 import pandas as pd
 import pytest
 
 from ViroConstrictor.parser import (
-    CLIparser,
     CheckInputFiles,
+    CLIparser,
     args_to_df,
     check_file_extension,
     check_samplesheet_columns,
