@@ -9,7 +9,7 @@ rule filter_references:
         runtime=low_runtime_job,
     threads: 1
     log:
-        f"{logdir}{get_rule_name()}/prepare_refs" "{Virus}.{segment}.{sample}.log",
+        f"{logdir}prepare_refs" "{Virus}.{segment}.{sample}.log",
     conda:
         workflow_environment_path("mr_scripts.yaml")
     container:

@@ -13,7 +13,7 @@ rule prepare_primers:
         mem_mb=low_memory_job,
         runtime=low_runtime_job,
     log:
-        f"{logdir}{get_rule_name()}/prepare_primers_" "{Virus}.{RefID}.{sample}.log",
+        f"{logdir}prepare_primers_" "{Virus}.{RefID}.{sample}.log",
     params:
         pr_mm_rate=lambda wc: SAMPLES[wc.sample]["PRIMER-MISMATCH-RATE"],
     conda:
@@ -43,7 +43,7 @@ rule filter_primer_bed:
         mem_mb=low_memory_job,
         runtime=low_runtime_job,
     log:
-        f"{logdir}{get_rule_name()}/prepare_primers_" "{Virus}.{RefID}.{sample}.log",
+        f"{logdir}prepare_primers_" "{Virus}.{RefID}.{sample}.log",
     conda:
         workflow_environment_path("core_scripts.yaml")
     container:
@@ -68,7 +68,7 @@ rule create_empty_primers:
         mem_mb=low_memory_job,
         runtime=low_runtime_job,
     log:
-        f"{logdir}{get_rule_name()}/prepare_primers_" "{Virus}.{RefID}.{sample}.log",
+        f"{logdir}prepare_primers_" "{Virus}.{RefID}.{sample}.log",
     shell:
         """
         echo "Created empty primer bed file for NONE primers" > {log}
