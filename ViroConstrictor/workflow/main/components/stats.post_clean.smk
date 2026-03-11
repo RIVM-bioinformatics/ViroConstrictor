@@ -10,7 +10,7 @@ rule qc_clean:
     container:
         f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     log:
-        f"{logdir}QC_clean_" "{Virus}.{RefID}.{sample}.log",
+        f"{logdir}{get_rule_name()}/QC_clean_" "{Virus}.{RefID}.{sample}.log",
     threads: config["threads"]["QC"]
     resources:
         mem_mb=low_memory_job,
@@ -76,7 +76,7 @@ rule multiqc_report:
     container:
         f"{container_base_path}/viroconstrictor_clean_{get_hash('Clean')}.sif"
     log:
-        f"{logdir}MultiQC_report.log",
+        f"{logdir}{get_rule_name()}/MultiQC_report.log",
     resources:
         mem_mb=high_memory_job,
         runtime=medium_runtime_job,
