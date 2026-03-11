@@ -4,6 +4,7 @@
 Read or write the configuration file for ViroConstrictor.
 This is so a user doesn't have to give this information manually on every run
 """
+
 import configparser
 import os
 import pathlib
