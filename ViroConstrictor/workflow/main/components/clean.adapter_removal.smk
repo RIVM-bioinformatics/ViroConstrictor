@@ -17,7 +17,7 @@ if config["platform"] in ["nanopore", "iontorrent"] or (
         container:
             f"{container_base_path}/viroconstrictor_alignment_{get_hash('Alignment')}.sif"
         log:
-            f"{logdir}RemoveAdapters_p1_" "{Virus}.{RefID}.{sample}.log",
+            f"{logdir}{get_rule_name()}/RemoveAdapters_p1_" "{Virus}.{RefID}.{sample}.log",
         threads: config["threads"]["Alignments"]
         resources:
             mem_mb=medium_memory_job,
@@ -70,7 +70,7 @@ if config["platform"] == "illumina" and config["unidirectional"] is False:
         container:
             f"{container_base_path}/viroconstrictor_alignment_{get_hash('Alignment')}.sif"
         log:
-            f"{logdir}" "RemoveAdapters_p1_{Virus}.{RefID}.{sample}.log",
+            f"{logdir}{get_rule_name()}/" "RemoveAdapters_p1_{Virus}.{RefID}.{sample}.log",
         threads: config["threads"]["Alignments"]
         resources:
             mem_mb=medium_memory_job,
@@ -117,7 +117,7 @@ rule remove_adapters_p2:
     container:
         f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     log:
-        f"{logdir}RemoveAdapters_p2_" "{Virus}.{RefID}.{sample}.log",
+        f"{logdir}{get_rule_name()}/RemoveAdapters_p2_" "{Virus}.{RefID}.{sample}.log",
     threads: config["threads"]["AdapterRemoval"]
     resources:
         mem_mb=low_memory_job,

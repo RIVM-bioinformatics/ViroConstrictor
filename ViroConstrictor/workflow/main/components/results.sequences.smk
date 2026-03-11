@@ -19,7 +19,7 @@ rule align_before_trueconsense:
     container:
         f"{container_base_path}/viroconstrictor_alignment_{get_hash('Alignment')}.sif"
     log:
-        f"{logdir}Alignment_" "{Virus}.{RefID}.{sample}.log",
+        f"{logdir}{get_rule_name()}/Alignment_" "{Virus}.{RefID}.{sample}.log",
     threads: config["threads"]["Alignments"]
     resources:
         mem_mb=medium_memory_job,
@@ -73,7 +73,7 @@ rule trueconsense:
     container:
         f"{container_base_path}/viroconstrictor_consensus_{get_hash('Consensus')}.sif"
     log:
-        f"{logdir}Consensus_" "{Virus}.{RefID}.{sample}.log",
+        f"{logdir}{get_rule_name()}/Consensus_" "{Virus}.{RefID}.{sample}.log",
     threads: config["threads"]["Consensus"]
     resources:
         mem_mb=medium_memory_job,
@@ -106,7 +106,7 @@ rule Translate_AminoAcids:
         mem_mb=low_memory_job,
         runtime=low_runtime_job,
     log:
-        f"{logdir}Translate_AA_" "{Virus}.{RefID}.{sample}.log",
+        f"{logdir}{get_rule_name()}/Translate_AA_" "{Virus}.{RefID}.{sample}.log",
     params:
         feature_type=lambda wc: ' '.join(get_preset_parameter(preset_name=SAMPLES[wc.sample]['PRESET'], parameter_name='AminoExtract_FeatureType')),
         aminoextract_settings=lambda wc: get_preset_parameter(
