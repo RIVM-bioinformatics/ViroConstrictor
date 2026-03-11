@@ -1,11 +1,9 @@
-import inspect
-import re
-
 import AminoExtract
 import numpy as np
 import pandas as pd
+import inspect
+import re
 from Bio import SeqIO, SeqRecord
-
 from ViroConstrictor.workflow.helpers.directories import *
 from ViroConstrictor.workflow.helpers.presets import get_preset_parameter
 
@@ -196,7 +194,6 @@ def get_features_per_virus(virus: str, samples_df: pd.DataFrame) -> list[str]:
             all_features.extend(aa_feat_names)
     return list(set(all_features))
 
-
 def get_rule_name() -> str | None:
     """
     Return the name of the closest Snakemake rule above the current line
@@ -212,7 +209,10 @@ def get_rule_name() -> str | None:
     current_lineno = inspect.currentframe().f_back.f_lineno
 
     # Find all @workflow.rule(name='...', lineno=N)
-    rule_matches = list(re.finditer(r"@workflow\.rule\(name=['\"]([^'\"]+)['\"],\s*lineno=(\d+)", code))
+    rule_matches = list(re.finditer(
+        r"@workflow\.rule\(name=['\"]([^'\"]+)['\"],\s*lineno=(\d+)",
+        code
+    ))
 
     if not rule_matches:
         return None

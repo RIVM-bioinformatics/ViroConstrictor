@@ -14,11 +14,13 @@ def test_vcf_to_tsv(tmp_path: Path) -> None:
     samplename = "Sample1"
 
     # Create a mock VCF file
-    input_path.write_text("""##fileformat=VCFv4.2
+    input_path.write_text(
+        """##fileformat=VCFv4.2
 #CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO
 chr1\t12345\t.\tA\tT\t.\tPASS\tDP=100
 chr1\t67890\t.\tG\tN\t.\tPASS\tDP=50
-""")
+"""
+    )
 
     script = VcfToTsv(input_path, output_path, samplename)
     script.run()

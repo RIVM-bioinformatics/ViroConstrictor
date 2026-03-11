@@ -191,7 +191,11 @@ class PrimerNameParser:
             raise ValueError(f"Primer number not found in primer name: {original_string}")
 
         # Exclude any purely-numeric groups (e.g., insert sizes) from the name, as well as alt and direction groups
-        name_parts = [group for idx, group in enumerate(groups) if idx not in (i, j, k) and not group.isdigit()]
+        name_parts = [
+            group
+            for idx, group in enumerate(groups)
+            if idx not in (i, j, k) and not group.isdigit()
+        ]
 
         name = "_".join(name_parts) if name_parts else "unknown"
 
