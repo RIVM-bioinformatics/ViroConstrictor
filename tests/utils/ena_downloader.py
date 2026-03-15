@@ -20,8 +20,8 @@ def validate_output_path(output_path: str | Path, overwrite: bool) -> Path:
     """
     if isinstance(output_path, str):
         output_path = Path(output_path)
-    if output_path.suffix != ".fastq":
-        raise ValueError("Output file must have .fastq extension")
+    if output_path.suffixes not in ([ ".fastq", ".gz"], [".fastq"]):
+        raise ValueError("Output file must have .fastq or .fastq.gz extension")
     if output_path.exists() and not overwrite:
         raise FileExistsError(f"File {output_path} already exists")
     output_path.parent.mkdir(parents=True, exist_ok=True)
