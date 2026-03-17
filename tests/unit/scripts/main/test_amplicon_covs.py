@@ -6,7 +6,7 @@ from typing import Iterator
 import pandas as pd
 import pytest
 
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(PROJECT_ROOT.joinpath("ViroConstrictor/workflow")))
 from ViroConstrictor.workflow.main.scripts.amplicon_covs import (  # isort:skip
     AmpliconCovs,
@@ -298,7 +298,7 @@ def test_calculate_mean_coverage() -> None:
     """
 
     coverages = AmpliconCovs._open_tsv_file(
-        Path(__file__).resolve().parents[3] / "tests" / "unit" / "data" / "ESIB_EQA_2024_SARS1_01_coverage.tsv",
+        PROJECT_ROOT / "tests" / "unit" / "data" / "ESIB_EQA_2024_SARS1_01_coverage.tsv",
         index_col=0,
     )
     input_array = pd.Series({"start": 2, "end": 4})

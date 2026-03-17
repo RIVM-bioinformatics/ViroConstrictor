@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pandas as pd
 
-project_root = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(project_root.joinpath("ViroConstrictor/workflow")))
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
+sys.path.insert(0, str(PROJECT_ROOT.joinpath("ViroConstrictor/workflow")))
 from ViroConstrictor.workflow.main.scripts.vcf_to_tsv import VcfToTsv  # isort:skip
 
 
