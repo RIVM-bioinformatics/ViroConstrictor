@@ -18,12 +18,48 @@ Prefer repository guidance:
 - `docs/installation.md`
 - `.github/copilot-instructions.md`
 
+Environment selection is mandatory and must be enforced on every command.
+
+Rules:
+- Never run tests, package installs, or Python commands in `base`.
+- Always use the project environment for this repository.
+- Prefer `conda run -n <env> ...` in automated flows to avoid activation drift.
+
+Environment resolution order:
+1. Use `ViroConstrictor` if it exists.
+2. Else create and use `ViroConstrictor_test`.
+
+Preflight checks:
+```bash
+conda env list
+conda run -n ViroConstrictor python -V
+```
+
+If `ViroConstrictor` does not exist:
+```bash
+mamba env create -f env.yml -n ViroConstrictor_test
+conda run -n ViroConstrictor_test python -V
+```
+
 Typical setup:
 ```bash
 mamba env create -f env.yml -n ViroConstrictor_test
 mamba activate ViroConstrictor_test
 pip install --upgrade pip
 pip install -e .
+```
+
+Recommended non-interactive setup (preferred for agents):
+```bash
+# Resolve environment once and reuse it for all commands
+if conda env list | grep -qE '^ViroConstrictor\s'; then
+  VC_ENV=ViroConstrictor
+else
+  VC_ENV=ViroConstrictor_test
+fi
+
+conda run -n "$VC_ENV" pip install --upgrade pip
+conda run -n "$VC_ENV" pip install -e .
 ```
 
 ## Test Generation Rules
@@ -50,13 +86,13 @@ pip install -e .
 ## Execution and Failure Handling
 Run unit tests after generation:
 ```bash
-pytest -q tests/unit
+conda run -n "$VC_ENV" pytest -q tests/unit
 ```
 
 If failures occur, narrow scope and inspect deeply:
 ```bash
-pytest -q -k "<pattern>" -vv tests/unit
-pytest --maxfail=1 --full-trace tests/unit
+conda run -n "$VC_ENV" pytest -q -k "<pattern>" -vv tests/unit
+conda run -n "$VC_ENV" pytest --maxfail=1 --full-trace tests/unit
 ```
 
 Report failures with:
