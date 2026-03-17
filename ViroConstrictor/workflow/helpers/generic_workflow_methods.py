@@ -197,35 +197,52 @@ def get_features_per_virus(virus: str, samples_df: pd.DataFrame) -> list[str]:
     return list(set(all_features))
 
 
-def get_rule_name() -> str | None:
+def get_rule_name() -> str:
     """
-    Return the name of the closest Snakemake rule above the current line
-    by inspecting the code string and using the rule decorator lineno.
+    Return the name of the closest Snakemake rule above the current line.
+
+    This function inspects the Python call stack to access the workflow
+    source code stored in the calling frame and determines which rule
+    decorator appears closest above the current execution line.
+
+    It searches for rule decorators of the form::
+
+        @workflow.rule(name="rule_name", lineno=N)
+
+    and returns the rule whose ``lineno`` is the largest value less than
+    or equal to the current execution line.
+
+    Returns
+    -------
+    str
+        The name of the closest matching rule. If the rule name cannot
+        be inferred, the fallback value ``"unknown_rule"`` is returned.
+
+    Notes
+    -----
+    The function inspects two frames up the call stack to access the rule definition context. 
+    The frame reference is deleted afterward to avoid reference cycles when using the `inspect` module.
     """
-    # Go 2 frames back to reach the rule definition context
-    frame_locals = inspect.currentframe().f_back.f_back.f_locals
-    code = frame_locals.get("code", "")
-    if not code:
-        return None
+    fallback = "unknown_rule"
+    frame = inspect.currentframe()
+    try:
+        caller = frame.f_back if frame else None
+        rule_frame = caller.f_back if caller else None
+        code = getattr(rule_frame.f_locals, "get", lambda k, d=None: d)("code", "") if rule_frame else ""
+        lineno = getattr(caller, "f_lineno", None) if caller else None
 
-    # Current line number inside the rule function
-    current_lineno = inspect.currentframe().f_back.f_lineno
+        if not code or not isinstance(lineno, int):
+            return fallback
 
-    # Find all @workflow.rule(name='...', lineno=N)
-    rule_matches = list(re.finditer(r"@workflow\.rule\(name=['\"]([^'\"]+)['\"],\s*lineno=(\d+)", code))
+        # Name of the closest matching rule
+        return max(
+            ((m.group(1), int(m.group(2))) for m in re.finditer(
+                r"@workflow\.rule\(name=['\"]([^'\"]+)['\"],\s*lineno=(\d+)", code)
+             if int(m.group(2)) <= lineno),
+            default=(fallback, 0),
+            key=lambda x: x[1]
+        )[0]
 
-    if not rule_matches:
-        return None
+    finally:
+        del frame
 
-    # Convert to list of (name, lineno)
-    rules_info = [(m.group(1), int(m.group(2))) for m in rule_matches]
-
-    # Find the closest rule whose lineno is <= current line
-    rule_name = None
-    for name, lineno in rules_info:
-        if lineno <= current_lineno:
-            rule_name = name
-        else:
-            break
-
-    return rule_name
