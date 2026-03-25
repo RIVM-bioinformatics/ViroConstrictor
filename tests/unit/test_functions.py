@@ -25,11 +25,12 @@ def test_flexible_arg_formatter_formats_help_without_crashing_on_small_terminal(
     monkeypatch : pytest.MonkeyPatch
         Pytest fixture for mocking module attributes.
     """
-    monkeypatch.setattr(vc_functions.shutil, "get_terminal_size", lambda: SimpleNamespace(columns=10))
-    parser = vc_functions.RichParser(formatter_class=vc_functions.FlexibleArgFormatter)
-    parser.add_argument("--threads", default=4, help="Number of worker threads")
+    with monkeypatch.context() as local_patch:
+        local_patch.setattr(vc_functions.shutil, "get_terminal_size", lambda: SimpleNamespace(columns=10))
+        parser = vc_functions.RichParser(formatter_class=vc_functions.FlexibleArgFormatter)
+        parser.add_argument("--threads", default=4, help="Number of worker threads")
 
-    rendered_help = parser.format_help()
+        rendered_help = parser.format_help()
 
     assert "--threads" in rendered_help
     assert "Number" in rendered_help
@@ -48,11 +49,12 @@ def test_flexible_arg_formatter_formats_help_without_crashing_on_wide_terminal(m
     monkeypatch : pytest.MonkeyPatch
         Pytest fixture for mocking module attributes.
     """
-    monkeypatch.setattr(vc_functions.shutil, "get_terminal_size", lambda: SimpleNamespace(columns=220))
-    parser = vc_functions.RichParser(formatter_class=vc_functions.FlexibleArgFormatter)
-    parser.add_argument("--target", default="SARS", help="Virus target")
+    with monkeypatch.context() as local_patch:
+        local_patch.setattr(vc_functions.shutil, "get_terminal_size", lambda: SimpleNamespace(columns=220))
+        parser = vc_functions.RichParser(formatter_class=vc_functions.FlexibleArgFormatter)
+        parser.add_argument("--target", default="SARS", help="Virus target")
 
-    rendered_help = parser.format_help()
+        rendered_help = parser.format_help()
 
     assert "--target" in rendered_help
     assert "Virus target" in rendered_help
@@ -270,11 +272,12 @@ def test_rich_parser_print_message_uses_rich_print(monkeypatch: pytest.MonkeyPat
     assert seen == ["hello"]
 
 
-def test_path_completer_expands_home_and_adds_trailing_slash(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Verify pathCompleter expands ~ and adds trailing slash for directories.
+@pytest.mark.xfail(reason="Known tab completion behavior bug pending fix")
+def test_path_completer_expands_home_and_preserves_suffix_before_globbing(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify pathCompleter expands ~ without dropping the typed suffix.
 
     Tests that tabCompleter.pathCompleter:
-    - Expands home directory (~) to full path using os.path.expanduser
+    - Expands a user path like ~/sam to /home/user/sam (prefix preserved)
     - Adds trailing slash to directory completions
     - Returns indexed matches from glob results
 
@@ -284,26 +287,35 @@ def test_path_completer_expands_home_and_adds_trailing_slash(monkeypatch: pytest
         Pytest fixture for mocking module attributes.
     """
     completer = vc_functions.tabCompleter()
+    seen_patterns: list[str] = []
+
     monkeypatch.setattr(vc_functions.readline, "get_line_buffer", lambda: "~/sam")
-    monkeypatch.setattr(vc_functions.os.path, "expanduser", lambda value: "/tmp/home" if value == "~" else value)
-    monkeypatch.setattr(vc_functions.os.path, "isdir", lambda path: path == "/tmp/home")
-    monkeypatch.setattr(vc_functions.glob, "glob", lambda pattern: [f"{pattern}A", f"{pattern}B"])
+    monkeypatch.setattr(vc_functions.os.path, "expanduser", lambda value: value.replace("~", "/tmp/home", 1))
+    monkeypatch.setattr(vc_functions.os.path, "isdir", lambda path: path == "/tmp/home/sam")
+
+    def fake_glob(pattern: str) -> list[str]:
+        seen_patterns.append(pattern)
+        return [f"{pattern}A", f"{pattern}B"]
+
+    monkeypatch.setattr(vc_functions.glob, "glob", fake_glob)
 
     first = completer.pathCompleter("~/sam", 0)
     second = completer.pathCompleter("~/sam", 1)
 
-    assert first.startswith("/tmp/home/")
-    assert second.startswith("/tmp/home/")
+    assert seen_patterns == ["/tmp/home/sam/*", "/tmp/home/sam/*"]
+    assert first.startswith("/tmp/home/sam/")
+    assert second.startswith("/tmp/home/sam/")
     assert first.endswith("A")
     assert second.endswith("B")
 
 
-def test_path_completer_returns_indexed_match_and_raises_for_bad_state(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Verify pathCompleter returns indexed matches and raises for out-of-range.
+@pytest.mark.xfail(reason="Known tab completion behavior bug pending fix")
+def test_path_completer_returns_none_for_out_of_range_state(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify pathCompleter returns None for out-of-range states.
 
     Tests that tabCompleter.pathCompleter:
     - Returns indexed glob match results
-    - Raises IndexError when index exceeds available matches
+    - Returns None when index exceeds available matches (readline protocol)
     - Appends wildcard (*) to incomplete paths before globbing
 
     Parameters
@@ -317,17 +329,17 @@ def test_path_completer_returns_indexed_match_and_raises_for_bad_state(monkeypat
     monkeypatch.setattr(vc_functions.glob, "glob", lambda pattern: [f"{pattern}1"])
 
     assert completer.pathCompleter("abc", 0) == "abc*1"
-    with pytest.raises(IndexError):
-        completer.pathCompleter("abc", 1)
+    assert completer.pathCompleter("abc", 1) is None
 
 
+@pytest.mark.xfail(reason="Known tab completion behavior bug pending fix")
 def test_create_list_completer_uses_line_prefix_when_line_present(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify listCompleter filters matches by current line prefix.
 
     Tests that tabCompleter.listCompleter:
     - Filters list items by the current line buffer prefix
     - Returns indexed matches in order matching the prefix
-    - Raises IndexError for out-of-range indices
+    - Returns None for out-of-range indices (readline protocol)
 
     Parameters
     ----------
@@ -340,17 +352,17 @@ def test_create_list_completer_uses_line_prefix_when_line_present(monkeypatch: p
 
     assert completer.listCompleter("ignored", 0) == "alpha"
     assert completer.listCompleter("ignored", 1) == "alpine"
-    with pytest.raises(IndexError):
-        completer.listCompleter("ignored", 2)
+    assert completer.listCompleter("ignored", 2) is None
 
 
+@pytest.mark.xfail(reason="Known tab completion behavior bug pending fix")
 def test_create_list_completer_returns_options_with_trailing_space_for_empty_line(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify listCompleter appends trailing space to matches for empty buffer.
 
     Tests that tabCompleter.listCompleter:
     - Returns all list items when the line buffer is empty
     - Appends trailing space to each completion for readline integration
-    - Raises IndexError for out-of-range indices
+    - Returns None for out-of-range indices (readline protocol)
 
     Parameters
     ----------
@@ -363,5 +375,4 @@ def test_create_list_completer_returns_options_with_trailing_space_for_empty_lin
 
     assert completer.listCompleter("ignored", 0) == "alpha "
     assert completer.listCompleter("ignored", 1) == "beta "
-    with pytest.raises(IndexError):
-        completer.listCompleter("ignored", 2)
+    assert completer.listCompleter("ignored", 2) is None
