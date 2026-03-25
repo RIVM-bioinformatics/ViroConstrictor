@@ -147,6 +147,23 @@ def test_correct_unidirectional_flag_defaults_true_for_other_platform() -> None:
     assert workflow_config.correct_unidirectional_flag(samples, flags) is True
 
 
+@pytest.mark.xfail(
+    strict=True,
+    reason=(
+        "Intended behavior: mixed Illumina inputs containing any paired-end sample should force "
+        "unidirectional=False. Current implementation returns True when any INPUTFILE is present."
+    ),
+)
+def test_correct_unidirectional_flag_mixed_single_and_paired_prefers_paired() -> None:
+    """Verify paired-end samples take precedence when single-end and paired-end inputs are mixed."""
+    samples: dict[Hashable, Any] = {
+        "S1": {"INPUTFILE": "single.fastq.gz"},
+        "S2": {"R1": "R1.fastq.gz", "R2": "R2.fastq.gz"},
+    }
+    flags = Namespace(platform="illumina", unidirectional=True)
+    assert workflow_config.correct_unidirectional_flag(samples, flags) is False
+
+
 def test_max_threads_per_type_local_mode_caps_and_minimum() -> None:
     """Verify MaxThreadsPerType respects minimum and maximum thread caps in local mode."""
     parser = SimpleNamespace(flags=Namespace(threads=2))
@@ -238,17 +255,30 @@ def test_set_cores_never_returns_less_than_one(monkeypatch: pytest.MonkeyPatch) 
 
 
 def test_get_max_local_mem_uses_sysconf_with_buffer(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Verify _get_max_local_mem computes available memory using sysconf with a safety buffer."""
+    """Verify _get_max_local_mem computes MB and subtracts a 2000 MB safety buffer."""
     obj = workflow_config.WorkflowConfig.__new__(workflow_config.WorkflowConfig)
 
     values = {
-        "SC_PAGE_SIZE": 1024,
-        "SC_PHYS_PAGES": 3000,
+        "SC_PAGE_SIZE": 1024 * 1024,
+        "SC_PHYS_PAGES": 12000,
     }
     monkeypatch.setattr(workflow_config.os, "sysconf", lambda key: values[key])
 
-    # (1024*3000)/(1024^2) MB ~= 2.93MB; subtract 2000, rounded to nearest 1000 => -2000
-    assert obj._get_max_local_mem() == -2000
+    result = obj._get_max_local_mem()
+    assert result == 10000
+    assert result % 1000 == 0
+    assert result >= 0
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason="Intended behavior: max local memory should not become negative on low-memory systems.",
+)
+def test_get_max_local_mem_is_never_negative(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify _get_max_local_mem is clamped to non-negative values for very small systems."""
+    obj = workflow_config.WorkflowConfig.__new__(workflow_config.WorkflowConfig)
+    monkeypatch.setattr(workflow_config.os, "sysconf", lambda key: {"SC_PAGE_SIZE": 1024, "SC_PHYS_PAGES": 1000}[key])
+    assert obj._get_max_local_mem() >= 0
 
 
 def test_add_default_resource_settings_returns_empty_for_local() -> None:
