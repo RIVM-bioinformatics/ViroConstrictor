@@ -17,6 +17,10 @@ import ViroConstrictor.match_ref as match_ref
 def _make_parsed_inputs(samples_df: pd.DataFrame) -> SimpleNamespace:
     """Build a minimal parsed-input namespace for match-ref tests.
 
+    Constructs a SimpleNamespace object with all attributes required by
+    process_match_ref, including work directory paths, configuration, and
+    sample dataframe.
+
     Parameters
     ----------
     samples_df : pandas.DataFrame
@@ -39,9 +43,9 @@ def _make_parsed_inputs(samples_df: pd.DataFrame) -> SimpleNamespace:
 
 def test_replace_sets_to_singular_values_replaces_target_columns() -> None:
     """Test replace_sets_to_singular_values extracts single items from set-valued columns.
-    
-    Verifies that set columns are converted to their single string values for specified
-    column names.
+
+    Verifies that set-valued columns are converted to their single string values
+    for the specified column names.
     """
     df = pd.DataFrame(
         {
@@ -61,10 +65,10 @@ def test_replace_sets_to_singular_values_replaces_target_columns() -> None:
 
 def test_replacement_merge_dataframe_on_cols_respects_none_and_missing_sample() -> None:
     """Test replacement_merge_dataframe_on_cols merges override values while respecting NONE.
-    
+
     Verifies that:
-    - New values from override_df replace old values in original_df by sample.
-    - "NONE" values are preserved and not replaced.
+    - New values from override_df replace old values in original_df by sample key.
+    - The "NONE" sentinel string is preserved and not replaced by new values.
     - Missing samples in override_df retain their original values.
     """
     original_df = pd.DataFrame(
@@ -101,10 +105,10 @@ def test_replacement_merge_dataframe_on_cols_respects_none_and_missing_sample() 
 
 def test_process_match_ref_failure_writes_report_and_exits(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test process_match_ref writes failure report and exits with code 1 on workflow failure.
-    
+
     Verifies that:
     - Match-ref workflow stage ("MR") is invoked.
-    - On workflow failure (return False), a failure report is written.
+    - On workflow failure (run_snakemake_workflow returns False), a failure report is written.
     - Process exits with code 1.
     """
     parsed_inputs = _make_parsed_inputs(
@@ -125,13 +129,34 @@ def test_process_match_ref_failure_writes_report_and_exits(monkeypatch: pytest.M
     called: dict[str, Any] = {}
 
     def fake_run_snakemake_workflow(*args: Any, **kwargs: Any) -> tuple[bool, SimpleNamespace]:
-        """Mock workflow executor that records stage/scheduler and returns failure status."""
+        """Mock workflow executor that records stage/scheduler and returns failure status.
+
+        Parameters
+        ----------
+        *args : Any
+            Positional arguments (unused).
+        **kwargs : Any
+            Keyword arguments including 'stage' and 'scheduler'.
+
+        Returns
+        -------
+        tuple[bool, SimpleNamespace]
+            Failure status (False) and workflow configuration object.
+        """
         called["stage"] = kwargs.get("stage")
         called["scheduler"] = kwargs.get("scheduler")
         return False, used_workflow_config
 
     def fake_write_report(*args: Any, **kwargs: Any) -> None:
-        """Mock report writer that records all report invocation arguments."""
+        """Mock report writer that records all report invocation arguments.
+
+        Parameters
+        ----------
+        *args : Any
+            Positional arguments passed to the report writer.
+        **kwargs : Any
+            Keyword arguments passed to the report writer.
+        """
         called["report_args"] = args
         called["report_kwargs"] = kwargs
 
@@ -151,8 +176,8 @@ def test_process_match_ref_failure_writes_report_and_exits(monkeypatch: pytest.M
 
 def test_process_match_ref_dryrun_returns_unmodified_input(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test process_match_ref skips pickle loading and returns input unchanged in dryrun mode.
-    
-    Verifies that when dryrun is True:
+
+    Verifies that when dryrun=True in output_settings:
     - The workflow is run but result pickle is not loaded.
     - The original parsed_inputs object is returned unmodified.
     - The samples dataframe retains its original columns.
@@ -176,7 +201,18 @@ def test_process_match_ref_dryrun_returns_unmodified_input(monkeypatch: pytest.M
     monkeypatch.setattr(match_ref, "run_snakemake_workflow", lambda *args, **kwargs: (True, used_workflow_config))
 
     def _should_not_read_pickle(_path: str) -> pd.DataFrame:
-        """Sentinel function that raises if called, used to verify dryrun behavior."""
+        """Sentinel function that raises if called, used to verify dryrun behavior.
+
+        Parameters
+        ----------
+        _path : str
+            Path argument (unused).
+
+        Raises
+        ------
+        AssertionError
+            Always raises to indicate pickle should not be loaded in dryrun mode.
+        """
         raise AssertionError("read_pickle should not be called in dryrun mode")
 
     monkeypatch.setattr(match_ref.pd, "read_pickle", _should_not_read_pickle)
@@ -192,7 +228,7 @@ def test_process_match_ref_dryrun_returns_unmodified_input(monkeypatch: pytest.M
 
 def test_process_match_ref_success_updates_samples_and_sets_index(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test process_match_ref updates samples from match-ref results and sets SAMPLE as index.
-    
+
     Verifies that on successful workflow execution:
     - Sample columns (REFERENCE, PRIMERS, FEATURES) are updated from pickle results.
     - The SAMPLE column is set as the dataframe index.
@@ -239,9 +275,9 @@ def test_process_match_ref_success_updates_samples_and_sets_index(monkeypatch: p
 
 def test_process_match_ref_fills_nan_before_grouping(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test process_match_ref converts NaN and None to "NONE" before updating samples.
-    
-    Verifies that missing values (None, pd.NA) in match-ref results are replaced with
-    the "NONE" sentinel string in the final samples dataframe.
+
+    Verifies that missing values (None, pd.NA) in match-ref results are
+    replaced with the "NONE" sentinel string in the final samples dataframe.
     """
     parsed_inputs = _make_parsed_inputs(
         pd.DataFrame(

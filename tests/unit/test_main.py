@@ -17,9 +17,9 @@ import ViroConstrictor.__main__ as vc_main
 
 def test_get_preset_warning_list_returns_empty_lists_when_no_matches() -> None:
     """Test that get_preset_warning_list returns empty warnings when presets match perfectly.
-    
+
     Verifies that no fallback or score-based warnings are generated when the preset
-    score is high and the preset is not the DEFAULT fallback.
+    score is high (≥80%) and the preset is not the DEFAULT fallback preset.
     """
     df = pd.DataFrame(
         {
@@ -38,10 +38,11 @@ def test_get_preset_warning_list_returns_empty_lists_when_no_matches() -> None:
 
 def test_get_preset_warning_list_builds_score_and_fallback_warnings() -> None:
     """Test that get_preset_warning_list generates score and fallback warnings appropriately.
-    
+
     Verifies that:
     - Samples with low preset match scores (<80%) generate score-based warnings.
-    - Samples that default to the DEFAULT preset generate fallback warnings.
+    - Samples that default to the DEFAULT preset generate fallback warnings
+      (when no suitable preset match is found).
     """
     df = pd.DataFrame(
         {
@@ -68,9 +69,10 @@ def test_get_preset_warning_list_builds_score_and_fallback_warnings() -> None:
 
 def test_show_preset_warnings_with_per_sample_disable_column(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test show_preset_warnings respects per-sample DISABLE-PRESETS column.
-    
-    Verifies that warnings are filtered based on individual sample disable flags
-    when the DISABLE-PRESETS column is present in the samples dataframe.
+
+    Verifies that warnings are filtered at the per-sample level based on
+    individual sample disable flags when the DISABLE-PRESETS column is
+    present in the samples dataframe.
     """
     samples_df = pd.DataFrame(
         {
@@ -91,9 +93,9 @@ def test_show_preset_warnings_with_per_sample_disable_column(monkeypatch: pytest
 
 def test_show_preset_warnings_uses_global_disable_flag_without_column(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test show_preset_warnings uses global disable flag when DISABLE-PRESETS column absent.
-    
-    Verifies that warnings are shown or suppressed based on the global disabled parameter
-    when the samples dataframe lacks a per-sample DISABLE-PRESETS column.
+
+    Verifies that warnings are shown or suppressed based on the global disabled
+    parameter when the samples dataframe lacks a per-sample DISABLE-PRESETS column.
     """
     samples_df = pd.DataFrame({"SAMPLE": ["S1"]})
     logged_messages: list[str] = []
@@ -111,8 +113,9 @@ def test_show_preset_warnings_uses_global_disable_flag_without_column(monkeypatc
 
 def test_show_preset_warnings_skips_when_disabled(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test show_preset_warnings suppresses all warnings when disabled is True.
-    
-    Verifies that both score and fallback warnings are skipped when the disabled flag is set.
+
+    Verifies that both score-based and fallback warnings are completely
+    skipped when the disabled flag is set to True.
     """
     samples_df = pd.DataFrame({"SAMPLE": ["S1"]})
     logged_messages: list[str] = []
@@ -130,6 +133,10 @@ def test_show_preset_warnings_skips_when_disabled(monkeypatch: pytest.MonkeyPatc
 
 def _build_parsed_input(*, skip_updates: bool, disable_presets: bool, match_ref: bool) -> SimpleNamespace:
     """Build parsed input state for main entrypoint tests.
+
+    Constructs a minimal SimpleNamespace object with all attributes required by
+    the main() orchestration function, including sample dataframe, configuration,
+    scheduler, and file paths.
 
     Parameters
     ----------
@@ -158,13 +165,13 @@ def _build_parsed_input(*, skip_updates: bool, disable_presets: bool, match_ref:
 
 def test_main_happy_path_runs_update_match_ref_and_exits_zero(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test main() orchestrates update, match-ref, workflow, and reporting on success.
-    
-    Verifies that:
+
+    Verifies that on successful execution:
     - The update step is run when skip_updates is False.
     - Match-ref processing is triggered when MATCH-REF column is True.
-    - Snakemake workflow runs with stage='MAIN'.
+    - Snakemake workflow runs with stage='MAIN' and correct scheduler.
     - Report is written with 'Success' status.
-    - Preset warnings are shown with correct content and disabled flag.
+    - Preset warnings are shown with correct content and disabled=False flag.
     - System exits with code 0.
     """
     parsed_input = _build_parsed_input(skip_updates=False, disable_presets=False, match_ref=True)
@@ -174,14 +181,35 @@ def test_main_happy_path_runs_update_match_ref_and_exits_zero(monkeypatch: pytes
     monkeypatch.setattr(vc_main, "get_preset_warning_list", lambda _df: (["fallback"], ["warning"]))
 
     def fake_update(argv: list[str], user_config: dict[str, str]) -> None:
-        """Mock update function that records invocation and validates arguments."""
+        """Mock update function that records invocation and validates arguments.
+
+        Parameters
+        ----------
+        argv : list[str]
+            Command-line arguments passed to the update function.
+        user_config : dict[str, str]
+            User configuration dictionary.
+        """
         # Behavior-level check: update uses parsed configuration and is triggered when not skipped.
         assert user_config == {"profile": "x"}
         assert argv
         recorded["updated"] = True
 
     def fake_process_match_ref(parsed_input: Any, scheduler: Any) -> Any:
-        """Mock match-ref processor that records scheduler and returns parsed input unchanged."""
+        """Mock match-ref processor that records scheduler and returns parsed input unchanged.
+
+        Parameters
+        ----------
+        parsed_input : Any
+            Parsed input namespace object.
+        scheduler : Any
+            Scheduler instance.
+
+        Returns
+        -------
+        Any
+            The input parsed_input object (unchanged).
+        """
         assert scheduler == "LOCAL"
         recorded["match_ref_called"] = True
         return parsed_input
@@ -189,7 +217,22 @@ def test_main_happy_path_runs_update_match_ref_and_exits_zero(monkeypatch: pytes
     used_workflow_config = SimpleNamespace(resource_settings=object(), output_settings=object())
 
     def fake_run_snakemake_workflow(inputs_obj: Any, stage: str, scheduler: Any) -> tuple[bool, Any]:
-        """Mock workflow executor that returns success and validates workflow parameters."""
+        """Mock workflow executor that returns success and validates workflow parameters.
+
+        Parameters
+        ----------
+        inputs_obj : Any
+            Parsed input object.
+        stage : str
+            Workflow stage ("MAIN" or "MR").
+        scheduler : Any
+            Scheduler instance.
+
+        Returns
+        -------
+        tuple[bool, Any]
+            Success status and workflow configuration object.
+        """
         assert inputs_obj is parsed_input
         assert stage == "MAIN"
         assert scheduler == "LOCAL"
@@ -197,11 +240,31 @@ def test_main_happy_path_runs_update_match_ref_and_exits_zero(monkeypatch: pytes
         return True, used_workflow_config
 
     def fake_write_report(*args: Any, **kwargs: Any) -> None:
-        """Mock report writer that records all report invocation arguments."""
+        """Mock report writer that records all report invocation arguments.
+
+        Parameters
+        ----------
+        *args : Any
+            Positional arguments passed to the report writer.
+        **kwargs : Any
+            Keyword arguments passed to the report writer.
+        """
         recorded["report"] = (args, kwargs)
 
     def fake_show_preset_warnings(warnings: list[str], fallbacks: list[str], disabled: bool, samples_df: pd.DataFrame) -> None:
-        """Mock warning displayer that records all warning invocation arguments."""
+        """Mock warning displayer that records all warning invocation arguments.
+
+        Parameters
+        ----------
+        warnings : list[str]
+            Score-based warning messages.
+        fallbacks : list[str]
+            Fallback-related warning messages.
+        disabled : bool
+            Whether warnings are disabled.
+        samples_df : pd.DataFrame
+            Sample dataframe.
+        """
         recorded["show"] = (warnings, fallbacks, disabled, samples_df)
 
     monkeypatch.setattr(vc_main, "update", fake_update)
@@ -226,13 +289,13 @@ def test_main_happy_path_runs_update_match_ref_and_exits_zero(monkeypatch: pytes
 
 def test_main_failure_path_skips_update_match_ref_and_exits_one(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test main() skips update/match-ref and exits with code 1 on workflow failure.
-    
-    Verifies that:
+
+    Verifies that on workflow failure:
     - Update is skipped when skip_updates is True.
-    - Match-ref is not called when not required.
+    - Match-ref is not called when not required (MATCH-REF is False).
     - Snakemake workflow failure results in exit code 1.
     - Report is written with 'Failed' status.
-    - Preset warnings are shown with disabled flag set to True.
+    - Preset warnings are shown with disabled=True flag.
     """
     parsed_input = _build_parsed_input(skip_updates=True, disable_presets=True, match_ref=False)
     recorded: dict[str, Any] = {"updated": False, "match_ref_called": False}
@@ -245,7 +308,22 @@ def test_main_failure_path_skips_update_match_ref_and_exits_one(monkeypatch: pyt
     used_workflow_config = SimpleNamespace(resource_settings=object(), output_settings=object())
 
     def fake_run_snakemake_workflow(inputs_obj: Any, stage: str, scheduler: Any) -> tuple[bool, Any]:
-        """Mock workflow executor that returns failure status and validates parameters."""
+        """Mock workflow executor that returns failure status and validates parameters.
+
+        Parameters
+        ----------
+        inputs_obj : Any
+            Parsed input object.
+        stage : str
+            Workflow stage ("MAIN" or "MR").
+        scheduler : Any
+            Scheduler instance.
+
+        Returns
+        -------
+        tuple[bool, Any]
+            Failure status (False) and workflow configuration object.
+        """
         assert inputs_obj is parsed_input
         assert stage == "MAIN"
         assert scheduler == "LOCAL"

@@ -166,7 +166,13 @@ class TestMemoryAllocation:
         assert result == 48000  # 3 * 4 * 4 * 1000 (no cap applied)
 
     def test_zero_threads_edge_case(self, mock_wildcards):
-        """Verify zero threads produce zero memory requests."""
+        """Verify zero threads produce zero memory requests.
+
+        Parameters
+        ----------
+        mock_wildcards : unittest.mock.MagicMock
+            Mock Snakemake wildcards object.
+        """
         config = {"computing_execution": "local", "max_local_mem": 8000}
 
         # With 0 threads, all functions should return 0
@@ -179,7 +185,17 @@ class TestMemoryAllocation:
         assert high_result == 0
 
     def test_function_works_as_snakemake_resource(self, mock_wildcards):
-        """Verify the helpers behave like Snakemake resource callables."""
+        """Verify the helpers behave like Snakemake resource callables.
+
+        Tests that the memory helper functions can be called with keyword
+        arguments and produce valid positive integer results for use as
+        Snakemake resource allocations.
+
+        Parameters
+        ----------
+        mock_wildcards : unittest.mock.MagicMock
+            Mock Snakemake wildcards object.
+        """
         config = {"computing_execution": "local", "max_local_mem": 8000}
 
         # Simulate how Snakemake calls these functions
@@ -194,7 +210,16 @@ class TestMemoryAllocation:
         assert isinstance(result, int)
 
     def test_retry_escalation_behavior(self, mock_wildcards):
-        """Verify memory requests scale with retry attempts."""
+        """Verify memory requests scale linearly with retry attempts.
+
+        Tests that memory allocation increases proportionally with the attempt
+        number (linear escalation) across low, medium, and high memory helpers.
+
+        Parameters
+        ----------
+        mock_wildcards : unittest.mock.MagicMock
+            Mock Snakemake wildcards object.
+        """
         config = {"computing_execution": "cluster", "max_local_mem": 100000}
 
         threads = 2
@@ -222,7 +247,17 @@ class TestMemoryAllocation:
         assert attempt3_high == 3 * attempt1_high
 
     def test_snakemake_rule_resource_usage_simulation(self, mock_wildcards):
-        """Verify the helpers integrate with Snakemake-style rule wrappers."""
+        """Verify the helpers integrate with Snakemake-style rule wrappers.
+
+        Simulates how Snakemake rules use memory functions as resource
+        callables, verifying correct behavior through the rule integration
+        pattern used in actual workflows.
+
+        Parameters
+        ----------
+        mock_wildcards : unittest.mock.MagicMock
+            Mock Snakemake wildcards object.
+        """
 
         # Simulate rule resource definition like: resources: mem_mb=high_memory_job
         # This is how the functions are actually called in the workflow
@@ -350,7 +385,13 @@ class TestRuntimeAllocation:
         return attempt * attempt * 30
 
     def test_low_runtime_job(self, mock_wildcards):
-        """Verify the low runtime helper scales quadratically."""
+        """Verify the low runtime helper scales quadratically with attempts.
+
+        Parameters
+        ----------
+        mock_wildcards : unittest.mock.MagicMock
+            Mock Snakemake wildcards object.
+        """
         result = self.low_runtime_job(mock_wildcards, attempt=1)
         assert result == 2  # 1 * 1 * 2
 
@@ -358,7 +399,13 @@ class TestRuntimeAllocation:
         assert result == 18  # 3 * 3 * 2
 
     def test_medium_runtime_job(self, mock_wildcards):
-        """Verify the medium runtime helper scales quadratically."""
+        """Verify the medium runtime helper scales quadratically with attempts.
+
+        Parameters
+        ----------
+        mock_wildcards : unittest.mock.MagicMock
+            Mock Snakemake wildcards object.
+        """
         result = self.medium_runtime_job(mock_wildcards, attempt=1)
         assert result == 15  # 1 * 1 * 15
 
@@ -366,7 +413,13 @@ class TestRuntimeAllocation:
         assert result == 135  # 3 * 3 * 15
 
     def test_high_runtime_job(self, mock_wildcards):
-        """Verify the high runtime helper scales quadratically."""
+        """Verify the high runtime helper scales quadratically with attempts.
+
+        Parameters
+        ----------
+        mock_wildcards : unittest.mock.MagicMock
+            Mock Snakemake wildcards object.
+        """
         result = self.high_runtime_job(mock_wildcards, attempt=1)
         assert result == 30  # 1 * 1 * 30
 
@@ -374,7 +427,16 @@ class TestRuntimeAllocation:
         assert result == 270  # 3 * 3 * 30
 
     def test_runtime_functions_as_snakemake_resources(self, mock_wildcards):
-        """Verify the runtime helpers behave like Snakemake resources."""
+        """Verify the runtime helpers behave like Snakemake resource callables.
+
+        Tests that runtime helper functions return valid positive integer results
+        suitable for use as runtime resource allocations in Snakemake workflows.
+
+        Parameters
+        ----------
+        mock_wildcards : unittest.mock.MagicMock
+            Mock Snakemake wildcards object.
+        """
         # Test that functions can be called with keyword arguments
         low_result = self.low_runtime_job(mock_wildcards, attempt=2)
         medium_result = self.medium_runtime_job(mock_wildcards, attempt=2)

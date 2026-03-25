@@ -45,6 +45,16 @@ def _write_valid_config(path: Path, *, compmode: str = "local", auto_update: str
 
 
 def test_fileexists_and_fileispopulated(tmp_path: Path) -> None:
+    """Test file existence and population checks for profile configuration.
+
+    Verifies that FileExists returns False for missing files, True for existing files,
+    and FileIsPopulated returns False for empty files, True when populated.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Temporary directory provided by pytest.
+    """
     config_file = tmp_path / "profile.ini"
 
     assert userprofile.FileExists(config_file) is False
@@ -58,13 +68,27 @@ def test_fileexists_and_fileispopulated(tmp_path: Path) -> None:
 
 
 def test_askprompts_fixedchoices_valid(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test AskPrompts with fixed choices and valid input.
+
+    Verifies that AskPrompts with fixedchoices=True accepts valid inputs,
+    sets up list completion, and triggers screen clear.
+
+    Parameters
+    ----------
+    monkeypatch : pytest.MonkeyPatch
+        Pytest fixture for mocking behavior.
+    """
+
     class FakeCompleter:
+        """Mock readline completer for testing tab completion setup."""
+
         def __init__(self):
             self.created_options = None
             self.listCompleter = object()
             self.pathCompleter = object()
 
-        def createListCompleter(self, options):
+        def createListCompleter(self, options) -> None:
+            """Mock method to capture list completion options."""
             self.created_options = options
 
     fake = FakeCompleter()
@@ -85,12 +109,26 @@ def test_askprompts_fixedchoices_valid(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_askprompts_fixedchoices_invalid_then_valid(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test AskPrompts with fixed choices, invalid then valid input.
+
+    Verifies that AskPrompts rejects invalid choices and accepts valid ones
+    on subsequent attempts.
+
+    Parameters
+    ----------
+    monkeypatch : pytest.MonkeyPatch
+        Pytest fixture for mocking behavior.
+    """
+
     class FakeCompleter:
+        """Mock readline completer that returns None for list completion."""
+
         def __init__(self):
             self.listCompleter = object()
             self.pathCompleter = object()
 
-        def createListCompleter(self, _):
+        def createListCompleter(self, _) -> None:
+            """Mock method for list completion setup."""
             return None
 
     replies = iter(["wrong", "grid"])
@@ -108,12 +146,30 @@ def test_askprompts_fixedchoices_invalid_then_valid(monkeypatch: pytest.MonkeyPa
 
 
 def test_askprompts_fixedchoices_quit(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test AskPrompts with fixed choices, quit command.
+
+    Verifies that entering 'quit' raises SystemExit with code -1.
+
+    Parameters
+    ----------
+    monkeypatch : pytest.MonkeyPatch
+        Pytest fixture for mocking behavior.
+
+    Raises
+    ------
+    SystemExit
+        When user enters 'quit', with exit code -1.
+    """
+
     class FakeCompleter:
+        """Mock readline completer that returns None for list completion."""
+
         def __init__(self):
             self.listCompleter = object()
             self.pathCompleter = object()
 
-        def createListCompleter(self, _):
+        def createListCompleter(self, _) -> None:
+            """Mock method for list completion setup."""
             return None
 
     monkeypatch.setattr(userprofile, "tabCompleter", FakeCompleter)
@@ -130,7 +186,19 @@ def test_askprompts_fixedchoices_quit(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_askprompts_path_completion_and_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test AskPrompts with path completion and default value.
+
+    Verifies that when user enters whitespace-only input, the default value is returned.
+
+    Parameters
+    ----------
+    monkeypatch : pytest.MonkeyPatch
+        Pytest fixture for mocking behavior.
+    """
+
     class FakeCompleter:
+        """Mock readline completer with path completion."""
+
         def __init__(self):
             self.pathCompleter = object()
 
@@ -146,7 +214,19 @@ def test_askprompts_path_completion_and_default(monkeypatch: pytest.MonkeyPatch)
 
 
 def test_askprompts_path_completion_returns_text(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test AskPrompts with path completion returns user-entered text.
+
+    Verifies that non-empty user input is returned as-is without validation.
+
+    Parameters
+    ----------
+    monkeypatch : pytest.MonkeyPatch
+        Pytest fixture for mocking behavior.
+    """
+
     class FakeCompleter:
+        """Mock readline completer with path completion."""
+
         def __init__(self):
             self.pathCompleter = object()
 
@@ -162,7 +242,24 @@ def test_askprompts_path_completion_returns_text(monkeypatch: pytest.MonkeyPatch
 
 
 def test_askprompts_path_completion_quit(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test AskPrompts with path completion, quit command.
+
+    Verifies that entering 'quit' raises SystemExit with code -1.
+
+    Parameters
+    ----------
+    monkeypatch : pytest.MonkeyPatch
+        Pytest fixture for mocking behavior.
+
+    Raises
+    ------
+    SystemExit
+        When user enters 'quit', with exit code -1.
+    """
+
     class FakeCompleter:
+        """Mock readline completer with path completion."""
+
         def __init__(self):
             self.pathCompleter = object()
 
@@ -180,6 +277,18 @@ def test_askprompts_path_completion_quit(monkeypatch: pytest.MonkeyPatch) -> Non
 
 @pytest.mark.xfail(reason="Known defect: BuildConfig writes a non-string value to ConfigParser in the no-container path")
 def test_buildconfig_grid_auto_update_no_and_no_containers(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test BuildConfig with grid scheduler, auto_update=no, and no containers (known defect).
+
+    Verifies configuration build for grid computing mode with auto-update disabled
+    when containerization is not available.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Temporary directory provided by pytest.
+    monkeypatch : pytest.MonkeyPatch
+        Pytest fixture for mocking behavior.
+    """
     profile = tmp_path / "profile.ini"
     profile.write_text("stale=true\n", encoding="utf-8")
 
@@ -205,6 +314,18 @@ def test_buildconfig_grid_auto_update_no_and_no_containers(tmp_path: Path, monke
 
 
 def test_buildconfig_local_auto_update_yes_with_containers(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test BuildConfig with local scheduler, auto_update=yes, and containers.
+
+    Verifies configuration build for local computing mode with auto-update enabled
+    and containerization available.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Temporary directory provided by pytest.
+    monkeypatch : pytest.MonkeyPatch
+        Pytest fixture for mocking behavior.
+    """
     profile = tmp_path / "profile.ini"
 
     answers = iter(["local", "yes", "/custom/cache"])
@@ -225,6 +346,7 @@ def test_buildconfig_local_auto_update_yes_with_containers(tmp_path: Path, monke
 
 
 def test_alloptionsgiven_returns_true_for_complete_config() -> None:
+    """Test AllOptionsGiven returns True when all required options are present."""
     config = configparser.ConfigParser()
     config["COMPUTING"] = {"compmode": "grid", "queuename": "normal"}
     config["GENERAL"] = {"auto_update": "no", "ask_for_update": "yes"}
@@ -234,6 +356,7 @@ def test_alloptionsgiven_returns_true_for_complete_config() -> None:
 
 
 def test_alloptionsgiven_returns_false_when_sections_missing() -> None:
+    """Test AllOptionsGiven returns False when required sections are missing."""
     config = configparser.ConfigParser()
     config["GENERAL"] = {"auto_update": "yes"}
 
@@ -249,6 +372,18 @@ def test_alloptionsgiven_returns_false_when_sections_missing() -> None:
     ],
 )
 def test_alloptionsgiven_returns_false_when_required_option_missing(section: str, values: dict[str, str]) -> None:
+    """Test AllOptionsGiven returns False when required options are missing.
+
+    Verifies that AllOptionsGiven correctly identifies incomplete configurations
+    when specific required options are absent from the expected sections.
+
+    Parameters
+    ----------
+    section : str
+        Configuration section being tested (COMPUTING, GENERAL, or REPRODUCTION).
+    values : dict[str, str]
+        Partial configuration values for the test section.
+    """
     config = configparser.ConfigParser()
     config["COMPUTING"] = {"compmode": "local", "queuename": "normal"}
     config["GENERAL"] = {"auto_update": "yes"}
@@ -260,6 +395,17 @@ def test_alloptionsgiven_returns_false_when_required_option_missing(section: str
 
 
 def test_readconfig_creates_missing_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test ReadConfig creates missing configuration file.
+
+    Verifies that ReadConfig calls BuildConfig when the profile file does not exist.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Temporary directory provided by pytest.
+    monkeypatch : pytest.MonkeyPatch
+        Pytest fixture for mocking behavior.
+    """
     profile = tmp_path / "profile.ini"
     calls: list[Path] = []
 
@@ -277,6 +423,17 @@ def test_readconfig_creates_missing_file(tmp_path: Path, monkeypatch: pytest.Mon
 
 
 def test_readconfig_rebuilds_empty_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test ReadConfig rebuilds empty configuration file.
+
+    Verifies that ReadConfig calls BuildConfig when the profile file exists but is empty.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Temporary directory provided by pytest.
+    monkeypatch : pytest.MonkeyPatch
+        Pytest fixture for mocking behavior.
+    """
     profile = tmp_path / "profile.ini"
     profile.touch()
     calls = {"count": 0}
@@ -295,6 +452,17 @@ def test_readconfig_rebuilds_empty_file(tmp_path: Path, monkeypatch: pytest.Monk
 
 
 def test_readconfig_rebuilds_until_options_present(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test ReadConfig rebuilds incomplete configuration until valid.
+
+    Verifies that ReadConfig loops through BuildConfig until AllOptionsGiven returns True.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Temporary directory provided by pytest.
+    monkeypatch : pytest.MonkeyPatch
+        Pytest fixture for mocking behavior.
+    """
     profile = tmp_path / "profile.ini"
 
     # Start with an incomplete config to force at least one rebuild in the while loop.
@@ -323,6 +491,17 @@ def test_readconfig_rebuilds_until_options_present(tmp_path: Path, monkeypatch: 
 
 
 def test_readconfig_rebuilds_after_initial_empty_then_incomplete(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test ReadConfig handles initial empty file followed by incomplete config.
+
+    Verifies the rebuild sequence when profile starts empty and first rebuild results in incomplete options.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Temporary directory provided by pytest.
+    monkeypatch : pytest.MonkeyPatch
+        Pytest fixture for mocking behavior.
+    """
     profile = tmp_path / "profile.ini"
     profile.touch()
 

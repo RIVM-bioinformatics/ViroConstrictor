@@ -55,14 +55,36 @@ def test_setup_logger_creates_dir_and_handler(monkeypatch: pytest.MonkeyPatch, t
     captured: dict[str, str] = {}
 
     class _FakeDateTime:
+        """Mock datetime class for testing timestamp generation."""
+
         @staticmethod
         def now() -> datetime.datetime:
+            """Return a fixed datetime for reproducible test output.
+
+            Returns
+            -------
+            datetime.datetime
+                Fixed datetime (2024-01-02 03:04:05) for testing.
+            """
             return datetime.datetime(2024, 1, 2, 3, 4, 5)
 
     class _FakeDateTimeModule:
+        """Mock datetime module for testing."""
+
         datetime = _FakeDateTime
 
     def fake_handler_init(logfile_path: str, *args: Any, **kwargs: Any) -> None:
+        """Capture logfile path argument for testing.
+
+        Parameters
+        ----------
+        logfile_path : str
+            The log file path passed to the handler constructor.
+        *args : Any
+            Additional positional arguments (unused).
+        **kwargs : Any
+            Additional keyword arguments (unused).
+        """
         captured["logfile"] = logfile_path
 
     monkeypatch.setattr(vc_logging, "datetime", _FakeDateTimeModule)
@@ -86,8 +108,9 @@ def test_setup_logger_creates_dir_and_handler(monkeypatch: pytest.MonkeyPatch, t
 def test_strip_brackets_filter_removes_markup_and_formats_newlines(level: str, expected_tabs: str) -> None:
     """Test that StripBracketsFilter removes Rich markup and formats newlines.
 
-    Verifies that StripBracketsFilter removes Rich markup tags like [red] and
-    [/red], and replaces newlines with tabs appropriate to the log level.
+    Verifies that StripBracketsFilter removes Rich markup tags like [red],
+    [/red], etc., and replaces newlines with indentation (tabs) appropriate
+    to the log level (DEBUG gets 4 tabs, INFO gets 7 tabs).
 
     Parameters
     ----------
@@ -119,7 +142,8 @@ def test_simple_message_helpers(func: Any, args: tuple[Any, ...], expected: str)
 
     Verifies that simple message helper functions (CondaEnvInstallerPreamble,
     CondaEnvInstallSuccess, BaseSnakemakeAbortMessage, LogFileOverride)
-    return correctly formatted Rich-markup strings.
+    correctly format and return Rich-markup strings with appropriate coloring
+    and message content.
 
     Parameters
     ----------
@@ -128,7 +152,7 @@ def test_simple_message_helpers(func: Any, args: tuple[Any, ...], expected: str)
     args : tuple[Any, ...]
         Arguments to pass to the function - parametrized.
     expected : str
-        Expected string output - parametrized.
+        Expected string output including Rich markup - parametrized.
     """
     assert func(*args) == expected
 
@@ -136,8 +160,9 @@ def test_simple_message_helpers(func: Any, args: tuple[Any, ...], expected: str)
 def test_colorize_log_message_path_marks_existing_paths(tmp_path: Path) -> None:
     """Test that ColorizeLogMessagePath marks existing file paths.
 
-    Verifies that ColorizeLogMessagePath() detects existing file paths in
-    messages and wraps them with Rich magenta color markup.
+    Verifies that ColorizeLogMessagePath() correctly detects existing file
+    paths in messages and wraps them with Rich magenta color markup
+    ([magenta]...[/magenta]).
 
     Parameters
     ----------
@@ -158,7 +183,8 @@ def test_handle_job_started_message_single_and_multiple() -> None:
     """Test HandleJobStartedMessage formats singular and plural task counts.
 
     Verifies that HandleJobStartedMessage() correctly pluralizes "task" vs
-    "tasks" depending on the number of started jobs.
+    "tasks" depending on the number of started jobs, and wraps the count in
+    cyan markup.
     """
     single = vc_logging.HandleJobStartedMessage({"jobs": [7]})
     multiple = vc_logging.HandleJobStartedMessage({"jobs": [1, 2, 3]})
@@ -172,8 +198,9 @@ def test_handle_job_info_message_variants(local: bool) -> None:
     """Test HandleJobInfoMessage formats job info with local/remote context.
 
     Verifies that HandleJobInfoMessage() correctly formats job information,
-    including rule name, sample wildcards, job ID, and whether the job is
-    executing locally or remotely.
+    including rule name, sample wildcards (sample, Virus, RefID), job ID in
+    cyan markup, and appropriate "Executing local job" vs "Executing job"
+    messaging based on execution context.
 
     Parameters
     ----------
@@ -203,7 +230,9 @@ def test_handle_job_error_message_with_and_without_outputs() -> None:
     """Test HandleJobErrorMessage formats with and without job outputs.
 
     Verifies that HandleJobErrorMessage() correctly handles error records
-    with and without output files, and normalizes shell command whitespace.
+    with and without output files (displaying "None" when absent), and
+    normalizes shell command whitespace (collapsing multiple spaces and
+    newlines).
     """
     base_record = {
         "rule_name": "consensus",
@@ -225,7 +254,9 @@ def test_handle_job_debug_message_sets_debug_level() -> None:
     """Test that handle_job_debug_message sets log level to DEBUG.
 
     Verifies that handle_job_debug_message() converts a log record to DEBUG
-    level and normalizes shell command whitespace.
+    level (levelno=10, levelname="DEBUG"), normalizes shell command whitespace,
+    and formats a comprehensive job debug message with rule, sample, inputs,
+    outputs, and command details.
     """
     record = {"msg": "orig", "levelname": "INFO", "levelno": 20}
 
@@ -249,7 +280,8 @@ def test_print_jobstatistics_logmessage() -> None:
     """Test that print_jobstatistics_logmessage formats workflow statistics.
 
     Verifies that print_jobstatistics_logmessage() wraps statistics content
-    with a "Workflow statistics:" header and Rich yellow markup.
+    with a "Workflow statistics:" header and Rich yellow markup ([yellow]...
+    [/yellow]), skipping the first line of input (the header line).
     """
     out = vc_logging.print_jobstatistics_logmessage("Header\nline1\nline2")
     assert out == "Workflow statistics:\n[yellow]line1\nline2[/yellow]"
@@ -280,8 +312,8 @@ def test_dispatch_suppresses_events(event: str, tmp_path: Path, restore_logger_h
     """Test that dispatch suppresses specific Snakemake events.
 
     Verifies that _dispatch_log_record_formatter() returns None for specific
-    Snakemake events that should not be logged (workflow_started,
-    resources_info, shellcmd).
+    Snakemake events that should not be logged: workflow_started,
+    resources_info, and shellcmd.
 
     Parameters
     ----------
@@ -313,8 +345,9 @@ def test_dispatch_suppresses_specific_messages(message: str, tmp_path: Path, res
     """Test that dispatch suppresses specific message patterns.
 
     Verifies that _dispatch_log_record_formatter() returns None for messages
-    matching known suppression patterns (conda channel priorities, resource
-    downloads, host info, etc.).
+    matching known suppression patterns including: conda channel priorities,
+    resource downloads, host info, shared filesystem assumptions, shell
+    invocation info, and conda environment details.
 
     Parameters
     ----------
@@ -335,9 +368,9 @@ def test_dispatch_map_and_event_specific_branches(tmp_path: Path, monkeypatch: p
     """Test dispatch mapping and event-specific formatter branches.
 
     Verifies that _dispatch_log_record_formatter() correctly handles:
-    - Mapped messages (e.g., termination signals)
-    - Special event types (run_info, job_started, job_info, job_error)
-    - Complete log overrides
+    - Mapped messages (e.g., termination signals with red markup)
+    - Special event types: run_info, job_started, job_info, job_error
+    - Complete log file overrides and path colorization
 
     Parameters
     ----------
@@ -430,9 +463,10 @@ def test_dispatch_map_and_event_specific_branches(tmp_path: Path, monkeypatch: p
 def test_dispatch_adds_debug_record_when_job_fields_are_present(tmp_path: Path, restore_logger_handlers: None) -> None:
     """Test that dispatch adds a DEBUG record when job-related fields exist.
 
-    Verifies that _dispatch_log_record_formatter() adds a DEBUG-level record
-    with job details (rule, sample, inputs, outputs, command) when these
-    fields are present in the input record.
+    Verifies that _dispatch_log_record_formatter() returns a list of records
+    including a DEBUG-level record with comprehensive job details (rule,
+    sample, inputs, outputs, command) when these fields are present in the
+    input record, alongside the original INFO-level record.
 
     Parameters
     ----------
@@ -466,9 +500,9 @@ def test_emit_filters_by_level_and_handles_errors(tmp_path: Path, monkeypatch: p
     """Test that emit filters records by level and handles handler errors.
 
     Verifies that the handler's emit() method:
-    - Filters records below the configured log level
-    - Dispatches records to appropriate handlers
-    - Catches and handles emitter exceptions without propagating
+    - Filters out records below the configured log level
+    - Dispatches eligible records to appropriate handlers (console, file)
+    - Gracefully catches and handles emitter exceptions without propagating
 
     Parameters
     ----------
@@ -522,7 +556,8 @@ def test_emit_returns_when_dispatch_is_none(tmp_path: Path, monkeypatch: pytest.
     """Test that emit returns early when dispatch returns None.
 
     Verifies that when _dispatch_log_record_formatter() returns None, the
-    emit() method does not dispatch to any handlers.
+    emit() method skips dispatch to all handlers and returns without
+    processing.
 
     Parameters
     ----------
@@ -549,7 +584,7 @@ def test_close_closes_handlers(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, 
     """Test that close() method closes both console and file handlers.
 
     Verifies that the handler's close() method properly delegates to and
-    closes both the console handler and file handler.
+    closes both the console handler and file handler instance.
 
     Parameters
     ----------

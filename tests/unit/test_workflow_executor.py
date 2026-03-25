@@ -88,6 +88,7 @@ def _make_workflow_config() -> SimpleNamespace:
 
 
 def test_patch_debugger_returns_early_without_active_debugger(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify _patch_debugger_for_snakemake returns early when no debugger is active."""
     monkeypatch.setattr(workflow_executor.sys, "gettrace", lambda: None)
 
     def original_abs_and_canonical(filename: Any, norm_paths_container: Any) -> tuple[Any, Any]:
@@ -105,6 +106,7 @@ def test_patch_debugger_returns_early_without_active_debugger(monkeypatch: pytes
 
 
 def test_patch_debugger_returns_when_pydevd_module_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify _patch_debugger_for_snakemake handles missing pydevd_file_utils module gracefully."""
     monkeypatch.setattr(workflow_executor.sys, "gettrace", lambda: object())
     monkeypatch.delitem(workflow_executor.sys.modules, "pydevd_file_utils", raising=False)
 
@@ -112,6 +114,7 @@ def test_patch_debugger_returns_when_pydevd_module_missing(monkeypatch: pytest.M
 
 
 def test_patch_debugger_wraps_annotated_string_filename(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify _patch_debugger_for_snakemake correctly wraps annotated string filename handling."""
     monkeypatch.setattr(workflow_executor.sys, "gettrace", lambda: object())
 
     captured: dict[str, Any] = {}
@@ -141,6 +144,7 @@ def test_patch_debugger_wraps_annotated_string_filename(monkeypatch: pytest.Monk
 
 
 def test_run_snakemake_workflow_happy_path(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify run_snakemake_workflow initializes config and executor with correct arguments."""
     inputs = SimpleNamespace()
     scheduler = Scheduler.SLURM
 
@@ -166,6 +170,7 @@ def test_run_snakemake_workflow_happy_path(monkeypatch: pytest.MonkeyPatch) -> N
 
 
 def test_run_snakemake_workflow_handles_workflow_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify run_snakemake_workflow catches and reports WorkflowError from executor."""
     inputs = SimpleNamespace()
     expected_config = SimpleNamespace(name="cfg")
 
@@ -190,6 +195,7 @@ def test_run_snakemake_workflow_handles_workflow_error(monkeypatch: pytest.Monke
 
 
 def test_workflow_executor_executes_workflow_and_cleans_logger_state(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Verify WorkflowExecutor executes workflow and cleans up logger handlers on completion."""
     parsed_input = _make_parsed_input(tmp_path)
     workflow_config = _make_workflow_config()
 
@@ -256,6 +262,7 @@ def test_workflow_executor_executes_workflow_and_cleans_logger_state(monkeypatch
 
 
 def test_workflow_executor_does_not_stop_logger_when_queue_listener_absent(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Verify WorkflowExecutor skips logger cleanup when queue_listener is not initialized."""
     parsed_input = _make_parsed_input(tmp_path)
     workflow_config = _make_workflow_config()
 
@@ -290,6 +297,7 @@ def test_workflow_executor_does_not_stop_logger_when_queue_listener_absent(monke
 
 @pytest.mark.xfail(reason="Logger cleanup should still run when execute_workflow raises, but current implementation skips it")
 def test_workflow_executor_cleans_logger_state_even_on_execute_failure(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Verify WorkflowExecutor cleans up logger state even when DAG execution raises an exception."""
     parsed_input = _make_parsed_input(tmp_path)
     workflow_config = _make_workflow_config()
 

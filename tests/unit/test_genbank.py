@@ -26,8 +26,9 @@ UNIT_DATA_DIR = PROJECT_ROOT / "tests" / "unit" / "data"
 def test_is_genbank_by_extension(file_name: str, expected: bool) -> None:
     """Test GenBank file extension detection.
 
-    Verifies that GenBank.is_genbank() correctly identifies .gb, .gbk, and
-    .genbank extensions as valid, while rejecting other extensions like .fasta.
+    Verifies that GenBank.is_genbank() correctly identifies GenBank file
+    extensions (.gb, .gbk, .genbank) as valid, while rejecting other
+    extensions like .fasta.
 
     Parameters
     ----------
@@ -43,7 +44,7 @@ def test_open_genbank_reads_valid_file() -> None:
     """Test parsing a valid GenBank file.
 
     Verifies that GenBank.open_genbank() successfully reads a GenBank file
-    and returns a list of SeqRecord objects with organism annotations.
+    and returns a list of SeqRecord objects containing organism annotations.
     """
     records = GenBank.open_genbank(UNIT_DATA_DIR / "test_reference.gb")
 
@@ -54,8 +55,9 @@ def test_open_genbank_reads_valid_file() -> None:
 def test_open_genbank_rejects_non_genbank_extension(tmp_path: Path) -> None:
     """Test that open_genbank rejects non-GenBank files.
 
-    Verifies that GenBank.open_genbank() raises a ValueError with a clear
-    error message when given a file with an unsupported extension.
+    Verifies that GenBank.open_genbank() raises a ValueError with descriptive
+    error message ("is not a GenBank file") when given a file with an
+    unsupported extension.
 
     Parameters
     ----------
@@ -72,8 +74,9 @@ def test_open_genbank_rejects_non_genbank_extension(tmp_path: Path) -> None:
 def test_open_genbank_wraps_parse_errors() -> None:
     """Test that open_genbank wraps parser errors.
 
-    Verifies that GenBank.open_genbank() catches parsing exceptions and
-    re-raises them as ValueError with context about the file being parsed.
+    Verifies that GenBank.open_genbank() catches Biopython parsing exceptions
+    and re-raises them as ValueError with context about the file being
+    parsed.
     """
     with pytest.raises(ValueError, match=r"Error opening GenBank file"):
         GenBank.open_genbank(UNIT_DATA_DIR / "test_reference_bad.gb")
@@ -82,8 +85,9 @@ def test_open_genbank_wraps_parse_errors() -> None:
 def test_parse_target_normalizes_organism_name() -> None:
     """Test that _parse_target normalizes organism names.
 
-    Verifies that GenBank._parse_target() extracts and normalizes organism
-    names by removing strain details and replacing spaces with underscores.
+    Verifies that GenBank._parse_target() extracts organism names from
+    annotations, normalizes them by removing strain details (e.g., "H1N1"),
+    and replaces spaces with underscores for safe filenames.
     """
     records = [
         SeqRecord(Seq("ACGT"), id="r1", annotations={"organism": "Influenza A virus (H1N1)"}),
@@ -97,7 +101,8 @@ def test_parse_target_rejects_dissimilar_organisms() -> None:
     """Test that _parse_target rejects dissimilar organisms.
 
     Verifies that GenBank._parse_target() raises ValueError when organism
-    annotations do not meet the similarity threshold requirement.
+    annotations across records do not meet the required similarity threshold
+    (must be similar enough to represent a single target).
     """
     records = [
         SeqRecord(Seq("ACGT"), id="r1", annotations={"organism": "Influenza A virus"}),
@@ -112,7 +117,8 @@ def test_parse_target_ignores_records_without_organism() -> None:
     """Test that _parse_target ignores records without organism annotations.
 
     Verifies that GenBank._parse_target() gracefully handles records missing
-    organism annotations and derives the target from records that have them.
+    organism annotations by ignoring them and deriving the target name from
+    records that have complete organism information.
     """
     records = [
         SeqRecord(Seq("ACGT"), id="r1", annotations={}),
@@ -126,8 +132,8 @@ def test_split_genbank_creates_fasta_and_gff_with_target(tmp_path: Path) -> None
     """Test that split_genbank creates FASTA and GFF files with target name.
 
     Verifies that GenBank.split_genbank() successfully splits a GenBank file
-    into FASTA and GFF outputs with correct structure and emits a normalized
-    target name when requested.
+    into separate FASTA and GFF outputs with correct structure and returns
+    a normalized target name when emit_target=True.
 
     Parameters
     ----------
@@ -159,7 +165,7 @@ def test_split_genbank_without_target_returns_empty_string(tmp_path: Path) -> No
     """Test that split_genbank returns empty target when disabled.
 
     Verifies that GenBank.split_genbank() returns an empty string for the
-    target when emit_target is False.
+    target when emit_target=False.
 
     Parameters
     ----------
@@ -180,7 +186,7 @@ def test_split_genbank_raises_on_invalid_genbank_file(tmp_path: Path) -> None:
 
     Verifies that GenBank.split_genbank() raises ValueError when given a
     malformed GenBank file, propagating parser-derived exceptions with
-    context.
+    descriptive error context.
 
     Parameters
     ----------

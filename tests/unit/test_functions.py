@@ -17,6 +17,9 @@ import ViroConstrictor.functions as vc_functions
 def test_flexible_arg_formatter_formats_help_without_crashing_on_small_terminal(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify FlexibleArgFormatter handles very narrow terminals without crashing.
 
+    Tests that the formatter correctly wraps and displays help text even when
+    the terminal width is extremely limited (10 columns).
+
     Parameters
     ----------
     monkeypatch : pytest.MonkeyPatch
@@ -36,6 +39,9 @@ def test_flexible_arg_formatter_formats_help_without_crashing_on_small_terminal(
 
 def test_flexible_arg_formatter_formats_help_without_crashing_on_wide_terminal(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify FlexibleArgFormatter handles very wide terminals without crashing.
+
+    Tests that the formatter correctly handles extremely wide terminal widths
+    (220 columns) without format errors.
 
     Parameters
     ----------
@@ -105,8 +111,9 @@ def test_get_help_string_does_not_append_when_not_needed(help_text: str | None, 
 def test_format_action_invocation_optional_argument_uses_metavar_once() -> None:
     """Verify _format_action_invocation shows metavar only once for optional args.
 
-    For optional arguments with short and long forms, the metavar should appear
-    only once in the formatted invocation string.
+    For optional arguments with short and long forms (e.g., -t, --threads),
+    the metavar should appear only once in the formatted invocation string,
+    not duplicated for each option form.
     """
     parser = vc_functions.RichParser(formatter_class=vc_functions.FlexibleArgFormatter)
     parser.add_argument("-t", "--threads", default=2)
@@ -123,8 +130,8 @@ def test_format_action_invocation_optional_argument_uses_metavar_once() -> None:
 def test_format_action_invocation_falls_back_for_positional_argument() -> None:
     """Verify _format_action_invocation falls back gracefully for positional args.
 
-    For positional arguments, _format_action_invocation should return the
-    argument name without formatting errors.
+    For positional arguments (non-optional), _format_action_invocation should
+    return the argument name without formatting errors or extra punctuation.
     """
     parser = vc_functions.RichParser(formatter_class=vc_functions.FlexibleArgFormatter)
     parser.add_argument("sample")
@@ -140,8 +147,8 @@ def test_format_action_invocation_falls_back_for_positional_argument() -> None:
 def test_format_action_invocation_falls_back_for_store_const_action() -> None:
     """Verify _format_action_invocation handles store_const actions correctly.
 
-    For store_const actions (flags), the formatter should return just the flag
-    name without extra formatting.
+    For store_const actions (boolean flags), the formatter should return just
+    the flag name (e.g., "--flag") without metavar or extra formatting.
     """
     parser = vc_functions.RichParser(formatter_class=vc_functions.FlexibleArgFormatter)
     parser.add_argument("--flag", action="store_const", const=True)
@@ -158,8 +165,8 @@ def test_split_lines_and_fill_text_wrap_paragraphs_and_preserve_bullets() -> Non
 
     Tests that the FlexibleArgFormatter correctly:
     - Wraps long text to fit narrow widths
-    - Preserves bullet point markers
-    - Handles multi-line bullet items with continuation lines
+    - Preserves bullet point markers (*, -) at paragraph starts
+    - Handles multi-line bullet items with proper continuation indentation
     """
     formatter = vc_functions.FlexibleArgFormatter("prog")
     text = """
@@ -191,7 +198,8 @@ def test_indents_detects_regular_and_list_lines(line: str, expected: tuple[int, 
     """Verify _indents correctly identifies indent levels for various line types.
 
     Tests that _indents returns a tuple of (current_indent, continuation_indent)
-    for plain text, bulleted lists, numbered lists, and tab-indented lines.
+    for plain text, bulleted lists (*, -), numbered lists (1), 2)), etc.), and
+    tab-indented lines.
 
     Parameters
     ----------
@@ -208,9 +216,9 @@ def test_split_paragraphs_merges_same_indent_lines_and_keeps_blank_lines() -> No
     """Verify _split_paragraphs merges lines and preserves blank lines.
 
     Tests that _split_paragraphs:
-    - Merges lines with the same indentation level
+    - Merges consecutive lines with the same indentation level
     - Preserves blank lines as paragraph separators
-    - Maintains bullet list structure
+    - Maintains bullet list structure and indentation
     """
     formatter = vc_functions.FlexibleArgFormatter("prog")
     text = """
@@ -231,8 +239,9 @@ def test_split_paragraphs_merges_same_indent_lines_and_keeps_blank_lines() -> No
 def test_para_reformat_returns_placeholder_for_blank_input() -> None:
     """Verify _para_reformat returns a list for blank/whitespace-only input.
 
-    Tests that _para_reformat safely handles edge cases like empty or
-    whitespace-only input without raising exceptions.
+    Tests that _para_reformat safely handles edge cases like empty strings or
+    whitespace-only input without raising exceptions, always returning a list
+    of strings.
     """
     formatter = vc_functions.FlexibleArgFormatter("prog")
     reformatted = formatter._para_reformat("\n\n", width=20)
@@ -244,7 +253,8 @@ def test_rich_parser_print_message_uses_rich_print(monkeypatch: pytest.MonkeyPat
     """Verify RichParser._print_message delegates to rich.print.
 
     Tests that RichParser correctly integrates with the Rich library for
-    formatted console output instead of using standard argparse printing.
+    formatted console output, using rich.print instead of standard argparse
+    printing.
 
     Parameters
     ----------
@@ -264,7 +274,7 @@ def test_path_completer_expands_home_and_adds_trailing_slash(monkeypatch: pytest
     """Verify pathCompleter expands ~ and adds trailing slash for directories.
 
     Tests that tabCompleter.pathCompleter:
-    - Expands home directory (~) to full path
+    - Expands home directory (~) to full path using os.path.expanduser
     - Adds trailing slash to directory completions
     - Returns indexed matches from glob results
 
@@ -289,12 +299,12 @@ def test_path_completer_expands_home_and_adds_trailing_slash(monkeypatch: pytest
 
 
 def test_path_completer_returns_indexed_match_and_raises_for_bad_state(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Verify pathCompleter returns indexed matches and raises IndexError for out-of-range.
+    """Verify pathCompleter returns indexed matches and raises for out-of-range.
 
     Tests that tabCompleter.pathCompleter:
     - Returns indexed glob match results
     - Raises IndexError when index exceeds available matches
-    - Appends wildcard to incomplete paths
+    - Appends wildcard (*) to incomplete paths before globbing
 
     Parameters
     ----------
@@ -316,7 +326,7 @@ def test_create_list_completer_uses_line_prefix_when_line_present(monkeypatch: p
 
     Tests that tabCompleter.listCompleter:
     - Filters list items by the current line buffer prefix
-    - Returns indexed matches in order
+    - Returns indexed matches in order matching the prefix
     - Raises IndexError for out-of-range indices
 
     Parameters
@@ -335,11 +345,11 @@ def test_create_list_completer_uses_line_prefix_when_line_present(monkeypatch: p
 
 
 def test_create_list_completer_returns_options_with_trailing_space_for_empty_line(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Verify listCompleter appends trailing space to matches for empty line buffer.
+    """Verify listCompleter appends trailing space to matches for empty buffer.
 
     Tests that tabCompleter.listCompleter:
     - Returns all list items when the line buffer is empty
-    - Appends trailing space to each completion
+    - Appends trailing space to each completion for readline integration
     - Raises IndexError for out-of-range indices
 
     Parameters
