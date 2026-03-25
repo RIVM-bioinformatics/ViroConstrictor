@@ -73,6 +73,7 @@ conda run -n "$VC_ENV" pip install -e .
    - Edge cases (empty input, missing columns, malformed formats).
 6. For workflow scripts, prefer class instantiation and `run()` over subprocess invocation when practical.
 7. Keep fixtures concise and reusable.
+8. Do not assume the implemented code is correct, test for intended behavior instead of replicating implementation details. It's better to have a test that fails due to an incorrect implementation than a test that passes because it assumes the implementation is correct.
 
 ## Module-Specific Expectations
 - Parsers (`parser.py`, `samplesheet.py`): success cases, invalid formats, missing columns, useful errors.

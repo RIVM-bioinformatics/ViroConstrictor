@@ -1,3 +1,9 @@
+"""Tests for Snakemake runtime and memory resource helpers.
+
+This module checks retry-based memory scaling, runtime scaling, and the
+behaviour expected when these helpers are used as Snakemake resource callables.
+"""
+
 from typing import Any
 from unittest.mock import MagicMock
 
@@ -5,37 +11,94 @@ import pytest
 
 
 class TestMemoryAllocation:
-    """Test suite for memory allocation functions used in Snakemake workflows."""
+    """Tests for Snakemake memory resource helpers."""
 
     @pytest.fixture
     def mock_wildcards(self):
-        """Create mock wildcards object as used in Snakemake."""
+        """Create a minimal Snakemake wildcards namespace.
+
+        Returns
+        -------
+        unittest.mock.MagicMock
+            Mock object with the wildcard attributes used by the helpers.
+        """
         wildcards = MagicMock()
         wildcards.sample = "test_sample"
         wildcards.RefID = "test_ref"
         wildcards.Virus = "test_virus"
         return wildcards
 
-    def low_memory_job(self, wildcards: Any, threads: int, attempt: int, config: dict[str, [str | int]]) -> int:
-        """Low memory job function for testing."""
+    def low_memory_job(self, wildcards: Any, threads: int, attempt: int, config: dict[str, (str | int)]) -> int:
+        """Compute the low-memory request for a retry attempt.
+
+        Parameters
+        ----------
+        wildcards : Any
+            Snakemake wildcards object; unused in the calculation.
+        threads : int
+            Requested thread count.
+        attempt : int
+            Retry attempt number.
+        config : dict[str, str | int]
+            Workflow configuration containing execution mode and local memory cap.
+
+        Returns
+        -------
+        int
+            Requested memory in megabytes.
+        """
         if config["computing_execution"] == "local":
             return min(attempt * threads * 1 * 1000, int(config["max_local_mem"]))
         return attempt * threads * 1 * 1000
 
-    def medium_memory_job(self, wildcards: Any, threads: int, attempt: int, config: dict[str, [str | int]]) -> int:
-        """Medium memory job function for testing."""
+    def medium_memory_job(self, wildcards: Any, threads: int, attempt: int, config: dict[str, (str | int)]) -> int:
+        """Compute the medium-memory request for a retry attempt.
+
+        Parameters
+        ----------
+        wildcards : Any
+            Snakemake wildcards object; unused in the calculation.
+        threads : int
+            Requested thread count.
+        attempt : int
+            Retry attempt number.
+        config : dict[str, str | int]
+            Workflow configuration containing execution mode and local memory cap.
+
+        Returns
+        -------
+        int
+            Requested memory in megabytes.
+        """
         if config["computing_execution"] == "local":
             return min(attempt * threads * 2 * 1000, int(config["max_local_mem"]))
         return attempt * threads * 2 * 1000
 
-    def high_memory_job(self, wildcards: Any, threads: int, attempt: int, config: dict[str, [str | int]]) -> int:
-        """High memory job function for testing."""
+    def high_memory_job(self, wildcards: Any, threads: int, attempt: int, config: dict[str, (str | int)]) -> int:
+        """Compute the high-memory request for a retry attempt.
+
+        Parameters
+        ----------
+        wildcards : Any
+            Snakemake wildcards object; unused in the calculation.
+        threads : int
+            Requested thread count.
+        attempt : int
+            Retry attempt number.
+        config : dict[str, str | int]
+            Workflow configuration containing execution mode and local memory cap.
+
+        Returns
+        -------
+        int
+            Requested memory in megabytes.
+        """
         if config["computing_execution"] == "local":
             return min(attempt * threads * 4 * 1000, int(config["max_local_mem"]))
         return attempt * threads * 4 * 1000
 
     def test_low_memory_job_local_execution(self, mock_wildcards):
-        """Test low_memory_job function with local execution."""
+        """Verify local execution caps the low-memory helper."""
         config = {"computing_execution": "local", "max_local_mem": 8000}
 
         result = self.low_memory_job(mock_wildcards, threads=2, attempt=1, config=config)
@@ -49,7 +112,7 @@ class TestMemoryAllocation:
         assert result == 8000
 
     def test_low_memory_job_cluster_execution(self, mock_wildcards):
-        """Test low_memory_job function with cluster execution (no memory cap)."""
+        """Verify cluster execution leaves the low-memory helper uncapped."""
         config = {"computing_execution": "cluster", "max_local_mem": 8000}
 
         result = self.low_memory_job(mock_wildcards, threads=4, attempt=3, config=config)
@@ -60,7 +123,7 @@ class TestMemoryAllocation:
         assert result == 40000  # 5 * 8 * 1 * 1000
 
     def test_medium_memory_job_local_execution(self, mock_wildcards):
-        """Test medium_memory_job function with local execution."""
+        """Verify local execution caps the medium-memory helper."""
         config = {"computing_execution": "local", "max_local_mem": 16000}
 
         result = self.medium_memory_job(mock_wildcards, threads=2, attempt=1, config=config)
@@ -74,14 +137,14 @@ class TestMemoryAllocation:
         assert result == 16000
 
     def test_medium_memory_job_cluster_execution(self, mock_wildcards):
-        """Test medium_memory_job function with cluster execution."""
+        """Verify cluster execution leaves the medium-memory helper uncapped."""
         config = {"computing_execution": "cluster", "max_local_mem": 16000}
 
         result = self.medium_memory_job(mock_wildcards, threads=4, attempt=3, config=config)
         assert result == 24000  # 3 * 4 * 2 * 1000 (no cap applied)
 
     def test_high_memory_job_local_execution(self, mock_wildcards):
-        """Test high_memory_job function with local execution."""
+        """Verify local execution caps the high-memory helper."""
         config = {"computing_execution": "local", "max_local_mem": 32000}
 
         result = self.high_memory_job(mock_wildcards, threads=2, attempt=1, config=config)
@@ -95,7 +158,7 @@ class TestMemoryAllocation:
         assert result == 32000
 
     def test_high_memory_job_cluster_execution(self, mock_wildcards):
-        """Test high_memory_job function with cluster execution."""
+        """Verify cluster execution leaves the high-memory helper uncapped."""
         config = {"computing_execution": "cluster", "max_local_mem": 32000}
 
         # Test basic calculation without cap
@@ -103,7 +166,7 @@ class TestMemoryAllocation:
         assert result == 48000  # 3 * 4 * 4 * 1000 (no cap applied)
 
     def test_zero_threads_edge_case(self, mock_wildcards):
-        """Test behavior with zero threads."""
+        """Verify zero threads produce zero memory requests."""
         config = {"computing_execution": "local", "max_local_mem": 8000}
 
         # With 0 threads, all functions should return 0
@@ -116,7 +179,7 @@ class TestMemoryAllocation:
         assert high_result == 0
 
     def test_function_works_as_snakemake_resource(self, mock_wildcards):
-        """Test that functions work when used as Snakemake resource functions."""
+        """Verify the helpers behave like Snakemake resource callables."""
         config = {"computing_execution": "local", "max_local_mem": 8000}
 
         # Simulate how Snakemake calls these functions
@@ -131,7 +194,7 @@ class TestMemoryAllocation:
         assert isinstance(result, int)
 
     def test_retry_escalation_behavior(self, mock_wildcards):
-        """Test that memory increases with retry attempts."""
+        """Verify memory requests scale with retry attempts."""
         config = {"computing_execution": "cluster", "max_local_mem": 100000}
 
         threads = 2
@@ -159,17 +222,41 @@ class TestMemoryAllocation:
         assert attempt3_high == 3 * attempt1_high
 
     def test_snakemake_rule_resource_usage_simulation(self, mock_wildcards):
-        """Simulate how these functions would be used in actual Snakemake rules."""
+        """Verify the helpers integrate with Snakemake-style rule wrappers."""
 
         # Simulate rule resource definition like: resources: mem_mb=high_memory_job
         # This is how the functions are actually called in the workflow
 
         class MockSnakemakeRule:
+            """Mock Snakemake rule class for simulating memory allocation."""
+
             def __init__(self, memory_func):
+                """Initialize with a memory allocation function.
+
+                Parameters
+                ----------
+                memory_func : callable
+                    Function that computes memory allocation given wildcards, threads, and attempt.
+                """
                 self.memory_func = memory_func
 
             def allocate_memory(self, wildcards, threads, attempt):
-                """Simulate Snakemake calling the memory function."""
+                """Simulate Snakemake calling the memory function.
+
+                Parameters
+                ----------
+                wildcards : Any
+                    Snakemake wildcards object.
+                threads : int
+                    Number of threads allocated.
+                attempt : int
+                    Retry attempt number.
+
+                Returns
+                -------
+                int
+                    Memory allocation in megabytes.
+                """
                 return self.memory_func(wildcards, threads, attempt)
 
         # Create rules with our memory functions (simulating workflow.smk usage)
@@ -194,11 +281,17 @@ class TestMemoryAllocation:
 
 
 class TestRuntimeAllocation:
-    """Test suite for runtime allocation functions used in Snakemake workflows."""
+    """Tests for Snakemake runtime resource helpers."""
 
     @pytest.fixture
     def mock_wildcards(self):
-        """Create mock wildcards object as used in Snakemake."""
+        """Create a minimal Snakemake wildcards namespace.
+
+        Returns
+        -------
+        unittest.mock.MagicMock
+            Mock object with the wildcard attributes used by the helpers.
+        """
         wildcards = MagicMock()
         wildcards.sample = "test_sample"
         wildcards.RefID = "test_ref"
@@ -206,16 +299,58 @@ class TestRuntimeAllocation:
         return wildcards
 
     def low_runtime_job(self, wildcards: Any, attempt: int) -> int:
+        """Compute the low runtime request for a retry attempt.
+
+        Parameters
+        ----------
+        wildcards : Any
+            Snakemake wildcards object; unused in the calculation.
+        attempt : int
+            Retry attempt number.
+
+        Returns
+        -------
+        int
+            Requested runtime units.
+        """
         return attempt * attempt * 2
 
     def medium_runtime_job(self, wildcards: Any, attempt: int) -> int:
+        """Compute the medium runtime request for a retry attempt.
+
+        Parameters
+        ----------
+        wildcards : Any
+            Snakemake wildcards object; unused in the calculation.
+        attempt : int
+            Retry attempt number.
+
+        Returns
+        -------
+        int
+            Requested runtime units.
+        """
         return attempt * attempt * 15
 
     def high_runtime_job(self, wildcards: Any, attempt: int) -> int:
+        """Compute the high runtime request for a retry attempt.
+
+        Parameters
+        ----------
+        wildcards : Any
+            Snakemake wildcards object; unused in the calculation.
+        attempt : int
+            Retry attempt number.
+
+        Returns
+        -------
+        int
+            Requested runtime units.
+        """
         return attempt * attempt * 30
 
     def test_low_runtime_job(self, mock_wildcards):
-        """Test low_runtime_job function."""
+        """Verify the low runtime helper scales quadratically."""
         result = self.low_runtime_job(mock_wildcards, attempt=1)
         assert result == 2  # 1 * 1 * 2
 
@@ -223,7 +358,7 @@ class TestRuntimeAllocation:
         assert result == 18  # 3 * 3 * 2
 
     def test_medium_runtime_job(self, mock_wildcards):
-        """Test medium_runtime_job function."""
+        """Verify the medium runtime helper scales quadratically."""
         result = self.medium_runtime_job(mock_wildcards, attempt=1)
         assert result == 15  # 1 * 1 * 15
 
@@ -231,7 +366,7 @@ class TestRuntimeAllocation:
         assert result == 135  # 3 * 3 * 15
 
     def test_high_runtime_job(self, mock_wildcards):
-        """Test high_runtime_job function."""
+        """Verify the high runtime helper scales quadratically."""
         result = self.high_runtime_job(mock_wildcards, attempt=1)
         assert result == 30  # 1 * 1 * 30
 
@@ -239,7 +374,7 @@ class TestRuntimeAllocation:
         assert result == 270  # 3 * 3 * 30
 
     def test_runtime_functions_as_snakemake_resources(self, mock_wildcards):
-        """Test that runtime functions work when used as Snakemake resource functions."""
+        """Verify the runtime helpers behave like Snakemake resources."""
         # Test that functions can be called with keyword arguments
         low_result = self.low_runtime_job(mock_wildcards, attempt=2)
         medium_result = self.medium_runtime_job(mock_wildcards, attempt=2)

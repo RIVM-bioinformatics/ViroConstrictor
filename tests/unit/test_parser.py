@@ -1,22 +1,22 @@
-"""Unit tests for parser utilities and CLIparser helper methods.
+"""Test parser utilities and CLI parser validation paths.
 
-Coverage focus:
-- file/path and samplesheet helpers
-- dataframe transformation helpers
-- key CLIparser internal methods with mocked dependencies
+These tests cover samplesheet handling, path normalization, file helpers, and
+CLI parser helpers with mocked filesystem and dataframe dependencies.
 """
 
-from argparse import Namespace
-from pathlib import Path
 import tempfile
 import uuid
+from argparse import Namespace
+from configparser import ConfigParser
+from pathlib import Path
 
 import pandas as pd
 import pytest
 
+from ViroConstrictor import scheduler as scheduler_module
 from ViroConstrictor.parser import (
-    CLIparser,
     CheckInputFiles,
+    CLIparser,
     args_to_df,
     check_file_extension,
     check_samplesheet_columns,
@@ -36,7 +36,20 @@ from ViroConstrictor.parser import (
 
 
 def _build_args(tmp_path: Path, **overrides) -> Namespace:
-    """Create a parser-like Namespace with defaults for internal method tests."""
+    """Build a parser-like namespace for parser helper tests.
+
+    Parameters
+    ----------
+    tmp_path : Path
+        Temporary directory used to create the reference file.
+    **overrides : Any
+        Keyword overrides for the default CLI argument values.
+
+    Returns
+    -------
+    Namespace
+        Namespace populated with default parser inputs.
+    """
     reference = tmp_path / "ref.fasta"
     reference.write_text(">ref\nACGT\n", encoding="utf-8")
     defaults = {
@@ -60,11 +73,13 @@ def _build_args(tmp_path: Path, **overrides) -> Namespace:
 
 
 def test_samplesheet_enforce_absolute_paths_non_dataframe_raises() -> None:
+    """Test that non-DataFrame input raises TypeError."""
     with pytest.raises(TypeError, match="pandas DataFrame"):
         samplesheet_enforce_absolute_paths("not-a-dataframe")  # type: ignore[arg-type]
 
 
 def test_samplesheet_enforce_absolute_paths_converts_path_columns(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test conversion of relative paths to absolute paths in DataFrame columns."""
     monkeypatch.chdir(tmp_path)
     df = pd.DataFrame(
         {
@@ -84,6 +99,7 @@ def test_samplesheet_enforce_absolute_paths_converts_path_columns(tmp_path: Path
 
 
 def test_file_exists_handles_none_and_real_file(tmp_path: Path) -> None:
+    """Test file_exists returns True for NONE and existing files, False otherwise."""
     fpath = tmp_path / "a.txt"
     fpath.write_text("x", encoding="utf-8")
 
@@ -103,12 +119,26 @@ def test_file_exists_handles_none_and_real_file(tmp_path: Path) -> None:
     ],
 )
 def test_filetype_helpers(ext: str, expected_excel: bool, expected_csv: bool, expected_tsv: bool) -> None:
+    """Test file type detection for Excel, CSV, and TSV extensions.
+
+    Parameters
+    ----------
+    ext : str
+        File extension to test.
+    expected_excel : bool
+        Expected result for is_excel_file.
+    expected_csv : bool
+        Expected result for is_csv_file.
+    expected_tsv : bool
+        Expected result for is_tsv_file.
+    """
     assert is_excel_file(ext) is expected_excel
     assert is_csv_file(ext) is expected_csv
     assert is_tsv_file(ext) is expected_tsv
 
 
 def test_open_sample_sheet_csv_and_tsv(tmp_path: Path) -> None:
+    """Test reading CSV and TSV sample sheet formats."""
     csv_file = tmp_path / "samples.csv"
     csv_file.write_text("SAMPLE,VIRUS,REFERENCE\ns1,v1,ref.fa\n", encoding="utf-8")
 
@@ -125,6 +155,13 @@ def test_open_sample_sheet_csv_and_tsv(tmp_path: Path) -> None:
 
 
 def test_open_sample_sheet_empty_file_exits(tmp_path: Path) -> None:
+    """Test that empty sample sheet causes SystemExit.
+
+    Raises
+    ------
+    SystemExit
+        When sample sheet file is empty.
+    """
     empty = tmp_path / "empty.csv"
     empty.write_text("", encoding="utf-8")
 
@@ -133,6 +170,7 @@ def test_open_sample_sheet_empty_file_exits(tmp_path: Path) -> None:
 
 
 def test_open_sample_sheet_reader_error_returns_empty_df(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that parsing errors in sample sheet return empty DataFrame."""
     csv_file = tmp_path / "samples.csv"
     csv_file.write_text("SAMPLE,VIRUS,REFERENCE\ns1,v1,ref.fa\n", encoding="utf-8")
 
@@ -147,11 +185,13 @@ def test_open_sample_sheet_reader_error_returns_empty_df(tmp_path: Path, monkeyp
 
 
 def test_required_cols_case_insensitive() -> None:
+    """Test case-insensitive validation of required columns."""
     assert required_cols(["sample", "virus", "reference"]) is True
     assert required_cols(["sample", "virus"]) is False
 
 
 def test_check_samplesheet_columns_true_and_false() -> None:
+    """Test samplesheet column validation for valid and invalid schemas."""
     ok = pd.DataFrame(columns=["SAMPLE", "VIRUS", "REFERENCE"])
     bad = pd.DataFrame(columns=["SAMPLE", "VIRUS"])
 
@@ -160,6 +200,7 @@ def test_check_samplesheet_columns_true_and_false() -> None:
 
 
 def test_check_samplesheet_empty_rows_drops_all_nan_rows() -> None:
+    """Test removal of rows with all NaN values from samplesheet."""
     df = pd.DataFrame(
         [
             {"SAMPLE": "s1", "VIRUS": "v1", "REFERENCE": "r1.fa"},
@@ -174,6 +215,7 @@ def test_check_samplesheet_empty_rows_drops_all_nan_rows() -> None:
 
 
 def test_check_samplesheet_rows_valid_minimal(tmp_path: Path) -> None:
+    """Test validation of minimal valid samplesheet row."""
     ref = tmp_path / "ref.fasta"
     ref.write_text(">ref\nACTG\n", encoding="utf-8")
     df = pd.DataFrame(
@@ -196,6 +238,13 @@ def test_check_samplesheet_rows_valid_minimal(tmp_path: Path) -> None:
 
 
 def test_check_samplesheet_rows_disallowed_characters_exits(tmp_path: Path) -> None:
+    """Test rejection of sample names with disallowed characters.
+
+    Raises
+    ------
+    SystemExit
+        When sample name contains spaces or other invalid characters.
+    """
     ref = tmp_path / "ref.fasta"
     ref.write_text(">ref\nACTG\n", encoding="utf-8")
     df = pd.DataFrame(
@@ -216,6 +265,13 @@ def test_check_samplesheet_rows_disallowed_characters_exits(tmp_path: Path) -> N
 
 
 def test_check_samplesheet_rows_missing_reference_file_exits(tmp_path: Path) -> None:
+    """Test rejection of missing reference file.
+
+    Raises
+    ------
+    SystemExit
+        When reference file does not exist.
+    """
     df = pd.DataFrame(
         {
             "SAMPLE": ["sample1"],
@@ -234,6 +290,7 @@ def test_check_samplesheet_rows_missing_reference_file_exits(tmp_path: Path) -> 
 
 
 def test_check_file_extension_valid_invalid_and_none() -> None:
+    """Test file extension validation for allowed, invalid, and NONE values."""
     allowed = [".fasta", ".fa"]
     assert check_file_extension(allowed, "NONE") is True
     assert check_file_extension(allowed, "sample.fa") is True
@@ -241,6 +298,7 @@ def test_check_file_extension_valid_invalid_and_none() -> None:
 
 
 def test_dir_path_and_check_input_files(tmp_path: Path) -> None:
+    """Test directory path validation and input file checking."""
     valid_dir = tmp_path / "input"
     valid_dir.mkdir()
     (valid_dir / "a.fastq.gz").write_text("@id\nA\n+\n!\n", encoding="utf-8")
@@ -256,6 +314,7 @@ def test_dir_path_and_check_input_files(tmp_path: Path) -> None:
 
 
 def test_args_to_df_populates_existing_df_and_presets(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test conversion of CLI args to DataFrame with preset matching."""
     args = _build_args(tmp_path, primers="NONE", features="NONE")
     existing_df = pd.DataFrame({"INPUTFILE": ["reads.fastq"]}, index=["sample1"])
 
@@ -271,6 +330,7 @@ def test_args_to_df_populates_existing_df_and_presets(tmp_path: Path, monkeypatc
 
 
 def test_sampledir_to_df_illumina_and_nanopore() -> None:
+    """Test conversion of sample directories to DataFrames for Illumina and Nanopore."""
     illumina = {"s1": {"R1": "r1.fastq.gz", "R2": "r2.fastq.gz"}}
     illumina_df = sampledir_to_df(illumina, "illumina")
     assert list(illumina_df.columns) == ["R1", "R2"]
@@ -285,11 +345,19 @@ def test_sampledir_to_df_illumina_and_nanopore() -> None:
 
 
 def test_sampledir_to_df_invalid_platform_raises() -> None:
+    """Test rejection of unsupported sequencing platform.
+
+    Raises
+    ------
+    ValueError
+        When platform is not supported.
+    """
     with pytest.raises(ValueError, match="not supported"):
         sampledir_to_df({"s1": "a.fastq"}, "pacbio")
 
 
 def test_convert_log_text_formats_multisample_dict() -> None:
+    """Test formatting of multi-sample dictionary as log text."""
     samples = {
         "sample1": {"VIRUS": "v1", "REFERENCE": "ref1.fa"},
         "sample2": {"VIRUS": "v2", "REFERENCE": "ref2.fa"},
@@ -304,6 +372,7 @@ def test_convert_log_text_formats_multisample_dict() -> None:
 
 
 def test_samplesheet_handle_presets_uses_disable_presets_per_row(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test preset handling respects per-row DISABLE-PRESETS column."""
     parser_obj = CLIparser.__new__(CLIparser)
     parser_obj.flags = Namespace(presets=True)
 
@@ -332,6 +401,13 @@ def test_samplesheet_handle_presets_uses_disable_presets_per_row(monkeypatch: py
 
 
 def test_print_missing_asset_warning_no_sheet_exits_when_assets_missing(tmp_path: Path) -> None:
+    """Test that missing assets with no samplesheet causes SystemExit.
+
+    Raises
+    ------
+    SystemExit
+        When required assets are missing and no samplesheet is provided.
+    """
     parser_obj = CLIparser.__new__(CLIparser)
     args = _build_args(tmp_path, primers=None, reference=None, features=None, target=None)
 
@@ -340,6 +416,7 @@ def test_print_missing_asset_warning_no_sheet_exits_when_assets_missing(tmp_path
 
 
 def test_print_missing_asset_warning_sheet_present_does_not_exit(tmp_path: Path) -> None:
+    """Test that missing assets with samplesheet does not cause exit."""
     parser_obj = CLIparser.__new__(CLIparser)
     args = _build_args(tmp_path)
 
@@ -347,6 +424,13 @@ def test_print_missing_asset_warning_sheet_present_does_not_exit(tmp_path: Path)
 
 
 def test_make_samples_dict_exits_when_no_valid_input_files(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that missing input files causes SystemExit.
+
+    Raises
+    ------
+    SystemExit
+        When input directory contains no valid sequence files.
+    """
     parser_obj = CLIparser.__new__(CLIparser)
     parser_obj.flags = Namespace(presets=True)
     args = _build_args(tmp_path)
@@ -357,29 +441,27 @@ def test_make_samples_dict_exits_when_no_valid_input_files(tmp_path: Path, monke
         parser_obj._make_samples_dict(None, args, {"s1": "reads.fastq.gz"})
 
 
-def test_make_samples_dict_without_samplesheet_uses_args_to_df(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_make_samples_dict_without_samplesheet_applies_cli_defaults(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test CLI defaults applied to samples without samplesheet."""
     parser_obj = CLIparser.__new__(CLIparser)
     parser_obj.flags = Namespace(presets=True)
     args = _build_args(tmp_path)
 
     monkeypatch.setattr("ViroConstrictor.parser.CheckInputFiles", lambda _indir: True)
-
-    def _fake_args_to_df(_args: Namespace, existing_df: pd.DataFrame) -> pd.DataFrame:
-        existing_df["VIRUS"] = "X"
-        existing_df["REFERENCE"] = _args.reference
-        existing_df["PRIMERS"] = _args.primers
-        existing_df["FEATURES"] = _args.features
-        return existing_df
-
-    monkeypatch.setattr("ViroConstrictor.parser.args_to_df", _fake_args_to_df)
+    monkeypatch.setattr("ViroConstrictor.parser.match_preset_name", lambda _v, _u: ("DEFAULT", 0.5))
 
     result = parser_obj._make_samples_dict(None, args, {"sample1": "reads.fastq.gz"})
 
     assert "sample1" in result
-    assert result["sample1"]["VIRUS"] == "X"
+    assert result["sample1"]["VIRUS"] == args.target
+    assert result["sample1"]["REFERENCE"] == str(Path(args.reference).resolve())
+    assert result["sample1"]["PRIMERS"] == "NONE"
+    assert result["sample1"]["FEATURES"] == "NONE"
+    assert result["sample1"]["PRESET"] == "DEFAULT"
 
 
 def test_make_samples_dict_with_samplesheet_fills_defaults(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test defaults filled from CLI for samples with samplesheet."""
     parser_obj = CLIparser.__new__(CLIparser)
     parser_obj.flags = Namespace(presets=True)
 
@@ -419,6 +501,13 @@ def test_make_samples_dict_with_samplesheet_fills_defaults(tmp_path: Path, monke
 
 
 def test_make_samples_dict_with_samplesheet_no_sample_overlap_exits(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that non-overlapping samples between samplesheet and input causes exit.
+
+    Raises
+    ------
+    SystemExit
+        When samplesheet contains no samples found in input directory.
+    """
     parser_obj = CLIparser.__new__(CLIparser)
     parser_obj.flags = Namespace(presets=True)
     args = _build_args(tmp_path)
@@ -439,7 +528,17 @@ def test_make_samples_dict_with_samplesheet_no_sample_overlap_exits(tmp_path: Pa
         parser_obj._make_samples_dict(df, args, {"sample_in_dir": "reads.fastq.gz"})
 
 
-def test_check_samplesheet_rows_unknown_column_raises_keyerror(tmp_path: Path) -> None:
+@pytest.mark.xfail(
+    reason="Unknown samplesheet columns should be rejected with a user-facing validation error; current implementation raises KeyError first"
+)
+def test_check_samplesheet_rows_unknown_column_is_rejected(tmp_path: Path) -> None:
+    """Test rejection of unknown columns in samplesheet.
+
+    Raises
+    ------
+    SystemExit
+        When samplesheet contains unrecognized column names.
+    """
     ref = tmp_path / "ref.fasta"
     ref.write_text(">ref\nACTG\n", encoding="utf-8")
     df = pd.DataFrame(
@@ -456,11 +555,18 @@ def test_check_samplesheet_rows_unknown_column_raises_keyerror(tmp_path: Path) -
         }
     )
 
-    with pytest.raises(KeyError, match="UNKNOWN"):
+    with pytest.raises(SystemExit):
         check_samplesheet_rows(df)
 
 
 def test_check_samplesheet_rows_required_value_null_exits(tmp_path: Path) -> None:
+    """Test rejection of null values in required columns.
+
+    Raises
+    ------
+    SystemExit
+        When required column contains null value.
+    """
     ref = tmp_path / "ref.fasta"
     ref.write_text(">ref\nACTG\n", encoding="utf-8")
     df = pd.DataFrame(
@@ -481,6 +587,13 @@ def test_check_samplesheet_rows_required_value_null_exits(tmp_path: Path) -> Non
 
 
 def test_check_samplesheet_rows_required_dtype_mismatch_exits(tmp_path: Path) -> None:
+    """Test rejection of incorrect data type in required columns.
+
+    Raises
+    ------
+    SystemExit
+        When required column has wrong data type.
+    """
     ref = tmp_path / "ref.fasta"
     ref.write_text(">ref\nACTG\n", encoding="utf-8")
     df = pd.DataFrame(
@@ -510,10 +623,22 @@ def test_check_samplesheet_rows_required_dtype_mismatch_exits(tmp_path: Path) ->
     ],
 )
 def test_check_file_extension_edge_cases(filename: str, allowed: list[str], expected: bool) -> None:
+    """Test file extension validation with compound and edge case extensions.
+
+    Parameters
+    ----------
+    filename : str
+        Filename to validate.
+    allowed : list[str]
+        List of allowed extensions.
+    expected : bool
+        Expected validation result.
+    """
     assert check_file_extension(allowed, filename) is expected
 
 
 def test_samplesheet_handle_presets_without_disable_column_uses_cli_flag(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test preset handling uses CLI flag when DISABLE-PRESETS column is absent."""
     parser_obj = CLIparser.__new__(CLIparser)
     parser_obj.flags = Namespace(presets=False)
 
@@ -533,12 +658,38 @@ def test_samplesheet_handle_presets_without_disable_column_uses_cli_flag(monkeyp
 
 
 @pytest.mark.parametrize(
-    "input_exists,reference,reference_exists,reference_ext,primers,primers_exists,primers_ext,features,features_exists,features_ext,scheduler_valid,expected_min_errors",
+    "input_exists,reference,reference_exists,reference_ext,primers,primers_exists,primers_ext,features,features_exists,features_ext,scheduler_valid,expected_fragments",
     [
-        (False, "ref.fa", True, True, "p.fa", True, True, "f.gff", True, True, True, 1),
-        (True, "NONE", True, True, "p.fa", True, True, "f.gff", True, True, True, 1),
-        (True, "ref.txt", True, False, "p.txt", True, False, "f.txt", True, False, True, 3),
-        (True, "ref.fa", False, True, "p.fa", False, True, "f.gff", False, True, False, 4),
+        (False, "ref.fa", True, True, "p.fa", True, True, "f.gff", True, True, True, ["not a directory"]),
+        (True, "NONE", True, True, "p.fa", True, True, "f.gff", True, True, True, ["cannot be given for the reference"]),
+        (
+            True,
+            "ref.txt",
+            True,
+            False,
+            "p.txt",
+            True,
+            False,
+            "f.txt",
+            True,
+            False,
+            True,
+            ["reference", "primers", "features"],
+        ),
+        (
+            True,
+            "ref.fa",
+            False,
+            True,
+            "p.fa",
+            False,
+            True,
+            "f.gff",
+            False,
+            True,
+            False,
+            ["not an existing file", "not a valid scheduler"],
+        ),
     ],
 )
 def test_validate_cli_args_collects_unhappy_errors(
@@ -554,8 +705,37 @@ def test_validate_cli_args_collects_unhappy_errors(
     features_exists: bool,
     features_ext: bool,
     scheduler_valid: bool,
-    expected_min_errors: int,
+    expected_fragments: list[str],
 ) -> None:
+    """Test CLI argument validation collects multiple errors.
+
+    Parameters
+    ----------
+    input_exists : bool
+        Whether input directory exists.
+    reference : str
+        Reference file path.
+    reference_exists : bool
+        Whether reference file exists.
+    reference_ext : bool
+        Whether reference file has valid extension.
+    primers : str
+        Primers file path.
+    primers_exists : bool
+        Whether primers file exists.
+    primers_ext : bool
+        Whether primers file has valid extension.
+    features : str
+        Features file path.
+    features_exists : bool
+        Whether features file exists.
+    features_ext : bool
+        Whether features file has valid extension.
+    scheduler_valid : bool
+        Whether scheduler configuration is valid.
+    expected_fragments : list[str]
+        Expected error message fragments.
+    """
     parser_obj = CLIparser.__new__(CLIparser)
     parser_obj.flags = Namespace(
         input="/tmp/in",
@@ -595,10 +775,19 @@ def test_validate_cli_args_collects_unhappy_errors(
     errors = parser_obj._validate_cli_args()
 
     assert errors is not None
-    assert len(errors) >= expected_min_errors
+    combined_errors = "\n".join(errors)
+    for fragment in expected_fragments:
+        assert fragment in combined_errors
 
 
 def test_check_sample_sheet_missing_required_columns_exits(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that missing required samplesheet columns causes exit.
+
+    Raises
+    ------
+    SystemExit
+        When samplesheet lacks required columns.
+    """
     parser_obj = CLIparser.__new__(CLIparser)
     parser_obj.flags = Namespace(presets=True)
 
@@ -610,6 +799,7 @@ def test_check_sample_sheet_missing_required_columns_exits(monkeypatch: pytest.M
 
 
 def test_check_sample_sheet_empty_returns_empty_df(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that empty samplesheet returns empty DataFrame."""
     parser_obj = CLIparser.__new__(CLIparser)
     parser_obj.flags = Namespace(presets=True)
     monkeypatch.setattr("ViroConstrictor.parser.open_sample_sheet", lambda _f: pd.DataFrame())
@@ -620,6 +810,13 @@ def test_check_sample_sheet_empty_returns_empty_df(monkeypatch: pytest.MonkeyPat
 
 
 def test_check_sample_properties_missing_reference_exits() -> None:
+    """Test that missing sample reference file causes exit.
+
+    Raises
+    ------
+    SystemExit
+        When sample reference file does not exist.
+    """
     parser_obj = CLIparser.__new__(CLIparser)
     sampleinfo = {"s1": {"REFERENCE": str(Path(tempfile.gettempdir()) / f"missing_{uuid.uuid4().hex}.fasta")}}
 
@@ -628,6 +825,7 @@ def test_check_sample_properties_missing_reference_exits() -> None:
 
 
 def test_check_sample_properties_checks_unique_references(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that unique reference files are validated once."""
     parser_obj = CLIparser.__new__(CLIparser)
     ref = tmp_path / "ref.fasta"
     ref.write_text(">r\nACTG\n", encoding="utf-8")
@@ -645,6 +843,13 @@ def test_check_sample_properties_checks_unique_references(tmp_path: Path, monkey
 
 
 def test_make_samples_dict_virus_empty_exits(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that empty virus name causes exit.
+
+    Raises
+    ------
+    SystemExit
+        When virus field is empty string.
+    """
     parser_obj = CLIparser.__new__(CLIparser)
     parser_obj.flags = Namespace(presets=True)
     args = _build_args(tmp_path)
@@ -666,6 +871,13 @@ def test_make_samples_dict_virus_empty_exits(tmp_path: Path, monkeypatch: pytest
 
 
 def test_make_samples_dict_missing_default_reference_exits(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that missing default reference file causes exit.
+
+    Raises
+    ------
+    SystemExit
+        When reference is None and not provided in samplesheet.
+    """
     parser_obj = CLIparser.__new__(CLIparser)
     parser_obj.flags = Namespace(presets=True)
     args = _build_args(tmp_path, reference=None)
@@ -687,6 +899,13 @@ def test_make_samples_dict_missing_default_reference_exits(tmp_path: Path, monke
 
 
 def test_make_samples_dict_missing_default_primers_exits(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that missing default primers file causes exit.
+
+    Raises
+    ------
+    SystemExit
+        When primers is None and not provided in samplesheet.
+    """
     parser_obj = CLIparser.__new__(CLIparser)
     parser_obj.flags = Namespace(presets=True)
     args = _build_args(tmp_path, primers=None)
@@ -709,6 +928,13 @@ def test_make_samples_dict_missing_default_primers_exits(tmp_path: Path, monkeyp
 
 
 def test_make_samples_dict_missing_default_features_exits(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that missing default features file causes exit.
+
+    Raises
+    ------
+    SystemExit
+        When features is None and not provided in samplesheet.
+    """
     parser_obj = CLIparser.__new__(CLIparser)
     parser_obj.flags = Namespace(presets=True)
     args = _build_args(tmp_path, features=None)
@@ -731,6 +957,13 @@ def test_make_samples_dict_missing_default_features_exits(tmp_path: Path, monkey
 
 
 def test_make_samples_dict_more_samples_in_sheet_than_input_exits(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that samplesheet with more rows than input files causes exit.
+
+    Raises
+    ------
+    SystemExit
+        When duplicate sample names exist in samplesheet.
+    """
     parser_obj = CLIparser.__new__(CLIparser)
     parser_obj.flags = Namespace(presets=True)
     args = _build_args(tmp_path)
@@ -749,3 +982,377 @@ def test_make_samples_dict_more_samples_in_sheet_than_input_exits(tmp_path: Path
 
     with pytest.raises(SystemExit):
         parser_obj._make_samples_dict(df, args, {"sample1": "reads.fastq.gz"})
+
+
+def test_make_samples_dict_handles_genbank_and_applies_user_intent_defaults(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test GenBank handling and application of user-specified defaults."""
+    parser_obj = CLIparser.__new__(CLIparser)
+    parser_obj.flags = Namespace(presets=False)
+
+    input_dir = tmp_path / "input"
+    input_dir.mkdir()
+    args = _build_args(
+        tmp_path,
+        input=str(input_dir),
+        reference=str(tmp_path / "default_ref.fasta"),
+        primers="NONE",
+        features="NONE",
+        match_ref=False,
+        segmented=False,
+        amplicon_type="end-to-end",
+        fragment_lookaround_size=None,
+        disable_presets=True,
+    )
+
+    df = pd.DataFrame(
+        {
+            "SAMPLE": ["sample1"],
+            "VIRUS": ["virus1"],
+            "REFERENCE": [str(tmp_path / "sample_ref.gbk")],
+            "PRIMERS": [""],
+            "FEATURES": [None],
+            "PRIMER-MISMATCH-RATE": [float("nan")],
+            "PRESET": [""],
+            "PRESET_SCORE": [None],
+            "FRAGMENT-LOOKAROUND-SIZE": [10],
+            "DISABLE-PRESETS": ["MAYBE"],
+        }
+    )
+
+    monkeypatch.setattr("ViroConstrictor.parser.CheckInputFiles", lambda _indir: True)
+    monkeypatch.setattr(
+        "ViroConstrictor.parser.GenBank.is_genbank",
+        lambda p: str(p).endswith(".gbk"),
+    )
+    monkeypatch.setattr(
+        "ViroConstrictor.parser.GenBank.split_genbank",
+        lambda _path, emit_target: (str(tmp_path / "split_ref.fasta"), str(tmp_path / "split_features.gff"), "virus1"),
+    )
+    preset_calls: list[bool] = []
+
+    def _fake_match_preset_name(_virus: str, use_presets: bool) -> tuple[str, float]:
+        preset_calls.append(use_presets)
+        return ("DEFAULT", 0.75 if use_presets else 0.0)
+
+    monkeypatch.setattr("ViroConstrictor.parser.match_preset_name", _fake_match_preset_name)
+
+    result = parser_obj._make_samples_dict(df, args, {"sample1": "reads.fastq.gz"})
+
+    assert result["sample1"]["REFERENCE"] == str(tmp_path / "split_ref.fasta")
+    assert result["sample1"]["FEATURES"] == str(tmp_path / "split_features.gff")
+    assert result["sample1"]["PRIMERS"] == "NONE"
+    assert result["sample1"]["PRIMER-MISMATCH-RATE"] == pytest.approx(0.1)
+    assert result["sample1"]["MATCH-REF"] is False
+    assert result["sample1"]["SEGMENTED"] is False
+    assert result["sample1"]["PRESET"] == "DEFAULT"
+    assert result["sample1"]["PRESET_SCORE"] == pytest.approx(0.0)
+    assert result["sample1"]["FRAGMENT-LOOKAROUND-SIZE"] is None
+    # Invalid DISABLE-PRESETS values should fall back to CLI behavior.
+    assert preset_calls
+    assert preset_calls[0] is False
+
+
+def test_make_samples_dict_fragmented_with_invalid_lookaround_uses_default(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that invalid fragment lookaround value defaults to CLI value."""
+    parser_obj = CLIparser.__new__(CLIparser)
+    parser_obj.flags = Namespace(presets=True)
+
+    input_dir = tmp_path / "input"
+    input_dir.mkdir()
+    args = _build_args(
+        tmp_path,
+        input=str(input_dir),
+        amplicon_type="fragmented",
+        fragment_lookaround_size=25,
+        disable_presets=False,
+    )
+
+    preset_calls: list[bool] = []
+
+    df = pd.DataFrame(
+        {
+            "SAMPLE": ["sample1"],
+            "VIRUS": ["virus1"],
+            "REFERENCE": [args.reference],
+            "PRIMERS": ["NONE"],
+            "FEATURES": ["NONE"],
+            "FRAGMENT-LOOKAROUND-SIZE": ["not-an-int"],
+            "DISABLE-PRESETS": ["FALSE"],
+            "PRESET": [""],
+            "PRESET_SCORE": [None],
+        }
+    )
+
+    monkeypatch.setattr("ViroConstrictor.parser.CheckInputFiles", lambda _indir: True)
+    monkeypatch.setattr("ViroConstrictor.parser.GenBank.is_genbank", lambda _path: False)
+
+    def _fake_match_preset_name(_virus: str, use_presets: bool) -> tuple[str, float]:
+        preset_calls.append(use_presets)
+        return ("DEFAULT", 1.0 if use_presets else 0.0)
+
+    monkeypatch.setattr("ViroConstrictor.parser.match_preset_name", _fake_match_preset_name)
+
+    result = parser_obj._make_samples_dict(df, args, {"sample1": "reads.fastq.gz"})
+
+    assert result["sample1"]["FRAGMENT-LOOKAROUND-SIZE"] == 25
+    # Explicit FALSE means presets are enabled for matching.
+    assert preset_calls
+    assert preset_calls[0] is True
+
+
+def test_get_args_with_no_arguments_exits() -> None:
+    """Test that parser exits when no arguments provided.
+
+    Raises
+    ------
+    SystemExit
+        When called with empty argument list.
+    """
+    parser_obj = CLIparser.__new__(CLIparser)
+
+    with pytest.raises(SystemExit):
+        parser_obj._get_args([])
+
+
+def test_get_args_parses_required_values(tmp_path: Path) -> None:
+    """Test parsing of required CLI arguments."""
+    parser_obj = CLIparser.__new__(CLIparser)
+    out_dir = tmp_path / "out"
+
+    flags = parser_obj._get_args(
+        [
+            "--input",
+            str(tmp_path),
+            "--output",
+            str(out_dir),
+            "--platform",
+            "nanopore",
+            "--amplicon-type",
+            "end-to-end",
+        ]
+    )
+
+    assert flags.input == str(tmp_path)
+    assert flags.output == str(out_dir)
+    assert flags.platform == "nanopore"
+    assert flags.amplicon_type == "end-to-end"
+    assert flags.scheduler == "auto"
+    assert flags.min_coverage == 30
+    assert flags.disable_presets is False
+
+
+def test_parse_genbank_updates_flags(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that GenBank file parsing updates parser flags."""
+    parser_obj = CLIparser.__new__(CLIparser)
+    parser_obj.flags = Namespace(reference="old-ref", features="old-features", target="old-target")
+
+    monkeypatch.setattr(
+        "ViroConstrictor.parser.GenBank.split_genbank",
+        lambda _path, emit_target: ("new-ref.fasta", "new-features.gff", "new-target"),
+    )
+
+    parser_obj.parse_genbank("input.gbk")
+
+    assert parser_obj.flags.reference == "new-ref.fasta"
+    assert parser_obj.flags.features == "new-features.gff"
+    assert parser_obj.flags.target == "new-target"
+
+
+def test_validate_cli_args_samplesheet_missing_and_invalid_extension(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test detection of missing samplesheet with invalid file extension."""
+    parser_obj = CLIparser.__new__(CLIparser)
+    parser_obj.flags = Namespace(
+        input="/tmp/input",
+        samplesheet="sheet.bad",
+        reference=None,
+        primers=None,
+        features=None,
+        scheduler="auto",
+    )
+
+    monkeypatch.setattr("ViroConstrictor.parser.dir_path", lambda _p: True)
+    monkeypatch.setattr("ViroConstrictor.parser.file_exists", lambda _p: False)
+    monkeypatch.setattr("ViroConstrictor.parser.check_file_extension", lambda **_kwargs: False)
+    monkeypatch.setattr("ViroConstrictor.parser.Scheduler.is_valid", lambda _sched: True)
+
+    errors = parser_obj._validate_cli_args()
+
+    assert errors is not None
+    assert any("not an existing file" in msg for msg in errors)
+    assert any("valid file extension" in msg for msg in errors)
+
+
+def test_get_paths_for_workflow_creates_output_directory(tmp_path: Path) -> None:
+    """Test workflow path setup creates output directory."""
+    parser_obj = CLIparser.__new__(CLIparser)
+    output_dir = tmp_path / "new-output"
+    flags = Namespace(input=str(tmp_path), output=str(output_dir))
+
+    input_path, workdir, exec_start, snakefile, match_ref_snakefile = parser_obj._get_paths_for_workflow(flags)
+
+    assert Path(input_path).is_absolute()
+    assert Path(workdir) == output_dir.resolve()
+    assert output_dir.exists()
+    assert Path(exec_start).is_absolute()
+    assert snakefile.endswith("workflow/main/workflow.smk")
+    assert match_ref_snakefile.endswith("workflow/match_ref/workflow.smk")
+
+
+def test_check_sample_sheet_happy_path_returns_processed_dataframe(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test successful samplesheet processing through all validation steps."""
+    parser_obj = CLIparser.__new__(CLIparser)
+    parser_obj.flags = Namespace(presets=True)
+
+    source_df = pd.DataFrame({"sample": ["s1"], "virus": ["v1"], "reference": ["r.fa"]})
+    validated_df = pd.DataFrame({"SAMPLE": ["s1"], "VIRUS": ["v1"], "REFERENCE": ["r.fa"]})
+
+    def _open_sheet(_file: str) -> pd.DataFrame:
+        return source_df.copy()
+
+    def _check_columns(df: pd.DataFrame) -> bool:
+        assert list(df.columns) == ["SAMPLE", "VIRUS", "REFERENCE"]
+        return True
+
+    def _drop_empty(df: pd.DataFrame) -> pd.DataFrame:
+        return df
+
+    def _enforce_paths(df: pd.DataFrame) -> pd.DataFrame:
+        return df
+
+    def _check_rows(df: pd.DataFrame) -> pd.DataFrame:
+        return validated_df
+
+    def _handle_presets(df: pd.DataFrame) -> pd.DataFrame:
+        return df.assign(PRESET="DEFAULT", PRESET_SCORE=0.0)
+
+    monkeypatch.setattr("ViroConstrictor.parser.open_sample_sheet", _open_sheet)
+    monkeypatch.setattr("ViroConstrictor.parser.check_samplesheet_columns", _check_columns)
+    monkeypatch.setattr("ViroConstrictor.parser.check_samplesheet_empty_rows", _drop_empty)
+    monkeypatch.setattr("ViroConstrictor.parser.samplesheet_enforce_absolute_paths", _enforce_paths)
+    monkeypatch.setattr("ViroConstrictor.parser.check_samplesheet_rows", _check_rows)
+    monkeypatch.setattr(parser_obj, "_samplesheet_handle_presets", _handle_presets)
+
+    result = parser_obj._check_sample_sheet("sheet.csv")
+
+    assert result.loc[0, "SAMPLE"] == "s1"
+    assert result.loc[0, "PRESET"] == "DEFAULT"
+    assert result.loc[0, "PRESET_SCORE"] == pytest.approx(0.0)
+    assert {"SAMPLE", "VIRUS", "REFERENCE", "PRESET", "PRESET_SCORE"}.issubset(set(result.columns))
+
+
+def test_cli_parser_init_with_samplesheet_success(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Test successful CLIparser initialization with valid samplesheet."""
+    input_dir = tmp_path / "input"
+    input_dir.mkdir()
+    output_dir = tmp_path / "output"
+
+    flags = Namespace(
+        input=str(input_dir),
+        output=str(output_dir),
+        verbose=False,
+        samplesheet="sheet.csv",
+        scheduler="auto",
+        dryrun=False,
+        disable_presets=False,
+        platform="nanopore",
+        reference="ref.fasta",
+        features="NONE",
+        target="virus",
+    )
+
+    cfg = ConfigParser()
+    cfg["COMPUTING"] = {"compmode": "local", "scheduler": "none"}
+
+    monkeypatch.setattr(CLIparser, "_get_args", lambda self, _args: flags)
+    monkeypatch.setattr("ViroConstrictor.parser.setup_logger", lambda _out: "logfile")
+    monkeypatch.setattr(CLIparser, "_validate_cli_args", lambda self: [])
+    monkeypatch.setattr("ViroConstrictor.parser.ReadConfig", lambda _path: cfg)
+    monkeypatch.setattr("ViroConstrictor.parser.Scheduler.determine_scheduler", lambda *_args: scheduler_module.Scheduler.LOCAL)
+    monkeypatch.setattr(CLIparser, "_print_missing_asset_warning", lambda self, _args, _present: None)
+    monkeypatch.setattr(CLIparser, "_check_sample_sheet", lambda self, _sheet: pd.DataFrame({"SAMPLE": ["s1"]}))
+    monkeypatch.setattr("ViroConstrictor.parser.GetSamples", lambda _inp, _plat: {"s1": "reads.fastq.gz"})
+    monkeypatch.setattr(CLIparser, "_make_samples_dict", lambda self, _df, _flags, _files: {"s1": {"REFERENCE": str(tmp_path / "r.fa")}})
+    monkeypatch.setattr(CLIparser, "_get_paths_for_workflow", lambda self, _flags: ("/in", "/out", "/cwd", "main.smk", "mr.smk"))
+    monkeypatch.setattr(CLIparser, "_check_sample_properties", lambda self, _samples: None)
+
+    parser_obj = CLIparser(["--ignored"], "~/.config.ini")
+
+    assert parser_obj.flags.presets is True
+    assert parser_obj.scheduler == scheduler_module.Scheduler.LOCAL
+    assert parser_obj.samples_dict == {"s1": {"REFERENCE": str(tmp_path / "r.fa")}}
+    assert "SAMPLE" in parser_obj.samples_df.columns
+    assert "REFERENCE" in parser_obj.samples_df.columns
+    assert parser_obj.samples_df.loc[0, "SAMPLE"] == "s1"
+
+
+def test_cli_parser_init_without_samplesheet_triggers_genbank_path(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Test CLIparser initialization triggers GenBank parsing when reference is GenBank file."""
+    input_dir = tmp_path / "input"
+    input_dir.mkdir()
+    output_dir = tmp_path / "output"
+
+    flags = Namespace(
+        input=str(input_dir),
+        output=str(output_dir),
+        verbose=True,
+        samplesheet=None,
+        scheduler="auto",
+        dryrun=False,
+        disable_presets=True,
+        platform="nanopore",
+        reference=str(tmp_path / "ref.gbk"),
+        features="NONE",
+        target="virus",
+    )
+
+    cfg = ConfigParser()
+    cfg["COMPUTING"] = {"compmode": "local", "scheduler": "none"}
+
+    parse_called = {"value": False}
+
+    monkeypatch.setattr(CLIparser, "_get_args", lambda self, _args: flags)
+    monkeypatch.setattr("ViroConstrictor.parser.setup_logger", lambda _out: "logfile")
+    monkeypatch.setattr(CLIparser, "_validate_cli_args", lambda self: [])
+    monkeypatch.setattr("ViroConstrictor.parser.ReadConfig", lambda _path: cfg)
+    monkeypatch.setattr("ViroConstrictor.parser.Scheduler.determine_scheduler", lambda *_args: scheduler_module.Scheduler.LOCAL)
+    monkeypatch.setattr(CLIparser, "_print_missing_asset_warning", lambda self, _args, _present: None)
+    monkeypatch.setattr("ViroConstrictor.parser.GenBank.is_genbank", lambda _path: True)
+    monkeypatch.setattr(CLIparser, "parse_genbank", lambda self, _ref: parse_called.__setitem__("value", True))
+    monkeypatch.setattr("ViroConstrictor.parser.GetSamples", lambda _inp, _plat: {"s1": "reads.fastq.gz"})
+    monkeypatch.setattr(CLIparser, "_make_samples_dict", lambda self, _df, _flags, _files: {"s1": {"REFERENCE": str(tmp_path / "r.fa")}})
+    monkeypatch.setattr(CLIparser, "_get_paths_for_workflow", lambda self, _flags: ("/in", "/out", "/cwd", "main.smk", "mr.smk"))
+    monkeypatch.setattr(CLIparser, "_check_sample_properties", lambda self, _samples: None)
+
+    parser_obj = CLIparser(["--ignored"], "~/.config.ini")
+
+    assert parse_called["value"] is True
+    assert parser_obj.flags.presets is False
+
+
+def test_cli_parser_init_exits_when_cli_errors_present(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Test CLIparser initialization exits when validation errors are found.
+
+    Raises
+    ------
+    SystemExit
+        When CLI argument validation fails.
+    """
+    input_dir = tmp_path / "input"
+    input_dir.mkdir()
+
+    flags = Namespace(
+        input=str(input_dir),
+        output=str(tmp_path / "output"),
+        verbose=False,
+        samplesheet=None,
+        scheduler="auto",
+        dryrun=False,
+        disable_presets=False,
+    )
+
+    monkeypatch.setattr(CLIparser, "_get_args", lambda self, _args: flags)
+    monkeypatch.setattr("ViroConstrictor.parser.setup_logger", lambda _out: "logfile")
+    monkeypatch.setattr(CLIparser, "_validate_cli_args", lambda self: ["bad arg"])
+
+    with pytest.raises(SystemExit):
+        CLIparser(["--ignored"], "~/.config.ini")
