@@ -149,7 +149,7 @@
             "Clipper_FilterParams_nanopore": "--exclude-spliced --spliced-length-threshold 200",
             "Clipper_FilterParams_illumina": "--exclude-spliced --spliced-length-threshold 200",
             "Clipper_FilterParams_iontorrent": "--exclude-spliced --spliced-length-threshold 200",
-            "Fastp_MinReadLength_Settings_nanopore": "--length_required 1000",
+            "Fastp_MinReadLength_Settings_nanopore": "--length_required 400",
             "AminoExtract_FeatureType": ["gene"]
         }
     },
