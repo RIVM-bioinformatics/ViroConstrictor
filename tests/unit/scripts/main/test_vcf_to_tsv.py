@@ -1,3 +1,10 @@
+"""
+Unit tests for VcfToTsv script.
+
+Tests VCF to TSV conversion with filtering of unknown/ambiguous alleles (N)
+and INFO field DP extraction for variant depth reporting.
+"""
+
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
@@ -11,6 +18,12 @@ from ViroConstrictor.workflow.main.scripts.vcf_to_tsv import VcfToTsv  # isort:s
 
 
 def test_add_arguments_parses_required_fields() -> None:
+    """
+    Verify that VcfToTsv CLI parser registers required arguments.
+
+    Tests that the argument parser accepts input, output, and samplename
+    arguments and correctly stores their values.
+    """
     parser = ArgumentParser()
     VcfToTsv.add_arguments(parser)
     args = parser.parse_args(["--input", "in.vcf", "--output", "out.tsv", "--samplename", "S1"])
@@ -18,6 +31,12 @@ def test_add_arguments_parses_required_fields() -> None:
 
 
 def test_run_converts_variants_and_filters_unknown_alt(tmp_path: Path) -> None:
+    """
+    Verify VCF to TSV conversion filters out unknown allele (N) variants.
+
+    Tests that the run() method converts VCF records to TSV format and removes
+    variants with unknown/ambiguous alleles (N in ALT column).
+    """
     input_path = tmp_path / "example.vcf"
     output_path = tmp_path / "result.tsv"
 
@@ -38,6 +57,12 @@ chr2\t67890\t.\tG\tN\t.\tPASS\tDP=50
 
 
 def test_run_writes_empty_output_when_all_alt_are_filtered(tmp_path: Path) -> None:
+    """
+    Verify that all-filtered variants produce empty TSV output.
+
+    Tests that when all VCF variants have unknown alleles and are filtered out,
+    the output file is created but remains empty.
+    """
     input_path = tmp_path / "only_unknown.vcf"
     output_path = tmp_path / "result.tsv"
     input_path.write_text(
@@ -53,6 +78,12 @@ chr1\t12345\t.\tA\tN\t.\tPASS\tDP=100
 
 
 def test_run_with_no_variant_rows_creates_empty_output(tmp_path: Path) -> None:
+    """
+    Verify that header-only VCF produces empty output.
+
+    Tests that when the VCF file contains only headers and no variant records,
+    an empty output file is created.
+    """
     input_path = tmp_path / "headers_only.vcf"
     output_path = tmp_path / "result.tsv"
     input_path.write_text("##fileformat=VCFv4.2\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n", encoding="utf-8")
@@ -62,8 +93,16 @@ def test_run_with_no_variant_rows_creates_empty_output(tmp_path: Path) -> None:
     assert output_path.read_text(encoding="utf-8") == ""
 
 
-@pytest.mark.xfail(reason="Malformed INFO fields currently raise during split; intended behavior is robust parsing or clear validation error", strict=False)
+@pytest.mark.xfail(
+    reason="Malformed INFO fields currently raise during split; intended behavior is robust parsing or clear validation error", strict=False
+)
 def test_run_handles_malformed_info_field_with_clear_error(tmp_path: Path) -> None:
+    """
+    Test malformed INFO field handling (XFAIL - intended behavior).
+
+    Intended behavior: Malformed INFO fields should raise ValueError with a
+    clear message, but the current implementation raises an index error instead.
+    """
     input_path = tmp_path / "bad_info.vcf"
     output_path = tmp_path / "result.tsv"
     input_path.write_text(

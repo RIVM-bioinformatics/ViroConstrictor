@@ -1,3 +1,11 @@
+"""
+Unit tests for AggregateCombinedFiles script.
+
+Tests the aggregation of combined tabular result files (mutations, coverage,
+amplicon coverage) across multiple samples, including input validation, file
+handling, and output format correctness.
+"""
+
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
@@ -41,6 +49,7 @@ def test_run_delegates_to_aggregate_method(tmp_path: Path, monkeypatch: pytest.M
     calls: list[str] = []
 
     def fake_aggregate() -> None:
+        """Mock aggregation function for testing."""
         calls.append("called")
 
     monkeypatch.setattr(aggregator, "_aggregate_files", fake_aggregate)
@@ -57,14 +66,8 @@ def test_run_aggregates_mutation_files_and_ignores_missing_or_empty_inputs(tmp_p
     missing_file = tmp_path / "does_not_exist.tsv"
     output = tmp_path / "all_mutations.tsv"
 
-    valid_a.write_text(
-        "Sample\tVirus\tReference_ID\tPosition\tReference_Base\tVariant_Base\tDepth\n"
-        "sample1\tVirusA\tRefA\t100\tA\tT\t50\n"
-    )
-    valid_b.write_text(
-        "Sample\tVirus\tReference_ID\tPosition\tReference_Base\tVariant_Base\tDepth\n"
-        "sample2\tVirusB\tRefB\t200\tC\tG\tNA\n"
-    )
+    valid_a.write_text("Sample\tVirus\tReference_ID\tPosition\tReference_Base\tVariant_Base\tDepth\nsample1\tVirusA\tRefA\t100\tA\tT\t50\n")
+    valid_b.write_text("Sample\tVirus\tReference_ID\tPosition\tReference_Base\tVariant_Base\tDepth\nsample2\tVirusB\tRefB\t200\tC\tG\tNA\n")
     empty_file.write_text("")
 
     AggregateCombinedFiles(
@@ -109,7 +112,7 @@ def test_run_propagates_unexpected_parser_errors(tmp_path: Path) -> None:
     output = tmp_path / "all_mutations.tsv"
 
     # Unclosed quote forces a parser error for the default C engine.
-    corrupt.write_text("Sample\tVirus\n\"unterminated\tVirusA\n")
+    corrupt.write_text('Sample\tVirus\n"unterminated\tVirusA\n')
 
     aggregator = AggregateCombinedFiles(
         input="unused",
@@ -164,6 +167,7 @@ def test_read_files_skips_empty_data_error(tmp_path: Path, monkeypatch: pytest.M
     )
 
     def fake_read_csv(path: Path, sep: str = "\t", keep_default_na: bool = False, na_filter: bool = False) -> pd.DataFrame:
+        """Mock CSV reader for testing edge cases."""
         if path == broken:
             raise pd.errors.EmptyDataError("empty")
         return pd.DataFrame([{"Sample": "sample1", "Depth": "9"}])

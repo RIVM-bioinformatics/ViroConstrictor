@@ -1,3 +1,10 @@
+"""
+Unit tests for Boc (breadth of coverage) script.
+
+Tests calculation of breadth of coverage at multiple threshold levels
+(1, 5, 10, 50, 100×) for single reference sequences.
+"""
+
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
@@ -10,12 +17,42 @@ from ViroConstrictor.workflow.main.scripts.boc import Boc  # isort:skip
 
 
 def _write_fasta(path: Path, records: list[tuple[str, str]]) -> Path:
+    """
+    Write FASTA format reference file to path.
+
+    Parameters
+    ----------
+    path : Path
+        Destination file path.
+    records : list[tuple[str, str]]
+        List of (sequence_id, sequence) tuples.
+
+    Returns
+    -------
+    Path
+        Path to the written FASTA file.
+    """
     contents = "".join(f">{name}\n{sequence}\n" for name, sequence in records)
     path.write_text(contents, encoding="utf-8")
     return path
 
 
 def _write_coverage(path: Path, depths: list[int]) -> Path:
+    """
+    Write per-position coverage file to path.
+
+    Parameters
+    ----------
+    path : Path
+        Destination file path.
+    depths : list[int]
+        List of coverage depth values (1-indexed positions).
+
+    Returns
+    -------
+    Path
+        Path to the written coverage file.
+    """
     lines = ["position\tcoverage\n"]
     lines.extend(f"{idx}\t{depth}\n" for idx, depth in enumerate(depths, start=1))
     path.write_text("".join(lines), encoding="utf-8")
@@ -23,11 +60,30 @@ def _write_coverage(path: Path, depths: list[int]) -> Path:
 
 
 def _parse_result_line(output_path: Path) -> list[str]:
+    """
+    Parse single-line TSV result file.
+
+    Parameters
+    ----------
+    output_path : Path
+        Path to result file.
+
+    Returns
+    -------
+    list[str]
+        Tab-separated values from the result line.
+    """
     line = output_path.read_text(encoding="utf-8").strip()
     return line.split("\t")
 
 
 def test_add_arguments_parses_required_flags() -> None:
+    """
+    Verify that Boc CLI parser registers all required command-line flags.
+
+    Tests that the argument parser accepts input, output, samplename, and coverage
+    flags and correctly stores their values.
+    """
     parser = ArgumentParser()
     Boc.add_arguments(parser)
 
@@ -40,6 +96,12 @@ def test_add_arguments_parses_required_flags() -> None:
 
 
 def test_run_writes_expected_breadth_percentages(tmp_path: Path) -> None:
+    """
+    Verify breadth of coverage calculation at standard thresholds.
+
+    Tests that the script correctly calculates coverage breadth at 1×, 5×, 10×, 50×,
+    and 100× depth thresholds for each position in the reference sequence.
+    """
     fasta = _write_fasta(tmp_path / "ref.fasta", [("ref", "ACGTACGTAC")])
     coverage = _write_coverage(tmp_path / "coverage.tsv", [0, 1, 4, 5, 9, 10, 49, 50, 99, 100])
     output = tmp_path / "boc.tsv"
@@ -52,6 +114,12 @@ def test_run_writes_expected_breadth_percentages(tmp_path: Path) -> None:
 
 
 def test_run_outputs_zero_width_when_all_positions_are_below_thresholds(tmp_path: Path) -> None:
+    """
+    Verify that zero coverage positions produce 0% breadth at all thresholds.
+
+    Tests that when all positions have zero depth, the breadth of coverage
+    is reported as 0% for all depth thresholds.
+    """
     fasta = _write_fasta(tmp_path / "ref.fasta", [("ref", "A" * 8)])
     coverage = _write_coverage(tmp_path / "coverage.tsv", [0, 0, 0, 0, 0, 0, 0, 0])
     output = tmp_path / "boc.tsv"
@@ -64,6 +132,12 @@ def test_run_outputs_zero_width_when_all_positions_are_below_thresholds(tmp_path
 
 
 def test_run_raises_file_not_found_for_missing_coverage(tmp_path: Path) -> None:
+    """
+    Verify that missing coverage file raises FileNotFoundError.
+
+    Tests that the script fails with FileNotFoundError when the coverage
+    input file does not exist.
+    """
     fasta = _write_fasta(tmp_path / "ref.fasta", [("ref", "ACGT")])
     output = tmp_path / "boc.tsv"
 
@@ -73,6 +147,12 @@ def test_run_raises_file_not_found_for_missing_coverage(tmp_path: Path) -> None:
 
 @pytest.mark.xfail(reason="Implementation does not validate empty FASTA with a clear ValueError", strict=False)
 def test_run_rejects_empty_fasta_with_clear_error(tmp_path: Path) -> None:
+    """
+    Test empty FASTA input rejection (XFAIL - intended behavior).
+
+    Intended behavior: Empty FASTA input should fail fast with a clear validation
+    error message, but the current implementation does not validate this clearly.
+    """
     # Intended behavior: fail fast with a clear validation error for empty reference sequences.
     fasta = _write_fasta(tmp_path / "empty.fasta", [])
     coverage = _write_coverage(tmp_path / "coverage.tsv", [10, 10, 10])
@@ -84,6 +164,12 @@ def test_run_rejects_empty_fasta_with_clear_error(tmp_path: Path) -> None:
 
 @pytest.mark.xfail(reason="Implementation raises IndexError instead of input validation error when coverage column is missing", strict=False)
 def test_run_rejects_coverage_without_depth_column(tmp_path: Path) -> None:
+    """
+    Test malformed coverage input rejection (XFAIL - intended behavior).
+
+    Intended behavior: Coverage file missing the depth column should raise ValueError,
+    but the current implementation raises IndexError instead.
+    """
     # Intended behavior: reject malformed coverage input with a clear ValueError.
     fasta = _write_fasta(tmp_path / "ref.fasta", [("ref", "ACGT")])
     coverage = tmp_path / "coverage.tsv"

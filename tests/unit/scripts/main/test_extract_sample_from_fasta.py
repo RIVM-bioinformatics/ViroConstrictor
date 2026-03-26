@@ -1,3 +1,10 @@
+"""
+Unit tests for ExtractSampleFromFasta script.
+
+Tests extraction of records matching a sample identifier from combined FASTA
+files, including prefix matching and cross-file concatenation.
+"""
+
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
@@ -11,10 +18,29 @@ from ViroConstrictor.workflow.main.scripts.extract_sample_from_fasta import Extr
 
 
 def _record_ids(path: Path) -> list[str]:
+    """
+    Extract record identifiers from FASTA file.
+
+    Parameters
+    ----------
+    path : Path
+        Path to FASTA file.
+
+    Returns
+    -------
+    list[str]
+        List of sequence record IDs in file order.
+    """
     return [record.id for record in SeqIO.parse(path, "fasta")]
 
 
 def test_add_arguments_parses_required_values() -> None:
+    """
+    Verify that ExtractSampleFromFasta CLI parser registers required arguments.
+
+    Tests that the argument parser accepts input_files, output, and sample_name
+    arguments and correctly stores their values.
+    """
     parser = ArgumentParser()
     ExtractSampleFromFasta.add_arguments(parser)
 
@@ -37,14 +63,18 @@ def test_add_arguments_parses_required_values() -> None:
 
 
 def test_run_extracts_exact_and_prefixed_ids_only(tmp_path: Path) -> None:
+    """
+    Verify records matching exact ID or ID prefix are extracted.
+
+    Tests that the run() method extracts records with IDs that either match
+    exactly or match with a dot-prefix (e.g., "sample1.geneA"), while rejecting
+    records that don't match these criteria.
+    """
     f1 = tmp_path / "in1.fasta"
     out = tmp_path / "out.fasta"
 
     f1.write_text(
-        ">sample1\nAAAA\n"
-        ">sample1.geneA\nTTTT\n"
-        ">sample10\nCCCC\n"
-        ">sample1extra\nGGGG\n",
+        ">sample1\nAAAA\n>sample1.geneA\nTTTT\n>sample10\nCCCC\n>sample1extra\nGGGG\n",
         encoding="utf-8",
     )
 
@@ -61,18 +91,22 @@ def test_run_extracts_exact_and_prefixed_ids_only(tmp_path: Path) -> None:
 
 
 def test_run_combines_across_multiple_files_in_input_order(tmp_path: Path) -> None:
+    """
+    Verify multiple input files are combined in specified order.
+
+    Tests that matching records from multiple input files are combined and
+    written to output in the order they appear across input files.
+    """
     f1 = tmp_path / "in1.fasta"
     f2 = tmp_path / "in2.fasta"
     out = tmp_path / "out.fasta"
 
     f1.write_text(
-        ">other\nAAAA\n"
-        ">sampleA.part1\nTTTT\n",
+        ">other\nAAAA\n>sampleA.part1\nTTTT\n",
         encoding="utf-8",
     )
     f2.write_text(
-        ">sampleA\nCCCC\n"
-        ">sampleA.part2\nGGGG\n",
+        ">sampleA\nCCCC\n>sampleA.part2\nGGGG\n",
         encoding="utf-8",
     )
 
@@ -88,14 +122,19 @@ def test_run_combines_across_multiple_files_in_input_order(tmp_path: Path) -> No
 
 
 def test_run_skips_missing_and_empty_files(tmp_path: Path) -> None:
+    """
+    Verify missing and empty files are skipped gracefully.
+
+    Tests that the script processes only files that exist and have content,
+    silently skipping files that are missing or empty.
+    """
     valid = tmp_path / "valid.fasta"
     empty = tmp_path / "empty.fasta"
     missing = tmp_path / "missing.fasta"
     out = tmp_path / "out.fasta"
 
     valid.write_text(
-        ">sampleZ\nATAT\n"
-        ">other\nCGCG\n",
+        ">sampleZ\nATAT\n>other\nCGCG\n",
         encoding="utf-8",
     )
     empty.write_text("", encoding="utf-8")
@@ -112,12 +151,17 @@ def test_run_skips_missing_and_empty_files(tmp_path: Path) -> None:
 
 
 def test_run_when_no_matches_writes_empty_fasta(tmp_path: Path) -> None:
+    """
+    Verify that no matching records produce empty output file.
+
+    Tests that when no FASTA records match the sample name, the output file
+    is created but remains empty.
+    """
     f1 = tmp_path / "in.fasta"
     out = tmp_path / "out.fasta"
 
     f1.write_text(
-        ">other1\nAAAA\n"
-        ">other2\nTTTT\n",
+        ">other1\nAAAA\n>other2\nTTTT\n",
         encoding="utf-8",
     )
 
@@ -134,6 +178,12 @@ def test_run_when_no_matches_writes_empty_fasta(tmp_path: Path) -> None:
 
 
 def test_run_surfaces_invalid_fasta_errors(tmp_path: Path) -> None:
+    """
+    Verify that invalid FASTA files are handled gracefully.
+
+    Tests that the script handles malformed FASTA files without crashing,
+    producing valid output (empty if no records match).
+    """
     invalid = tmp_path / "broken.fasta"
     out = tmp_path / "out.fasta"
 
@@ -154,6 +204,12 @@ def test_run_surfaces_invalid_fasta_errors(tmp_path: Path) -> None:
 
 @pytest.mark.xfail(reason="No explicit validation for empty sample_name; intended behavior is to reject invalid sample identifiers", strict=False)
 def test_run_rejects_empty_sample_name(tmp_path: Path) -> None:
+    """
+    Test empty sample_name rejection (XFAIL - intended behavior).
+
+    Intended behavior: Empty sample_name values should raise ValueError with a
+    clear message, but the current implementation does not validate this.
+    """
     f1 = tmp_path / "in.fasta"
     out = tmp_path / "out.fasta"
     f1.write_text(">sample1\nAAAA\n", encoding="utf-8")
