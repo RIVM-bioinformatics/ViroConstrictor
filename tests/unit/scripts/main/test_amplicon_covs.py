@@ -1,7 +1,6 @@
 import sys
-from contextlib import contextmanager
+from argparse import ArgumentParser
 from pathlib import Path
-from typing import Iterator
 
 import pandas as pd
 import pytest
@@ -9,65 +8,82 @@ import pytest
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(PROJECT_ROOT.joinpath("ViroConstrictor/workflow")))
 from ViroConstrictor.workflow.main.scripts.amplicon_covs import (  # isort:skip
+    AltName,
     AmpliconCovs,
     PrimerNameParser,
     ReadDirection,
 )
 
 
-@contextmanager
-def temporarily_modify_file(file_path: Path, new_line: str) -> Iterator[None]:
-    """
-    Temporarily replace a file's contents and restore them on exit.
-
-    Parameters
-    ----------
-    file_path : Path
-        Path to the file to modify.
-    new_line : str
-        New content to write to the file while inside the context.
-
-    Yields
-    ------
-    None
-        Control back to the context block. Original file contents are restored on exit.
-    """
-    with open(file_path, "r", encoding="utf-8") as file:
-        lines = file.readlines()
-
-    try:
-        with open(file_path, "w", encoding="utf-8") as file:
-            file.writelines(new_line)
-        yield
-
-    finally:
-        # Restore original lines
-        with open(file_path, "w", encoding="utf-8") as file:
-            file.writelines(lines)
+def _write_bed(tmp_path: Path, lines: list[str]) -> Path:
+    bed_path = tmp_path / "primers.bed"
+    bed_path.write_text("".join(lines), encoding="utf-8")
+    return bed_path
 
 
-def test_amplicon_covs(tmp_path: Path) -> None:
-    """
-    Validate basic functionality of `AmpliconCovs` using sample BED and coverage files.
+def _write_coverage(tmp_path: Path, values: list[int]) -> Path:
+    cov_path = tmp_path / "coverage.tsv"
+    lines = [f"{idx + 1}\t{value}\n" for idx, value in enumerate(values)]
+    cov_path.write_text("".join(lines), encoding="utf-8")
+    return cov_path
 
-    Parameters
-    ----------
-    tmp_path : Path
-        Temporary directory fixture provided by pytest for output files.
 
-    Returns
-    -------
-    None
-    """
-    input_file = PROJECT_ROOT / "tests" / "unit" / "data" / "ESIB_EQA_2024_SARS1_01_primers.bed"
-    output_file = tmp_path / "ESIB_EQA_2024_SARS1_01_primers_output.csv"
-    coverages_file = PROJECT_ROOT / "tests" / "unit" / "data" / "ESIB_EQA_2024_SARS1_01_coverage.tsv"
-    key = "ESIB_EQA_2024_SARS1_01"
+@pytest.mark.parametrize(
+    "token, expected",
+    [
+        ("alt", True),
+        ("alt1", True),
+        ("alternative", True),
+        ("ALTLEFT", True),
+        ("foo", False),
+    ],
+)
+def test_alt_name_detection(token: str, expected: bool) -> None:
+    assert AltName.is_valid_alt_name(token) is expected
 
-    a = AmpliconCovs(input=input_file, output=output_file, key=key, coverages=coverages_file)
-    a.run()
 
-    assert output_file.exists()
+@pytest.mark.parametrize(
+    "token, expected",
+    [
+        ("left", ReadDirection.FORWARD),
+        ("FW", ReadDirection.FORWARD),
+        ("reverse", ReadDirection.REVERSE),
+        ("minus", ReadDirection.REVERSE),
+    ],
+)
+def test_read_direction_from_string(token: str, expected: ReadDirection) -> None:
+    assert ReadDirection.from_string(token) == expected
+
+
+def test_read_direction_rejects_invalid_value() -> None:
+    assert ReadDirection.is_valid_direction("sideways") is False
+    with pytest.raises(ValueError, match="Unrecognized read direction"):
+        ReadDirection.from_string("sideways")
+
+
+@pytest.mark.parametrize(
+    "primer_name, expected_name, expected_count, expected_alt, expected_direction",
+    [
+        (">ncov-2019_1_LEFT", "ncov-2019", 1, False, ReadDirection.FORWARD),
+        ("ncov-2019_27_RIGHT_alt1", "ncov-2019", 27, True, ReadDirection.REVERSE),
+        ("HAV_1_alt-IB_LEFT", "HAV", 1, True, ReadDirection.FORWARD),
+        ("virus_strain_2_alt_RIGHT", "virus_strain", 2, True, ReadDirection.REVERSE),
+        # Intended behavior: count should be amplicon number, not insert size.
+        ("SARS-CoV-2_1200_100_LEFT_2", "SARS-CoV-2", 100, False, ReadDirection.FORWARD),
+    ],
+)
+def test_parser_supported_formats(
+    primer_name: str,
+    expected_name: str,
+    expected_count: int,
+    expected_alt: bool,
+    expected_direction: ReadDirection,
+) -> None:
+    parsed = PrimerNameParser().parse(primer_name)
+    assert parsed.name == expected_name
+    assert parsed.count == expected_count
+    assert parsed.alt is expected_alt
+    assert parsed.direction == expected_direction
 
 
 def test_primer_name_validation() -> None:
@@ -116,282 +132,230 @@ def test_primer_name_validation() -> None:
         ("ncov-2019_2_RIHTT", False),  # Misspelled direction
     ]
 
-    keywords = ["Primer", "Unrecognized read direction", "does not match expected formats"]
+    error_keywords = ["Primer", "Unrecognized read direction", "does not match expected formats"]
+
     for primer_name, should_succeed in test_cases:
         if should_succeed:
-            info = parser.parse(primer_name)
-            assert info.original_string.lstrip(">") in primer_name
-            assert isinstance(info.count, int)
+            parsed = parser.parse(primer_name)
+            assert isinstance(parsed.count, int)
+            assert isinstance(parsed.direction, ReadDirection)
+            assert parsed.original_string.lstrip(">") in primer_name
         else:
             with pytest.raises(ValueError) as exc_info:
                 parser.parse(primer_name)
-
-            error_msg = str(exc_info.value)
-
-            assert any(keyword in error_msg for keyword in keywords), f"Unexpected error message for {primer_name}: {error_msg}"
+            assert any(keyword in str(exc_info.value) for keyword in error_keywords)
 
 
-def _write_bed(tmp_path: Path, lines: list[str]) -> Path:
-    """
-    Write primer BED lines to a file in the provided temporary directory.
-
-    Parameters
-    ----------
-    tmp_path : Path
-        Temporary directory to write the file into.
-    lines : list[str]
-        Lines to write to the BED file (each including trailing newline).
-
-    Returns
-    -------
-    Path
-        Path to the written BED file.
-    """
-
-    bed_path = tmp_path / "primers.bed"
-    bed_path.write_text("".join(lines), encoding="utf-8")
-    return bed_path
+@pytest.mark.parametrize(
+    "primer_name",
+    [
+        "wrong_name",
+        "ncov-2019_LEFT",
+        "ncov-2019_alt",
+        "ncov-2019_2_RIHTT",
+    ],
+)
+def test_parser_rejects_invalid_formats(primer_name: str) -> None:
+    with pytest.raises(ValueError, match="Unrecognized read direction|does not match expected formats"):
+        PrimerNameParser().parse(primer_name)
 
 
-def _write_coverage(tmp_path: Path, values: list[int]) -> Path:
-    """
-    Create a simple coverage TSV file with one coverage value per line.
-
-    Parameters
-    ----------
-    tmp_path : Path
-        Temporary directory to write the coverage file into.
-    values : list[int]
-        Coverage values to write; each value is written on its own row with
-        a 1-based index in the first column.
-
-    Returns
-    -------
-    Path
-        Path to the written coverage TSV file.
-    """
-
-    cov_path = tmp_path / "coverage.tsv"
-    lines = [f"{idx + 1}\t{value}\n" for idx, value in enumerate(values)]
-    cov_path.write_text("".join(lines), encoding="utf-8")
-    return cov_path
+@pytest.mark.xfail(reason="Fallback path returns alt=None instead of bool False")
+def test_fallback_parser_returns_boolean_alt_for_plain_three_part_name() -> None:
+    # Intended behavior: PrimerInfo.alt should always be boolean.
+    parsed = PrimerNameParser()._fallback_parse("virus_8_LEFT")
+    assert parsed.alt is False
 
 
-def test_open_tsv_file_empty(tmp_path: Path) -> None:
-    """
-    Ensure `_open_tsv_file` returns an empty DataFrame for an empty file.
+def test_fallback_parser_handles_alt_in_either_position() -> None:
+    parser = PrimerNameParser()
 
-    Parameters
-    ----------
-    tmp_path : Path
-        Pytest temporary directory fixture.
+    parsed_part3 = parser._fallback_parse("virus_3_alt1_RIGHT")
+    assert parsed_part3.name == "virus"
+    assert parsed_part3.count == 3
+    assert parsed_part3.direction == ReadDirection.REVERSE
 
-    Returns
-    -------
-    None
-    """
+    parsed_part4 = parser._fallback_parse("virus_4_LEFT_alt2")
+    assert parsed_part4.name == "virus"
+    assert parsed_part4.count == 4
+    assert parsed_part4.direction == ReadDirection.FORWARD
 
+
+def test_fallback_parser_rejects_invalid_four_part_and_long_names() -> None:
+    parser = PrimerNameParser()
+
+    with pytest.raises(ValueError, match="does not match expected formats"):
+        parser._fallback_parse("virus_4_LEFT_notalt")
+
+    with pytest.raises(ValueError, match="does not match expected formats"):
+        parser._fallback_parse("virus_1_LEFT_alt_extra")
+
+
+def test_add_arguments_registers_required_flags() -> None:
+    parser = ArgumentParser()
+    AmpliconCovs.add_arguments(parser)
+    args = parser.parse_args(["--input", "in.bed", "--output", "out.csv", "--coverages", "cov.tsv", "--key", "sampleX"])
+
+    assert args.input == "in.bed"
+    assert args.output == "out.csv"
+    assert args.coverages == "cov.tsv"
+    assert args.key == "sampleX"
+
+
+def test_open_tsv_file_empty_returns_empty_dataframe(tmp_path: Path) -> None:
     empty_file = tmp_path / "empty.tsv"
     empty_file.write_text("", encoding="utf-8")
-
-    df = AmpliconCovs._open_tsv_file(empty_file)
-
-    assert df.empty
+    assert AmpliconCovs._open_tsv_file(empty_file).empty
 
 
-def test_open_tsv_file_nan_raises(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    """
-    Verify that `_open_tsv_file` raises a `ValueError` when the file contains NaN.
-
-    Parameters
-    ----------
-    monkeypatch : pytest.MonkeyPatch
-        Pytest fixture for temporarily patching attributes.
-    tmp_path : Path
-        Temporary directory fixture for creating the bad TSV file.
-
-    Returns
-    -------
-    None
-    """
-
+def test_open_tsv_file_raises_on_nan(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     bad_file = tmp_path / "bad.tsv"
     bad_file.write_text("1\t10\n", encoding="utf-8")
-    bad_df = pd.DataFrame([[1, float("nan")]])
 
     def _fake_read_csv(*_args: object, **_kwargs: object) -> pd.DataFrame:
-        return bad_df
+        return pd.DataFrame([[1, float("nan")]])
 
     monkeypatch.setattr(pd, "read_csv", _fake_read_csv)
-
     with pytest.raises(ValueError, match="contains NaN values"):
         AmpliconCovs._open_tsv_file(bad_file)
 
 
-def test_calculate_amplicon_start_end_two_amplicons(tmp_path: Path) -> None:
-    """
-    Calculate start/end coordinates for two amplicons from paired primer entries.
-
-    Parameters
-    ----------
-    tmp_path : Path
-        Temporary directory fixture for creating a temporary BED file.
-
-    Returns
-    -------
-    None
-    """
-
-    bed_lines = [
-        "NC_045512.2\t10\t20\tvirus_1_LEFT\t0\t+\n",
-        "NC_045512.2\t80\t90\tvirus_1_RIGHT\t0\t-\n",
-        "NC_045512.2\t100\t110\tvirus_2_LEFT\t0\t+\n",
-        "NC_045512.2\t170\t180\tvirus_2_RIGHT\t0\t-\n",
-    ]
-    bed_path = _write_bed(tmp_path, bed_lines)
-    primers = AmpliconCovs._open_tsv_file(bed_path)
+def test_calculate_amplicon_start_end_non_overlapping_boundaries(tmp_path: Path) -> None:
+    bed_path = _write_bed(
+        tmp_path,
+        [
+            "NC_045512.2\t10\t20\tvirus_1_LEFT\t0\t+\n",
+            "NC_045512.2\t80\t90\tvirus_1_RIGHT\t0\t-\n",
+            "NC_045512.2\t100\t110\tvirus_2_LEFT\t0\t+\n",
+            "NC_045512.2\t180\t190\tvirus_2_RIGHT\t0\t-\n",
+            "NC_045512.2\t200\t210\tvirus_3_LEFT\t0\t+\n",
+            "NC_045512.2\t280\t290\tvirus_3_RIGHT\t0\t-\n",
+        ],
+    )
     covs = AmpliconCovs(input=bed_path, coverages=bed_path, key="sample", output=bed_path)
-    primers = covs._split_primer_names(primers)
+    primers = covs._split_primer_names(AmpliconCovs._open_tsv_file(bed_path))
 
-    amplicon_sizes = covs._calculate_amplicon_start_end(primers)
+    amplicons = covs._calculate_amplicon_start_end(primers)
 
-    first = amplicon_sizes.loc[amplicon_sizes["amplicon_number"] == 1].iloc[0]
-    second = amplicon_sizes.loc[amplicon_sizes["amplicon_number"] == 2].iloc[0]
-    assert (first["start"], first["end"]) == (20, 100)
-    assert (second["start"], second["end"]) == (90, 170)
+    assert list(amplicons["amplicon_number"]) == [1, 2, 3]
+    assert list(amplicons["start"]) == [20, 90, 190]
+    assert list(amplicons["end"]) == [100, 200, 280]
 
 
-def test_calculate_amplicon_start_end_invalid_raises(tmp_path: Path) -> None:
-    """
-    Ensure `_calculate_amplicon_start_end` raises for overlapping/invalid primer pairs.
-
-    Parameters
-    ----------
-    tmp_path : Path
-        Temporary directory fixture for creating a temporary BED file.
-
-    Returns
-    -------
-    None
-    """
-
-    bed_lines = [
-        "NC_045512.2\t10\t100\tvirus_1_LEFT\t0\t+\n",
-        "NC_045512.2\t50\t60\tvirus_1_RIGHT\t0\t-\n",
-    ]
-    bed_path = _write_bed(tmp_path, bed_lines)
-    primers = AmpliconCovs._open_tsv_file(bed_path)
+def test_calculate_amplicon_start_end_falls_back_when_previous_reverse_missing(tmp_path: Path) -> None:
+    # Amplicon 1 has no RIGHT primer, so amplicon 2 start should use own LEFT end.
+    bed_path = _write_bed(
+        tmp_path,
+        [
+            "NC_045512.2\t10\t20\tvirus_1_LEFT\t0\t+\n",
+            "NC_045512.2\t100\t110\tvirus_2_LEFT\t0\t+\n",
+            "NC_045512.2\t170\t180\tvirus_2_RIGHT\t0\t-\n",
+        ],
+    )
     covs = AmpliconCovs(input=bed_path, coverages=bed_path, key="sample", output=bed_path)
-    primers = covs._split_primer_names(primers)
+    primers = covs._split_primer_names(AmpliconCovs._open_tsv_file(bed_path))
+
+    amplicons = covs._calculate_amplicon_start_end(primers)
+    second = amplicons.loc[amplicons["amplicon_number"] == 2].iloc[0]
+    assert second["start"] == 110
+
+
+def test_calculate_amplicon_start_end_falls_back_when_next_forward_missing(tmp_path: Path) -> None:
+    # Amplicon 2 has no LEFT primer, so amplicon 1 end should use own RIGHT start.
+    bed_path = _write_bed(
+        tmp_path,
+        [
+            "NC_045512.2\t10\t20\tvirus_1_LEFT\t0\t+\n",
+            "NC_045512.2\t80\t90\tvirus_1_RIGHT\t0\t-\n",
+            "NC_045512.2\t170\t180\tvirus_2_RIGHT\t0\t-\n",
+        ],
+    )
+    covs = AmpliconCovs(input=bed_path, coverages=bed_path, key="sample", output=bed_path)
+    primers = covs._split_primer_names(AmpliconCovs._open_tsv_file(bed_path))
+
+    amplicons = covs._calculate_amplicon_start_end(primers)
+    first = amplicons.loc[amplicons["amplicon_number"] == 1].iloc[0]
+    assert first["end"] == 80
+
+
+def test_calculate_amplicon_start_end_raises_for_invalid_interval(tmp_path: Path) -> None:
+    bed_path = _write_bed(
+        tmp_path,
+        [
+            "NC_045512.2\t10\t100\tvirus_1_LEFT\t0\t+\n",
+            "NC_045512.2\t50\t60\tvirus_1_RIGHT\t0\t-\n",
+        ],
+    )
+    covs = AmpliconCovs(input=bed_path, coverages=bed_path, key="sample", output=bed_path)
+    primers = covs._split_primer_names(AmpliconCovs._open_tsv_file(bed_path))
 
     with pytest.raises(ValueError, match="Invalid amplicon"):
         covs._calculate_amplicon_start_end(primers)
 
 
-def test_calculate_mean_coverage() -> None:
-    """
-    Validate mean coverage calculation over a given start/end interval.
+def test_calculate_mean_coverage_uses_one_based_inclusive_window() -> None:
+    coverages = pd.DataFrame({1: [10, 20, 30, 40, 50]})
+    interval = pd.Series({"start": 2, "end": 4})
+    assert AmpliconCovs._calculate_mean_coverage(interval, coverages) == 30.0
 
-    Returns
-    -------
-    None
-    """
 
-    coverages = AmpliconCovs._open_tsv_file(
-        PROJECT_ROOT / "tests" / "unit" / "data" / "ESIB_EQA_2024_SARS1_01_coverage.tsv",
-        index_col=0,
+def test_create_amplicon_names_list_pads_and_sorts(tmp_path: Path) -> None:
+    bed_path = _write_bed(
+        tmp_path,
+        [
+            "NC_045512.2\t10\t20\tvirus_12_LEFT\t0\t+\n",
+            "NC_045512.2\t80\t90\tvirus_1_RIGHT\t0\t-\n",
+        ],
     )
-    input_array = pd.Series({"start": 2, "end": 4})
-    mean_cov = AmpliconCovs._calculate_mean_coverage(input_array, coverages)
-
-    assert mean_cov == round(float(coverages.iloc[1:4].mean().values[0]), 2)
-
-
-def test_create_amplicon_names_list(tmp_path: Path) -> None:
-    """
-    Create normalized amplicon name list from primer entries (zero-padded numbers).
-
-    Parameters
-    ----------
-    tmp_path : Path
-        Temporary directory fixture for creating the BED file used in the test.
-
-    Returns
-    -------
-    None
-    """
-
-    bed_lines = [
-        "NC_045512.2\t10\t20\tvirus_1_LEFT\t0\t+\n",
-        "NC_045512.2\t80\t90\tvirus_12_RIGHT\t0\t-\n",
-    ]
-    bed_path = _write_bed(tmp_path, bed_lines)
-    primers = AmpliconCovs._open_tsv_file(bed_path)
     covs = AmpliconCovs(input=bed_path, coverages=bed_path, key="sample", output=bed_path)
-    primers = covs._split_primer_names(primers)
-
-    amplicon_names = covs._create_amplicon_names_list(primers)
-
-    assert amplicon_names == ["virus_001", "virus_012"]
+    primers = covs._split_primer_names(AmpliconCovs._open_tsv_file(bed_path))
+    assert covs._create_amplicon_names_list(primers) == ["virus_001", "virus_012"]
 
 
-def test_amplicon_covs_empty_primers(tmp_path: Path) -> None:
-    """
-    Run `AmpliconCovs` with an empty primer BED file to ensure output is produced.
+@pytest.mark.xfail(reason="Current implementation assumes index label 0 exists")
+def test_create_amplicon_names_list_works_with_non_zero_based_index(tmp_path: Path) -> None:
+    bed_path = _write_bed(
+        tmp_path,
+        [
+            "NC_045512.2\t10\t20\tvirus_1_LEFT\t0\t+\n",
+            "NC_045512.2\t80\t90\tvirus_2_RIGHT\t0\t-\n",
+        ],
+    )
+    covs = AmpliconCovs(input=bed_path, coverages=bed_path, key="sample", output=bed_path)
+    primers = covs._split_primer_names(AmpliconCovs._open_tsv_file(bed_path))
+    shifted_index = primers.set_index(pd.Index([10, 11]))
+    assert covs._create_amplicon_names_list(shifted_index) == ["virus_001", "virus_002"]
 
-    Parameters
-    ----------
-    tmp_path : Path
-        Temporary directory fixture for creating input and output files.
 
-    Returns
-    -------
-    None
-    """
+def test_run_end_to_end_produces_expected_coverage_values(tmp_path: Path) -> None:
+    bed_path = _write_bed(
+        tmp_path,
+        [
+            "NC_045512.2\t1\t3\tvirus_1_LEFT\t0\t+\n",
+            "NC_045512.2\t7\t9\tvirus_1_RIGHT\t0\t-\n",
+            "NC_045512.2\t10\t12\tvirus_2_LEFT\t0\t+\n",
+            "NC_045512.2\t16\t18\tvirus_2_RIGHT\t0\t-\n",
+        ],
+    )
+    cov_path = _write_coverage(tmp_path, [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180])
+    output_file = tmp_path / "amplicon_covs.csv"
 
+    AmpliconCovs(input=bed_path, coverages=cov_path, key="sampleA", output=output_file).run()
+
+    result = pd.read_csv(output_file, index_col=0)
+    assert list(result.columns) == ["virus_001", "virus_002"]
+    assert result.loc["sampleA", "virus_001"] == 65.0
+    assert result.loc["sampleA", "virus_002"] == 125.0
+
+
+def test_run_with_empty_primers_writes_only_index_row(tmp_path: Path) -> None:
     bed_path = tmp_path / "empty.bed"
     bed_path.write_text("", encoding="utf-8")
     cov_path = _write_coverage(tmp_path, [10, 20, 30])
     output_file = tmp_path / "output.csv"
 
-    covs = AmpliconCovs(input=bed_path, coverages=cov_path, key="sample1", output=output_file)
-    covs.run()
+    AmpliconCovs(input=bed_path, coverages=cov_path, key="sample1", output=output_file).run()
 
-    assert output_file.exists()
-    assert "sample1" in output_file.read_text(encoding="utf-8")
-
-
-def test_primer_name_parser_fallback_errors() -> None:
-    """
-    Confirm `PrimerNameParser` raises `ValueError` for inputs that don't match any
-    known primer name formats.
-
-    Returns
-    -------
-    None
-    """
-
-    parser = PrimerNameParser()
-
-    with pytest.raises(ValueError, match="does not match expected formats"):
-        parser.parse("bad")
-
-    with pytest.raises(ValueError, match="does not match expected formats"):
-        parser.parse("ncov-2019_1")
-
-
-def test_read_direction_from_string() -> None:
-    """
-    Verify `ReadDirection.from_string` parses common direction labels and
-    raises for unrecognized values.
-
-    Returns
-    -------
-    None
-    """
-
-    assert ReadDirection.from_string("LEFT") == ReadDirection.FORWARD
-    assert ReadDirection.from_string("reverse") == ReadDirection.REVERSE
-
-    with pytest.raises(ValueError, match="Unrecognized read direction"):
-        ReadDirection.from_string("sideways")
+    result = pd.read_csv(output_file, index_col=0)
+    assert list(result.index) == ["sample1"]
+    assert result.shape == (1, 0)
