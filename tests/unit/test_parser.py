@@ -339,6 +339,29 @@ def test_print_missing_asset_warning_no_sheet_exits_when_assets_missing(tmp_path
         parser_obj._print_missing_asset_warning(args, sheet_present=False)
 
 
+def test_print_missing_asset_warning_no_sheet_genbank_allows_missing_features_and_target(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    parser_obj = CLIparser.__new__(CLIparser)
+    args = _build_args(tmp_path, reference=str(tmp_path / "reference.gb"), features=None, target=None)
+
+    monkeypatch.setattr("ViroConstrictor.parser.GenBank.is_genbank", lambda _path: True)
+
+    parser_obj._print_missing_asset_warning(args, sheet_present=False)
+
+
+def test_print_missing_asset_warning_no_sheet_fasta_still_requires_features_and_target(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    parser_obj = CLIparser.__new__(CLIparser)
+    args = _build_args(tmp_path, features=None, target=None)
+
+    monkeypatch.setattr("ViroConstrictor.parser.GenBank.is_genbank", lambda _path: False)
+
+    with pytest.raises(SystemExit):
+        parser_obj._print_missing_asset_warning(args, sheet_present=False)
+
+
 def test_print_missing_asset_warning_sheet_present_does_not_exit(tmp_path: Path) -> None:
     parser_obj = CLIparser.__new__(CLIparser)
     args = _build_args(tmp_path)
@@ -749,3 +772,38 @@ def test_make_samples_dict_more_samples_in_sheet_than_input_exits(tmp_path: Path
 
     with pytest.raises(SystemExit):
         parser_obj._make_samples_dict(df, args, {"sample1": "reads.fastq.gz"})
+
+
+@pytest.mark.parametrize("features_value", ["", "   "])
+def test_make_samples_dict_genbank_sets_features_when_samplesheet_value_is_empty_string(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, features_value: str
+) -> None:
+    parser_obj = CLIparser.__new__(CLIparser)
+    parser_obj.flags = Namespace(presets=True)
+
+    split_ref = tmp_path / "split_reference.fasta"
+    split_features = tmp_path / "split_features.gff"
+    args = _build_args(tmp_path, reference=str(tmp_path / "reference.gb"), features=None)
+
+    monkeypatch.setattr("ViroConstrictor.parser.CheckInputFiles", lambda _indir: True)
+    monkeypatch.setattr("ViroConstrictor.parser.GenBank.is_genbank", lambda _path: True)
+    monkeypatch.setattr(
+        "ViroConstrictor.parser.GenBank.split_genbank",
+        lambda _path, emit_target=True: (str(split_ref), str(split_features), "virusX"),
+    )
+    monkeypatch.setattr("ViroConstrictor.parser.match_preset_name", lambda _v, use_presets: ("DEFAULT", 0.0))
+
+    df = pd.DataFrame(
+        {
+            "SAMPLE": ["sample1"],
+            "VIRUS": ["virus1"],
+            "REFERENCE": [str(tmp_path / "reference.gb")],
+            "PRIMERS": ["NONE"],
+            "FEATURES": [features_value],
+        }
+    )
+
+    result = parser_obj._make_samples_dict(df, args, {"sample1": "reads.fastq.gz"})
+
+    assert result["sample1"]["REFERENCE"] == str(split_ref)
+    assert result["sample1"]["FEATURES"] == str(split_features)

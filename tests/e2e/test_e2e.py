@@ -16,7 +16,7 @@ def prepare_files() -> Generator[dict[str, Path], None, None]:
     data_dir.mkdir(parents=True, exist_ok=True)
 
     # input
-    filename = "ESIB_EQA_2024_SARS1_01.fastq.gz"
+    filename = "ESIB_EQA_2024_SARS1_01.fastq"
     fastqs_dir = data_dir / "fastqs"
     input_file = fastqs_dir / filename
     if not input_file.exists():
@@ -66,6 +66,7 @@ def test_main(prepare_files: dict[str, Path]) -> None:
         "nanopore",
         "--target",
         "sars-cov-2",
+        "--debug"
     ]
 
     # cwd = os.getcwd()
@@ -89,6 +90,7 @@ def test_main_genbank(prepare_files: dict[str, Path]) -> None:
         "fragmented",
         "--platform",
         "nanopore",
+        "--debug"
     ]
 
     with pytest.raises(SystemExit) as e:
@@ -115,6 +117,7 @@ def test_match_ref(prepare_files: dict[str, Path]) -> None:
         "--target",
         "sars-cov-2",
         "-mr",
+        "--debug"
     ]
 
     with pytest.raises(SystemExit) as e:

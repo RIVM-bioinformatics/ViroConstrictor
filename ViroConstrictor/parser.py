@@ -56,9 +56,10 @@ class CLIparser:
             converted_samples = convert_log_text(self.samples_dict)
             log.debug(f"Input handling :: Parser :: Getting samples :: the parsed samples are:\n{converted_samples}")
         else:  # samplesheet is not given
-            self._print_missing_asset_warning(self.flags, False)
-            if GenBank.is_genbank(pathlib.Path(self.flags.reference)):
+            # Split GenBank input first so derived reference/features/target are available for validation.
+            if self.flags.reference is not None and GenBank.is_genbank(pathlib.Path(self.flags.reference)):
                 self.parse_genbank(self.flags.reference)
+            self._print_missing_asset_warning(self.flags, False)
             self.samples_dict = self._make_samples_dict(None, self.flags, GetSamples(self.flags.input, self.flags.platform))
         if self.samples_df.empty:
             self.samples_df = pd.DataFrame.from_dict(self.samples_dict, orient="index")
@@ -594,7 +595,7 @@ class CLIparser:
                                 split_ref, split_features, _ = GenBank.split_genbank(pathlib.Path(str(current_value)), emit_target=True)
                                 df.at[sample_name, column] = str(split_ref)
                                 # Also set features if not already set
-                                if "FEATURES" not in df.columns or pd.isna(df.at[sample_name, "FEATURES"]):
+                                if "FEATURES" not in df.columns or is_missing_value(df.at[sample_name, "FEATURES"]):
                                     df.at[sample_name, "FEATURES"] = str(split_features)
 
                     # Handle PRIMERS column - must be valid path or "NONE"
@@ -610,13 +611,8 @@ class CLIparser:
 
                     # Handle FEATURES column - must be valid path or "NONE", consider genbank splitting
                     elif column == "FEATURES":
-                        if current_value is None or current_value == "":
-                            # Check if reference is genbank and already processed
-                            ref_value = df.at[sample_name, "REFERENCE"] if "REFERENCE" in df.columns else None
-                            if ref_value and GenBank.is_genbank(pathlib.Path(str(ref_value))):
-                                # Features should have been set during reference processing
-                                pass
-                            elif properties["default"] is None:
+                        if is_missing_value(current_value):
+                            if properties["default"] is None:
                                 log.error(f"[bold red]Features file must be provided for sample '{sample_name}' or set to 'NONE'[/bold red]")
                                 sys.exit(1)
                             else:
@@ -732,13 +728,14 @@ class CLIparser:
                 )
         if not sheet_present:
             missing_assets = []
+            reference_is_genbank = args.reference is not None and GenBank.is_genbank(pathlib.Path(args.reference))
             if args.primers is None:
                 missing_assets.append("primers")
             if args.reference is None:
                 missing_assets.append("reference fasta")
-            if args.features is None:
+            if args.features is None and not reference_is_genbank:
                 missing_assets.append("GFF file")
-            if args.target is None:
+            if args.target is None and not reference_is_genbank:
                 missing_assets.append("target/preset")
             if missing_assets:
                 log.error(
@@ -746,7 +743,6 @@ class CLIparser:
                     "Please provide these assets through either a sample sheet or the commandline (or, for primers/features, disable them explicitly with '--primers NONE' and/or '--features NONE') and try again.[/bold red]"
                 )
                 sys.exit(1)
-
     def _get_paths_for_workflow(self, flags: argparse.Namespace) -> tuple[str, str, str, str, str]:
         """Takes the input and output paths from the command line, and then creates the working directory if
         it doesn't exist. It then changes the current working directory to the working directory
@@ -828,6 +824,18 @@ class CLIparser:
             axis=1,
         )
         return df
+
+
+def is_missing_value(value: Any) -> bool:
+    """Return True for None/NaN and for empty or whitespace-only strings."""
+    if value is None:
+        return True
+    if isinstance(value, str):
+        return value.strip() == ""
+    try:
+        return bool(pd.isna(value))
+    except (TypeError, ValueError):
+        return False
 
 
 def samplesheet_enforce_absolute_paths(df: pd.DataFrame) -> pd.DataFrame:
