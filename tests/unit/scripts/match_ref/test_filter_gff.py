@@ -6,10 +6,10 @@ stubs for hermetic testing. Tests cover happy paths, missing data, invalid types
 and filtering edge cases.
 """
 
-from argparse import ArgumentParser
-from pathlib import Path
 import sys
 import types
+from argparse import ArgumentParser
+from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -61,8 +61,8 @@ sys.modules.setdefault("AminoExtract", amin_module)
 sys.modules.setdefault("AminoExtract.logging", amin_logging)
 sys.modules.setdefault("AminoExtract.reader", amin_reader)
 
-from ViroConstrictor.workflow.match_ref.scripts import filter_gff as filter_gff_module  # isort:skip
-from ViroConstrictor.workflow.match_ref.scripts.filter_gff import FilterGff  # isort:skip
+from ViroConstrictor.workflow.match_ref.scripts import filter_gff as filter_gff_module  # noqa: E402, isort:skip
+from ViroConstrictor.workflow.match_ref.scripts.filter_gff import FilterGff  # noqa: E402, isort:skip
 
 
 class DummyGff:

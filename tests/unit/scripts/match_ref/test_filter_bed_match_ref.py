@@ -5,16 +5,16 @@ based on reference mappings, remaps reference IDs, and updates statistics. Tests
 happy paths, edge cases (empty matches, missing files), and error handling.
 """
 
+import sys
 from argparse import ArgumentParser
 from pathlib import Path
-import sys
 
 import pandas as pd
 import pytest
 
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(PROJECT_ROOT.joinpath("ViroConstrictor/workflow")))
-from ViroConstrictor.workflow.match_ref.scripts.filter_bed import FilterBed  # isort:skip
+from ViroConstrictor.workflow.match_ref.scripts.filter_bed import FilterBed  # noqa: E402, isort:skip
 
 
 def test_add_arguments_parses_refdata_and_updatedstats() -> None:

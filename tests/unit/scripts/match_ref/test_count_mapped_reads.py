@@ -6,9 +6,9 @@ for each reference sequence. Tests cover happy paths, edge cases (unmapped reads
 zero references), error handling (missing NM tag), and known limitations.
 """
 
-from argparse import ArgumentParser
 import sys
 import types
+from argparse import ArgumentParser
 from pathlib import Path
 from typing import Dict, Iterable, List
 
@@ -24,7 +24,7 @@ except ModuleNotFoundError:
     pysam_stub.AlignmentFile = None
     sys.modules["pysam"] = pysam_stub
 
-from ViroConstrictor.workflow.match_ref.scripts.count_mapped_reads import CountMappedReads  # isort:skip
+from ViroConstrictor.workflow.match_ref.scripts.count_mapped_reads import CountMappedReads  # noqa: E402, isort:skip
 
 
 def test_count_mapped_reads_add_arguments_accepts_base_inputs() -> None:

@@ -19,7 +19,7 @@ sys.path.insert(0, str(PROJECT_ROOT.joinpath("ViroConstrictor/workflow")))
 if "pysam" not in sys.modules:
     sys.modules["pysam"] = types.SimpleNamespace(AlignmentFile=None)
 
-from ViroConstrictor.workflow.main.scripts.clipper import Clipper  # isort:skip
+from ViroConstrictor.workflow.main.scripts.clipper import Clipper  # noqa: E402, isort:skip
 
 
 class FakeRead:

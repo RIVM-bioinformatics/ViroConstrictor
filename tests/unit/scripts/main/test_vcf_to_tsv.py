@@ -14,7 +14,7 @@ import pytest
 
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(PROJECT_ROOT.joinpath("ViroConstrictor/workflow")))
-from ViroConstrictor.workflow.main.scripts.vcf_to_tsv import VcfToTsv  # isort:skip
+from ViroConstrictor.workflow.main.scripts.vcf_to_tsv import VcfToTsv  # noqa: E402, isort:skip
 
 
 def test_add_arguments_parses_required_fields() -> None:

@@ -14,7 +14,7 @@ import pytest
 
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(PROJECT_ROOT.joinpath("ViroConstrictor/workflow")))
-from ViroConstrictor.workflow.main.scripts.filter_bed_input import FilterBedInput  # isort:skip
+from ViroConstrictor.workflow.main.scripts.filter_bed_input import FilterBedInput  # noqa: E402, isort:skip
 
 
 def test_add_arguments_parses_reference_id() -> None:

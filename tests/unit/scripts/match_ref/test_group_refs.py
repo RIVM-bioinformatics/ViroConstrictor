@@ -5,8 +5,8 @@ These tests exercise the grouping logic used by the match-ref workflow's
 parsing, and comprehensive error handling for invalid inputs.
 """
 
-import sys
 import runpy
+import sys
 from argparse import ArgumentParser
 from pathlib import Path
 from typing import List, cast
@@ -17,7 +17,7 @@ from Bio import SeqIO
 
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(PROJECT_ROOT.joinpath("ViroConstrictor/workflow")))
-from ViroConstrictor.workflow.match_ref.scripts.group_refs import GroupRefs  # isort:skip
+from ViroConstrictor.workflow.match_ref.scripts.group_refs import GroupRefs  # noqa: E402, isort:skip
 
 
 def test_group_refs_segmented_mode(tmp_path: Path) -> None:

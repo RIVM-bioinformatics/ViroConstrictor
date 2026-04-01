@@ -5,16 +5,16 @@ segment metadata embedded in sequence descriptions. Tests cover segment-based
 filtering, "None" wildcard handling, validation errors, and malformed records.
 """
 
+import sys
 from argparse import ArgumentParser
 from pathlib import Path
-import sys
 
 import pytest
 from Bio import SeqIO
 
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(PROJECT_ROOT.joinpath("ViroConstrictor/workflow")))
-from ViroConstrictor.workflow.match_ref.scripts.filter_references import FilterReferences  # isort:skip
+from ViroConstrictor.workflow.match_ref.scripts.filter_references import FilterReferences  # noqa: E402, isort:skip
 
 
 def _write_fasta(path: Path, records: list[tuple[str, str, str]]) -> None:

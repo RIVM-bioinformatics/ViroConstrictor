@@ -5,8 +5,8 @@ reference from a set of candidates based on mapped read count and mismatch metri
 Tests cover happy paths, tie-breaking, empty/invalid inputs, and missing data errors.
 """
 
-from argparse import ArgumentParser
 import sys
+from argparse import ArgumentParser
 from pathlib import Path
 
 import pandas as pd
@@ -15,7 +15,7 @@ from Bio import SeqIO
 
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(PROJECT_ROOT.joinpath("ViroConstrictor/workflow")))
-from ViroConstrictor.workflow.match_ref.scripts.filter_best_matching_ref import FilterBestMatchingRef  # isort:skip
+from ViroConstrictor.workflow.match_ref.scripts.filter_best_matching_ref import FilterBestMatchingRef  # noqa: E402, isort:skip
 
 
 def test_filter_best_matching_ref_add_arguments_defines_expected_flags() -> None:

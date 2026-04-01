@@ -13,7 +13,7 @@ import pytest
 
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(PROJECT_ROOT.joinpath("ViroConstrictor/workflow")))
-from ViroConstrictor.workflow.main.scripts.boc import Boc  # isort:skip
+from ViroConstrictor.workflow.main.scripts.boc import Boc  # noqa: E402, isort:skip
 
 
 def _write_fasta(path: Path, records: list[tuple[str, str]]) -> Path:

@@ -14,7 +14,7 @@ import pytest
 
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(PROJECT_ROOT.joinpath("ViroConstrictor/workflow")))
-from ViroConstrictor.workflow.main.scripts.concat_amplicon_covs import ConcatAmpliconCovs  # isort:skip
+from ViroConstrictor.workflow.main.scripts.concat_amplicon_covs import ConcatAmpliconCovs  # noqa: E402, isort:skip
 
 
 def _write_amplicon_csv(path: Path, rows: list[tuple[str, float, float]]) -> Path:

@@ -22,7 +22,7 @@ if "AminoExtract" not in sys.modules:
     aminoextract_stub.SequenceReader = object
     sys.modules["AminoExtract"] = aminoextract_stub
 
-from ViroConstrictor.workflow.main.scripts.extract_gff import ExtractGff  # isort:skip
+from ViroConstrictor.workflow.main.scripts.extract_gff import ExtractGff  # noqa: E402, isort:skip
 
 
 class _FakeGff:

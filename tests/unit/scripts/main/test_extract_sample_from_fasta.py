@@ -14,7 +14,7 @@ from Bio import SeqIO
 
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(PROJECT_ROOT.joinpath("ViroConstrictor/workflow")))
-from ViroConstrictor.workflow.main.scripts.extract_sample_from_fasta import ExtractSampleFromFasta  # isort:skip
+from ViroConstrictor.workflow.main.scripts.extract_sample_from_fasta import ExtractSampleFromFasta  # noqa: E402, isort:skip
 
 
 def _record_ids(path: Path) -> list[str]:
