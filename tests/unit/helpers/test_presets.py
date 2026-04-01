@@ -26,7 +26,7 @@ def test_match_preset_name_returns_default_when_presets_disabled() -> None:
     """When presets are disabled, matching should not be attempted."""
     matched_name, score = presets.match_preset_name("SARS-CoV-2", use_presets=False)
     assert matched_name == "DEFAULT"
-    assert score == 0.0
+    assert score == pytest.approx(0.0)
 
 
 def test_match_preset_name_normalizes_input_and_matches_alias() -> None:
@@ -40,14 +40,14 @@ def test_match_preset_name_respects_explicit_default_query() -> None:
     """DEFAULT should map directly to DEFAULT with full confidence."""
     matched_name, score = presets.match_preset_name("DEFAULT", use_presets=True)
     assert matched_name == "DEFAULT"
-    assert score == 1.0
+    assert score == pytest.approx(1.0)
 
 
 def test_match_preset_name_falls_back_to_default_for_low_similarity() -> None:
     """Unknown targets with poor similarity should not map to a specific preset."""
     matched_name, score = presets.match_preset_name("zzzzzzzzzzzz", use_presets=True)
     assert matched_name == "DEFAULT"
-    assert score == 0.0
+    assert score == pytest.approx(0.0)
 
 
 @pytest.mark.xfail(reason="Intended behavior: empty alias tables should safely return DEFAULT instead of raising IndexError.")
@@ -56,7 +56,7 @@ def test_match_preset_name_handles_empty_alias_table_gracefully(monkeypatch: pyt
     monkeypatch.setattr(presets, "aliases", {})
     matched_name, score = presets.match_preset_name("anything", use_presets=True)
     assert matched_name == "DEFAULT"
-    assert score == 0.0
+    assert score == pytest.approx(0.0)
 
 
 def test_collapse_preset_group_collects_selected_stages_with_prefix(monkeypatch: pytest.MonkeyPatch) -> None:

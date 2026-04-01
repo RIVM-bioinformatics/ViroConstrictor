@@ -98,7 +98,7 @@ def test_run_concatenates_multiple_files_and_fills_missing_values(tmp_path: Path
     assert "median_cov" in merged.columns
     assert "extra_stat" in merged.columns
     assert pd.isna(merged.loc["amp_3", "median_cov"])
-    assert float(merged.loc["amp_1", "mean_cov"]) == 10.0
+    assert float(merged.loc["amp_1", "mean_cov"]) == pytest.approx(10.0)
 
 
 def test_run_supports_single_input_when_input_is_string(tmp_path: Path) -> None:
@@ -117,7 +117,7 @@ def test_run_supports_single_input_when_input_is_string(tmp_path: Path) -> None:
 
     merged = pd.read_csv(output, index_col=0)
     assert list(merged.index) == ["amp_10"]
-    assert float(merged.loc["amp_10", "mean_cov"]) == 100.0
+    assert float(merged.loc["amp_10", "mean_cov"]) == pytest.approx(100.0)
 
 
 def test_run_raises_for_missing_input_file(tmp_path: Path) -> None:

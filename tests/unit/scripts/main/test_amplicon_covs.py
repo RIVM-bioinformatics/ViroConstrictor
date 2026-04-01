@@ -430,7 +430,7 @@ def test_calculate_mean_coverage_uses_one_based_inclusive_window() -> None:
     """
     coverages = pd.DataFrame({1: [10, 20, 30, 40, 50]})
     interval = pd.Series({"start": 2, "end": 4})
-    assert AmpliconCovs._calculate_mean_coverage(interval, coverages) == 30.0
+    assert AmpliconCovs._calculate_mean_coverage(interval, coverages) == pytest.approx(30.0)
 
 
 def test_create_amplicon_names_list_pads_and_sorts(tmp_path: Path) -> None:
@@ -496,8 +496,8 @@ def test_run_end_to_end_produces_expected_coverage_values(tmp_path: Path) -> Non
 
     result = pd.read_csv(output_file, index_col=0)
     assert list(result.columns) == ["virus_001", "virus_002"]
-    assert result.loc["sampleA", "virus_001"] == 65.0
-    assert result.loc["sampleA", "virus_002"] == 125.0
+    assert result.loc["sampleA", "virus_001"] == pytest.approx(65.0)
+    assert result.loc["sampleA", "virus_002"] == pytest.approx(125.0)
 
 
 def test_run_with_empty_primers_writes_only_index_row(tmp_path: Path) -> None:

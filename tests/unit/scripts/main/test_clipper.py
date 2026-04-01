@@ -188,8 +188,8 @@ def test_add_arguments_parses_all_supported_flags() -> None:
     assert args.output == "out.fastq"
     assert args.exclude_spliced is True
     assert args.spliced_length_threshold == 30
-    assert args.min_aligned_length == 0.2
-    assert args.max_aligned_length == 500.0
+    assert args.min_aligned_length == pytest.approx(0.2)
+    assert args.max_aligned_length == pytest.approx(500.0)
     assert args.only_include_region == "100:900"
     assert args.threads == 4
 
