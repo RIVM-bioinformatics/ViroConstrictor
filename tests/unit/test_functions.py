@@ -105,7 +105,8 @@ def test_get_help_string_does_not_append_when_not_needed(help_text: str | None, 
     expected : str | None
         The expected help text returned by _get_help_string.
     """
-    action = SimpleNamespace(help=help_text, default=default)
+    from argparse import Action
+    action = Action(option_strings=[], dest="test", help=help_text, default=default)
     formatter = vc_functions.FlexibleArgFormatter("prog")
     assert formatter._get_help_string(action) == expected
 

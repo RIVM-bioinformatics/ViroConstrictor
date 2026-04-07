@@ -127,6 +127,7 @@ def test_extract_gff_with_no_matching_reference_writes_empty_result(tmp_path: Pa
 
     class _FakeSequenceReader:
         def __init__(self, logger: object | None, verbose: bool) -> None:
+            # Mock class requires no initialization logic
             pass
 
         def read_gff(self, path: Path | str) -> _FakeGff:
@@ -156,6 +157,7 @@ def test_extract_gff_surfaces_reader_errors(tmp_path: Path, monkeypatch: pytest.
 
     class _FailingSequenceReader:
         def __init__(self, logger: object | None, verbose: bool) -> None:
+            # Mock class requires no initialization logic
             pass
 
         def read_gff(self, path: Path | str) -> _FakeGff:
