@@ -229,7 +229,6 @@ def test_segmented_ref_groups_handles_malformed_description_without_crash(tmp_pa
     assert out.empty
 
 
-@pytest.mark.xfail(reason="Intended behavior: list/tuple AA feature containers should be accepted without raising ValueError.")
 def test_get_features_all_samples_returns_unique_features_only() -> None:
     """All-sample aggregation should deduplicate and skip missing values."""
     samples_df = pd.DataFrame(
@@ -283,3 +282,67 @@ def test_get_features_per_virus_returns_empty_for_unknown_virus() -> None:
     samples_df = pd.DataFrame([{"Virus": "FluA", "AA_FEAT_NAMES": ("HA",)}])
 
     assert methods.get_features_per_virus("UnknownVirus", samples_df) == []
+
+
+class _FakeFrame:
+    """Minimal frame-like object for testing call-stack based helpers."""
+
+    def __init__(self, f_back=None, f_locals=None, f_lineno=None) -> None:
+        self.f_back = f_back
+        self.f_locals = f_locals if f_locals is not None else {}
+        self.f_lineno = f_lineno
+
+
+def test_get_rule_name_returns_closest_rule_by_lineno(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Rule lookup should resolve to the closest decorator at or before call line."""
+    code = "\n".join(
+        [
+            "@workflow.rule(name=\"prepare_refs\", lineno=10)",
+            "@workflow.rule(name=\"align_reads\", lineno=40)",
+            "@workflow.rule(name=\"make_consensus\", lineno=90)",
+        ]
+    )
+
+    rule_frame = _FakeFrame(f_locals={"code": code})
+    caller = _FakeFrame(f_back=rule_frame, f_lineno=57)
+    frame = _FakeFrame(f_back=caller)
+
+    monkeypatch.setattr(methods.inspect, "currentframe", lambda: frame)
+
+    assert methods.get_rule_name() == "align_reads"
+
+
+def test_get_rule_name_returns_fallback_when_no_rule_matches(monkeypatch: pytest.MonkeyPatch) -> None:
+    """If all discovered rules are after the call line, a safe fallback is expected."""
+    code = "\n".join(
+        [
+            "@workflow.rule(name=\"late_rule\", lineno=100)",
+            "@workflow.rule(name=\"later_rule\", lineno=150)",
+        ]
+    )
+
+    rule_frame = _FakeFrame(f_locals={"code": code})
+    caller = _FakeFrame(f_back=rule_frame, f_lineno=25)
+    frame = _FakeFrame(f_back=caller)
+
+    monkeypatch.setattr(methods.inspect, "currentframe", lambda: frame)
+
+    assert methods.get_rule_name() == "unknown_rule"
+
+
+def test_get_rule_name_returns_fallback_with_missing_stack_context(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Missing frame/call-site metadata should not crash rule-name resolution."""
+    monkeypatch.setattr(methods.inspect, "currentframe", lambda: None)
+
+    assert methods.get_rule_name() == "unknown_rule"
+
+
+def test_get_rule_name_returns_fallback_when_code_not_available(monkeypatch: pytest.MonkeyPatch) -> None:
+    """When calling context does not provide workflow source code, fallback is used."""
+    rule_frame = _FakeFrame(f_locals={"not_code": "..."})
+    caller = _FakeFrame(f_back=rule_frame, f_lineno=42)
+    frame = _FakeFrame(f_back=caller)
+
+    monkeypatch.setattr(methods.inspect, "currentframe", lambda: frame)
+
+    assert methods.get_rule_name() == "unknown_rule"

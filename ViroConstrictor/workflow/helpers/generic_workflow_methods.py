@@ -248,6 +248,7 @@ def get_features_per_virus(virus: str, samples_df: pd.DataFrame) -> list[str]:
             all_features.extend(aa_feat_names)
     return sorted(list(set(all_features)))
 
+
 def get_rule_name() -> str:
     """
     Return the name of the closest Snakemake rule above the current line.
@@ -271,7 +272,7 @@ def get_rule_name() -> str:
 
     Notes
     -----
-    The function inspects two frames up the call stack to access the rule definition context. 
+    The function inspects two frames up the call stack to access the rule definition context.
     The frame reference is deleted afterward to avoid reference cycles when using the `inspect` module.
     """
     fallback = "unknown_rule"
@@ -287,11 +288,13 @@ def get_rule_name() -> str:
 
         # Name of the closest matching rule
         return max(
-            ((m.group(1), int(m.group(2))) for m in re.finditer(
-                r"@workflow\.rule\(name=['\"]([^'\"]+)['\"],\s*lineno=(\d+)", code)
-             if int(m.group(2)) <= lineno),
+            (
+                (m.group(1), int(m.group(2)))
+                for m in re.finditer(r"@workflow\.rule\(name=['\"]([^'\"]+)['\"],\s*lineno=(\d+)", code)
+                if int(m.group(2)) <= lineno
+            ),
             default=(fallback, 0),
-            key=lambda x: x[1]
+            key=lambda x: x[1],
         )[0]
 
     finally:
