@@ -179,9 +179,9 @@ def get_features_all_samples(samples_df: pd.DataFrame) -> list[str]:
     all_features = []
     for _, row in samples_df.iterrows():
         aa_feat_names = row.get("AA_FEAT_NAMES")
-        if pd.notna(aa_feat_names) and isinstance(aa_feat_names, (list, tuple)):
+        if isinstance(aa_feat_names, (list, tuple)):
             all_features.extend(aa_feat_names)
-    return list(set(all_features))
+    return sorted(list(set(all_features)))
 
 
 def get_features_per_sample(sample: str, samples_df: pd.DataFrame) -> list[str]:
@@ -209,9 +209,9 @@ def get_features_per_sample(sample: str, samples_df: pd.DataFrame) -> list[str]:
     all_features = []
     for _, row in sample_rows.iterrows():
         aa_feat_names = row.get("AA_FEAT_NAMES")
-        if pd.notna(aa_feat_names) and isinstance(aa_feat_names, (list, tuple)):
+        if isinstance(aa_feat_names, (list, tuple)):
             all_features.extend(aa_feat_names)
-    return list(set(all_features))
+    return sorted(list(set(all_features)))
 
 
 # Helper function to get all unique features for a virus
@@ -241,6 +241,6 @@ def get_features_per_virus(virus: str, samples_df: pd.DataFrame) -> list[str]:
     all_features = []
     for _, row in virus_rows.iterrows():
         aa_feat_names = row.get("AA_FEAT_NAMES")
-        if pd.notna(aa_feat_names) and isinstance(aa_feat_names, (list, tuple)):
+        if isinstance(aa_feat_names, (list, tuple)):
             all_features.extend(aa_feat_names)
-    return list(set(all_features))
+    return sorted(list(set(all_features)))

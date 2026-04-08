@@ -47,11 +47,11 @@ def test_illumina_sheet_supports_dot_separator_and_optional_r(tmp_path: Path) ->
     assert result["sampleB"]["R2"] == str((tmp_path / "sampleB.R2.fastq").resolve())
 
 
-def test_illumina_sheet_nested_directory_and_duplicate_read_overwrites(tmp_path: Path) -> None:
-    """Test that illumina_sheet recursively searches nested directories and later matches overwrite earlier ones.
+def test_illumina_sheet_nested_directory_duplicate_read_keeps_a_discovered_match(tmp_path: Path) -> None:
+    """Test that illumina_sheet recursively searches nested directories and retains one discovered duplicate read.
 
     Verifies that when duplicate sample names with the same read number appear in different directories,
-    the later discovered file path overwrites the earlier one.
+    one of the matched file paths is retained without relying on os.walk() traversal order.
 
     Parameters
     ----------
@@ -60,12 +60,17 @@ def test_illumina_sheet_nested_directory_and_duplicate_read_overwrites(tmp_path:
     """
     nested = tmp_path / "nested"
     nested.mkdir()
-    (tmp_path / "sampleC_R1.fastq").write_text("first", encoding="utf-8")
-    (nested / "sampleC_R1.fastq").write_text("second", encoding="utf-8")
+    top_level_file = tmp_path / "sampleC_R1.fastq"
+    nested_file = nested / "sampleC_R1.fastq"
+    top_level_file.write_text("first", encoding="utf-8")
+    nested_file.write_text("second", encoding="utf-8")
 
     result = illumina_sheet(tmp_path)
 
-    assert result["sampleC"]["R1"] == str((nested / "sampleC_R1.fastq").resolve())
+    assert result["sampleC"]["R1"] in {
+        str(top_level_file.resolve()),
+        str(nested_file.resolve()),
+    }
 
 
 def test_nanopore_sheet_collects_first_match_only(tmp_path: Path) -> None:
