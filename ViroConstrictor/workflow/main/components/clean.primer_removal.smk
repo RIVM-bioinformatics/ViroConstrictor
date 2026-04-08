@@ -21,7 +21,7 @@ rule ampligone:
     container:
         f"{container_base_path}/viroconstrictor_clean_{get_hash('Clean')}.sif"
     log:
-        f"{logdir}" "AmpliGone_{Virus}.{RefID}.{sample}.log",
+        f"{logdir}{get_rule_name()}/" "AmpliGone_{Virus}.{RefID}.{sample}.log",
     threads: config["threads"]["PrimerRemoval"]
     resources:
         mem_mb=high_memory_job,
