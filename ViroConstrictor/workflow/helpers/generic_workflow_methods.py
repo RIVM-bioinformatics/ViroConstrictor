@@ -9,16 +9,41 @@ from ViroConstrictor.workflow.helpers.presets import get_preset_parameter
 
 def get_reference_header(reffile):
     """
-    #TODO: Docstring should be added to this function.
-    #TODO: The docstrings in this file should also note where the function is used as they are explicit workflow helper functions.
+    Extract reference sequence identifiers from a FASTA file.
+
+    Used in main/workflow.smk to retrieve reference IDs for wildcard expansion.
+
+    Parameters
+    ----------
+    reffile : str or Path
+        Path to the FASTA reference file.
+
+    Returns
+    -------
+    list[str]
+        List of sequence identifiers (record IDs) from the FASTA file.
     """
     return [record.id for record in SeqIO.parse(reffile, "fasta")]
 
 
 def get_aminoacid_features(df):
     """
-    #TODO: Docstring should be added to this function.
-    #TODO: The docstrings in this file should also note where the function is used as they are explicit workflow helper functions.
+    Extract amino acid feature names from reference GFF files for each sample.
+
+    Used in main/workflow.smk to populate the AA_FEAT_NAMES column based on preset
+    parameters and GFF feature types. Returns NaN for samples without features.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame with columns FEATURES (path to GFF file or "NONE"), REFERENCE (path
+        to reference sequence), PRESET (preset name), and RefID (reference identifier).
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with added/updated AA_FEAT_NAMES column containing tuples of feature
+        names or NaN where features are unavailable.
     """
     records = df.to_dict(orient="records")
 
@@ -42,8 +67,22 @@ def get_aminoacid_features(df):
 
 def list_aminoacid_result_outputs(samples_df):
     """
-    #TODO: Docstring should be added to this function.
-    #TODO: The docstrings in this file should also note where the function is used as they are explicit workflow helper functions.
+    Generate list of amino acid output file paths for samples with AA features.
+
+    Used in main/workflow.smk to construct expected output rules for amino acid
+    sequences. Generates filenames based on Virus, RefID, and feature names.
+
+    Parameters
+    ----------
+    samples_df : pd.DataFrame
+        DataFrame with columns Virus (virus name), RefID (reference ID), and
+        AA_FEAT_NAMES (tuple or NaN of feature names).
+
+    Returns
+    -------
+    list[str]
+        List of unique output file paths in format ``{res}Virus~{Virus}/RefID~{RefID}/{amino}{aa}.faa``,
+        or empty list if no samples have AA features.
     """
     aminoacid_features = []
     for x in samples_df.to_dict(orient="records"):
@@ -57,40 +96,48 @@ def list_aminoacid_result_outputs(samples_df):
 
 def read_fasta(fasta_file: str) -> list[SeqRecord.SeqRecord]:
     """
-    #TODO: this docstring should be cleaned up and made more informative.
-    #TODO: The docstrings in this file should also note where the function is used as they are explicit workflow helper functions.
-    Read a FASTA file and return a list of SeqRecord objects.
+    Read sequences from a FASTA file.
+
+    Used in main/workflow.smk and match_ref/workflow.smk for parsing reference sequences.
 
     Parameters
     ----------
     fasta_file : str
-        The path to the FASTA file to be read.
+        Path to the FASTA file to be read.
 
     Returns
     -------
     list[SeqRecord.SeqRecord]
-        A list of SeqRecord objects representing the sequences in the FASTA file.
-
+        List of SeqRecord objects representing the sequences in the FASTA file.
     """
     return list(SeqIO.parse(fasta_file, "fasta"))
 
 
 def segmented_ref_groups(df: pd.DataFrame) -> pd.DataFrame:
     """
-    #TODO: this docstring should be cleaned up and made more informative.
-    #TODO: The docstrings in this file should also note where the function is used as they are explicit workflow helper functions.
-    Filter required ref groups from main reference file.
+    Filter and segment reference groups from a reference metadata DataFrame.
+
+    Used in match_ref/workflow.smk to prepare reference information for segmented
+    viruses. Extracts segment identifiers from FASTA sequence descriptions and
+    removes references with fewer than 2 segments.
 
     Parameters
     ----------
     df : pd.DataFrame
-        A pandas DataFrame containing the reference file information.
+        DataFrame containing reference metadata with columns SEGMENTED (bool),
+        REFERENCE (path to FASTA), and segment (to be populated).
 
     Returns
     -------
     pd.DataFrame
-        A pandas DataFrame containing the filtered reference file information.
+        Updated DataFrame with segment column populated as sets of segment names
+        for segmented viruses, or {"None"} for non-segmented references.
+        Rows with single segment are removed.
 
+    Notes
+    -----
+    Segment identifiers are extracted from FASTA description field (second word,
+    before first "|"). Sets are flattened after extraction.
     """
     for index, row in df.iterrows():
         # if the value in the "SEGMENTED" column is False then place a None string in the segment column.
@@ -114,44 +161,47 @@ def segmented_ref_groups(df: pd.DataFrame) -> pd.DataFrame:
 # TODO: all functions below this lack proper unit tests. This is acceptable (at time of writing) for the current release. However, proper unit tests should be added in the near future.
 def get_features_all_samples(samples_df: pd.DataFrame) -> list[str]:
     """
-    Extracts and returns a list of unique amino acid feature names across all samples
-    in the provided DataFrame.
+    Extract unique amino acid feature names across all samples.
+
+    Used in main/workflow.smk to generate aggregate amino acid output targets.
 
     Parameters
     ----------
     samples_df : pd.DataFrame
-        A pandas DataFrame containing data for multiple samples. Each row may contain
-        a column "AA_FEAT_NAMES" with a list or tuple of amino acid feature names.
+        DataFrame containing sample data with AA_FEAT_NAMES column (list, tuple,
+        or NaN of amino acid feature names per sample).
 
     Returns
     -------
-    list of str
-        A list of unique amino acid feature names found across all samples in
-        ``samples_df``.
+    list[str]
+        Sorted list of unique amino acid feature names found across all samples.
     """
     all_features = []
     for _, row in samples_df.iterrows():
         aa_feat_names = row.get("AA_FEAT_NAMES")
-        if pd.notna(aa_feat_names) and isinstance(aa_feat_names, (list, tuple)):
+        if isinstance(aa_feat_names, (list, tuple)):
             all_features.extend(aa_feat_names)
-    return list(set(all_features))
+    return sorted(list(set(all_features)))
 
 
 def get_features_per_sample(sample: str, samples_df: pd.DataFrame) -> list[str]:
     """
-    Extracts and returns a list of unique amino acid feature names for a sample.
+    Extract unique amino acid feature names for a specific sample.
+
+    Used in main/workflow.smk to generate per-sample amino acid output targets.
 
     Parameters
     ----------
     sample : str
-        Sample identifier.
+        Sample identifier to filter by.
     samples_df : pd.DataFrame
-        A pandas DataFrame containing sample data.
+        DataFrame containing sample data with "sample" and "AA_FEAT_NAMES" columns.
 
     Returns
     -------
-    list of str
-        A list of unique amino acid feature names for the sample.
+    list[str]
+        Sorted list of unique amino acid feature names for the sample, or empty list
+        if sample not found or has no features.
     """
     sample_rows = samples_df[samples_df["sample"] == sample]
     if sample_rows.empty:
@@ -159,29 +209,31 @@ def get_features_per_sample(sample: str, samples_df: pd.DataFrame) -> list[str]:
     all_features = []
     for _, row in sample_rows.iterrows():
         aa_feat_names = row.get("AA_FEAT_NAMES")
-        if pd.notna(aa_feat_names) and isinstance(aa_feat_names, (list, tuple)):
+        if isinstance(aa_feat_names, (list, tuple)):
             all_features.extend(aa_feat_names)
-    return list(set(all_features))
+    return sorted(list(set(all_features)))
 
 
 # Helper function to get all unique features for a virus
 def get_features_per_virus(virus: str, samples_df: pd.DataFrame) -> list[str]:
     """
-    Retrieve a list of unique amino acid feature names for a given virus from a DataFrame.
+    Extract unique amino acid feature names for a specific virus.
+
+    Used in main/workflow.smk to generate per-virus amino acid output targets.
 
     Parameters
     ----------
     virus : str
-        The name or identifier of the virus to filter the DataFrame.
+        Virus identifier to filter by.
     samples_df : pd.DataFrame
-        A pandas DataFrame containing at least the columns "Virus" and "AA_FEAT_NAMES".
-        The "AA_FEAT_NAMES" column should contain lists or tuples of feature names.
+        DataFrame containing sample data with "Virus" and "AA_FEAT_NAMES" columns.
+        AA_FEAT_NAMES should contain lists or tuples of feature names.
 
     Returns
     -------
-    list of str
-        A list of unique amino acid feature names associated with the specified virus.
-        Returns an empty list if the virus is not found or no features are present.
+    list[str]
+        Sorted list of unique amino acid feature names associated with the virus,
+        or empty list if virus not found or has no features.
     """
     virus_rows = samples_df[samples_df["Virus"] == virus]
     if virus_rows.empty:
@@ -189,6 +241,6 @@ def get_features_per_virus(virus: str, samples_df: pd.DataFrame) -> list[str]:
     all_features = []
     for _, row in virus_rows.iterrows():
         aa_feat_names = row.get("AA_FEAT_NAMES")
-        if pd.notna(aa_feat_names) and isinstance(aa_feat_names, (list, tuple)):
+        if isinstance(aa_feat_names, (list, tuple)):
             all_features.extend(aa_feat_names)
-    return list(set(all_features))
+    return sorted(list(set(all_features)))

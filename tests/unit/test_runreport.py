@@ -1,15 +1,10 @@
-"""
-Unit tests for ViroConstrictor PDF run report generation.
-Tests the PDF creation functionality without requiring actual file I/O.
-"""
+"""Unit tests for run report PDF helpers and report generation."""
 
 import configparser
-import os
-import sys
 import tempfile
 from datetime import datetime
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 from fpdf import FPDF
@@ -20,17 +15,17 @@ from ViroConstrictor.runreport import PDF, WriteReport, analysis_details, direct
 
 
 class TestPDFClass:
-    """Test the custom PDF class functionality."""
+    """Validate the custom PDF wrapper used for run report generation."""
 
     def test_pdf_initialization(self):
-        """Test PDF class can be instantiated."""
+        """Verify that the PDF wrapper initializes as an FPDF instance."""
         pdf = PDF()
         assert isinstance(pdf, FPDF)
         assert hasattr(pdf, "timestamp")
         assert hasattr(pdf, "header")
 
     def test_timestamp_format(self):
-        """Test timestamp returns correctly formatted datetime."""
+        """Verify that the timestamp uses the expected report format."""
         pdf = PDF()
         timestamp = pdf.timestamp()
 
@@ -46,7 +41,7 @@ class TestPDFClass:
 
     @patch("ViroConstrictor.runreport.__version__", "2.0.0")
     def test_header_content(self):
-        """Test PDF header contains expected content."""
+        """Verify that the header renders the report title and version."""
         pdf = PDF()
 
         # Mock the PDF methods to capture calls
@@ -71,17 +66,17 @@ class TestPDFClass:
 
 
 class TestDirectorySections:
-    """Test directory sections formatting."""
+    """Validate directory section formatting in the report body."""
 
     def create_mock_pdf(self):
-        """Create a mock PDF with necessary methods."""
+        """Return a PDF mock with the methods used by directory sections."""
         pdf = Mock(spec=PDF)
         pdf.set_font = Mock()
         pdf.cell = Mock()
         return pdf
 
     def test_directory_sections_complete_data(self):
-        """Test directory sections with complete data."""
+        """Verify that directory sections render when data is complete."""
         pdf = self.create_mock_pdf()
         contents = {0: ["Output directory:", "Description", "/path/to/output"], 1: ["Input directory:", "Description", "/path/to/input"]}
 
@@ -92,7 +87,7 @@ class TestDirectorySections:
         assert pdf.cell.called
 
     def test_directory_sections_missing_data(self):
-        """Test directory sections with missing iteration data."""
+        """Verify that missing section data is ignored safely."""
         pdf = self.create_mock_pdf()
         contents = {1: ["Input directory:", "Description", "/path/to/input"]}
 
@@ -101,7 +96,7 @@ class TestDirectorySections:
         assert result_pdf == pdf
 
     def test_directory_sections_empty_contents(self):
-        """Test directory sections with empty contents."""
+        """Verify that empty section content leaves the PDF unchanged."""
         pdf = self.create_mock_pdf()
         contents = {}
 
@@ -110,17 +105,17 @@ class TestDirectorySections:
 
 
 class TestAnalysisDetails:
-    """Test analysis details formatting."""
+    """Validate analysis detail formatting in the report body."""
 
     def create_mock_pdf(self):
-        """Create a mock PDF with necessary methods."""
+        """Return a PDF mock with the methods used by analysis details."""
         pdf = Mock(spec=PDF)
         pdf.set_font = Mock()
         pdf.cell = Mock()
         return pdf
 
     def test_analysis_details_basic(self):
-        """Test basic analysis details formatting."""
+        """Verify that analysis details render header and body text."""
         pdf = self.create_mock_pdf()
         header = "Test Header:"
         text = "Test content"
@@ -132,14 +127,14 @@ class TestAnalysisDetails:
         assert pdf.cell.call_count == 2  # One for header, one for text
 
     def test_analysis_details_empty_text(self):
-        """Test analysis details with empty text."""
+        """Verify that empty analysis text is handled without error."""
         pdf = self.create_mock_pdf()
 
         result_pdf = analysis_details(pdf, "Header:", "")
         assert result_pdf == pdf
 
     def test_analysis_details_special_characters(self):
-        """Test analysis details with special characters."""
+        """Verify that path-like text is rendered without modification."""
         pdf = self.create_mock_pdf()
 
         result_pdf = analysis_details(pdf, "Path:", "/path/with/special-chars_123")
@@ -147,28 +142,28 @@ class TestAnalysisDetails:
 
 
 class TestWriteReport:
-    """Test the main WriteReport function."""
+    """Validate the top-level report writer orchestration."""
 
     def create_mock_config(self):
-        """Create a mock configuration object."""
+        """Return a configuration mock with the expected sections."""
         config = Mock(spec=configparser.ConfigParser)
         config.__getitem__ = Mock(side_effect=lambda key: {"COMPUTING": {"compmode": "local", "queuename": "default"}}[key])
         return config
 
     def create_mock_resource_settings(self):
-        """Create mock Snakemake resource settings."""
+        """Return a Snakemake resource settings mock."""
         settings = Mock(spec=ResourceSettings)
         settings.cores = 4
         return settings
 
     def create_mock_output_settings(self, dryrun=False):
-        """Create mock Snakemake output settings."""
+        """Return a Snakemake output settings mock."""
         settings = Mock(spec=OutputSettings)
         settings.dryrun = dryrun
         return settings
 
     def create_mock_cli_parser(self):
-        """Create mock CLI parser with flags."""
+        """Return a CLI parser mock with the flags used by the report."""
         parser = Mock(spec=CLIparser)
         parser.flags = Mock()
         parser.flags.platform = "illumina"
@@ -180,7 +175,7 @@ class TestWriteReport:
     @patch("ViroConstrictor.runreport.PDF")
     @patch("ViroConstrictor.runreport.sys.argv", ["viroconstrictor", "--input", "data/", "--output", "results/"])
     def test_write_report_success_local(self, mock_pdf_class, mock_getcwd, mock_chdir):
-        """Test WriteReport with successful local execution."""
+        """Verify that local report generation writes the expected PDF."""
         # Setup mocks
         mock_getcwd.return_value = "/current/dir"
         mock_pdf = Mock()
@@ -219,7 +214,7 @@ class TestWriteReport:
     @patch("ViroConstrictor.runreport.os.getcwd")
     @patch("ViroConstrictor.runreport.PDF")
     def test_write_report_dryrun(self, mock_pdf_class, mock_getcwd, mock_chdir):
-        """Test WriteReport with dry-run execution."""
+        """Verify that dry-run execution skips the directory change."""
         mock_getcwd.return_value = "/output/dir"
         mock_pdf = Mock()
         mock_pdf_class.return_value = mock_pdf
@@ -248,7 +243,7 @@ class TestWriteReport:
     @patch("ViroConstrictor.runreport.os.getcwd")
     @patch("ViroConstrictor.runreport.PDF")
     def test_write_report_grid_execution(self, mock_pdf_class, mock_getcwd, mock_chdir):
-        """Test WriteReport with grid execution mode."""
+        """Verify that grid execution metadata is accepted."""
         mock_getcwd.return_value = "/current/dir"
         mock_pdf = Mock()
         mock_pdf_class.return_value = mock_pdf
@@ -278,7 +273,7 @@ class TestWriteReport:
     @patch("ViroConstrictor.runreport.os.getcwd")
     @patch("ViroConstrictor.runreport.PDF")
     def test_write_report_failed_status(self, mock_pdf_class, mock_getcwd, mock_chdir):
-        """Test WriteReport with failed execution status."""
+        """Verify that failed status still produces a report."""
         mock_getcwd.return_value = "/output/dir"
         mock_pdf = Mock()
         mock_pdf_class.return_value = mock_pdf
@@ -306,7 +301,7 @@ class TestWriteReport:
     @patch("ViroConstrictor.runreport.PDF")
     @patch("ViroConstrictor.runreport.sys.argv", ["viroconstrictor", "--input", "test data/", "--output", "results/", "--amplicon-type", "v3"])
     def test_write_report_command_capture(self, mock_pdf_class, mock_getcwd, mock_chdir):
-        """Test WriteReport captures command line arguments correctly."""
+        """Verify that the command line is captured in the report."""
         mock_getcwd.return_value = "/output/dir"
         mock_pdf = Mock()
         mock_pdf_class.return_value = mock_pdf
@@ -338,10 +333,10 @@ class TestWriteReport:
 
 
 class TestReportIntegration:
-    """Integration tests for the report generation."""
+    """Validate end-to-end report generation with realistic inputs."""
 
     def test_report_generation_integration(self):
-        """Test complete report generation flow with realistic data."""
+        """Verify that a report file is created for realistic inputs."""
         with tempfile.TemporaryDirectory() as temp_dir:
             workdir = Path(temp_dir) / "output"
             workdir.mkdir()
@@ -383,7 +378,7 @@ class TestReportIntegration:
 
     @patch("ViroConstrictor.runreport.os.getcwd")
     def test_all_platform_types(self, mock_getcwd):
-        """Test report generation with different platform types."""
+        """Verify that report generation supports all platform values."""
         platforms = ["illumina", "nanopore", "iontorrent"]
 
         for platform in platforms:
@@ -422,13 +417,13 @@ class TestReportIntegration:
 
 
 class TestReportErrorHandling:
-    """Test error handling in report generation."""
+    """Validate error handling during report generation."""
 
     @patch("ViroConstrictor.runreport.os.getcwd")
     @patch("ViroConstrictor.runreport.os.chdir")
     @patch("ViroConstrictor.runreport.PDF")
     def test_pdf_creation_failure(self, mock_getcwd, mock_pdf_class, mock_chdir):
-        """Test handling of PDF creation failure."""
+        """Verify that PDF construction failures are surfaced."""
         mock_pdf_class.side_effect = Exception("PDF creation failed")
 
         config = configparser.ConfigParser()
@@ -461,7 +456,7 @@ class TestReportErrorHandling:
     @patch("ViroConstrictor.runreport.os.chdir")
     @patch("ViroConstrictor.runreport.os.getcwd")
     def test_directory_change_failure(self, mock_getcwd, mock_chdir):
-        """Test handling of directory change failure."""
+        """Verify that directory change failures are surfaced."""
         mock_getcwd.return_value = "/current"
         mock_chdir.side_effect = OSError("Permission denied")
 

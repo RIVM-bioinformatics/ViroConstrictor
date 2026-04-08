@@ -67,6 +67,18 @@ packages = [
 "ViroConstrictor/workflow" = "ViroConstrictor/workflow"
 "snakemake_logger_plugin_viroconstrictor" = "snakemake_logger_plugin_viroconstrictor"
 
+[tool.ruff]
+line-length = 150
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
 [tool.black]
 line-length = 150
 target-version = ["py310"]
