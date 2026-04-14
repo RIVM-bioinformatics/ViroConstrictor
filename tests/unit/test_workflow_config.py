@@ -87,6 +87,12 @@ def _parsed_inputs(tmp_path: Path, *, compmode: str = "local", repro_method: str
     )
 
 
+@pytest.fixture(autouse=True)
+def bypass_data_compatibility_check(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Bypass the viroconstrictor-data compatibility check for all WorkflowConfig tests."""
+    monkeypatch.setattr(workflow_config, "_check_data_compatibility", lambda: None)
+
+
 @pytest.fixture
 def patch_snakemake_settings(monkeypatch: pytest.MonkeyPatch):
     """Patch Snakemake settings constructors with lightweight stand-ins."""

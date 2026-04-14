@@ -36,6 +36,8 @@ dependencies = [
     "rich==13.9.4",
     "AminoExtract==0.4.1",
     "biovalid==0.3.0",
+    "packaging>=21.0",
+    "viroconstrictor-data>=0.0.1,<0.1.0",
 ]
 
 [project.scripts]

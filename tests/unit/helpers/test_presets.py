@@ -6,6 +6,10 @@ DEFAULT preset values, and failure handling.
 
 from __future__ import annotations
 
+import importlib
+from pathlib import Path
+from unittest.mock import call, patch
+
 import pytest
 
 import ViroConstrictor.workflow.helpers.presets as presets
@@ -53,7 +57,7 @@ def test_match_preset_name_falls_back_to_default_for_low_similarity() -> None:
 @pytest.mark.xfail(reason="Intended behavior: empty alias tables should safely return DEFAULT instead of raising IndexError.")
 def test_match_preset_name_handles_empty_alias_table_gracefully(monkeypatch: pytest.MonkeyPatch) -> None:
     """Matching should remain safe even when alias data cannot be loaded."""
-    monkeypatch.setattr(presets, "aliases", {})
+    monkeypatch.setattr(presets, "_get_aliases", lambda: {})
     matched_name, score = presets.match_preset_name("anything", use_presets=True)
     assert matched_name == "DEFAULT"
     assert score == pytest.approx(0.0)
@@ -68,7 +72,7 @@ def test_collapse_preset_group_collects_selected_stages_with_prefix(monkeypatch:
             "IGNORED": {"D": "q"},
         }
     }
-    monkeypatch.setattr(presets, "presets", fake_presets)
+    monkeypatch.setattr(presets, "_get_presets", lambda: fake_presets)
 
     collapsed = presets.collapse_preset_group("CUSTOM", ["STAGE_MAIN", "STAGE_MATCHREF"], "STAGE_MAIN")
 
@@ -158,7 +162,7 @@ def test_get_preset_parameter_raises_when_parameter_missing_in_default(monkeypat
             "STAGE_GLOBAL": {},
         },
     }
-    monkeypatch.setattr(presets, "presets", fake_presets)
+    monkeypatch.setattr(presets, "_get_presets", lambda: fake_presets)
 
     with pytest.raises(KeyError):
         presets.get_preset_parameter(
@@ -166,3 +170,83 @@ def test_get_preset_parameter_raises_when_parameter_missing_in_default(monkeypat
             parameter_name="Missing_Parameter",
             stage_identifier="STAGE_MAIN",
         )
+
+
+def test_load_preset_resource_raises_importerror_when_package_absent() -> None:
+    """_load_preset_resource must raise ImportError with install instructions when viroconstrictor_data is absent."""
+    with patch("importlib.resources.files", side_effect=ModuleNotFoundError("No module named 'viroconstrictor_data'")):
+        with pytest.raises(ImportError, match="viroconstrictor-data is not installed"):
+            presets._load_preset_resource("preset_params.json")
+
+
+def test_load_preset_resource_raises_importerror_when_json_files_missing(tmp_path: Path) -> None:
+    """_load_preset_resource must raise ImportError when expected JSON resources are absent."""
+    package_root = tmp_path / "fake_package_root"
+    (package_root / "presets").mkdir(parents=True)
+
+    with patch("importlib.resources.files", return_value=package_root):
+        with pytest.raises(ImportError, match="preset resources are missing or invalid"):
+            presets._load_preset_resource("preset_params.json")
+
+
+def test_load_preset_resource_raises_importerror_when_json_invalid(tmp_path: Path) -> None:
+    """_load_preset_resource must raise ImportError when preset JSON resources are malformed."""
+    package_root = tmp_path / "fake_package_root"
+    presets_dir = package_root / "presets"
+    presets_dir.mkdir(parents=True)
+    (presets_dir / "preset_params.json").write_text("{not valid json", encoding="utf-8")
+    (presets_dir / "preset_aliases.json").write_text("[]", encoding="utf-8")
+
+    with patch("importlib.resources.files", return_value=package_root):
+        with pytest.raises(ImportError, match="preset resources are missing or invalid"):
+            presets._load_preset_resource("preset_params.json")
+
+
+def test_presets_module_import_is_lazy_when_data_package_missing() -> None:
+    """Importing presets module should not fail when viroconstrictor-data is unavailable."""
+    with patch("importlib.resources.files", side_effect=ModuleNotFoundError("No module named 'viroconstrictor_data'")):
+        importlib.reload(presets)
+
+
+def test_get_presets_uses_cache() -> None:
+    """_get_presets should load only once per process after first successful call."""
+    presets._get_presets.cache_clear()
+    with patch.object(presets, "_load_preset_resource", return_value={"DEFAULT": {}}) as mocked_loader:
+        presets._get_presets()
+        presets._get_presets()
+
+    assert mocked_loader.call_count == 1
+    assert mocked_loader.call_args_list == [call("preset_params.json")]
+    presets._get_presets.cache_clear()
+
+
+def test_get_aliases_uses_cache() -> None:
+    """_get_aliases should load only once per process after first successful call."""
+    presets._get_aliases.cache_clear()
+    with patch.object(presets, "_load_preset_resource", return_value={"DEFAULT": ["DEFAULT"]}) as mocked_loader:
+        presets._get_aliases()
+        presets._get_aliases()
+
+    assert mocked_loader.call_count == 1
+    assert mocked_loader.call_args_list == [call("preset_aliases.json")]
+    presets._get_aliases.cache_clear()
+
+
+def test_presets_and_aliases_are_loaded_independently() -> None:
+    """Loading aliases must not eagerly load preset parameters (and vice versa)."""
+    presets._get_presets.cache_clear()
+    presets._get_aliases.cache_clear()
+
+    fake_data = {
+        "preset_params.json": {"DEFAULT": {}},
+        "preset_aliases.json": {"DEFAULT": ["DEFAULT"]},
+    }
+    with patch.object(presets, "_load_preset_resource", side_effect=lambda name: fake_data[name]) as mocked_loader:
+        presets._get_aliases()
+        assert mocked_loader.call_args_list == [call("preset_aliases.json")]
+
+        presets._get_presets()
+        assert mocked_loader.call_args_list == [call("preset_aliases.json"), call("preset_params.json")]
+
+    presets._get_presets.cache_clear()
+    presets._get_aliases.cache_clear()

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Hashable
 
 import yaml
+from packaging.specifiers import InvalidSpecifier, SpecifierSet
 from snakemake.api import (
     ConfigSettings,
     DAGSettings,
@@ -25,7 +26,7 @@ from snakemake.settings.enums import Quietness
 from snakemake_interface_executor_plugins.settings import ExecMode
 from snakemake_interface_logger_plugins.settings import LogHandlerSettingsBase
 
-from ViroConstrictor import __prog__
+from ViroConstrictor import __prog__, __version__
 from ViroConstrictor.logging import log
 from ViroConstrictor.parser import CLIparser
 from ViroConstrictor.scheduler import Scheduler
@@ -35,8 +36,84 @@ from ViroConstrictor.workflow.helpers.containers import (
 )
 
 
+def _check_data_compatibility() -> None:
+    """Validate that `viroconstrictor_data` is installed and version-compatible.
+
+    Raises
+    ------
+    SystemExit
+        Raised when the package is missing, has an invalid manifest, contains an invalid
+        compatibility specifier, or does not support the current ViroConstrictor version.
+
+    """
+    try:
+        import viroconstrictor_data
+    except ModuleNotFoundError:
+        raise SystemExit("viroconstrictor-data is not installed.\nRun: pip install 'viroconstrictor-data' to install.") from None
+
+    try:
+        manifest = viroconstrictor_data.get_manifest()
+    except (AttributeError, TypeError):
+        raise SystemExit(
+            "Installed viroconstrictor-data package is invalid: missing a usable get_manifest() function.\n"
+            "Run: pip install --upgrade --force-reinstall 'viroconstrictor-data' to reinstall."
+        ) from None
+
+    if not isinstance(manifest, dict):
+        raise SystemExit(
+            "Installed viroconstrictor-data package is invalid: manifest must be a dictionary.\n"
+            "Run: pip install --upgrade --force-reinstall 'viroconstrictor-data' to reinstall."
+        )
+
+    compatible_range = manifest.get("compatible_viroconstrictor")
+    if not isinstance(compatible_range, str) or not compatible_range.strip():
+        raise SystemExit(
+            "Installed viroconstrictor-data package is invalid: manifest does not contain a valid "
+            "'compatible_viroconstrictor' value.\n"
+            "Run: pip install --upgrade --force-reinstall 'viroconstrictor-data' to reinstall."
+        )
+
+    try:
+        specifier = SpecifierSet(compatible_range)
+    except InvalidSpecifier:
+        raise SystemExit(
+            "Installed viroconstrictor-data package is invalid: "
+            f"'compatible_viroconstrictor' specifier '{compatible_range}' is not valid.\n"
+            "Run: pip install --upgrade --force-reinstall 'viroconstrictor-data' to reinstall."
+        ) from None
+
+    if __version__ not in specifier:
+        raise SystemExit(
+            f"viroconstrictor-data is not compatible with ViroConstrictor {__version__}.\n"
+            f"Compatible ViroConstrictor range: {compatible_range}\n"
+            f"Run: pip install 'viroconstrictor-data' to update."
+        )
+
+
 def correct_unidirectional_flag(samples_dict: dict[Hashable, Any], flags: Namespace) -> bool:
-    """Corrects the unidirectional flag based on the platform and samples dictionary."""
+    """Validate and correct the unidirectional flag based on platform and detected sample files.
+
+    For Illumina platform, ensures consistency between the unidirectional flag and detected input
+    file types (single-end INPUTFILE vs paired-end R1/R2 files).
+
+    Parameters
+    ----------
+    samples_dict : dict[Hashable, Any]
+        Dictionary mapping sample identifiers to their file information.
+    flags : Namespace
+        Parsed command-line arguments containing `platform` and `unidirectional` flags.
+
+    Returns
+    -------
+    bool
+        The corrected unidirectional flag value. Returns True if input is single-end, False if paired-end.
+        For non-Illumina platforms or when flag is already consistent, returns the original value.
+
+    Notes
+    -----
+    Logs a warning if the flag is corrected due to mismatch between flag setting and detected files.
+
+    """
     if flags.platform == "illumina" and flags.unidirectional is True:
         # check if the samples_dict has the INPUTFILE key, if it does, set the unidirectional flag to True
         if any("INPUTFILE" in sample for sample in samples_dict.values()):
@@ -86,6 +163,16 @@ class MaxThreadsPerType:
     """
 
     def __init__(self, inputs_obj: CLIparser, configuration: ConfigParser):
+        """Initialize per-task thread limits based on compute mode.
+
+        Parameters
+        ----------
+        inputs_obj : CLIparser
+            Parsed CLI inputs containing the requested thread count.
+        configuration : ConfigParser
+            User configuration used to determine whether execution is local or grid-based.
+
+        """
         self.assignment = False
         # NOTE: I expect that we need to change how 'see' the configuration of either local or grid mode, but this depends on other modifications.
         if configuration["COMPUTING"]["compmode"] == "grid":
@@ -158,6 +245,25 @@ class WorkflowConfig:
         outdir_override: str = "",
         vc_stage: str | None = None,
     ) -> None:
+        """Build all Snakemake settings objects for one ViroConstrictor stage.
+
+        Parameters
+        ----------
+        parsed_inputs : CLIparser
+            Parsed command-line inputs, including user configuration and runtime flags.
+        outdir_override : str, optional
+            Output directory override propagated to the workflow config, by default ``""``.
+        vc_stage : str | None, optional
+            Workflow stage identifier. Supported values are ``"MR"`` and ``"MAIN"``.
+
+        Raises
+        ------
+        ValueError
+            Raised when ``vc_stage`` is not one of the supported stage identifiers.
+
+        """
+        _check_data_compatibility()
+
         self.inputs = parsed_inputs
         self.outdir_override = outdir_override
         self.configuration = self.inputs.user_config
@@ -289,6 +395,22 @@ class WorkflowConfig:
                 sys.exit(1)
 
     def _set_cores(self, cores: int) -> int:
+        """Set the number of cores to use, ensuring it does not exceed available cores.
+
+        If the requested cores equal available cores, reserve 2 cores for system tasks.
+        If requested cores exceed available, use available minus 2.
+
+        Parameters
+        ----------
+        cores : int
+            Requested number of cores.
+
+        Returns
+        -------
+        int
+            Adjusted number of cores to use.
+
+        """
         available: int = multiprocessing.cpu_count()
         if cores == available:
             return cores - 2
@@ -339,8 +461,26 @@ def add_default_resource_settings(scheduler: Scheduler, user_config: ConfigParse
 
 
 def _assign_resources_lsf(default_resource_setting: DefaultResources, queue: str | None) -> DefaultResources:
-    # required settings: lsf_queue
-    # optional settings: lsf_project
+    """Configure default resource settings for LSF scheduler.
+
+    Parameters
+    ----------
+    default_resource_setting : DefaultResources
+        Snakemake DefaultResources object to be configured.
+    queue : str or None
+        LSF queue name. Required for grid job submission.
+
+    Returns
+    -------
+    DefaultResources
+        Updated DefaultResources object with LSF queue configured.
+
+    Raises
+    ------
+    SystemExit
+        If queue is None, indicating missing configuration.
+
+    """
     if queue is None:
         log.error(
             "HPC/Grid mode is set with LSF as the job-scheduler, but no queue name could be found in the user configuration."
@@ -354,9 +494,30 @@ def _assign_resources_lsf(default_resource_setting: DefaultResources, queue: str
 
 
 def _assign_resources_slurm(default_resource_setting: DefaultResources, queue: str | None) -> DefaultResources:
-    # required settings: slurm_partition (this is the same as a queue for the LSF scheduler)
-    # optional settings: slurm_account, clusters
-    # TODO: we don't have a SLURM cluster to properly test this on, will need to verify this later.
+    """Configure default resource settings for SLURM scheduler.
+
+    Parameters
+    ----------
+    default_resource_setting : DefaultResources
+        Snakemake DefaultResources object to be configured.
+    queue : str or None
+        SLURM partition/queue name. Required for grid job submission.
+
+    Returns
+    -------
+    DefaultResources
+        Updated DefaultResources object with SLURM partition configured.
+
+    Raises
+    ------
+    SystemExit
+        If queue is None, indicating missing partition configuration.
+
+    Notes
+    -----
+    Optional settings (account, clusters) are left unassigned pending cluster configuration.
+
+    """
     if queue is None:
         log.error(
             "HPC/Grid mode is set with SLURM as the job-scheduler, but no partition/queue name could be found in the user configuration."
@@ -370,18 +531,21 @@ def _assign_resources_slurm(default_resource_setting: DefaultResources, queue: s
 
 
 def _write_yaml(data: dict, filepath: str) -> str:
-    """Write a dictionary to a filepath as a YAML file.
+    """Write a dictionary to a YAML file.
+
+    Creates intermediate directories if they do not exist.
+
     Parameters
     ----------
     data : dict
         The data to be written to the file.
     filepath : str
-        The path to the file you want to write to.
+        The path to the output YAML file.
 
     Returns
     -------
-    filepath : str
-        The filepath
+    str
+        The filepath of the written file.
 
     """
     if not os.path.exists(os.path.dirname(filepath)):
