@@ -66,6 +66,19 @@ class TestScheduler:
         config.remove_option("COMPUTING", "scheduler")
         assert Scheduler._scheduler_from_config(config) is None
 
+    def test_scheduler_from_config_auto_falls_through(self):
+        config = ConfigParser()
+        config.add_section("COMPUTING")
+
+        config.set("COMPUTING", "scheduler", "AUTO")
+        assert Scheduler._scheduler_from_config(config) is None
+
+        config.set("COMPUTING", "scheduler", "auto")
+        assert Scheduler._scheduler_from_config(config) is None
+
+        config.set("COMPUTING", "scheduler", "grid")
+        assert Scheduler._scheduler_from_config(config) is None
+
     def test_scheduler_from_environment(self):
         with mock.patch.dict("os.environ", {"SLURM_JOB_ID": "123"}):
             scheduler = Scheduler._scheduler_from_environment()
@@ -123,3 +136,30 @@ class TestScheduler:
         # Test with DRMAA
         sys.modules["drmaa"] = fake_drmaa
         assert Scheduler.determine_scheduler(None, config, dryrun_arg=False) == Scheduler.SLURM
+
+    def test_determine_scheduler_auto_from_config_uses_environment(self, fake_drmaa):
+        config = ConfigParser()
+        config.add_section("COMPUTING")
+        config.set("COMPUTING", "compmode", "grid")
+        config.set("COMPUTING", "scheduler", "AUTO")
+
+        with mock.patch.dict("os.environ", {"SLURM_JOB_ID": "123"}):
+            assert (
+                Scheduler.determine_scheduler("", config, dryrun_arg=False)
+                == Scheduler.SLURM
+            )
+
+        with mock.patch.dict("os.environ", {"LSB_JOBID": "456"}, clear=True):
+            assert (
+                Scheduler.determine_scheduler("", config, dryrun_arg=False)
+                == Scheduler.LSF
+            )
+
+        sys.modules["drmaa"] = fake_drmaa
+        with mock.patch.dict("os.environ", {}, clear=True):
+            # shutil.which patched so we fall through past the sbatch check to DRMAA
+            with mock.patch("ViroConstrictor.scheduler.shutil.which", return_value=None):
+                assert (
+                    Scheduler.determine_scheduler("", config, dryrun_arg=False)
+                    == Scheduler.SLURM
+                )
