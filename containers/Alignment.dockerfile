@@ -8,25 +8,13 @@ USER root
 
 ARG UID=10001
 
-# Combine apt-get commands and clean up in the same layer to reduce size
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends adduser && \
-    adduser \
-    --disabled-password \
-    --gecos "" \
-    --home "/nonexistent" \
-    --shell "/sbin/nologin" \
-    --no-create-home \
-    --uid "${UID}" \
-    appuser && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# Combine micromamba installs and clean in one layer
-# Added --prune to remove unused packages
-RUN micromamba install -q -y -n base git -c conda-forge && \
+RUN useradd --no-create-home --shell /sbin/nologin --uid "${UID}" appuser && \
     micromamba install -q -y -n base -f /install.yml && \
-    micromamba clean -q --all --yes
+    micromamba clean -q --all --yes && \
+    rm -rf /opt/conda/pkgs && \
+    rm -rf /opt/conda/x86_64-conda-linux-gnu && \
+    rm -rf /opt/conda/include && \
+    rm -rf /opt/conda/share/doc /opt/conda/share/man /opt/conda/share/info
 
 USER appuser
 
