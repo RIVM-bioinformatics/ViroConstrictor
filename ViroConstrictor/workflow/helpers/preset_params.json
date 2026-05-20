@@ -51,8 +51,16 @@
             "Fastp_MinReadLength_Settings_nanopore": "--length_required 100",
             "Fastp_MinReadLength_Settings_illumina": "--length_required 100",
             "Fastp_MinReadLength_Settings_iontorrent": "--length_required 100",
-            "AminoExtract_FeatureType": ["gene", "CDS"],
-            "AminoExtract_Settings": "--keep-gaps"
+            "AminoExtract_FeatureType": [
+                "gene",
+                "CDS"
+            ],
+            "AminoExtract_Settings": "--keep-gaps",
+            "Fastplong_AdapterRemoval_Settings_nanopore": "--disable_adapter_trimming",
+            "Fastplong_PerReadQC_Settings_nanopore": "--disable_quality_filtering",
+            "Fastplong_QC_SlidingWindow_Settings_nanopore": "--cut_front --cut_front_window_size 20 --cut_front_mean_quality 7",
+            "Fastplong_LowComplexityFilter_Settings_nanopore": "",
+            "Fastplong_MinReadLength_Settings_nanopore": "--length_required 100"
         }
     },
     "SARSCOV2": {
@@ -136,10 +144,11 @@
             "AmpliGone_ExtraSettings_iontorrent": "--virtual-primers",
             "Fastp_MinReadLength_Settings_nanopore": "--length_required 400",
             "Fastp_MinReadLength_Settings_illumina": "--length_required 100",
-            "Fastp_MinReadLength_Settings_iontorrent": "--length_required 100"
+            "Fastp_MinReadLength_Settings_iontorrent": "--length_required 100",
+            "Fastplong_MinReadLength_Settings_nanopore": "--length_required 400"
         }
     },
-    "ORTHOHEPADNAVIRUS":{
+    "ORTHOHEPADNAVIRUS": {
         "STAGE_GLOBAL": {},
         "STAGE_MATCHREF": {},
         "STAGE_MAIN": {
@@ -150,10 +159,13 @@
             "Clipper_FilterParams_illumina": "--exclude-spliced --spliced-length-threshold 200",
             "Clipper_FilterParams_iontorrent": "--exclude-spliced --spliced-length-threshold 200",
             "Fastp_MinReadLength_Settings_nanopore": "--length_required 400",
-            "AminoExtract_FeatureType": ["gene"]
+            "Fastplong_MinReadLength_Settings_nanopore": "--length_required 400",
+            "AminoExtract_FeatureType": [
+                "gene"
+            ]
         }
     },
-    "ENTEROVIRUS":{
+    "ENTEROVIRUS": {
         "STAGE_GLOBAL": {},
         "STAGE_MATCHREF": {
             "Samtools_Filters_nanopore": "-q 20",
@@ -162,6 +174,7 @@
         },
         "STAGE_MAIN": {
             "Fastp_MinReadLength_Settings_nanopore": "--length_required 200",
+            "Fastplong_MinReadLength_Settings_nanopore": "--length_required 200",
             "Clipper_FilterParams_nanopore": "--min-aligned-length 0.3"
         }
     }
