@@ -8,7 +8,7 @@ ViroConstrictor is available only on Linux (or Linux-based) operating systems. M
 
 ViroConstrictor requires the following software to be installed on your system:
 
-- [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) or [Mamba](https://mamba.readthedocs.io/en/latest/installation.html)
+- [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) or [Mamba](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html)
 - [Apptainer](https://apptainer.org/) (optional but recommended)
 
 ---
