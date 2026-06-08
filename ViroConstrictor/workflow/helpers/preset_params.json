@@ -44,7 +44,7 @@
             "Fastplong_PerReadQC_Settings_iontorrent": "--disable_quality_filtering",
             "Fastp_QC_SlidingWindow_Settings_illumina": "--cut_right --cut_right_window_size 5 --cut_right_mean_quality 20",
             "Fastplong_QC_SlidingWindow_Settings_nanopore": "--cut_front --cut_front_window_size 9 --cut_front_mean_quality 7",
-            "Fastplong_QC_SlidingWindow_Settings_iontorrent": "--cut_front --cut_right_window_size 0 --cut_right_mean_quality 20",
+            "Fastplong_QC_SlidingWindow_Settings_iontorrent": "--cut_front --cut_right_window_size 9 --cut_right_mean_quality 20",
             "Fastp_LowComplexityFilter_Settings_illumina": "",
             "Fastplong_LowComplexityFilter_Settings_iontorrent": "",
             "Fastplong_LowComplexityFilter_Settings_nanopore": "",
