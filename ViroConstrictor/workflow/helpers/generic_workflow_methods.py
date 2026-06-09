@@ -2,9 +2,28 @@ import AminoExtract
 import numpy as np
 import pandas as pd
 from Bio import SeqIO, SeqRecord
+from typing import Any
 
 from ViroConstrictor.workflow.helpers.directories import *
-from ViroConstrictor.workflow.helpers.presets import get_preset_parameter
+from ViroConstrictor.workflow.helpers.presets import get_flags
+
+
+def create_samples_df(samples: dict[str, dict[str, Any]]) -> pd.DataFrame:
+    """Build the exploded sample DataFrame used by the main workflow.
+
+    Parameters
+    ----------
+    samples : dict[str, dict[str, Any]]
+        Parsed sample sheet mapping sample IDs to their metadata.
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with normalized sample columns, exploded ``RefID`` and amino acid features.
+    """
+    samples_df = pd.DataFrame(samples).transpose().reset_index().rename(columns=dict(index="sample", VIRUS="Virus"))
+    samples_df["RefID"] = samples_df["REFERENCE"].apply(get_reference_header)
+    return get_aminoacid_features(samples_df.explode("RefID"))
 
 
 def get_reference_header(reffile):
@@ -13,6 +32,19 @@ def get_reference_header(reffile):
     #TODO: The docstrings in this file should also note where the function is used as they are explicit workflow helper functions.
     """
     return [record.id for record in SeqIO.parse(reffile, "fasta")]
+
+
+def get_feature_types_from_preset(preset_name: str) -> list[str]:
+    all_flags = get_flags("MAIN", preset_name, "amino_acid_extraction", "nanopore")
+    tokens = all_flags.split()
+
+    for option in ("--feature-type", "--feature-types"):
+        if option in tokens:
+            index = tokens.index(option)
+            if index + 1 < len(tokens):
+                return tokens[index + 1 :]
+
+    raise ValueError(f"No --feature-type/--feature-types option found for preset '{preset_name}' in flags: {all_flags}")
 
 
 def get_aminoacid_features(df):
@@ -27,7 +59,7 @@ def get_aminoacid_features(df):
             AA_dict = AminoExtract.get_feature_name_attribute(
                 input_gff=str(rec["FEATURES"]),
                 input_seq=str(rec["REFERENCE"]),
-                feature_types=get_preset_parameter(rec["PRESET"], "AminoExtract_FeatureType", "GLOBAL"),
+                feature_types=get_feature_types_from_preset(rec["PRESET"]),
             )
             if AA_dict:
                 for k, v in AA_dict.items():

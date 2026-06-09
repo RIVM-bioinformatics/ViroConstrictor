@@ -1,10 +1,4 @@
-if config["platform"] in ["nanopore", "iontorrent"] or (
-    config["platform"] == "illumina" and config["unidirectional"] is True
-):
-    base_mm2_preset = (
-        "-ax sr" if config["platform"] in ["iontorrent", "illumina"] else "-ax map-ont"
-    )
-
+if config["unidirectional"] is True:
     rule remove_adapters_p1:
         input:
             ref=rules.prepare_refs.output,
@@ -24,39 +18,40 @@ if config["platform"] in ["nanopore", "iontorrent"] or (
             runtime=medium_runtime_job,
         params:
             mapthreads=config["threads"]["Alignments"] - 1,
-            mm2_alignment_preset=base_mm2_preset,
-            minimap2_base_setting=lambda wc: get_preset_parameter(
+            align_bin = lambda wc: get_binary(
+                stage_identifier=VC_STAGE,
                 preset_name=SAMPLES[wc.sample]["PRESET"],
-                parameter_name="Minimap2_Settings_Base",
+                task="raw_alignment",
+                platform=config["platform"],
             ),
-            minimap2_extra_setting=lambda wc: get_preset_parameter(
+            align_flags = lambda wc: get_flags(
+                stage_identifier=VC_STAGE,
                 preset_name=SAMPLES[wc.sample]["PRESET"],
-                parameter_name="Minimap2_Settings",
+                task="raw_alignment",
+                platform=config["platform"],
             ),
-            minimap2_alignmentparams=lambda wc: get_preset_parameter(
+            filter_bin = lambda wc: get_binary(
+                stage_identifier=VC_STAGE,
                 preset_name=SAMPLES[wc.sample]["PRESET"],
-                parameter_name=f"Minimap2_RawAlignParams_{config['platform']}",
+                task="alignment_filtering",
+                platform=config["platform"],
             ),
-            samtools_standard_filters=lambda wc: get_preset_parameter(
+            filter_flags = lambda wc: get_flags(
+                stage_identifier=VC_STAGE,
                 preset_name=SAMPLES[wc.sample]["PRESET"],
-                parameter_name="Samtools_Filters_Base",
-            ),
-            samtools_extra_filters=lambda wc: get_preset_parameter(
-                preset_name=SAMPLES[wc.sample]["PRESET"],
-                parameter_name=f"Samtools_Filters_{config['platform']}",
+                task="alignment_filtering",
+                platform=config["platform"],
             ),
         shell:
             """
-            minimap2 --cs {params.mm2_alignment_preset} {params.minimap2_base_setting} {params.minimap2_extra_setting} {params.minimap2_alignmentparams} -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
-            samtools view -@ {threads} {params.samtools_standard_filters} {params.samtools_extra_filters} -uS 2>> {log} |\
-            samtools sort -o {output.bam} >> {log} 2>&1
-            samtools index {output.bam} >> {log} 2>&1
+            {params.align_bin} {params.align_flags} -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
+            {params.filter_bin} view -@ {threads} {params.filter_flags} -uS 2>> {log} |\
+            {params.filter_bin} sort -o {output.bam} >> {log} 2>&1
+            {params.filter_bin} index {output.bam} >> {log} 2>&1
             """
 
 
-if config["platform"] == "illumina" and config["unidirectional"] is False:
-    base_mm2_preset = "-ax sr"
-
+else:
     rule remove_adapters_p1:
         input:
             ref=rules.prepare_refs.output,
@@ -77,33 +72,36 @@ if config["platform"] == "illumina" and config["unidirectional"] is False:
             runtime=medium_runtime_job,
         params:
             mapthreads=config["threads"]["Alignments"] - 1,
-            mm2_alignment_preset=base_mm2_preset,
-            minimap2_base_setting=lambda wc: get_preset_parameter(
+            align_bin = lambda wc: get_binary(
+                stage_identifier=VC_STAGE,
                 preset_name=SAMPLES[wc.sample]["PRESET"],
-                parameter_name="Minimap2_Settings_Base",
+                task="alignment",
+                platform=config["platform"],
             ),
-            minimap2_extra_setting=lambda wc: get_preset_parameter(
+            align_flags = lambda wc: get_flags(
+                stage_identifier=VC_STAGE,
                 preset_name=SAMPLES[wc.sample]["PRESET"],
-                parameter_name="Minimap2_Settings",
+                task="alignment",
+                platform=config["platform"],
             ),
-            minimap2_alignmentparams=lambda wc: get_preset_parameter(
+            filter_bin = lambda wc: get_binary(
+                stage_identifier=VC_STAGE,
                 preset_name=SAMPLES[wc.sample]["PRESET"],
-                parameter_name=f"Minimap2_RawAlignParams_{config['platform']}",
+                task="alignment_filtering",
+                platform=config["platform"],
             ),
-            samtools_standard_filters=lambda wc: get_preset_parameter(
+            filter_flags = lambda wc: get_flags(
+                stage_identifier=VC_STAGE,
                 preset_name=SAMPLES[wc.sample]["PRESET"],
-                parameter_name="Samtools_Filters_Base",
-            ),
-            samtools_extra_filters=lambda wc: get_preset_parameter(
-                preset_name=SAMPLES[wc.sample]["PRESET"],
-                parameter_name=f"Samtools_Filters_{config['platform']}",
+                task="alignment_filtering",
+                platform=config["platform"],
             ),
         shell:
             """
-            minimap2 --cs {params.mm2_alignment_preset} {params.minimap2_base_setting} {params.minimap2_extra_setting} {params.minimap2_alignmentparams} -t {params.mapthreads} {input.ref} {input.fq1} {input.fq2} 2>> {log} |\
-            samtools view -@ {threads} {params.samtools_standard_filters} {params.samtools_extra_filters} -uS 2>> {log} |\
-            samtools sort -o {output.bam} >> {log} 2>&1
-            samtools index {output.bam} >> {log} 2>&1
+            {params.align_bin} {params.align_flags} -t {params.mapthreads} {input.ref} {input.fq1} {input.fq2} 2>> {log} |\
+            {params.filter_bin} view -@ {threads} {params.filter_flags} -uS 2>> {log} |\
+            {params.filter_bin} sort -o {output.bam} >> {log} 2>&1
+            {params.filter_bin} index {output.bam} >> {log} 2>&1
             """
 
 
@@ -125,9 +123,11 @@ rule remove_adapters_p2:
     params:
         script="-m main.scripts.clipper",
         pythonpath = f'{Path(workflow.basedir).parent}',
-        clipper_filterparams=lambda wc: get_preset_parameter(
+        flags = lambda wc: get_flags(
+            stage_identifier=VC_STAGE,
             preset_name=SAMPLES[wc.sample]["PRESET"],
-            parameter_name=f"Clipper_FilterParams_{config['platform']}",
+            task="adapter_removal",
+            platform=config["platform"],
         ),
     shell:
         """
@@ -135,6 +135,6 @@ rule remove_adapters_p2:
         python {params.script} \
         --input {input} \
         --output {output} \
-        {params.clipper_filterparams} \
+        {params.flags} \
         --threads {threads} >> {log} 2>&1
         """

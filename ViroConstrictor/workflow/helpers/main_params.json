@@ -1,0 +1,265 @@
+{
+    "DEFAULT": {
+        "qc": {
+            "bin_by_platform": {
+                "illumina": "fastp",
+                "iontorrent": "fastplong",
+                "nanopore": "fastplong"
+            },
+            "flags_by_platform": {
+                "illumina": "--disable_adapter_trimming --disable_quality_filtering --cut_right --cut_right_window_size 5 --cut_right_mean_quality 20 --length_required 100",
+                "iontorrent": "--disable_adapter_trimming --disable_quality_filtering --cut_front --cut_right_window_size 9 --cut_right_mean_quality 20 --length_required 100",
+                "nanopore": "--disable_adapter_trimming --disable_quality_filtering --cut_front --cut_front_window_size 9 --cut_front_mean_quality 7 --length_required 100"
+            }
+        },
+        "alignment_filtering": {
+            "bin_by_platform": {
+                "illumina": "samtools",
+                "iontorrent": "samtools",
+                "nanopore": "samtools"
+            },
+            "flags_by_platform": {
+                "illumina": "-F 256 -F 512 -F 4 -F 2048",
+                "iontorrent": "-F 256 -F 512 -F 4 -F 2048",
+                "nanopore": "-F 256 -F 512 -F 4 -F 2048"
+            }
+        },
+        "primer_removal": {
+            "bin_by_platform": {
+                "illumina": "ampligone",
+                "iontorrent": "ampligone",
+                "nanopore": "ampligone"
+            },
+            "flags_by_platform": {
+                "illumina": "-ap sr",
+                "iontorrent": "-ap sr",
+                "nanopore": "-ap map-ont"
+            }
+        },
+        "raw_alignment": {
+            "bin_by_platform": {
+                "illumina": "minimap2",
+                "iontorrent": "minimap2",
+                "nanopore": "minimap2"
+            },
+            "flags_by_platform": {
+                "illumina": "--secondary=no -ax sr",
+                "iontorrent": "--secondary=no -ax sr",
+                "nanopore": "--secondary=no -ax map-ont"
+            }
+        },
+        "alignment": {
+            "bin_by_platform": {
+                "illumina": "minimap2",
+                "iontorrent": "minimap2",
+                "nanopore": "minimap2"
+            },
+            "flags_by_platform": {
+                "illumina": "--secondary=no -ax sr",
+                "iontorrent": "--secondary=no -ax sr",
+                "nanopore": "--secondary=no -ax map-ont"
+            }
+        },
+        "adapter_removal": {
+            "bin_by_platform": {
+                "illumina": "clipper",
+                "iontorrent": "clipper",
+                "nanopore": "clipper"
+            },
+            "flags_by_platform": {
+                "illumina": "",
+                "iontorrent": "",
+                "nanopore": ""
+            }
+        },
+        "amino_acid_extraction": {
+            "bin_by_platform": {
+                "illumina": "aminoextract",
+                "iontorrent": "aminoextract",
+                "nanopore": "aminoextract"
+            },
+            "flags_by_platform": {
+                "illumina": "--keep-gaps --feature-type gene CDS",
+                "iontorrent": "--keep-gaps --feature-type gene CDS",
+                "nanopore": "--keep-gaps --feature-type gene CDS"
+            }
+        }
+    },
+    "SARSCOV2": {
+        "primer_removal": {
+            "flags_by_platform": {
+                "illumina": "-ap sr --virtual-primers ",
+                "iontorrent": "-ap sr --virtual-primers ",
+                "nanopore": "-ap map-ont --virtual-primers -as match=4 mismatch=4 gap_o1=8 gap_e1=2 gap_o2=24 gap_e2=0"
+            }
+        },
+        "raw_alignment": {
+            "flags_by_platform": {
+                "nanopore": "--secondary=no -r 2000,20k -E2,0 -ax map-ont"
+            }
+        },
+        "alignment": {
+            "flags_by_platform": {
+                "nanopore": "--secondary=no -r 2000,20k -E2,0 -O8,24 -A4 -B4 -ax map-ont"
+            }
+        }
+    },
+    "INFLUENZA": {
+        "raw_alignment": {
+            "flags_by_platform": {
+                "illumina": "--secondary=no --frag=no --splice -ax sr",
+                "iontorrent": "--secondary=no --frag=no --splice -ax sr",
+                "nanopore": "--secondary=no --frag=no --splice -ax map-ont"
+            }
+        },
+        "alignment": {
+            "flags_by_platform": {
+                "illumina": "--secondary=no --frag=no -ax sr",
+                "iontorrent": "--secondary=no --frag=no -ax sr",
+                "nanopore": "--secondary=no --frag=no -ax map-ont"
+            }
+        },
+        "adapter_removal": {
+            "flags_by_platform": {
+                "illumina": "--exclude-spliced --spliced-length-threshold 50",
+                "iontorrent": "--exclude-spliced --spliced-length-threshold 50 --min-aligned-length 0.5",
+                "nanopore": "--exclude-spliced --spliced-length-threshold 50 --min-aligned-length 0.5"
+            }
+        }
+    },
+    "PARAMYXOVIRIDAE": {
+        "primer_removal": {
+            "flags_by_platform": {
+                "illumina": "-ap sr --virtual-primers",
+                "iontorrent": "-ap sr --virtual-primers",
+                "nanopore": "-ap map-ont --virtual-primers"
+            }
+        },
+        "raw_alignment": {
+            "flags_by_platform": {
+                "illumina": "--secondary=no --frag=no --splice -ax sr",
+                "iontorrent": "--secondary=no --frag=no --splice -ax sr",
+                "nanopore": "--secondary=no --frag=no --splice -ax map-ont"
+            }
+        },
+        "alignment": {
+            "flags_by_platform": {
+                "illumina": "--secondary=no --frag=no -ax sr",
+                "iontorrent": "--secondary=no --frag=no -ax sr",
+                "nanopore": "--secondary=no --frag=no -ax map-ont"
+            }
+        },
+        "adapter_removal": {
+            "flags_by_platform": {
+                "illumina": "--exclude-spliced --spliced-length-threshold 21",
+                "iontorrent": "--exclude-spliced --spliced-length-threshold 21",
+                "nanopore": "--exclude-spliced --spliced-length-threshold 21"
+            }
+        }
+    },
+    "HEPATOVIRUS": {
+        "primer_removal": {
+            "flags_by_platform": {
+                "illumina": "-ap sr --virtual-primers",
+                "iontorrent": "-ap sr --virtual-primers",
+                "nanopore": "-ap map-ont --virtual-primers"
+            }
+        },
+        "raw_alignment": {
+            "flags_by_platform": {
+                "illumina": "--secondary=no --frag=no --splice -ax sr",
+                "iontorrent": "--secondary=no --frag=no --splice -ax sr",
+                "nanopore": "--secondary=no --frag=no --splice -ax map-ont"
+            }
+        },
+        "alignment": {
+            "flags_by_platform": {
+                "illumina": "--secondary=no --frag=no -ax sr",
+                "iontorrent": "--secondary=no --frag=no -ax sr",
+                "nanopore": "--secondary=no --frag=no -ax map-ont"
+            }
+        },
+        "adapter_removal": {
+            "flags_by_platform": {
+                "illumina": "--exclude-spliced --spliced-length-threshold 200",
+                "iontorrent": "--exclude-spliced --spliced-length-threshold 200",
+                "nanopore": "--exclude-spliced --spliced-length-threshold 200"
+            }
+        }
+    },
+    "PNEUMOVIRIDAE": {
+        "qc": {
+            "flags_by_platform": {
+                "nanopore": "--disable_adapter_trimming --disable_quality_filtering --cut_front --cut_front_window_size 9 --cut_front_mean_quality 7 --length_required 400"
+            }
+        },
+        "primer_removal": {
+            "flags_by_platform": {
+                "illumina": "-ap sr --virtual-primers",
+                "iontorrent": "-ap sr --virtual-primers",
+                "nanopore": "-ap map-ont --virtual-primers"
+            }
+        },
+        "raw_alignment": {
+            "flags_by_platform": {
+                "illumina": "--secondary=no --frag=no --splice -ax sr",
+                "iontorrent": "--secondary=no --frag=no --splice -ax sr",
+                "nanopore": "--secondary=no --frag=no --splice -ax map-ont"
+            }
+        },
+        "alignment": {
+            "flags_by_platform": {
+                "illumina": "--secondary=no --frag=no -ax sr",
+                "iontorrent": "--secondary=no --frag=no -ax sr",
+                "nanopore": "--secondary=no --frag=no -ax map-ont"
+            }
+        },
+        "adapter_removal": {
+            "flags_by_platform": {
+                "illumina": "--exclude-spliced --spliced-length-threshold 100",
+                "iontorrent": "--exclude-spliced --spliced-length-threshold 100",
+                "nanopore": "--exclude-spliced --spliced-length-threshold 100"
+            }
+        }
+    },
+    "ORTHOHEPADNAVIRUS": {
+        "qc": {
+            "flags_by_platform": {
+                "nanopore": "--disable_adapter_trimming --disable_quality_filtering --cut_front --cut_front_window_size 9 --cut_front_mean_quality 7 --length_required 400"
+            }
+        },
+        "raw_alignment": {
+            "flags_by_platform": {
+                "illumina": "--secondary=no --splice -ax sr",
+                "iontorrent": "--secondary=no --splice -ax sr",
+                "nanopore": "--secondary=no --splice -ax map-ont"
+            }
+        },
+        "adapter_removal": {
+            "flags_by_platform": {
+                "illumina": "--exclude-spliced --spliced-length-threshold 200",
+                "iontorrent": "--exclude-spliced --spliced-length-threshold 200",
+                "nanopore": "--exclude-spliced --spliced-length-threshold 200"
+            }
+        },
+        "amino_acid_extraction": {
+            "flags_by_platform": {
+                "illumina": "--keep-gaps --feature-type gene",
+                "iontorrent": "--keep-gaps --feature-type gene",
+                "nanopore": "--keep-gaps --feature-type gene"
+            }
+        }
+    },
+    "ENTEROVIRUS": {
+        "qc": {
+            "flags_by_platform": {
+                "nanopore": "--disable_adapter_trimming --disable_quality_filtering --cut_front --cut_front_window_size 9 --cut_front_mean_quality 7 --length_required 200"
+            }
+        },
+        "adapter_removal": {
+            "flags_by_platform": {
+                "nanopore": "--min-aligned-length 0.3"
+            }
+        }
+    }
+}

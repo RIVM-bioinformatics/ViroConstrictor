@@ -1,12 +1,3 @@
-### Align the cleaned reads to the reference
-def get_alignment_flags(_wildcards):
-    # These should correspond to the alignment settings in AmpliGone
-    if config["platform"] in ["illumina", "iontorrent"]:
-        return "-ax sr"
-    elif config["platform"] == "nanopore":
-        return "-ax map-ont"
-
-
 rule align_before_trueconsense:
     input:
         fq=f"{datadir}{wc_folder}{cln}{prdir}" "{sample}.fastq",  #rules.ampligone.output.fq,
@@ -26,33 +17,36 @@ rule align_before_trueconsense:
         runtime=medium_runtime_job,
     params:
         mapthreads=config["threads"]["Alignments"] - 1,
-        mm2_alignment_preset=get_alignment_flags,
-        minimap2_base_setting=lambda wc: get_preset_parameter(
+        align_bin = lambda wc: get_binary(
+            stage_identifier=VC_STAGE,
             preset_name=SAMPLES[wc.sample]["PRESET"],
-            parameter_name="Minimap2_Settings_Base",
+            task="alignment",
+            platform=config["platform"],
         ),
-        minimap2_extra_setting=lambda wc: get_preset_parameter(
+        align_flags = lambda wc: get_flags(
+            stage_identifier=VC_STAGE,
             preset_name=SAMPLES[wc.sample]["PRESET"],
-            parameter_name="Minimap2_Settings",
+            task="alignment",
+            platform=config["platform"],
         ),
-        minimap2_alignmentparams=lambda wc: get_preset_parameter(
+        filter_bin = lambda wc: get_binary(
+            stage_identifier=VC_STAGE,
             preset_name=SAMPLES[wc.sample]["PRESET"],
-            parameter_name=f"Minimap2_AlignmentParams_{config['platform']}",
+            task="alignment_filtering",
+            platform=config["platform"],
         ),
-        samtools_standard_filters=lambda wc: get_preset_parameter(
+        filter_flags = lambda wc: get_flags(
+            stage_identifier=VC_STAGE,
             preset_name=SAMPLES[wc.sample]["PRESET"],
-            parameter_name="Samtools_Filters_Base",
-        ),
-        samtools_extra_filters=lambda wc: get_preset_parameter(
-            preset_name=SAMPLES[wc.sample]["PRESET"],
-            parameter_name=f"Samtools_Filters_{config['platform']}",
+            task="alignment_filtering",
+            platform=config["platform"],
         ),
     shell:
         """
-        minimap2 {params.mm2_alignment_preset} {params.minimap2_base_setting} {params.minimap2_extra_setting} {params.minimap2_alignmentparams} -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
-        samtools view -@ {threads} {params.samtools_standard_filters} {params.samtools_extra_filters} -uS 2>> {log} |\
-        samtools sort -o {output.bam} >> {log} 2>&1
-        samtools index {output.bam} >> {log} 2>&1
+        {params.align_bin} {params.align_flags} -t {params.mapthreads} {input.ref} {input.fq} 2>> {log} |\
+        {params.filter_bin} view -@ {threads} {params.filter_flags} -uS 2>> {log} |\
+        {params.filter_bin} sort -o {output.bam} >> {log} 2>&1
+        {params.filter_bin} index {output.bam} >> {log} 2>&1
         """
 
 
@@ -108,12 +102,19 @@ rule Translate_AminoAcids:
     log:
         f"{logdir}Translate_AA_" "{Virus}.{RefID}.{sample}.log",
     params:
-        feature_type=lambda wc: ' '.join(get_preset_parameter(preset_name=SAMPLES[wc.sample]['PRESET'], parameter_name='AminoExtract_FeatureType')),
-        aminoextract_settings=lambda wc: get_preset_parameter(
+        binary = lambda wc: get_binary(
+            stage_identifier=VC_STAGE,
             preset_name=SAMPLES[wc.sample]["PRESET"],
-            parameter_name=f"AminoExtract_Settings",
+            task="amino_acid_extraction",
+            platform=config["platform"],
+        ),
+        flags = lambda wc: get_flags(
+            stage_identifier=VC_STAGE,
+            preset_name=SAMPLES[wc.sample]["PRESET"],
+            task="amino_acid_extraction",
+            platform=config["platform"],
         ),
     shell:
         """
-        AminoExtract -i {input.seq} -gff {input.gff} -o {output} -ft {params.feature_type} -n {wildcards.sample} {params.aminoextract_settings} >> {log} 2>&1
+        {params.binary} -i {input.seq} -gff {input.gff} -o {output} -n {wildcards.sample} {params.flags} >> {log} 2>&1
         """
