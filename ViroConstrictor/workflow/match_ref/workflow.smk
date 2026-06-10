@@ -18,6 +18,7 @@ from ViroConstrictor.workflow.helpers.directories import *
 from ViroConstrictor.workflow.helpers.generic_workflow_methods import (
     read_fasta,
     segmented_ref_groups,
+    get_rule_name,
 )
 from ViroConstrictor.workflow.helpers.presets import get_preset_parameter
 
