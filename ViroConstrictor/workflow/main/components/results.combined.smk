@@ -27,7 +27,7 @@ rule combine_consensus_by_sample:
     container:
         f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     log:
-        f"{logdir}combine_consensus_by_sample_" "{sample}.log",
+        f"{logdir}{get_rule_name()}/combine_consensus_by_sample_" "{sample}.log",
     params:
         script="-m main.scripts.combine_fasta",
         pythonpath=f'{Path(workflow.basedir).parent}',
@@ -66,7 +66,7 @@ rule combine_mutations_by_sample:
     container:
         f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     log:
-        f"{logdir}combine_mutations_by_sample_" "{sample}.log",
+        f"{logdir}{get_rule_name()}/combine_mutations_by_sample_" "{sample}.log",
     params:
         script="-m main.scripts.combine_tabular",
         pythonpath=f'{Path(workflow.basedir).parent}',
@@ -107,7 +107,7 @@ rule combine_coverage_by_sample:
     container:
         f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     log:
-        f"{logdir}combine_coverage_by_sample_" "{sample}.log",
+        f"{logdir}{get_rule_name()}/combine_coverage_by_sample_" "{sample}.log",
     params:
         script="-m main.scripts.combine_tabular",
         pythonpath=f'{Path(workflow.basedir).parent}',
@@ -148,7 +148,7 @@ rule combine_amplicon_coverage_by_sample:
     container:
         f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     log:
-        f"{logdir}combine_amplicon_coverage_by_sample_" "{sample}.log",
+        f"{logdir}{get_rule_name()}/combine_amplicon_coverage_by_sample_" "{sample}.log",
     params:
         script="-m main.scripts.combine_tabular",
         pythonpath=f'{Path(workflow.basedir).parent}',
@@ -194,7 +194,7 @@ rule combine_aminoacids_by_sample:
     container:
         f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     log:
-        f"{logdir}combine_aminoacids_by_sample_" "{sample}.{feature}.log",
+        f"{logdir}{get_rule_name()}/combine_aminoacids_by_sample_" "{sample}.{feature}.log",
     params:
         script="-m main.scripts.extract_sample_from_fasta",
         pythonpath=f'{Path(workflow.basedir).parent}',
@@ -218,7 +218,7 @@ rule combine_aminoacids_by_sample_empty:
         mem_mb=low_memory_job,
         runtime=low_runtime_job,
     log:
-        f"{logdir}combine_aminoacids_by_sample_empty_" "{sample}.{feature}.log",
+        f"{logdir}{get_rule_name()}/combine_aminoacids_by_sample_empty_" "{sample}.{feature}.log",
     shell:
         """
         mkdir -p $(dirname {output})
@@ -251,7 +251,7 @@ rule combine_consensus_by_virus:
     container:
         f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     log:
-        f"{logdir}combine_consensus_by_virus_" "{Virus}.log",
+        f"{logdir}{get_rule_name()}/combine_consensus_by_virus_" "{Virus}.log",
     params:
         script="-m main.scripts.combine_fasta",
         pythonpath=f'{Path(workflow.basedir).parent}',
@@ -290,7 +290,7 @@ rule combine_mutations_by_virus:
     container:
         f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     log:
-        f"{logdir}combine_mutations_by_virus_" "{Virus}.log",
+        f"{logdir}{get_rule_name()}/combine_mutations_by_virus_" "{Virus}.log",
     params:
         script="-m main.scripts.combine_tabular",
         pythonpath=f'{Path(workflow.basedir).parent}',
@@ -331,7 +331,7 @@ rule combine_coverage_by_virus:
     container:
         f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     log:
-        f"{logdir}combine_coverage_by_virus_" "{Virus}.log",
+        f"{logdir}{get_rule_name()}/combine_coverage_by_virus_" "{Virus}.log",
     params:
         script="-m main.scripts.combine_tabular",
         pythonpath=f'{Path(workflow.basedir).parent}',
@@ -372,7 +372,7 @@ rule combine_amplicon_coverage_by_virus:
     container:
         f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     log:
-        f"{logdir}combine_amplicon_coverage_by_virus_" "{Virus}.log",
+        f"{logdir}{get_rule_name()}/combine_amplicon_coverage_by_virus_" "{Virus}.log",
     params:
         script="-m main.scripts.combine_tabular",
         pythonpath=f'{Path(workflow.basedir).parent}',
@@ -414,7 +414,7 @@ rule combine_aminoacids_by_virus:
         mem_mb=low_memory_job,
         runtime=low_runtime_job,
     log:
-        f"{logdir}combine_aminoacids_by_virus_" "{Virus}.{feature}.log",
+        f"{logdir}{get_rule_name()}/combine_aminoacids_by_virus_" "{Virus}.{feature}.log",
     shell:
         """
         mkdir -p $(dirname {output})
@@ -430,7 +430,7 @@ rule combine_aminoacids_by_virus_empty:
         mem_mb=low_memory_job,
         runtime=low_runtime_job,
     log:
-        f"{logdir}combine_aminoacids_by_virus_empty_" "{Virus}.{feature}.log",
+        f"{logdir}{get_rule_name()}/combine_aminoacids_by_virus_empty_" "{Virus}.{feature}.log",
     shell:
         """
         mkdir -p $(dirname {output:q})
@@ -481,7 +481,7 @@ rule combine_all_mutations:
     container:
         f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     log:
-        f"{logdir}combine_all_mutations.log",
+        f"{logdir}{get_rule_name()}/combine_all_mutations.log",
     params:
         script="-m main.scripts.aggregate_combined_files",
         pythonpath=f'{Path(workflow.basedir).parent}',
@@ -514,7 +514,7 @@ rule combine_all_coverage:
     container:
         f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     log:
-        f"{logdir}combine_all_coverage.log",
+        f"{logdir}{get_rule_name()}/combine_all_coverage.log",
     params:
         script="-m main.scripts.aggregate_combined_files",
         pythonpath=f'{Path(workflow.basedir).parent}',
@@ -547,7 +547,7 @@ rule combine_all_amplicon_coverage:
     container:
         f"{container_base_path}/viroconstrictor_core_scripts_{get_hash('core_scripts')}.sif"
     log:
-        f"{logdir}combine_all_amplicon_coverage.log",
+        f"{logdir}{get_rule_name()}/combine_all_amplicon_coverage.log",
     params:
         script="-m main.scripts.aggregate_combined_files",
         pythonpath=f'{Path(workflow.basedir).parent}',
@@ -581,7 +581,7 @@ rule combine_all_aminoacids:
         mem_mb=low_memory_job,
         runtime=low_runtime_job,
     log:
-        f"{logdir}combine_all_aminoacids_" "{feature}.log",
+        f"{logdir}{get_rule_name()}/combine_all_aminoacids_" "{feature}.log",
     shell:
         """
         mkdir -p $(dirname {output})
@@ -597,7 +597,7 @@ rule combine_all_aminoacids_empty:
         mem_mb=low_memory_job,
         runtime=low_runtime_job,
     log:
-        f"{logdir}combine_all_aminoacids_empty_" "{feature}.log",
+        f"{logdir}{get_rule_name()}/combine_all_aminoacids_empty_" "{feature}.log",
     shell:
         """
         mkdir -p $(dirname {output:q})
