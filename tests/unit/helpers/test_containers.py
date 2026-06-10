@@ -229,7 +229,9 @@ def test_containerization_executable_selects_singularity_when_apptainer_missing(
     assert containers.containerization_executable() == "singularity"
 
 
-@pytest.mark.xfail(reason="Intended behavior: raise a clear error if neither runtime is installed; current implementation silently falls back to singularity.")
+@pytest.mark.xfail(
+    reason="Intended behavior: raise a clear error if neither runtime is installed; current implementation silently falls back to singularity."
+)
 def test_containerization_executable_raises_when_no_runtime_available(monkeypatch: pytest.MonkeyPatch) -> None:
     """Expect explicit failure when no container runtime is present (intended)."""
     monkeypatch.setattr(containers.subprocess, "call", lambda *args, **kwargs: 1)
