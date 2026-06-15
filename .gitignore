@@ -142,3 +142,6 @@ tests/unit/**/output/*
 
 test/
 
+# Generated container Dockerfiles
+containers/dockerfiles/*.dockerfile
+

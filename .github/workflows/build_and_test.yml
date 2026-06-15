@@ -46,6 +46,11 @@ jobs:
           pip install . --no-deps
         shell: micromamba-shell {0}
 
+      - name: generate container dockerfiles
+        run: |
+          python containers/generate_dockerfiles.py
+        shell: micromamba-shell {0}
+
       - name: build containers
         run: |
           python containers/build_containers.py

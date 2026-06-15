@@ -1,6 +1,7 @@
 import json
 import os
 import subprocess
+import sys
 import tempfile
 
 import requests
@@ -24,6 +25,20 @@ upstream_api_headers = {
 # TODO: break up this script into smaller functions
 if __name__ == "__main__":
     print("Start of container building process for ViroConstrictor")
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    subprocess.run(
+        [
+            sys.executable,
+            os.path.join(script_dir, "generate_dockerfiles.py"),
+            "--config",
+            os.path.join(script_dir, "dockerfiles.yaml"),
+            "--template",
+            os.path.join(script_dir, "Dockerfile.j2"),
+            "--output-dir",
+            script_dir,
+        ],
+        check=True,
+    )
     recipe_hashes = fetch_hashes()
 
     builtcontainers = []

@@ -25,7 +25,7 @@ Dockerfiles are generated, not hand-maintained.
 python containers/generate_dockerfiles.py
 ```
 
-3. Commit the template/config and regenerated `dockerfiles/*.dockerfile` files.
+3. Commit the template/config files. Generated `dockerfiles/*.dockerfile` files are optional and can be ignored in git.
 
 ## How Versioning Works (Hash-Based Tags)
 
