@@ -9,6 +9,7 @@ from ViroConstrictor import __prog__
 from ViroConstrictor.workflow.helpers.containers import fetch_hashes, upstream_registry
 
 base_path_to_container_defs = "./containers"
+dockerfile_defs_dir = os.path.join(base_path_to_container_defs, "dockerfiles")
 upstream_api_endpoint = "https://api.github.com/orgs/RIVM-bioinformatics/packages/container/"
 upstream_api_authtoken = os.environ.get("TOKEN")
 upstream_api_responsetype = "application/vnd.github+json"
@@ -31,7 +32,7 @@ if __name__ == "__main__":
         recipe_basename = os.path.basename(recipe).replace(".yaml", "")
         container_basename = f"{__prog__}_{recipe_basename}".lower()
 
-        associated_container_dock_file = os.path.join(base_path_to_container_defs, f"{recipe_basename}.dockerfile")
+        associated_container_dock_file = os.path.join(dockerfile_defs_dir, f"{recipe_basename}.dockerfile")
         upstream_registry_url = f"{upstream_registry}/{recipe_basename}:{VersionHash}"
         upstream_existing_containers = f"{upstream_api_endpoint}{__prog__}_{recipe_basename}/versions"
         print(f"Checking if container '{container_basename}' with hash '{VersionHash}' exists in the upstream registry")

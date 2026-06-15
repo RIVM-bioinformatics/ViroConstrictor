@@ -1,0 +1,31 @@
+FROM {{ base_image }}
+
+COPY {{ dockerfile.env_file }} /install.yml
+{% for copy_entry in dockerfile.extra_copies %}
+COPY {{ copy_entry.src }} {{ copy_entry.dest }}
+{% endfor %}
+
+LABEL org.opencontainers.image.description="{{ dockerfile.description }}"
+
+USER root
+
+ARG {{ uid_arg_name }}={{ uid_default }}
+
+# Create a non-login runtime user without apt-get dependencies.
+RUN useradd \
+    --home-dir "{{ user_home }}" \
+    --shell "{{ user_shell }}" \
+    --no-create-home \
+    --uid "{{ '${' ~ uid_arg_name ~ '}' }}" \
+    {{ user_name }}
+
+# Combine micromamba installs and clean in one layer.
+RUN micromamba install -q -y -n base git -c conda-forge && \
+    micromamba install -q -y -n base -f /install.yml && \
+    micromamba clean -q --all --yes
+
+USER {{ user_name }}
+
+ENV PATH=/opt/conda/bin:$PATH
+
+CMD ["@"]

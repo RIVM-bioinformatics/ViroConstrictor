@@ -1,0 +1,39 @@
+base_image: mambaorg/micromamba:latest
+uid_arg_name: UID
+uid_default: 10001
+user_name: appuser
+user_home: /nonexistent
+user_shell: /sbin/nologin
+
+dockerfiles:
+  - output: dockerfiles/Alignment.dockerfile
+    env_file: ./ViroConstrictor/workflow/envs/Alignment.yaml
+    description: Sequence alignment processes and tools for the ViroConstrictor workflow.
+    extra_copies: []
+
+  - output: dockerfiles/Clean.dockerfile
+    env_file: ./ViroConstrictor/workflow/envs/Clean.yaml
+    description: Data cleaning processes and tools for the ViroConstrictor workflow.
+    extra_copies:
+      - src: ./ViroConstrictor/workflow/main/configs/
+        dest: /configs/
+
+  - output: dockerfiles/Consensus.dockerfile
+    env_file: ./ViroConstrictor/workflow/envs/Consensus.yaml
+    description: Consensus sequence generation processes and tools for the ViroConstrictor workflow.
+    extra_copies: []
+
+  - output: dockerfiles/ORF_analysis.dockerfile
+    env_file: ./ViroConstrictor/workflow/envs/ORF_analysis.yaml
+    description: ORF analysis processes and tools for the ViroConstrictor workflow.
+    extra_copies: []
+
+  - output: dockerfiles/core_scripts.dockerfile
+    env_file: ./ViroConstrictor/workflow/envs/core_scripts.yaml
+    description: Supplementary scripts for the ViroConstrictor core workflow.
+    extra_copies: []
+
+  - output: dockerfiles/mr_scripts.dockerfile
+    env_file: ./ViroConstrictor/workflow/envs/mr_scripts.yaml
+    description: Supplementary scripts for the ViroConstrictor MR workflow.
+    extra_copies: []

@@ -3,6 +3,8 @@ channels:
   - bioconda
   - conda-forge
 dependencies:
+  - conda-forge::python=3.13
+  - conda-forge::biopython==1.87
   - bioconda::aminoextract==0.4.1
   - bioconda::pysam==0.23.3 
   - pip
