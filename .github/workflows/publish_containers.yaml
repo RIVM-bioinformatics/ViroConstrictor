@@ -10,6 +10,16 @@ on:
 jobs:
     Upload:
         runs-on: ubuntu-latest
+        strategy:
+          fail-fast: false
+          matrix:
+            container:
+              - Alignment
+              - Clean
+              - Consensus
+              - ORF_analysis
+              - core_scripts
+              - mr_scripts
         steps:
           - uses: actions/checkout@v4
 
@@ -35,18 +45,13 @@ jobs:
             with:
               github_token: ${{ secrets.GITHUB_TOKEN }}
               workflow: build_and_test.yml
-              name: built_containers
+              name: built_container_${{ matrix.container }}
               skip_unpack: false
     
-          - name: move artifact
+          - name: stage artifacts for publish
             run: |
-              mv ./containers.tar.gz ./container_manager/containers.tar.gz
-    
-          - name: unzip built containers
-            run: |
-              cd ./container_manager/
-              tar -xzvf containers.tar.gz
-              cd ..
+              cp ./viroconstrictor_${{ matrix.container }}_*.tar ./container_manager/
+              cp ./container-build-manifest-${{ matrix.container }}.json ./container_manager/manifests/
     
           - name: Setup Mamba
             uses: mamba-org/setup-micromamba@v2
@@ -70,5 +75,5 @@ jobs:
           
           - name: publish containers from manifest
             run: |
-              python -m container_manager publish --manifest ./container_manager/manifests/container-build-manifest.json
+              python -m container_manager publish --only ${{ matrix.container }} --manifest ./container_manager/manifests/container-build-manifest-${{ matrix.container }}.json
             shell: micromamba-shell {0}

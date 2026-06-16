@@ -11,6 +11,7 @@ The container manager works as a staged pipeline:
 3. `convert`: convert `.tar` artifacts to `.sif` using Apptainer
 4. `publish`: tag and push built images listed in the manifest
 5. `sync-cache`: compute required hash-tagged images and pull missing containers to a local cache
+6. `merge-manifests`: merge per-runner manifests into one combined manifest
 
 The `local` command runs a convenience flow: `generate -> build -> convert -> cache sync`.
 
@@ -76,6 +77,12 @@ Publish manifest images (planned mode):
 
 ```bash
 python -m container_manager publish --dry-run
+```
+
+Merge matrix build manifests:
+
+```bash
+python -m container_manager merge-manifests --input-glob "./artifacts/container-build-manifest-*.json"
 ```
 
 Sync local cache from registry (planned mode):

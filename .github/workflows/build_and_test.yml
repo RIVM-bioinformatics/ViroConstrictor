@@ -14,6 +14,16 @@ on:
 jobs:
   Setup_and_build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        container:
+          - Alignment
+          - Clean
+          - Consensus
+          - ORF_analysis
+          - core_scripts
+          - mr_scripts
     steps:
       - uses: actions/checkout@v4
 
@@ -51,24 +61,25 @@ jobs:
           python -m container_manager generate
         shell: micromamba-shell {0}
 
-      - name: build containers
+      - name: build container
         run: |
-          python -m container_manager build
+          python -m container_manager build --only ${{ matrix.container }} --manifest ./container_manager/manifests/container-build-manifest-${{ matrix.container }}.json
         env:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: micromamba-shell {0}
-      
-      - name: zip built containers
+
+      - name: pack container artifact
         run: |
-          cd ./container_manager/
-          tar -czvf containers.tar.gz manifests/container-build-manifest.json $(find . -type f -name "*.tar" -printf '%f ')
+          mkdir -p ./artifacts/${{ matrix.container }}
+          cp ./container_manager/manifests/container-build-manifest-${{ matrix.container }}.json ./artifacts/${{ matrix.container }}/
+          find ./container_manager -maxdepth 1 -type f -name 'viroconstrictor_${{ matrix.container }}_*.tar' -exec cp {} ./artifacts/${{ matrix.container }}/ \;
 
 
       - name: Upload container artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: built_containers
-          path: ./container_manager/containers.tar.gz
+          name: built_container_${{ matrix.container }}
+          path: ./artifacts/${{ matrix.container }}/
           overwrite: true
   
   Test:
@@ -95,17 +106,15 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: built_containers
+          pattern: built_container_*
+          path: ./artifacts
+          merge-multiple: true
 
-      - name: move artifact
+      - name: stage container artifacts
         run: |
-          mv ./containers.tar.gz ./container_manager/containers.tar.gz
-      
-      - name: unzip built containers
-        run: |
-          cd ./container_manager/
-          tar -xzvf containers.tar.gz
-          cd ..
+          cp ./artifacts/*.tar ./container_manager/
+          cat ./artifacts/container-build-manifest-*.json > /dev/null
+          python -m container_manager merge-manifests
 
       - name: Setup Apptainer
         uses: eWaterCycle/setup-apptainer@v2

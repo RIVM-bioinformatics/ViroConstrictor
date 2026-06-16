@@ -7,6 +7,7 @@ from container_manager.src.build_containers import build
 from container_manager.src.convert_docker_tar_to_apptainer_sif import convert_from_manifest
 from container_manager.src.generate_dockerfiles import generate_dockerfiles
 from container_manager.src.logging import get_logger
+from container_manager.src.merge_manifests import merge_manifests
 from container_manager.src.publish_to_ghcr import publish_from_manifest
 from container_manager.src.sync_local_cache import sync_cache
 from container_manager.src.version import REPO_ROOT, VERSION
@@ -17,6 +18,7 @@ DEFAULT_CONFIG = REPO_ROOT / "container_manager" / "config_dockerfiles.yaml"
 DEFAULT_TEMPLATE = REPO_ROOT / "container_manager" / "Dockerfile.j2"
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "container_manager"
 DEFAULT_MANIFEST = REPO_ROOT / "container_manager" / "manifests" / "container-build-manifest.json"
+DEFAULT_MERGE_INPUT_GLOB = "./artifacts/container-build-manifest-*.json"
 
 
 def _csv_to_set(raw: str | None) -> set[str] | None:
@@ -87,6 +89,23 @@ def parse_args() -> argparse.Namespace:
     )
     publish_cmd.add_argument("--only", type=str, default=None, help="Comma-separated list of image names to publish (e.g., 'image1,image2')")
     publish_cmd.add_argument("--dry-run", action="store_true", help="Print the planned publish actions to stdout instead of executing them")
+
+    # merge-manifests
+    merge_cmd = subparsers.add_parser(
+        "merge-manifests",
+        help="Merge per-container manifest JSON files into one manifest",
+    )
+    merge_cmd.add_argument(
+        "--input-glob",
+        default=DEFAULT_MERGE_INPUT_GLOB,
+        help=f"Glob pattern for input manifest files. Default: {DEFAULT_MERGE_INPUT_GLOB}",
+    )
+    merge_cmd.add_argument(
+        "--output",
+        type=Path,
+        default=DEFAULT_MANIFEST,
+        help=f"Path for merged manifest output. Default: {DEFAULT_MANIFEST}",
+    )
 
     # sync-cache
     sync_cmd = subparsers.add_parser(
@@ -160,6 +179,10 @@ def main() -> int:
         publish_from_manifest(args.manifest, dry_run=args.dry_run, only=_csv_to_set(args.only))
         logger.info("Updated manifest: %s", args.manifest)
         return 0
+
+    if args.command == "merge-manifests":
+        logger.info("Merging per-container manifests")
+        return merge_manifests(input_glob=args.input_glob, output_path=args.output)
 
     if args.command == "sync-cache":
         logger.info("Syncing local container cache")
