@@ -1,3 +1,6 @@
+# Template for the dockerfiles that will be generated.
+# Dont change the name of this file, even though it is not very descriptive.
+# When the name is Dockerfile, vscode will assume its a dockerfile even with a .j2 extension and provide syntax highlighting and linting.
 FROM {{ base_image }}
 
 COPY {{ dockerfile.env_file }} /install.yml
@@ -11,7 +14,6 @@ USER root
 
 ARG {{ uid_arg_name }}={{ uid_default }}
 
-# Create a non-login runtime user without apt-get dependencies.
 RUN useradd \
     --home-dir "{{ user_home }}" \
     --shell "{{ user_shell }}" \
@@ -19,7 +21,6 @@ RUN useradd \
     --uid "{{ '${' ~ uid_arg_name ~ '}' }}" \
     {{ user_name }}
 
-# Combine micromamba installs and clean in one layer.
 RUN micromamba install -q -y -n base git -c conda-forge && \
     micromamba install -q -y -n base -f /install.yml && \
     micromamba clean -q --all --yes

@@ -48,27 +48,27 @@ jobs:
 
       - name: generate container dockerfiles
         run: |
-          python containers/generate_dockerfiles.py
+          python -m container_manager generate
         shell: micromamba-shell {0}
 
       - name: build containers
         run: |
-          python containers/build_containers.py
+          python -m container_manager build
         env:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: micromamba-shell {0}
       
       - name: zip built containers
         run: |
-          cd ./containers/
-          tar -czvf containers.tar.gz builtcontainers.json $(find . -type f -name "*.tar" -printf '%f ')
+          cd ./container_manager/
+          tar -czvf containers.tar.gz manifests/container-build-manifest.json $(find . -type f -name "*.tar" -printf '%f ')
 
 
       - name: Upload container artifacts
         uses: actions/upload-artifact@v4
         with:
           name: built_containers
-          path: ./containers/containers.tar.gz
+          path: ./container_manager/containers.tar.gz
           overwrite: true
   
   Test:
@@ -99,11 +99,11 @@ jobs:
 
       - name: move artifact
         run: |
-          mv ./containers.tar.gz ./containers/containers.tar.gz
+          mv ./containers.tar.gz ./container_manager/containers.tar.gz
       
       - name: unzip built containers
         run: |
-          cd ./containers/
+          cd ./container_manager/
           tar -xzvf containers.tar.gz
           cd ..
 
@@ -125,11 +125,14 @@ jobs:
 
       - name: convert containers
         run: |
-          python containers/convert_artifact_containers_for_apptainer.py
+          python -m container_manager convert --manifest ./container_manager/manifests/container-build-manifest.json
+        shell: micromamba-shell {0}
 
       - name: download existing containers
         run: |
-          python containers/pull_published_containers.py
+          mkdir -p ./test_containers
+          mv ./container_manager/*.sif ./test_containers/ || true
+          python -m container_manager sync-cache --cache-dir ./test_containers
         shell: micromamba-shell {0}
       
       ## rest of the testing suite here

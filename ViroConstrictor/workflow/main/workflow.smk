@@ -13,7 +13,7 @@ from snakemake.utils import Paramspace, min_version
 from snakemake_interface_executor_plugins.settings import DeploymentMethod
 
 import ViroConstrictor
-from ViroConstrictor.workflow.helpers.containers import get_hash
+from container_manager.src.sync_local_cache import get_hash
 from ViroConstrictor.workflow.helpers.directories import *
 from ViroConstrictor.workflow.helpers.generic_workflow_methods import (
     get_aminoacid_features, # used in construction of samples_df

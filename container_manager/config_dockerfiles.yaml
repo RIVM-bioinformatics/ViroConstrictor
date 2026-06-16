@@ -4,6 +4,14 @@ uid_default: 10001
 user_name: appuser
 user_home: /nonexistent
 user_shell: /sbin/nologin
+registry: ghcr.io/rivm-bioinformatics
+container_package_prefix: viroconstrictor
+oci_labels:
+  Author: RIVM-bioinformatics team
+  Maintainer: RIVM-bioinformatics team
+  Associated_pipeline: ViroConstrictor
+  org.opencontainers.image.authors: ids-bioinformatics@rivm.nl
+  org.opencontainers.image.source: https://github.com/RIVM-bioinformatics/ViroConstrictor
 
 dockerfiles:
   - output: dockerfiles/Alignment.dockerfile

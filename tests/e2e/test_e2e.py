@@ -151,13 +151,18 @@ def test_main_container(prepare_files: dict[str, Path]) -> None:
         "sars-cov-2",
     ]
 
-    user_path = Path("~/.ViroConstrictor_defaultprofile.ini").expanduser()
-    if user_path.exists():
-        config_reader = ConfigParser()
-        config_reader.read(user_path)
-        container_folder = config_reader["REPRODUCTION"]["container_cache_path"]
+    # Prefer repository-local containers for deterministic offline e2e execution.
+    repo_container_folder = Path(__file__).resolve().parents[2] / "containers"
+    if any(repo_container_folder.glob("viroconstrictor_*.sif")):
+        container_folder = repo_container_folder.as_posix()
     else:
-        container_folder = Path("./containers").as_posix()
+        user_path = Path("~/.ViroConstrictor_defaultprofile.ini").expanduser()
+        if user_path.exists():
+            config_reader = ConfigParser()
+            config_reader.read(user_path)
+            container_folder = config_reader["REPRODUCTION"]["container_cache_path"]
+        else:
+            container_folder = repo_container_folder.as_posix()
 
     # Read and update the settings file dynamically
     settings_lines = prepare_files["settings"].read_text().splitlines()
@@ -174,7 +179,7 @@ def test_main_container(prepare_files: dict[str, Path]) -> None:
     try:
         with pytest.raises(SystemExit) as e:
             main(args, settings=prepare_files["settings"].as_posix())
-            assert e.value.code == 0, "Main function did not complete successfully"
+        assert e.value.code == 0, "Main function did not complete successfully"
     finally:
         # Revert the settings file to its original state
         prepare_files["settings"].write_text("\n".join(settings_lines))

@@ -40,11 +40,11 @@ jobs:
     
           - name: move artifact
             run: |
-              mv ./containers.tar.gz ./containers/containers.tar.gz
+              mv ./containers.tar.gz ./container_manager/containers.tar.gz
     
           - name: unzip built containers
             run: |
-              cd ./containers/
+              cd ./container_manager/
               tar -xzvf containers.tar.gz
               cd ..
     
@@ -68,12 +68,7 @@ jobs:
               username: ${{ github.actor }}
               password: ${{ secrets.GITHUB_TOKEN }}
           
-          - name: Add artifacted containers to docker daemon
+          - name: publish containers from manifest
             run: |
-              python containers/add_OCI_to_docker_engine.py
-            shell: micromamba-shell {0}
-          
-          - name: tag and push containers
-            run: |
-              python containers/tag_and_push_containers.py
+              python -m container_manager publish --manifest ./container_manager/manifests/container-build-manifest.json
             shell: micromamba-shell {0}

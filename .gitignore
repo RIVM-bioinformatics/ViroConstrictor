@@ -145,3 +145,6 @@ test/
 # Generated container Dockerfiles
 containers/dockerfiles/*.dockerfile
 
+# Generated container build manifest
+containers/manifests/container-build-manifest.json
+
