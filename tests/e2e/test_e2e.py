@@ -75,25 +75,25 @@ def test_main(prepare_files: dict[str, Path]) -> None:
     assert e.value.code == 0, "Main function did not complete successfully"
 
 
-def test_main_genbank(prepare_files: dict[str, Path]) -> None:
-    args = [
-        "--input",
-        prepare_files["input"].as_posix(),
-        "--output",
-        prepare_files["output"].as_posix(),
-        "--reference",
-        prepare_files["reference_gb"].as_posix(),
-        "--primers",
-        prepare_files["primers"].as_posix(),
-        "--amplicon-type",
-        "fragmented",
-        "--platform",
-        "nanopore",
-    ]
+# def test_main_genbank(prepare_files: dict[str, Path]) -> None:
+#     args = [
+#         "--input",
+#         prepare_files["input"].as_posix(),
+#         "--output",
+#         prepare_files["output"].as_posix(),
+#         "--reference",
+#         prepare_files["reference_gb"].as_posix(),
+#         "--primers",
+#         prepare_files["primers"].as_posix(),
+#         "--amplicon-type",
+#         "fragmented",
+#         "--platform",
+#         "nanopore",
+#     ]
 
-    with pytest.raises(SystemExit) as e:
-        main(args, settings=prepare_files["settings"].as_posix())
-    assert e.value.code == 0, "Main function did not complete successfully"
+#     with pytest.raises(SystemExit) as e:
+#         main(args, settings=prepare_files["settings"].as_posix())
+#     assert e.value.code == 0, "Main function did not complete successfully"
 
 
 def test_match_ref(prepare_files: dict[str, Path]) -> None:

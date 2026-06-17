@@ -27,33 +27,27 @@ rule ampligone:
         mem_mb=high_memory_job,
         runtime=high_runtime_job,
     params:
-        amplicontype=config["amplicon_type"],
-        primer_mismatch_rate=lambda wc: SAMPLES[wc.sample]["PRIMER-MISMATCH-RATE"],
-        fragment_lookaround_size=lambda wc: f"--fragment-lookaround-size {int(size)}" if (size := SAMPLES[wc.sample].get("FRAGMENT-LOOKAROUND-SIZE")) else "",
-        alignmentpreset=lambda wc: get_preset_parameter(
+        binary = lambda wc: get_binary(
+            stage_identifier=VC_STAGE,
             preset_name=SAMPLES[wc.sample]["PRESET"],
-            parameter_name=f"AmpliGone_AlignmentPreset_{config['platform']}",
+            task="primer_removal",
+            platform=config["platform"],
         ),
-        alignmentmatrix=lambda wc: get_preset_parameter(
+        flags = lambda wc: get_flags(
+            stage_identifier=VC_STAGE,
             preset_name=SAMPLES[wc.sample]["PRESET"],
-            parameter_name=f"AmpliGone_AlignmentMatrix_{config['platform']}",
-        ),
-        extrasettings=lambda wc: get_preset_parameter(
-            preset_name=SAMPLES[wc.sample]["PRESET"],
-            parameter_name=f"AmpliGone_ExtraSettings_{config['platform']}",
+            task="primer_removal",
+            platform=config["platform"],
         ),
     shell:
         """
         echo "Running AmpliGone with primer file: {input.pr}" > {log}
-        AmpliGone \
+        {params.binary} \
             -i {input.fq} \
             -ref {input.ref} -pr {input.pr} \
             -o {output.fq} \
-            -at {params.amplicontype} \
-            --error-rate {params.primer_mismatch_rate} \
-            {params.fragment_lookaround_size} \
             --export-primers {output.ep} \
-            {params.alignmentpreset} {params.alignmentmatrix} {params.extrasettings} \
+            {params.flags} \
             -to \
             -t {threads} >> {log} 2>&1
         """

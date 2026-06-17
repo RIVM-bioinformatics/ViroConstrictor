@@ -54,13 +54,22 @@ def construct_MultiQC_input(_wildcards):
         sample=p_space.dataframe["sample"],
     )
 
-    fastp_out = expand(
-        f"{datadir}{wc_folder}{cln}{qcfilt}{json}" "{sample}_fastp.json",
-        zip,
-        RefID=p_space.RefID,
-        Virus=p_space.Virus,
-        sample=p_space.dataframe["sample"],
-    )
+    if config["platform"] in ["nanopore", "iontorrent"]:
+        fastp_out = expand(
+            f"{datadir}{wc_folder}{cln}{qcfilt}{json}" "{sample}_fastplong.json",
+            zip,
+            RefID=p_space.RefID,
+            Virus=p_space.Virus,
+            sample=p_space.dataframe["sample"],
+        )
+    else:
+        fastp_out = expand(
+            f"{datadir}{wc_folder}{cln}{qcfilt}{json}" "{sample}_fastp.json",
+            zip,
+            RefID=p_space.RefID,
+            Virus=p_space.Virus,
+            sample=p_space.dataframe["sample"],
+        )
 
     return pre + list(post) + fastp_out
 
