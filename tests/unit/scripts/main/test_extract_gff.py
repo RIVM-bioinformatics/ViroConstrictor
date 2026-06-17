@@ -1,0 +1,189 @@
+"""
+Unit tests for ExtractGff script.
+
+Tests GFF file filtering by reference ID and integration with AminoExtract
+SequenceReader for feature extraction workflows.
+"""
+
+import sys
+import types
+from argparse import ArgumentParser
+from pathlib import Path
+
+import pandas as pd
+import pytest
+
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
+sys.path.insert(0, str(PROJECT_ROOT.joinpath("ViroConstrictor/workflow")))
+
+# Keep tests hermetic even when AminoExtract is unavailable in the environment.
+if "AminoExtract" not in sys.modules:
+    aminoextract_stub = types.ModuleType("AminoExtract")
+    aminoextract_stub.SequenceReader = object
+    sys.modules["AminoExtract"] = aminoextract_stub
+
+from ViroConstrictor.workflow.main.scripts.extract_gff import ExtractGff  # noqa: E402, isort:skip
+
+
+class _FakeGff:
+    """
+    Mock GFF object mimicking AminoExtract SequenceReader GFF output.
+
+    Used for testing ExtractGff without requiring actual AminoExtract.
+    """
+
+    def __init__(self, df: pd.DataFrame) -> None:
+        """
+        Initialize with a DataFrame representation of GFF data.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            DataFrame with GFF columns (seqid, type, start, etc.).
+        """
+        self.df = df
+        self.exported_to: Path | str | None = None
+
+    def export_gff_to_file(self, output: Path | str) -> None:
+        """
+        Export GFF data to file.
+
+        Parameters
+        ----------
+        output : Path | str
+            Destination file path.
+        """
+        self.exported_to = output
+        Path(output).write_text(self.df.to_csv(index=False), encoding="utf-8")
+
+
+def test_add_arguments_parses_ref_id() -> None:
+    """
+    Verify that ExtractGff CLI parser registers ref_id argument.
+
+    Tests that the argument parser accepts input, output, and ref_id arguments
+    and correctly stores their values.
+    """
+    parser = ArgumentParser()
+    ExtractGff.add_arguments(parser)
+    args = parser.parse_args(["--input", "in.gff", "--output", "out.gff", "--ref_id", "REF_1"])
+    assert args.ref_id == "REF_1"
+
+
+def test_extract_gff_filters_to_requested_reference(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """
+    Verify GFF filtering to rows matching the requested reference ID.
+
+    Tests that the run() method correctly filters GFF records to only those
+    matching the specified reference ID (seqid column).
+    """
+    input_gff = tmp_path / "input.gff"
+    output_gff = tmp_path / "output.gff"
+    input_gff.write_text("dummy", encoding="utf-8")
+
+    fake_gff = _FakeGff(
+        pd.DataFrame(
+            {
+                "seqid": ["REF_A", "REF_B", "REF_A"],
+                "type": ["gene", "gene", "CDS"],
+                "start": [1, 5, 8],
+            }
+        )
+    )
+
+    class _FakeSequenceReader:
+        def __init__(self, logger: object | None, verbose: bool) -> None:
+            assert logger is None
+            assert not verbose
+
+        def read_gff(self, path: Path | str) -> _FakeGff:
+            """Mock GFF reading function."""
+            assert Path(path) == input_gff
+            return fake_gff
+
+    module = sys.modules[ExtractGff.__module__]
+    monkeypatch.setattr(module, "SequenceReader", _FakeSequenceReader)
+
+    extractor = ExtractGff(input=input_gff, output=output_gff, ref_id="REF_A")
+    extractor.run()
+
+    assert fake_gff.exported_to == output_gff
+    assert set(fake_gff.df["seqid"]) == {"REF_A"}
+    assert len(fake_gff.df) == 2
+
+
+def test_extract_gff_with_no_matching_reference_writes_empty_result(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """
+    Verify that non-matching reference produces empty GFF output.
+
+    Tests that when no GFF records match the requested reference ID, the output
+    file is created with an empty DataFrame.
+    """
+    input_gff = tmp_path / "input.gff"
+    output_gff = tmp_path / "output.gff"
+    input_gff.write_text("dummy", encoding="utf-8")
+
+    fake_gff = _FakeGff(pd.DataFrame({"seqid": ["REF_A"], "type": ["gene"]}))
+
+    class _FakeSequenceReader:
+        def __init__(self, logger: object | None, verbose: bool) -> None:
+            # Mock class requires no initialization logic
+            pass
+
+        def read_gff(self, path: Path | str) -> _FakeGff:
+            """Mock GFF reading function."""
+            return fake_gff
+
+    module = sys.modules[ExtractGff.__module__]
+    monkeypatch.setattr(module, "SequenceReader", _FakeSequenceReader)
+
+    extractor = ExtractGff(input=input_gff, output=output_gff, ref_id="DOES_NOT_EXIST")
+    extractor.run()
+
+    assert output_gff.exists()
+    assert fake_gff.df.empty
+
+
+def test_extract_gff_surfaces_reader_errors(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """
+    Verify that GFF reader errors are propagated instead of swallowed.
+
+    Tests that exceptions raised during GFF file reading are re-raised to the
+    caller instead of being caught and handled silently.
+    """
+    input_gff = tmp_path / "input.gff"
+    output_gff = tmp_path / "output.gff"
+    input_gff.write_text("dummy", encoding="utf-8")
+
+    class _FailingSequenceReader:
+        def __init__(self, logger: object | None, verbose: bool) -> None:
+            # Mock class requires no initialization logic
+            pass
+
+        def read_gff(self, path: Path | str) -> _FakeGff:
+            """Mock GFF reading function."""
+            raise RuntimeError("malformed gff")
+
+    module = sys.modules[ExtractGff.__module__]
+    monkeypatch.setattr(module, "SequenceReader", _FailingSequenceReader)
+
+    extractor = ExtractGff(input=input_gff, output=output_gff, ref_id="REF_A")
+    with pytest.raises(RuntimeError, match="malformed gff"):
+        extractor.run()
+
+
+@pytest.mark.xfail(reason="Current implementation uses assert for type checks instead of explicit ValueError validation", strict=False)
+def test_extract_gff_rejects_non_string_ref_id_with_clear_error(tmp_path: Path) -> None:
+    """
+    Test non-string ref_id rejection (XFAIL - intended behavior).
+
+    Intended behavior: Non-string ref_id values should raise ValueError with a
+    clear message, but the current implementation uses assertions instead.
+    """
+    input_gff = tmp_path / "input.gff"
+    output_gff = tmp_path / "output.gff"
+    input_gff.write_text("dummy", encoding="utf-8")
+
+    extractor = ExtractGff(input=input_gff, output=output_gff, ref_id=123)  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="ref_id|string"):
+        extractor.run()

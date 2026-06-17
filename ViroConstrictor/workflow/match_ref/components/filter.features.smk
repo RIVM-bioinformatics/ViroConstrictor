@@ -11,7 +11,7 @@ rule filter_gff:
         mem_mb=low_memory_job,
         runtime=low_runtime_job,
     log:
-        f"{logdir}FilterGFF_" "{sample}.log",
+        f"{logdir}{get_rule_name()}/FilterGFF_" "{sample}.log",
     conda:
         workflow_environment_path("mr_scripts.yaml")
     container:

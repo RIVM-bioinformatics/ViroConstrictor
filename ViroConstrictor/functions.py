@@ -83,7 +83,7 @@ class FlexibleArgFormatter(HelpFormatter):
         last_sub_indent: Optional[int] = None
         paragraphs: list[str] = []
         for line in text.splitlines():
-            (indent, sub_indent) = self._indents(line)
+            indent, sub_indent = self._indents(line)
             is_text = re.search(r"[^\s]", line) is not None
 
             if is_text and indent == sub_indent == last_sub_indent:
@@ -99,7 +99,7 @@ class FlexibleArgFormatter(HelpFormatter):
 
         paragraphs: list[str] = []
         for paragraph in self._split_paragraphs(text):
-            (indent, sub_indent) = self._indents(paragraph)
+            indent, sub_indent = self._indents(paragraph)
 
             paragraph = self._whitespace_matcher.sub(" ", paragraph).strip()
             new_paragraphs: list[str] = textwrap.wrap(

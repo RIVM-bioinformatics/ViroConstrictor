@@ -66,8 +66,7 @@ if __name__ == "__main__":
         ):
             with open(associated_container_dock_file, "r") as f:
                 tmp.write(f.read())
-                tmp.write(
-                    f"""
+                tmp.write(f"""
 
 LABEL Author="RIVM-bioinformatics team"
 LABEL Maintainer="RIVM-bioinformatics team"
@@ -76,8 +75,7 @@ LABEL version="{VersionHash}"
 LABEL org.opencontainers.image.authors="ids-bioinformatics@rivm.nl"
 LABEL org.opencontainers.image.source=https://github.com/RIVM-bioinformatics/{__prog__}
 
-    """
-                )
+    """)
             tmp.flush()  # flush the temporary file to make sure the contents are written to disk
             subprocess.run(
                 [
