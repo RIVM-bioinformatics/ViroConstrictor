@@ -157,9 +157,7 @@ def test_count_mapped_reads_happy_path(monkeypatch: pytest.MonkeyPatch, tmp_path
     assert row_b["Avg. Sequence Identity"] == pytest.approx(0.9)
 
 
-def test_count_mapped_reads_includes_references_without_mapped_reads(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
+def test_count_mapped_reads_includes_references_without_mapped_reads(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """Verify that references with zero or only unmapped reads are included in output.
 
     Tests edge case where all reads are unmapped or reference has no reads.
@@ -186,6 +184,7 @@ def test_count_mapped_reads_includes_references_without_mapped_reads(
 
 def test_count_mapped_reads_missing_nm_tag_raises(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """Verify that a missing NM (mismatch count) tag raises KeyError."""
+
     class _ReadWithoutNm(_FakeRead):
         def get_tag(self, tag: str) -> int:
             raise KeyError("NM")

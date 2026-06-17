@@ -371,15 +371,27 @@ Test data is located in:
 
 ### Container Development
 ```bash
-# Build all containers locally (requires Docker)
-python build_local_containers.py
+# Generate Dockerfiles from config + template
+python -m container_manager generate
 
-# Build containers that do not exist yet in upstream registry (runs in github actions)
-python containers/build_containers.py
+# Build image tar artifacts and write manifest (requires Docker)
+python -m container_manager build
 
-# Pull published containers
-python containers/pull_published_containers.py
+# Convert tar artifacts to SIF (requires Apptainer/Singularity)
+python -m container_manager convert
+
+# Publish manifest images to configured registry
+python -m container_manager publish
+
+# Pull missing hash-tagged images to local cache
+python -m container_manager sync-cache --cache-dir ~/.viroconstrictor/containers/
+
+# Convenience local flow: generate -> build -> convert -> cache sync
+python -m container_manager local --cache-dir ~/.viroconstrictor/containers/
 ```
+
+Container manager configuration is defined in `container_manager/config_dockerfiles.yaml`.
+The keys `registry`, `container_package_prefix`, and `oci_labels` are required.
 
 Dockerfiles follow naming: `{environment_name}.dockerfile` (e.g., `Clean.dockerfile` for `envs/Clean.yaml`)
 

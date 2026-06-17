@@ -3,8 +3,11 @@ channels:
   - bioconda
   - conda-forge
 dependencies:
+  - conda-forge::python=3.13
+  - conda-forge::biopython==1.87
   - bioconda::aminoextract==0.4.1
   - bioconda::pysam==0.23.3 
+  - conda-forge::git
   - pip
   - pip:
     - git+https://github.com/RIVM-bioinformatics/TrueConsense@v0.5.2
