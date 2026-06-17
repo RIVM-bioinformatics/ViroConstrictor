@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.7](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.6.6...v1.6.7) (2026-06-17)
+
+
+### Bug Fixes
+
+* **amplicon_covs:** iterate amplicons in genomic order, not label order ([#199](https://github.com/RIVM-bioinformatics/ViroConstrictor/issues/199)) ([71e5a40](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/71e5a404a84314857bc74ddf761b29acc32d4831))
+
 ## [1.6.6](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.6.5...v1.6.6) (2026-03-01)
 
 
