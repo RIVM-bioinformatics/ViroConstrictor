@@ -11,6 +11,14 @@ ViroConstrictor requires the following software to be installed on your system:
 - [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) or [Mamba](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html)
 - [Apptainer](https://apptainer.org/) (optional but recommended)
 
+!!! tip "Installation settings"
+    After installation and running ViroConstrictor for the first time, some questions will be asked via the CLI. These questions set some global settings.
+    These settings will be saved to a `~/.ViroConstrictor_defaultprofile.ini` file in your home directory.
+    
+    If you set the repro_method to 'containers', either Docker or Apptainer **needs** to be installed.
+
+
+
 ---
 
 ## Installation with Conda
