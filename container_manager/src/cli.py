@@ -2,12 +2,14 @@
 
 import argparse
 from pathlib import Path
+from typing import Callable
 
 from container_manager.src.build_containers import build
 from container_manager.src.convert_docker_tar_to_apptainer_sif import convert_from_manifest
 from container_manager.src.generate_dockerfiles import generate_dockerfiles
 from container_manager.src.logging import get_logger
 from container_manager.src.merge_manifests import merge_manifests
+from container_manager.src.models import ManifestItem
 from container_manager.src.publish_to_ghcr import publish_from_manifest
 from container_manager.src.sync_local_cache import sync_cache
 from container_manager.src.version import REPO_ROOT, VERSION
@@ -135,6 +137,129 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _handle_generate(args: argparse.Namespace) -> int:
+    """Handle the 'generate' command."""
+    logger.info("Generating Dockerfiles")
+    generated = generate_dockerfiles(
+        config_path=args.config,
+        template_path=args.template,
+        output_dir=args.output_dir,
+        dry_run=args.dry_run,
+    )
+    for path in generated:
+        logger.info("%s", path)
+    return 0
+
+
+def _handle_build(args: argparse.Namespace) -> int:
+    """Handle the 'build' command."""
+    logger.info("Building container artifacts")
+    manifest = build(
+        repo_root=REPO_ROOT,
+        config_path=args.config,
+        template_path=args.template,
+        output_dir=args.output_dir,
+        manifest_path=args.manifest,
+        only=_csv_to_set(args.only),
+        dry_run=args.dry_run,
+    )
+    logger.info("Wrote manifest with %d item(s): %s", len(manifest.items), args.manifest)
+    return 0
+
+
+def _handle_convert(args: argparse.Namespace) -> int:
+    """Handle the 'convert' command."""
+    logger.info("Converting tar artifacts to SIF")
+    convert_from_manifest(args.manifest, dry_run=args.dry_run, only=_csv_to_set(args.only))
+    logger.info("Updated manifest: %s", args.manifest)
+    return 0
+
+
+def _handle_publish(args: argparse.Namespace) -> int:
+    """Handle the 'publish' command."""
+    logger.info("Publishing container images to GHCR")
+    publish_from_manifest(args.manifest, dry_run=args.dry_run, only=_csv_to_set(args.only))
+    logger.info("Updated manifest: %s", args.manifest)
+    return 0
+
+
+def _handle_merge_manifests(args: argparse.Namespace) -> int:
+    """Handle the 'merge-manifests' command."""
+    logger.info("Merging per-container manifests")
+    return merge_manifests(input_glob=args.input_glob, output_path=args.output)
+
+
+def _handle_sync_cache(args: argparse.Namespace) -> int:
+    """Handle the 'sync-cache' command."""
+    logger.info("Syncing local container cache")
+    return sync_cache(cache_dir=args.cache_dir, dry_run=args.dry_run)
+
+
+def _handle_local(args: argparse.Namespace) -> int:
+    """Handle the 'local' command."""
+    logger.info("Running local container workflow (build -> convert -> cache sync)")
+    generate_dockerfiles(
+        config_path=args.config,
+        template_path=args.template,
+        output_dir=args.output_dir,
+        dry_run=args.dry_run,
+    )
+    manifest = build(
+        repo_root=REPO_ROOT,
+        config_path=args.config,
+        template_path=args.template,
+        output_dir=args.output_dir,
+        manifest_path=args.manifest,
+        only=_csv_to_set(args.only),
+        dry_run=args.dry_run,
+    )
+    convert_from_manifest(args.manifest, dry_run=args.dry_run, only=_csv_to_set(args.only))
+    logger.info("Wrote manifest with %d item(s): %s", len(manifest.items), args.manifest)
+
+    if args.dry_run:
+        logger.info("[dry-run] Would ensure cache directory exists: %s", args.cache_dir)
+    else:
+        args.cache_dir.mkdir(parents=True, exist_ok=True)
+
+    for item in manifest.items:
+        _move_sifs_to_cache(args, item)
+    logger.info("Synced local cache: %s", args.cache_dir)
+
+    return 0
+
+
+def _move_sifs_to_cache(args: argparse.Namespace, item: ManifestItem) -> None:
+    """
+    Move the generated SIF file to the cache directory, and clean up the tar artifact if it exists.
+    """
+    if item.artifact_sif and Path(item.artifact_sif).exists():
+        target = args.cache_dir / Path(item.artifact_sif).name
+        if args.dry_run:
+            logger.info("[dry-run] Would move SIF to cache: %s -> %s", item.artifact_sif, target)
+        else:
+            Path(item.artifact_sif).replace(target)
+    if item.artifact_tar:
+        artifact_tar = Path(item.artifact_tar)
+        if artifact_tar.exists():
+            if args.dry_run:
+                logger.info("[dry-run] Would delete tar artifact: %s", artifact_tar)
+            else:
+                artifact_tar.unlink()
+
+
+def generate_map() -> dict[str, Callable[[argparse.Namespace], int]]:
+    """Map command names to their handler functions."""
+    return {
+        "generate": _handle_generate,
+        "build": _handle_build,
+        "convert": _handle_convert,
+        "publish": _handle_publish,
+        "merge-manifests": _handle_merge_manifests,
+        "sync-cache": _handle_sync_cache,
+        "local": _handle_local,
+    }
+
+
 def main() -> int:
     """CLI dispatcher."""
     args = parse_args()
@@ -142,92 +267,9 @@ def main() -> int:
         logger.info("%s", VERSION)
         return 0
 
-    if args.command == "generate":
-        logger.info("Generating Dockerfiles")
-        generated = generate_dockerfiles(
-            config_path=args.config,
-            template_path=args.template,
-            output_dir=args.output_dir,
-            dry_run=args.dry_run,
-        )
-        for path in generated:
-            logger.info("%s", path)
-        return 0
-
-    if args.command == "build":
-        logger.info("Building container artifacts")
-        manifest = build(
-            repo_root=REPO_ROOT,
-            config_path=args.config,
-            template_path=args.template,
-            output_dir=args.output_dir,
-            manifest_path=args.manifest,
-            only=_csv_to_set(args.only),
-            dry_run=args.dry_run,
-        )
-        logger.info("Wrote manifest with %d item(s): %s", len(manifest.items), args.manifest)
-        return 0
-
-    if args.command == "convert":
-        logger.info("Converting tar artifacts to SIF")
-        convert_from_manifest(args.manifest, dry_run=args.dry_run, only=_csv_to_set(args.only))
-        logger.info("Updated manifest: %s", args.manifest)
-        return 0
-
-    if args.command == "publish":
-        logger.info("Publishing container images to GHCR")
-        publish_from_manifest(args.manifest, dry_run=args.dry_run, only=_csv_to_set(args.only))
-        logger.info("Updated manifest: %s", args.manifest)
-        return 0
-
-    if args.command == "merge-manifests":
-        logger.info("Merging per-container manifests")
-        return merge_manifests(input_glob=args.input_glob, output_path=args.output)
-
-    if args.command == "sync-cache":
-        logger.info("Syncing local container cache")
-        return sync_cache(cache_dir=args.cache_dir, dry_run=args.dry_run)
-
-    if args.command == "local":
-        logger.info("Running local container workflow (build -> convert -> cache sync)")
-        generate_dockerfiles(
-            config_path=args.config,
-            template_path=args.template,
-            output_dir=args.output_dir,
-            dry_run=args.dry_run,
-        )
-        manifest = build(
-            repo_root=REPO_ROOT,
-            config_path=args.config,
-            template_path=args.template,
-            output_dir=args.output_dir,
-            manifest_path=args.manifest,
-            only=_csv_to_set(args.only),
-            dry_run=args.dry_run,
-        )
-        convert_from_manifest(args.manifest, dry_run=args.dry_run, only=_csv_to_set(args.only))
-
-        if args.dry_run:
-            logger.info("[dry-run] Would ensure cache directory exists: %s", args.cache_dir)
-        else:
-            args.cache_dir.mkdir(parents=True, exist_ok=True)
-
-        for item in manifest.items:
-            if item.artifact_sif and Path(item.artifact_sif).exists():
-                target = args.cache_dir / Path(item.artifact_sif).name
-                if args.dry_run:
-                    logger.info("[dry-run] Would move SIF to cache: %s -> %s", item.artifact_sif, target)
-                else:
-                    Path(item.artifact_sif).replace(target)
-            if item.artifact_tar:
-                artifact_tar = Path(item.artifact_tar)
-                if artifact_tar.exists():
-                    if args.dry_run:
-                        logger.info("[dry-run] Would delete tar artifact: %s", artifact_tar)
-                    else:
-                        artifact_tar.unlink()
-        logger.info("Synced local cache: %s", args.cache_dir)
-        return 0
-
+    command_map = generate_map()
+    if args.command in command_map:
+        handler = command_map[args.command]
+        return handler(args)
     logger.error("No command provided. Use --help.")
     return 1

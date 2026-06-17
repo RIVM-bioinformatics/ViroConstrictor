@@ -11,7 +11,7 @@ import requests  # type: ignore[import-untyped]
 
 from container_manager.src.config import load_container_specs
 from container_manager.src.hash import container_hash
-from container_manager.src.io import write_json
+from container_manager.src.io import ensure_safe_manifest_path, write_json
 from container_manager.src.logging import get_logger
 from container_manager.src.models import BuildPlanItem, Manifest, ManifestItem
 from container_manager.src.version import HASH_SCHEMA_VERSION
@@ -50,6 +50,11 @@ def _existing_tags(container_name: str, token: str | None, ghcr_org: str | None)
     if not isinstance(payload_obj, list):
         return set()
     payload: list[object] = cast(list[object], payload_obj)
+    tags = _process_payload(payload)
+    return tags
+
+
+def _process_payload(payload: list[object]) -> set[str]:
     tags: set[str] = set()
     for raw_version in payload:
         if not isinstance(raw_version, dict):
@@ -182,6 +187,7 @@ def build(
     skip_existing: bool = True,
 ) -> Manifest:
     """Build container tar artifacts from generated Dockerfiles and write a build manifest."""
+    checked_manifest_path = ensure_safe_manifest_path(manifest_path, must_exist=False)
     logger.info("Starting build workflow")
     config, _ = load_container_specs(config_path)
     registry = _registry_from_config(config)
@@ -252,6 +258,6 @@ def build(
         registry=registry,
         items=items,
     )
-    write_json(manifest_path, manifest.to_dict())
-    logger.info("Wrote build manifest: %s", manifest_path)
+    write_json(checked_manifest_path, manifest.to_dict())
+    logger.info("Wrote build manifest: %s", checked_manifest_path)
     return manifest

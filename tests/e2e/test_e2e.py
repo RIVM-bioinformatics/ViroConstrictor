@@ -84,27 +84,6 @@ def test_main(prepare_files: dict[str, Path]) -> None:
     assert e.value.code == 0, "Main function did not complete successfully"
 
 
-# def test_main_genbank(prepare_files: dict[str, Path]) -> None:
-#     args = [
-#         "--input",
-#         prepare_files["input"].as_posix(),
-#         "--output",
-#         prepare_files["output"].as_posix(),
-#         "--reference",
-#         prepare_files["reference_gb"].as_posix(),
-#         "--primers",
-#         prepare_files["primers"].as_posix(),
-#         "--amplicon-type",
-#         "fragmented",
-#         "--platform",
-#         "nanopore",
-#     ]
-
-#     with pytest.raises(SystemExit) as e:
-#         main(args, settings=prepare_files["settings"].as_posix())
-#     assert e.value.code == 0, "Main function did not complete successfully"
-
-
 def test_match_ref(prepare_files: dict[str, Path]) -> None:
     args = [
         "--input",
@@ -151,30 +130,23 @@ def test_main_container(prepare_files: dict[str, Path]) -> None:
         "sars-cov-2",
     ]
 
-    # Prefer repository-local containers for deterministic offline e2e execution.
-    repo_container_folder = Path(__file__).resolve().parents[2] / "containers"
-    if any(repo_container_folder.glob("viroconstrictor_*.sif")):
-        container_folder = repo_container_folder.as_posix()
-    else:
-        user_path = Path("~/.ViroConstrictor_defaultprofile.ini").expanduser()
-        if user_path.exists():
-            config_reader = ConfigParser()
-            config_reader.read(user_path)
-            container_folder = config_reader["REPRODUCTION"]["container_cache_path"]
-        else:
-            container_folder = repo_container_folder.as_posix()
+    # Use only repository-local containers to avoid untrusted path input in tests.
+    repo_container_folder = (Path(__file__).resolve().parents[2] / "containers").resolve()
+    if not any(repo_container_folder.glob("viroconstrictor_*.sif")):
+        pytest.skip("No repository-local containers found for container e2e test")
+    container_folder = repo_container_folder.as_posix()
 
-    # Read and update the settings file dynamically
-    settings_lines = prepare_files["settings"].read_text().splitlines()
-    updated_settings = []
-    for line in settings_lines:
-        if line.startswith("repro_method"):
-            updated_settings.append("repro_method = containers")
-        elif line.startswith("container_cache_path"):
-            updated_settings.append(f"container_cache_path = {container_folder}")
-        else:
-            updated_settings.append(line)
-    prepare_files["settings"].write_text("\n".join(updated_settings))
+    # Update only the required keys via parser instead of raw string rewriting.
+    settings_path = prepare_files["settings"]
+    original_settings = settings_path.read_text()
+    config_reader = ConfigParser()
+    config_reader.read_string(original_settings)
+    if not config_reader.has_section("REPRODUCTION"):
+        config_reader.add_section("REPRODUCTION")
+    config_reader["REPRODUCTION"]["repro_method"] = "containers"
+    config_reader["REPRODUCTION"]["container_cache_path"] = container_folder
+    with settings_path.open("w") as settings_file:
+        config_reader.write(settings_file)
 
     try:
         with pytest.raises(SystemExit) as e:
@@ -182,4 +154,4 @@ def test_main_container(prepare_files: dict[str, Path]) -> None:
         assert e.value.code == 0, "Main function did not complete successfully"
     finally:
         # Revert the settings file to its original state
-        prepare_files["settings"].write_text("\n".join(settings_lines))
+        settings_path.write_text(original_settings)

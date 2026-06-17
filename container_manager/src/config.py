@@ -19,7 +19,7 @@ def load_container_specs(config_path: Path) -> tuple[dict[str, Any], list[Contai
     if not isinstance(package_prefix, str) or not package_prefix.strip():
         raise ValueError("Config field 'container_package_prefix' must be a non-empty string")
 
-    oci_labels = config.get("oci_labels")
+    oci_labels: dict[str, str] = config.get("oci_labels")
     if not isinstance(oci_labels, dict):
         raise ValueError("Config field 'oci_labels' must be a mapping of string keys/values")
     for key, value in oci_labels.items():
@@ -30,6 +30,12 @@ def load_container_specs(config_path: Path) -> tuple[dict[str, Any], list[Contai
     if not isinstance(entries, list):
         raise ValueError("Config is missing 'dockerfiles' list")
 
+    specs = _generate_container_specs(entries)
+
+    return config, specs
+
+
+def _generate_container_specs(entries: list[dict[str, str | dict[str, str]]]) -> list[ContainerSpec]:
     specs: list[ContainerSpec] = []
     for entry in entries:
         output = entry.get("output")
@@ -56,4 +62,4 @@ def load_container_specs(config_path: Path) -> tuple[dict[str, Any], list[Contai
             )
         )
 
-    return config, specs
+    return specs
