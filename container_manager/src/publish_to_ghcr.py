@@ -5,13 +5,11 @@ import subprocess
 from pathlib import Path
 from typing import Any, cast
 
+from container_manager.src.constants import CONTAINER_MANAGER_DIR
 from container_manager.src.io import ensure_safe_manifest_path, ensure_safe_path, read_json, write_json
 from container_manager.src.logging import get_logger
-from container_manager.src.version import REPO_ROOT
 
 logger = get_logger(__name__)
-
-CONTAINER_MANAGER_DIR = REPO_ROOT / "container_manager"
 
 _SAFE_NAME_RE = re.compile(r"^[A-Za-z0-9._-]+$")
 _SAFE_TAG_RE = re.compile(r"^[a-z0-9][a-z0-9._-]*:[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")

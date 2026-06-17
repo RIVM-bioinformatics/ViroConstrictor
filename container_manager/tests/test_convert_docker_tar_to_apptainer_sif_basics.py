@@ -2,9 +2,10 @@
 
 import subprocess
 from pathlib import Path
+from typing import Any
 
 from container_manager.src import convert_docker_tar_to_apptainer_sif as convert_module
-from container_manager.src.version import REPO_ROOT
+from container_manager.src.constants import REPO_ROOT
 
 
 def test_convert_from_manifest_dry_run_marks_planned(monkeypatch, tmp_path: Path) -> None:
@@ -68,3 +69,20 @@ def test_convert_from_manifest_runs_apptainer_commands(monkeypatch, tmp_path: Pa
         ["apptainer", "cache", "clean", "-f"],
         ["apptainer", "build", "/tmp/output.sif", "docker-archive:///tmp/input.tar"],
     ]
+
+
+def test_convert_from_manifest_fails_early_when_apptainer_unavailable(monkeypatch, tmp_path: Path) -> None:
+    """Non-dry-run conversion should fail before processing when apptainer is unavailable."""
+    checked_manifest_path = tmp_path / "manifest.json"
+    manifest: dict[str, list[Any]] = {"items": []}
+
+    monkeypatch.setattr(convert_module, "ensure_safe_manifest_path", lambda _path, must_exist=True: checked_manifest_path)
+    monkeypatch.setattr(convert_module, "read_json", lambda _path: manifest)
+    monkeypatch.setattr(convert_module, "_ensure_apptainer_available", lambda: (_ for _ in ()).throw(EnvironmentError("apptainer missing")))
+
+    try:
+        convert_module.convert_from_manifest(Path("ignored.json"), dry_run=False)
+    except EnvironmentError as exc:
+        assert "apptainer missing" in str(exc)
+    else:
+        raise AssertionError("Expected EnvironmentError when apptainer preflight fails")

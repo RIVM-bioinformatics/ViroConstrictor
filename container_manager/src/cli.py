@@ -5,6 +5,17 @@ from pathlib import Path
 from typing import Callable
 
 from container_manager.src.build_containers import build
+from container_manager.src.constants import (
+    CONTAINER_MANAGER_CONFIG_PATH,
+    CONTAINER_MANAGER_CONTAINERS_DIR,
+    CONTAINER_MANAGER_DEFAULT_MANIFEST_PATH,
+    CONTAINER_MANAGER_DIR,
+    CONTAINER_MANAGER_DOCKERFILES_DIR,
+    CONTAINER_MANAGER_MERGE_INPUT_GLOB,
+    CONTAINER_MANAGER_TEMPLATE_PATH,
+    REPO_ROOT,
+    VERSION,
+)
 from container_manager.src.convert_docker_tar_to_apptainer_sif import convert_from_manifest
 from container_manager.src.generate_dockerfiles import generate_dockerfiles
 from container_manager.src.logging import get_logger
@@ -12,15 +23,16 @@ from container_manager.src.merge_manifests import merge_manifests
 from container_manager.src.models import ManifestItem
 from container_manager.src.publish_to_ghcr import publish_from_manifest
 from container_manager.src.sync_local_cache import sync_cache
-from container_manager.src.version import REPO_ROOT, VERSION
 
 logger = get_logger(__name__)
 
-DEFAULT_CONFIG = REPO_ROOT / "container_manager" / "config_dockerfiles.yaml"
-DEFAULT_TEMPLATE = REPO_ROOT / "container_manager" / "Dockerfile.j2"
-DEFAULT_OUTPUT_DIR = REPO_ROOT / "container_manager"
-DEFAULT_MANIFEST = REPO_ROOT / "container_manager" / "manifests" / "container-build-manifest.json"
-DEFAULT_MERGE_INPUT_GLOB = "./artifacts/container-build-manifest-*.json"
+DEFAULT_CONFIG = CONTAINER_MANAGER_CONFIG_PATH
+DEFAULT_TEMPLATE = CONTAINER_MANAGER_TEMPLATE_PATH
+DEFAULT_DOCKERFILE_OUTPUT_DIR = CONTAINER_MANAGER_DOCKERFILES_DIR
+DEFAULT_OUTPUT_DIR = CONTAINER_MANAGER_DIR
+DEFAULT_BUILD_OUTPUT_DIR = CONTAINER_MANAGER_CONTAINERS_DIR
+DEFAULT_MANIFEST = CONTAINER_MANAGER_DEFAULT_MANIFEST_PATH
+DEFAULT_MERGE_INPUT_GLOB = CONTAINER_MANAGER_MERGE_INPUT_GLOB
 
 
 def _csv_to_set(raw: str | None) -> set[str] | None:
@@ -42,14 +54,20 @@ def parse_args() -> argparse.Namespace:
     generate_cmd = subparsers.add_parser(
         "generate",
         help="Generate Dockerfiles based on the configuration and template",
-        description="Example: python -m container_manager generate --config path/to/config.yaml --template path/to/Dockerfile.j2 --output-dir path/to/output",
+        description=(
+            "Example: python -m container_manager generate "
+            "--config path/to/config.yaml --template path/to/Dockerfile.j2 --output-dir path/to/output"
+        ),
     )
     generate_cmd.add_argument("--config", type=Path, default=DEFAULT_CONFIG, help=f"Path to the configuration YAML file. Default: {DEFAULT_CONFIG}")
     generate_cmd.add_argument(
         "--template", type=Path, default=DEFAULT_TEMPLATE, help=f"Path to the Dockerfile Jinja2 template. Default: {DEFAULT_TEMPLATE}"
     )
     generate_cmd.add_argument(
-        "--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR, help=f"Directory to output the generated Dockerfiles. Default: {DEFAULT_OUTPUT_DIR}"
+        "--output-dir",
+        type=Path,
+        default=DEFAULT_DOCKERFILE_OUTPUT_DIR,
+        help=f"Directory to output the generated Dockerfiles. Default: {DEFAULT_DOCKERFILE_OUTPUT_DIR}",
     )
     generate_cmd.add_argument("--only", type=str, default=None, help="Comma-separated list of image names to process (e.g., 'image1,image2')")
     generate_cmd.add_argument("--dry-run", action="store_true", help="Print the generated Dockerfiles to stdout instead of writing to files")
@@ -57,18 +75,28 @@ def parse_args() -> argparse.Namespace:
     # build
     build_cmd = subparsers.add_parser(
         "build",
-        help="Build container images based on the generated Dockerfiles and write a build manifest, which contains information about the built images.",
-        description="Example: python -m container_manager build --config path/to/config.yaml --template path/to/Dockerfile.j2 --output-dir path/to/output --manifest path/to/manifest.json",
+        help=(
+            "Build container images based on the generated Dockerfiles and write a build manifest, "
+            "which contains information about the built images."
+        ),
+        description=(
+            "Example: python -m container_manager build --config path/to/config.yaml "
+            "--dockerfiles-dir path/to/dockerfiles "
+            "--output-dir path/to/artifacts --manifest path/to/manifest.json"
+        ),
     )
     build_cmd.add_argument("--config", type=Path, default=DEFAULT_CONFIG, help=f"Path to the configuration YAML file. Default: {DEFAULT_CONFIG}")
     build_cmd.add_argument(
-        "--template", type=Path, default=DEFAULT_TEMPLATE, help=f"Path to the Dockerfile Jinja2 template. Default: {DEFAULT_TEMPLATE}"
+        "--dockerfiles-dir",
+        type=Path,
+        default=DEFAULT_DOCKERFILE_OUTPUT_DIR,
+        help=f"Directory containing generated Dockerfiles. Default: {DEFAULT_DOCKERFILE_OUTPUT_DIR}",
     )
     build_cmd.add_argument(
         "--output-dir",
         type=Path,
-        default=DEFAULT_OUTPUT_DIR,
-        help=f"Directory to output the generated Dockerfiles and build artifacts. Default: {DEFAULT_OUTPUT_DIR}",
+        default=DEFAULT_BUILD_OUTPUT_DIR,
+        help=f"Directory to write build artifacts (.tar/.sif). Default: {DEFAULT_BUILD_OUTPUT_DIR}",
     )
     build_cmd.add_argument(
         "--manifest", type=Path, default=DEFAULT_MANIFEST, help=f"Path to write the build manifest JSON file. Default: {DEFAULT_MANIFEST}"
@@ -112,7 +140,10 @@ def parse_args() -> argparse.Namespace:
     # sync-cache
     sync_cmd = subparsers.add_parser(
         "sync-cache",
-        help="Sync the local cache by computing required image hashes from the env file, Dockerfile template, and container specification; then pull any missing hash-tagged images from GHCR.",
+        help=(
+            "Sync the local cache by computing required image hashes from the env file, Dockerfile template, "
+            "and container specification; then pull any missing hash-tagged images from GHCR."
+        ),
     )
     sync_cmd.add_argument("--cache-dir", type=Path, required=True, help="Path to the cache directory.")
     sync_cmd.add_argument("--dry-run", action="store_true", help="Print the planned sync actions to stdout instead of executing them")
@@ -127,7 +158,18 @@ def parse_args() -> argparse.Namespace:
     )
     local_cmd.add_argument("--config", type=Path, default=DEFAULT_CONFIG, help=f"Path to the configuration file. Default: {DEFAULT_CONFIG}")
     local_cmd.add_argument("--template", type=Path, default=DEFAULT_TEMPLATE, help=f"Path to the template file. Default: {DEFAULT_TEMPLATE}")
-    local_cmd.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR, help=f"Path to the output directory. Default: {DEFAULT_OUTPUT_DIR}")
+    local_cmd.add_argument(
+        "--dockerfiles-dir",
+        type=Path,
+        default=DEFAULT_DOCKERFILE_OUTPUT_DIR,
+        help=f"Directory containing generated Dockerfiles. Default: {DEFAULT_DOCKERFILE_OUTPUT_DIR}",
+    )
+    local_cmd.add_argument(
+        "--output-dir",
+        type=Path,
+        default=DEFAULT_BUILD_OUTPUT_DIR,
+        help=f"Directory to write build artifacts (.tar/.sif). Default: {DEFAULT_BUILD_OUTPUT_DIR}",
+    )
     local_cmd.add_argument(
         "--manifest", type=Path, default=DEFAULT_MANIFEST, help=f"Path to the build manifest JSON file. Default: {DEFAULT_MANIFEST}"
     )
@@ -157,7 +199,8 @@ def _handle_build(args: argparse.Namespace) -> int:
     manifest = build(
         repo_root=REPO_ROOT,
         config_path=args.config,
-        template_path=args.template,
+        template_path=DEFAULT_TEMPLATE,
+        dockerfiles_dir=args.dockerfiles_dir,
         output_dir=args.output_dir,
         manifest_path=args.manifest,
         only=_csv_to_set(args.only),
@@ -201,13 +244,14 @@ def _handle_local(args: argparse.Namespace) -> int:
     generate_dockerfiles(
         config_path=args.config,
         template_path=args.template,
-        output_dir=args.output_dir,
+        output_dir=args.dockerfiles_dir,
         dry_run=args.dry_run,
     )
     manifest = build(
         repo_root=REPO_ROOT,
         config_path=args.config,
         template_path=args.template,
+        dockerfiles_dir=args.dockerfiles_dir,
         output_dir=args.output_dir,
         manifest_path=args.manifest,
         only=_csv_to_set(args.only),

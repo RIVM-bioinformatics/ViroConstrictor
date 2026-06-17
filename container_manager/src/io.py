@@ -6,9 +6,7 @@ from typing import Any
 
 import yaml
 
-from container_manager.src.version import REPO_ROOT
-
-MANIFESTS_DIR = REPO_ROOT / "container_manager" / "manifests"
+from container_manager.src.constants import CONTAINER_MANAGER_MANIFESTS_DIR, REPO_ROOT
 
 
 def ensure_dir(path: Path) -> None:
@@ -55,4 +53,4 @@ def ensure_safe_path(
 
 def ensure_safe_manifest_path(path: Path, must_exist: bool = False) -> Path:
     """Ensure a manifest path is a JSON file located under container_manager/manifests."""
-    return ensure_safe_path(path=path, suffix=".json", base_dir=MANIFESTS_DIR, must_exist=must_exist)
+    return ensure_safe_path(path=path, suffix=".json", base_dir=CONTAINER_MANAGER_MANIFESTS_DIR, must_exist=must_exist)

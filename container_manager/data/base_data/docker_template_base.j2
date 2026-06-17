@@ -3,10 +3,13 @@
 # When the name is Dockerfile, vscode will assume its a dockerfile even with a .j2 extension and provide syntax highlighting and linting.
 FROM {{ base_image }}
 
+{# This block copies the necessary files into the image. #}
+{% block copy_files %}
 COPY {{ dockerfile.env_file }} /install.yml
 {% for copy_entry in dockerfile.extra_copies %}
 COPY {{ copy_entry.src }} {{ copy_entry.dest }}
 {% endfor %}
+{% endblock %}
 
 LABEL org.opencontainers.image.description="{{ dockerfile.description }}"
 
@@ -14,16 +17,20 @@ USER root
 
 ARG {{ uid_arg_name }}={{ uid_default }}
 
+{# This block adds a user to the image with the specified home directory, shell, and UID. 
+The UID is set using a build argument, which allows it to be overridden when building the image.
+Afterwards, it runs micromamba install and clean.
+We only use 1 RUN command because it reduces the number of layers in the image. #}
+{% block run_user_add %}
 RUN useradd \
     --home-dir "{{ user_home }}" \
     --shell "{{ user_shell }}" \
     --no-create-home \
     --uid "{{ '${' ~ uid_arg_name ~ '}' }}" \
-    {{ user_name }}
-
-RUN micromamba install -q -y -n base git -c conda-forge && \
+    {{ user_name }} && \
     micromamba install -q -y -n base -f /install.yml && \
     micromamba clean -q --all --yes
+{% endblock %}
 
 USER {{ user_name }}
 

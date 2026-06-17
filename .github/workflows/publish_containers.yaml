@@ -50,8 +50,10 @@ jobs:
     
           - name: stage artifacts for publish
             run: |
-              cp ./viroconstrictor_${{ matrix.container }}_*.tar ./container_manager/
-              cp ./container-build-manifest-${{ matrix.container }}.json ./container_manager/manifests/
+              mkdir -p ./container_manager/data/containers/
+              mkdir -p ./container_manager/data/manifests/
+              cp ./*.tar ./container_manager/data/containers/
+              cp ./container-build-manifest-${{ matrix.container }}.json ./container_manager/data/manifests/
     
           - name: Setup Mamba
             uses: mamba-org/setup-micromamba@v2
@@ -75,5 +77,5 @@ jobs:
           
           - name: publish containers from manifest
             run: |
-              python -m container_manager publish --only ${{ matrix.container }} --manifest ./container_manager/manifests/container-build-manifest-${{ matrix.container }}.json
+              python -m container_manager publish --only ${{ matrix.container }} --manifest ./container_manager/data/manifests/container-build-manifest-${{ matrix.container }}.json
             shell: micromamba-shell {0}

@@ -4,8 +4,8 @@ import hashlib
 import json
 from pathlib import Path
 
+from container_manager.src.constants import HASH_SCHEMA_VERSION
 from container_manager.src.models import ContainerSpec
-from container_manager.src.version import HASH_SCHEMA_VERSION
 
 
 def _sha256_bytes(data: bytes) -> str:

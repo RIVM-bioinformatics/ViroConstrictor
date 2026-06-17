@@ -143,8 +143,5 @@ tests/unit/**/output/*
 test/
 
 # Generated container Dockerfiles
-containers/dockerfiles/*.dockerfile
-
-# Generated container build manifest
-containers/manifests/container-build-manifest.json
-
+container_manager/dockerfiles/*.dockerfile
+container_manager/data/manifests/container-build-manifest.json

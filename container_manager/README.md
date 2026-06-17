@@ -6,7 +6,7 @@ Utilities for generating, building, converting, publishing, and syncing workflow
 
 The container manager works as a staged pipeline:
 
-1. `generate`: render Dockerfiles from `config_dockerfiles.yaml` + `Dockerfile.j2`
+1. `generate`: render Dockerfiles from `config_dockerfiles.yaml` + `docker_template_specific.j2`
 2. `build`: build Docker images and export `.tar` artifacts, then write a manifest
 3. `convert`: convert `.tar` artifacts to `.sif` using Apptainer
 4. `publish`: tag and push built images listed in the manifest
@@ -61,6 +61,14 @@ Plan builds without executing:
 python -m container_manager build --dry-run
 ```
 
+Build using Dockerfiles from one directory and write artifacts to another:
+
+```bash
+python -m container_manager build \
+	--dockerfiles-dir ./container_manager/data/dockerfiles \
+	--output-dir ./container_manager/data/containers
+```
+
 Build one image and write/update manifest:
 
 ```bash
@@ -94,12 +102,16 @@ python -m container_manager sync-cache --cache-dir ~/.viroconstrictor/containers
 Run the local end-to-end flow:
 
 ```bash
-python -m container_manager local --cache-dir ~/.viroconstrictor/containers
+python -m container_manager local \
+	--cache-dir ~/.viroconstrictor/containers \
+	--dockerfiles-dir ./container_manager/data/dockerfiles \
+	--output-dir ./container_manager/data/containers
 ```
 
 ## Notes
 
 - `build` expects Dockerfiles to exist. Run `generate` first unless you already generated Dockerfiles.
+- `build` no longer takes a `--template` flag; template hashing uses the default template path from configuration constants.
 - `build --dry-run` and `convert --dry-run` still write planned status updates to the manifest.
 - `publish --dry-run` does not fail on unbuilt items; these are marked as skipped in manifest status.
 - Runtime workflow execution uses Apptainer/Singularity `.sif` images, not Docker images directly.

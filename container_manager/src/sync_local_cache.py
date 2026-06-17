@@ -1,24 +1,21 @@
 """Synchronize local container cache state with required remote container artifacts."""
 
-from __future__ import annotations
-
 import shutil
 import subprocess
 from pathlib import Path
 
 from container_manager.src.config import load_container_specs
+from container_manager.src.constants import CONTAINER_MANAGER_CONFIG_PATH, CONTAINER_MANAGER_TEMPLATE_PATH, REPO_ROOT
 from container_manager.src.hash import container_hash
 from container_manager.src.logging import get_logger
-from container_manager.src.version import REPO_ROOT
 
-CONFIG_FILENAME = "config_dockerfiles.yaml"
 logger = get_logger(__name__)
 
 
 def _fetch_container_hashes(repo_root: Path) -> dict[str, str]:
     """Compute short hashes for all configured containers using platform hash rules."""
-    config_path = repo_root / "container_manager" / CONFIG_FILENAME
-    template_path = repo_root / "container_manager" / "Dockerfile.j2"
+    config_path = CONTAINER_MANAGER_CONFIG_PATH
+    template_path = CONTAINER_MANAGER_TEMPLATE_PATH
     _, specs = load_container_specs(config_path)
 
     hashes: dict[str, str] = {}
@@ -28,9 +25,9 @@ def _fetch_container_hashes(repo_root: Path) -> dict[str, str]:
     return hashes
 
 
-def _container_package_prefix(repo_root: Path) -> str:
+def _container_package_prefix(_repo_root: Path | None = None) -> str:
     """Return configured package prefix for container image names."""
-    config_path = repo_root / "container_manager" / CONFIG_FILENAME
+    config_path = CONTAINER_MANAGER_CONFIG_PATH
     config, _ = load_container_specs(config_path)
     prefix = config.get("container_package_prefix")
     if not isinstance(prefix, str) or not prefix.strip():
@@ -38,9 +35,9 @@ def _container_package_prefix(repo_root: Path) -> str:
     return prefix.strip().lower()
 
 
-def _upstream_registry(repo_root: Path) -> str:
+def _upstream_registry(_repo_root: Path | None = None) -> str:
     """Return configured upstream registry for container pulls."""
-    config_path = repo_root / "container_manager" / CONFIG_FILENAME
+    config_path = CONTAINER_MANAGER_CONFIG_PATH
     config, _ = load_container_specs(config_path)
     registry = config.get("registry")
     if not isinstance(registry, str) or not registry.strip():

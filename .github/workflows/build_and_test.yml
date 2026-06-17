@@ -63,7 +63,7 @@ jobs:
 
       - name: build container
         run: |
-          python -m container_manager build --only ${{ matrix.container }} --manifest ./container_manager/manifests/container-build-manifest-${{ matrix.container }}.json
+          python -m container_manager build --only ${{ matrix.container }} --manifest ./container_manager/data/manifests/container-build-manifest-${{ matrix.container }}.json
         env:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: micromamba-shell {0}
@@ -71,8 +71,8 @@ jobs:
       - name: pack container artifact
         run: |
           mkdir -p ./artifacts/${{ matrix.container }}
-          cp ./container_manager/manifests/container-build-manifest-${{ matrix.container }}.json ./artifacts/${{ matrix.container }}/
-          find ./container_manager -maxdepth 1 -type f -name 'viroconstrictor_${{ matrix.container }}_*.tar' -exec cp {} ./artifacts/${{ matrix.container }}/ \;
+          cp ./container_manager/data/manifests/container-build-manifest-${{ matrix.container }}.json ./artifacts/${{ matrix.container }}/
+          cp ./container_manager/data/containers/*.tar ./artifacts/${{ matrix.container }}/
 
 
       - name: Upload container artifacts
@@ -89,7 +89,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@main
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
         with:
           # this might remove tools that are actually needed,
           # if set to "true" but frees about 6 GB
@@ -112,15 +112,16 @@ jobs:
 
       - name: stage container artifacts
         run: |
-          cp ./artifacts/*.tar ./container_manager/
+          mkdir -p ./container_manager/data/containers
+          cp ./artifacts/*.tar ./container_manager/data/containers/
           cat ./artifacts/container-build-manifest-*.json > /dev/null
           python -m container_manager merge-manifests
 
       - name: Setup Apptainer
-        uses: eWaterCycle/setup-apptainer@v2
+        uses: eWaterCycle/setup-apptainer@4bb22c52d4f63406c49e94c804632975787312b3
 
       - name: Setup Mamba
-        uses: mamba-org/setup-micromamba@v2
+        uses: mamba-org/setup-micromamba@d7c9bd84e824b79d2af72a2d4196c7f4300d3476
         with:
           cache-environment: true
           post-cleanup: 'all'
@@ -134,14 +135,13 @@ jobs:
 
       - name: convert containers
         run: |
-          python -m container_manager convert --manifest ./container_manager/manifests/container-build-manifest.json
+          python -m container_manager convert --manifest ./container_manager/data/manifests/container-build-manifest.json
         shell: micromamba-shell {0}
 
       - name: download existing containers
         run: |
           mkdir -p ./test_containers
-          mv ./container_manager/*.sif ./test_containers/ || true
+          mv ./container_manager/data/containers/*.sif ./test_containers/ || true
           python -m container_manager sync-cache --cache-dir ./test_containers
         shell: micromamba-shell {0}
       
-      ## rest of the testing suite here

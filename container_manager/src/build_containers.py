@@ -1,6 +1,7 @@
 """Plan and build container artifacts, then record outcomes in a manifest."""
 
 import os
+import shutil
 import subprocess
 import tempfile
 from datetime import datetime, timezone
@@ -10,11 +11,11 @@ from typing import cast
 import requests  # type: ignore[import-untyped]
 
 from container_manager.src.config import load_container_specs
+from container_manager.src.constants import HASH_SCHEMA_VERSION
 from container_manager.src.hash import container_hash
 from container_manager.src.io import ensure_safe_manifest_path, write_json
 from container_manager.src.logging import get_logger
 from container_manager.src.models import BuildPlanItem, Manifest, ManifestItem
-from container_manager.src.version import HASH_SCHEMA_VERSION
 
 logger = get_logger(__name__)
 
@@ -120,10 +121,29 @@ def _ghcr_org_from_registry(registry: str) -> str | None:
     return None
 
 
+def _ensure_docker_available() -> None:
+    """Fail early when Docker CLI or daemon is unavailable."""
+    if shutil.which("docker") is None:
+        raise EnvironmentError(
+            "Docker CLI was not found in PATH. Install Docker and ensure it is available in this environment "
+            "(for WSL2, enable Docker Desktop WSL integration for this distro)."
+        )
+
+    try:
+        subprocess.run(["docker", "info"], check=True, capture_output=True, text=True)
+    except subprocess.CalledProcessError as exc:
+        stderr = (exc.stderr or "").strip()
+        detail = stderr.splitlines()[-1] if stderr else "unknown docker daemon error"
+        raise EnvironmentError(
+            "Docker CLI is present but the daemon is not reachable. Start Docker Desktop/daemon and retry. " f"Details: {detail}"
+        ) from exc
+
+
 def plan_builds(
     repo_root: Path,
     config_path: Path,
     template_path: Path,
+    dockerfiles_dir: Path,
     output_dir: Path,
     only: set[str] | None = None,
 ) -> list[BuildPlanItem]:
@@ -136,7 +156,7 @@ def plan_builds(
         if only and spec.name not in only:
             continue
         env_path = repo_root / spec.env_file
-        dockerfile_path = output_dir / spec.dockerfile_path
+        dockerfile_path = dockerfiles_dir / spec.dockerfile_path
         hash_value = container_hash(spec=spec, env_path=env_path, template_path=template_path)
         docker_tag = f"{package_prefix}_{spec.name.lower()}:{hash_value}"
         docker_ref = f"{registry}/{docker_tag}"
@@ -149,8 +169,8 @@ def plan_builds(
                 docker_ref=docker_ref,
                 env_file=str(env_path),
                 dockerfile_path=str(dockerfile_path),
-                artifact_tar=str(repo_root / "container_manager" / f"{artifact_base}.tar"),
-                artifact_sif=str(repo_root / "container_manager" / f"{artifact_base}.sif"),
+                artifact_tar=str(output_dir / f"{artifact_base}.tar"),
+                artifact_sif=str(output_dir / f"{artifact_base}.sif"),
             )
         )
     return plans
@@ -180,6 +200,7 @@ def build(
     repo_root: Path,
     config_path: Path,
     template_path: Path,
+    dockerfiles_dir: Path,
     output_dir: Path,
     manifest_path: Path,
     only: set[str] | None = None,
@@ -194,7 +215,17 @@ def build(
     labels = _oci_labels_from_config(config)
     ghcr_org = _ghcr_org_from_registry(registry)
 
-    plans = plan_builds(repo_root=repo_root, config_path=config_path, template_path=template_path, output_dir=output_dir, only=only)
+    if not dry_run:
+        _ensure_docker_available()
+
+    plans = plan_builds(
+        repo_root=repo_root,
+        config_path=config_path,
+        template_path=template_path,
+        dockerfiles_dir=dockerfiles_dir,
+        output_dir=output_dir,
+        only=only,
+    )
     if not dry_run:
         _ensure_dockerfiles_exist(plans)
     logger.info("Planned %d container build(s)", len(plans))

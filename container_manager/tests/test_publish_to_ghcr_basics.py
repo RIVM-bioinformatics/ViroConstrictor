@@ -4,7 +4,7 @@ import subprocess
 from pathlib import Path
 
 from container_manager.src import publish_to_ghcr as publish_module
-from container_manager.src.version import REPO_ROOT
+from container_manager.src.constants import REPO_ROOT
 
 
 def test_validate_publish_manifest_accepts_valid_payload() -> None:

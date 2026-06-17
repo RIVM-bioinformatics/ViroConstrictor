@@ -2,7 +2,7 @@
 
 import sys
 
-from container_manager.src.version import REPO_ROOT
+from container_manager.src.constants import REPO_ROOT
 
 try:
     from container_manager.src.cli import main

@@ -3,10 +3,10 @@
 import json
 from pathlib import Path
 
+from container_manager.src.constants import REPO_ROOT
 from container_manager.src.merge_manifests import merge_manifests
 from container_manager.src.models import Manifest, ManifestItem
 from container_manager.src.publish_to_ghcr import validate_publish_manifest
-from container_manager.src.version import REPO_ROOT
 
 
 def test_manifest_creation_to_dict() -> None:
