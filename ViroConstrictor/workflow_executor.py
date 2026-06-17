@@ -12,6 +12,14 @@ from ViroConstrictor.scheduler import Scheduler
 from ViroConstrictor.workflow_config import WorkflowConfig
 
 
+def _executor_settings_for(scheduler: Scheduler) -> Any:
+    """ExecutorSettings instance for the SLURM plugin, None for the rest."""
+    if scheduler is Scheduler.SLURM:
+        from snakemake_executor_plugin_slurm import ExecutorSettings as SlurmExecutorSettings
+        return SlurmExecutorSettings()
+    return None
+
+
 def _patch_debugger_for_snakemake() -> None:
     # gettrace returns something only if debugger is active
     if sys.gettrace() is None:
@@ -108,6 +116,7 @@ class WorkflowExecutor:
 
             self.dag_api.execute_workflow(
                 executor=scheduler.value[0],
+                executor_settings=_executor_settings_for(scheduler),
                 execution_settings=self.workflow_config.execution_settings,
                 remote_execution_settings=self.workflow_config.remote_execution_settings,
                 scheduling_settings=self.workflow_config.scheduling_settings,
