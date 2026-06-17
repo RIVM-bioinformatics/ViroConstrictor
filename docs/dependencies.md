@@ -8,58 +8,40 @@ ViroConstrictor requires Python 3.10 or higher and runs on Linux systems. macOS 
 
 ## Core Dependencies
 
-**Snakemake**
-- Workflow management and pipeline orchestration with parallel processing support
+**[Snakemake](https://snakemake.readthedocs.io/)** - Workflow management and pipeline orchestration with parallel processing support
 
-**Biopython** 
-- Biological sequence analysis, FASTA/GenBank parsing, and format conversions
+**[Biopython](https://biopython.org/)** - Biological sequence analysis, FASTA/GenBank parsing, and format conversions
 
-**BioValid**
-- Biological data validation for input files and sequences
+**[BioValid](https://github.com/RIVM-bioinformatics/biovalid)** - Biological data validation for input files and sequences
 
-**Pandas**
-- Data manipulation, samplesheet processing, and result aggregation
+**[Pandas](https://pandas.pydata.org/)** - Data manipulation, samplesheet processing, and result aggregation
 
-**PyYAML**
-- Configuration file handling and workflow parameter management
+**[PyYAML](https://pyyaml.org/wiki/PyYAMLDocumentation)** - Configuration file handling and workflow parameter management
 
-**OpenPyXL**
-- Excel samplesheet reading and writing support
+**[OpenPyXL](https://openpyxl.readthedocs.io/)** - Excel samplesheet reading and writing support
 
-**Rich**
-- Enhanced terminal output with colored formatting and progress bars
+**[Rich](https://rich.readthedocs.io/)** - Enhanced terminal output with colored formatting and progress bars
 
-**DRMAA**
-- Grid computing integration for HPC cluster job submission (SLURM, LSF)
+**[DRMAA](https://drmaa-python.readthedocs.io/en/latest/)** - Grid computing integration for HPC cluster job submission (SLURM, LSF)
 
 ## Workflow Tools
 
-**Minimap2**
-- Fast sequence alignment for mapping reads to reference genomes
+**[Minimap2](https://github.com/lh3/minimap2)** - Fast sequence alignment for mapping reads to reference genomes
 
-**Samtools**
-- SAM/BAM file manipulation and processing
+**[Samtools](https://www.htslib.org/)** - SAM/BAM file manipulation and processing
 
-**Pysam**
-- Python interface for SAM/BAM file reading and writing
+**[Pysam](https://pysam.readthedocs.io/)** - Python interface for SAM/BAM file reading and writing
 
-**FastP**
-- Quality control and adapter trimming for sequencing data
+**[FastP](https://github.com/OpenGene/fastp)** - Quality control and adapter trimming for sequencing data
 
-**AmpliGone**
-- Primer removal from amplicon-based sequencing data
+**[AmpliGone](https://rivm-bioinformatics.github.io/AmpliGone/)** - Primer removal from amplicon-based sequencing data
 
-**TrueConsense**
-- Consensus sequence generation from aligned reads
+**[TrueConsense](https://rivm-bioinformatics.github.io/TrueConsense/latest/)** - Consensus sequence generation from aligned reads
 
-**AminoExtract**
-- Amino acid sequence extraction and translation from genomic features
+**[AminoExtract](https://github.com/RIVM-bioinformatics/AminoExtract)** - Amino acid sequence extraction and translation from genomic features
 
-**FastQC**
-- Quality assessment of sequencing data
+**[FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)** - Quality assessment of sequencing data
 
-**MultiQC**
-- Aggregated quality control reporting
+**[MultiQC](https://multiqc.info/)** - Aggregated quality control reporting
 
-**BEDtools**
-- Genomic interval operations and analysis
+**[BEDtools](https://bedtools.readthedocs.io/)** - Genomic interval operations and analysis
