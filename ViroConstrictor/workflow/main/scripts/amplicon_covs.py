@@ -360,7 +360,12 @@ class AmpliconCovs(BaseScript):
         amplicon_numbers = sorted(primers["count"].unique())
         df = pd.DataFrame(amplicon_numbers, columns=["amplicon_number"])
 
-        for idx, amplicon_number in enumerate(amplicon_numbers):
+        # Walk amplicons in genomic order, not numeric label order: a BED file may
+        # number amplicons independently of their position on the reference, and the
+        # previous/next lookups below need to refer to genomic neighbours.
+        genomic_order = list(primers.groupby("count")[1].min().sort_values().index)
+
+        for g_idx, amplicon_number in enumerate(genomic_order):
             amplicon_group = primers[primers["count"] == amplicon_number]
 
             # Get forward (LEFT) and reverse (RIGHT) primers for this amplicon
@@ -368,15 +373,15 @@ class AmpliconCovs(BaseScript):
             reverse_primers = amplicon_group[amplicon_group["direction"] == ReadDirection.REVERSE]
 
             # Determine start position
-            if idx == 0:
-                # First amplicon: start at end of own LEFT primer
+            if g_idx == 0:
+                # Genomic-first amplicon: start at end of own LEFT primer
                 if not forward_primers.empty:
                     amplicon_start = forward_primers[2].max()  # Column 2 is the end position
                 else:
                     amplicon_start = amplicon_group[1].min()
             else:
-                # Subsequent amplicons: start at end of previous amplicon's RIGHT primer
-                prev_amplicon_number = amplicon_numbers[idx - 1]
+                # Subsequent amplicons: start at end of previous (in genomic order) amplicon's RIGHT primer
+                prev_amplicon_number = genomic_order[g_idx - 1]
                 prev_amplicon_group = primers[primers["count"] == prev_amplicon_number]
                 prev_reverse_primers = prev_amplicon_group[prev_amplicon_group["direction"] == ReadDirection.REVERSE]
 
@@ -387,15 +392,15 @@ class AmpliconCovs(BaseScript):
                     amplicon_start = forward_primers[2].max() if not forward_primers.empty else amplicon_group[1].min()
 
             # Determine end position
-            if idx == len(amplicon_numbers) - 1:
-                # Last amplicon: end at start of own RIGHT primer
+            if g_idx == len(genomic_order) - 1:
+                # Genomic-last amplicon: end at start of own RIGHT primer
                 if not reverse_primers.empty:
                     amplicon_end = reverse_primers[1].min()  # Column 1 is the start position
                 else:
                     amplicon_end = amplicon_group[2].max()
             else:
-                # Non-last amplicons: end at start of next amplicon's LEFT primer
-                next_amplicon_number = amplicon_numbers[idx + 1]
+                # Non-last amplicons: end at start of next (in genomic order) amplicon's LEFT primer
+                next_amplicon_number = genomic_order[g_idx + 1]
                 next_amplicon_group = primers[primers["count"] == next_amplicon_number]
                 next_forward_primers = next_amplicon_group[next_amplicon_group["direction"] == ReadDirection.FORWARD]
 
