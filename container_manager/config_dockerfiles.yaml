@@ -1,0 +1,37 @@
+container_package_prefix: viroconstrictor
+oci_labels:
+  Associated_pipeline: ViroConstrictor
+  org.opencontainers.image.source: https://github.com/RIVM-bioinformatics/ViroConstrictor
+
+dockerfiles:
+  - output: Alignment.dockerfile
+    env_file: ./ViroConstrictor/workflow/envs/Alignment.yaml
+    description: Sequence alignment processes and tools for the ViroConstrictor workflow.
+    extra_copies: []
+
+  - output: Clean.dockerfile
+    env_file: ./ViroConstrictor/workflow/envs/Clean.yaml
+    description: Data cleaning processes and tools for the ViroConstrictor workflow.
+    extra_copies:
+      - src: ./ViroConstrictor/workflow/main/configs/
+        dest: /configs/
+
+  - output: Consensus.dockerfile
+    env_file: ./ViroConstrictor/workflow/envs/Consensus.yaml
+    description: Consensus sequence generation processes and tools for the ViroConstrictor workflow.
+    extra_copies: []
+
+  - output: ORF_analysis.dockerfile
+    env_file: ./ViroConstrictor/workflow/envs/ORF_analysis.yaml
+    description: ORF analysis processes and tools for the ViroConstrictor workflow.
+    extra_copies: []
+
+  - output: core_scripts.dockerfile
+    env_file: ./ViroConstrictor/workflow/envs/core_scripts.yaml
+    description: Supplementary scripts for the ViroConstrictor core workflow.
+    extra_copies: []
+
+  - output: mr_scripts.dockerfile
+    env_file: ./ViroConstrictor/workflow/envs/mr_scripts.yaml
+    description: Supplementary scripts for the ViroConstrictor MR workflow.
+    extra_copies: []

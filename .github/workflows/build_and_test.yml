@@ -14,6 +14,16 @@ on:
 jobs:
   Setup_and_build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        container:
+          - Alignment
+          - Clean
+          - Consensus
+          - ORF_analysis
+          - core_scripts
+          - mr_scripts
     steps:
       - uses: actions/checkout@v4
 
@@ -46,24 +56,30 @@ jobs:
           pip install . --no-deps
         shell: micromamba-shell {0}
 
-      - name: build containers
+      - name: generate container dockerfiles
         run: |
-          python containers/build_containers.py
+          python -m container_manager generate
+        shell: micromamba-shell {0}
+
+      - name: build container
+        run: |
+          python -m container_manager build --only ${{ matrix.container }} --manifest ./container_manager/data/manifests/container-build-manifest-${{ matrix.container }}.json
         env:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: micromamba-shell {0}
-      
-      - name: zip built containers
+
+      - name: pack container artifact
         run: |
-          cd ./containers/
-          tar -czvf containers.tar.gz builtcontainers.json $(find . -type f -name "*.tar" -printf '%f ')
+          mkdir -p ./artifacts/${{ matrix.container }}
+          cp ./container_manager/data/manifests/container-build-manifest-${{ matrix.container }}.json ./artifacts/${{ matrix.container }}/
+          cp ./container_manager/data/containers/*.tar ./artifacts/${{ matrix.container }}/
 
 
       - name: Upload container artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: built_containers
-          path: ./containers/containers.tar.gz
+          name: built_container_${{ matrix.container }}
+          path: ./artifacts/${{ matrix.container }}/
           overwrite: true
   
   Test:
@@ -73,7 +89,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@main
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
         with:
           # this might remove tools that are actually needed,
           # if set to "true" but frees about 6 GB
@@ -90,23 +106,22 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: built_containers
+          pattern: built_container_*
+          path: ./artifacts
+          merge-multiple: true
 
-      - name: move artifact
+      - name: stage container artifacts
         run: |
-          mv ./containers.tar.gz ./containers/containers.tar.gz
-      
-      - name: unzip built containers
-        run: |
-          cd ./containers/
-          tar -xzvf containers.tar.gz
-          cd ..
+          mkdir -p ./container_manager/data/containers
+          cp ./artifacts/*.tar ./container_manager/data/containers/
+          cat ./artifacts/container-build-manifest-*.json > /dev/null
+          python -m container_manager merge-manifests
 
       - name: Setup Apptainer
-        uses: eWaterCycle/setup-apptainer@v2
+        uses: eWaterCycle/setup-apptainer@4bb22c52d4f63406c49e94c804632975787312b3
 
       - name: Setup Mamba
-        uses: mamba-org/setup-micromamba@v2
+        uses: mamba-org/setup-micromamba@d7c9bd84e824b79d2af72a2d4196c7f4300d3476
         with:
           cache-environment: true
           post-cleanup: 'all'
@@ -120,11 +135,13 @@ jobs:
 
       - name: convert containers
         run: |
-          python containers/convert_artifact_containers_for_apptainer.py
+          python -m container_manager convert --manifest ./container_manager/data/manifests/container-build-manifest.json
+        shell: micromamba-shell {0}
 
       - name: download existing containers
         run: |
-          python containers/pull_published_containers.py
+          mkdir -p ./test_containers
+          mv ./container_manager/data/containers/*.sif ./test_containers/ || true
+          python -m container_manager sync-cache --cache-dir ./test_containers
         shell: micromamba-shell {0}
       
-      ## rest of the testing suite here

@@ -294,7 +294,7 @@ def test_buildconfig_grid_auto_update_no_and_no_containers(tmp_path: Path, monke
 
     answers = iter(["grid", "highmem", "no", "yes"])
     monkeypatch.setattr(userprofile, "AskPrompts", lambda *_args, **_kwargs: next(answers))
-    monkeypatch.setattr(userprofile, "containerization_installed", False)
+    monkeypatch.setattr(userprofile, "containerization_installed", lambda: False)
 
     logged: list[str] = []
     monkeypatch.setattr(userprofile.log, "info", lambda msg: logged.append(msg))
@@ -330,7 +330,7 @@ def test_buildconfig_local_auto_update_yes_with_containers(tmp_path: Path, monke
 
     answers = iter(["local", "yes", "/custom/cache"])
     monkeypatch.setattr(userprofile, "AskPrompts", lambda *_args, **_kwargs: next(answers))
-    monkeypatch.setattr(userprofile, "containerization_installed", True)
+    monkeypatch.setattr(userprofile, "containerization_installed", lambda: True)
     monkeypatch.setattr(userprofile.log, "info", lambda *_: None)
 
     userprofile.BuildConfig(profile)
