@@ -62,21 +62,22 @@ class GenBank:
             )
         return organisms[0]
 
-    # TODO: splitting of the genbank file should potentially happen in a target directory instead of placing the split files into the source directory
     @staticmethod
-    def split_genbank(file_path: Path, emit_target: bool = False) -> tuple[Path, Path, str]:
+    def split_genbank(file_path: Path, emit_target: bool = False, output_directory: Path | None = None) -> tuple[Path, Path, str]:
         """Splits a GenBank file into a reference fasta, a features file and possibly a target file."""
 
         records = GenBank.open_genbank(file_path)
-        with open(file_path.with_suffix(".fasta"), "w", encoding="utf-8") as fasta_file:
+        output_dir = output_directory if output_directory is not None else file_path.parent
+        output_dir.mkdir(parents=True, exist_ok=True)
+        fasta_path = output_dir / f"{file_path.stem}.fasta"
+        with open(fasta_path, "w", encoding="utf-8") as fasta_file:
             # write all records as fasta to a single file
             for record in records:
                 SeqIO.write(record, fasta_file, "fasta")
-        fasta_path = file_path.with_suffix(".fasta")
 
-        with open(file_path.with_suffix(".gff"), "w", encoding="utf-8") as gff_file:
+        gff_path = output_dir / f"{file_path.stem}.gff"
+        with open(gff_path, "w", encoding="utf-8") as gff_file:
             GFF.write(records, gff_file)
-        gff_path = file_path.with_suffix(".gff")
 
         target = ""
         if emit_target:

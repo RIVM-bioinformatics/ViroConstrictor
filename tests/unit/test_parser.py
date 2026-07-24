@@ -1308,6 +1308,7 @@ def test_make_samples_dict_handles_genbank_and_applies_user_intent_defaults(tmp_
     args = _build_args(
         tmp_path,
         input=str(input_dir),
+        output=str(tmp_path / "workdir"),
         reference=str(tmp_path / "default_ref.fasta"),
         primers="NONE",
         features="NONE",
@@ -1338,10 +1339,13 @@ def test_make_samples_dict_handles_genbank_and_applies_user_intent_defaults(tmp_
         "ViroConstrictor.parser.GenBank.is_genbank",
         lambda p: str(p).endswith(".gbk"),
     )
-    monkeypatch.setattr(
-        "ViroConstrictor.parser.GenBank.split_genbank",
-        lambda _path, emit_target: (str(tmp_path / "split_ref.fasta"), str(tmp_path / "split_features.gff"), "virus1"),
-    )
+    split_call = {"output_directory": None}
+
+    def _fake_split_genbank(_path: Path, emit_target: bool, output_directory: Path | None = None) -> tuple[str, str, str]:
+        split_call["output_directory"] = output_directory
+        return (str(tmp_path / "split_ref.fasta"), str(tmp_path / "split_features.gff"), "virus1")
+
+    monkeypatch.setattr("ViroConstrictor.parser.GenBank.split_genbank", _fake_split_genbank)
     preset_calls: list[bool] = []
 
     def _fake_match_preset_name(_virus: str, use_presets: bool) -> tuple[str, float]:
@@ -1361,6 +1365,7 @@ def test_make_samples_dict_handles_genbank_and_applies_user_intent_defaults(tmp_
     assert result["sample1"]["PRESET"] == "DEFAULT"
     assert result["sample1"]["PRESET_SCORE"] == pytest.approx(0.0)
     assert result["sample1"]["FRAGMENT-LOOKAROUND-SIZE"] is None
+    assert split_call["output_directory"] == Path(args.output)
     # Invalid DISABLE-PRESETS values should fall back to CLI behavior.
     assert preset_calls
     assert preset_calls[0] is False
@@ -1487,18 +1492,21 @@ def test_parse_genbank_updates_flags(monkeypatch: pytest.MonkeyPatch) -> None:
         Pytest fixture for mocking behavior.
     """
     parser_obj = CLIparser.__new__(CLIparser)
-    parser_obj.flags = Namespace(reference="old-ref", features="old-features", target="old-target")
+    parser_obj.flags = Namespace(reference="old-ref", features="old-features", target="old-target", output="/tmp/vc_workdir")
+    split_call = {"output_directory": None}
 
-    monkeypatch.setattr(
-        "ViroConstrictor.parser.GenBank.split_genbank",
-        lambda _path, emit_target: ("new-ref.fasta", "new-features.gff", "new-target"),
-    )
+    def _fake_split_genbank(_path: Path, emit_target: bool, output_directory: Path | None = None) -> tuple[str, str, str]:
+        split_call["output_directory"] = output_directory
+        return ("new-ref.fasta", "new-features.gff", "new-target")
+
+    monkeypatch.setattr("ViroConstrictor.parser.GenBank.split_genbank", _fake_split_genbank)
 
     parser_obj.parse_genbank("input.gbk")
 
     assert parser_obj.flags.reference == "new-ref.fasta"
     assert parser_obj.flags.features == "new-features.gff"
     assert parser_obj.flags.target == "new-target"
+    assert split_call["output_directory"] == Path("/tmp/vc_workdir")
 
 
 def test_validate_cli_args_samplesheet_missing_and_invalid_extension(monkeypatch: pytest.MonkeyPatch) -> None:

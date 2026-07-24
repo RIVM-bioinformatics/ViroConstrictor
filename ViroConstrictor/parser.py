@@ -76,7 +76,12 @@ class CLIparser:
         self._check_sample_properties(self.samples_dict)  # raises errors if stuff is not right
 
     def parse_genbank(self, reference: str) -> None:
-        self.flags.reference, self.flags.features, self.flags.target = GenBank.split_genbank(pathlib.Path(reference), emit_target=True)
+        split_output_dir = pathlib.Path(getattr(self.flags, "output", os.getcwd()))
+        self.flags.reference, self.flags.features, self.flags.target = GenBank.split_genbank(
+            pathlib.Path(reference),
+            emit_target=True,
+            output_directory=split_output_dir,
+        )
 
     def _validate_cli_args(self) -> list[str] | None:
         arg_errors = []
@@ -591,7 +596,12 @@ class CLIparser:
                         else:
                             # Check if it's a genbank file and split if needed
                             if GenBank.is_genbank(pathlib.Path(str(current_value))):
-                                split_ref, split_features, _ = GenBank.split_genbank(pathlib.Path(str(current_value)), emit_target=True)
+                                split_output_dir = pathlib.Path(getattr(args, "output", os.getcwd()))
+                                split_ref, split_features, _ = GenBank.split_genbank(
+                                    pathlib.Path(str(current_value)),
+                                    emit_target=True,
+                                    output_directory=split_output_dir,
+                                )
                                 df.at[sample_name, column] = str(split_ref)
                                 # Also set features if not already set
                                 if "FEATURES" not in df.columns or pd.isna(df.at[sample_name, "FEATURES"]):
