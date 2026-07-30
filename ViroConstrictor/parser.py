@@ -56,9 +56,9 @@ class CLIparser:
             converted_samples = convert_log_text(self.samples_dict)
             log.debug(f"Input handling :: Parser :: Getting samples :: the parsed samples are:\n{converted_samples}")
         else:  # samplesheet is not given
-            self._print_missing_asset_warning(self.flags, False)
             if GenBank.is_genbank(pathlib.Path(self.flags.reference)):
                 self.parse_genbank(self.flags.reference)
+            self._print_missing_asset_warning(self.flags, False)
             self.samples_dict = self._make_samples_dict(None, self.flags, GetSamples(self.flags.input, self.flags.platform))
         if self.samples_df.empty:
             self.samples_df = pd.DataFrame.from_dict(self.samples_dict, orient="index")
@@ -76,12 +76,19 @@ class CLIparser:
         self._check_sample_properties(self.samples_dict)  # raises errors if stuff is not right
 
     def parse_genbank(self, reference: str) -> None:
-        split_output_dir = pathlib.Path(getattr(self.flags, "output", os.getcwd()))
+        split_output_dir = self._genbank_output_directory(self.flags, sample_name=None)
         self.flags.reference, self.flags.features, self.flags.target = GenBank.split_genbank(
             pathlib.Path(reference),
             emit_target=True,
             output_directory=split_output_dir,
         )
+
+    def _genbank_output_directory(self, args: argparse.Namespace, sample_name: str | None) -> pathlib.Path:
+        base_output_dir = pathlib.Path(getattr(args, "output", os.getcwd())).resolve()
+        genbank_products_dir = base_output_dir / "data" / "genbank_products"
+        if sample_name:
+            return genbank_products_dir / sample_name
+        return genbank_products_dir / "run_wide"
 
     def _validate_cli_args(self) -> list[str] | None:
         arg_errors = []
@@ -596,7 +603,7 @@ class CLIparser:
                         else:
                             # Check if it's a genbank file and split if needed
                             if GenBank.is_genbank(pathlib.Path(str(current_value))):
-                                split_output_dir = pathlib.Path(getattr(args, "output", os.getcwd()))
+                                split_output_dir = self._genbank_output_directory(args, sample_name=str(sample_name))
                                 split_ref, split_features, _ = GenBank.split_genbank(
                                     pathlib.Path(str(current_value)),
                                     emit_target=True,
@@ -742,11 +749,12 @@ class CLIparser:
                 )
         if not sheet_present:
             missing_assets = []
+            is_genbank_reference = bool(args.reference) and GenBank.is_genbank(pathlib.Path(str(args.reference)))
             if args.primers is None:
                 missing_assets.append("primers")
             if args.reference is None:
                 missing_assets.append("reference fasta")
-            if args.features is None:
+            if args.features is None and not is_genbank_reference:
                 missing_assets.append("GFF file")
             if args.target is None:
                 missing_assets.append("target/preset")

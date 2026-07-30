@@ -54,6 +54,7 @@ def _build_args(tmp_path: Path, **overrides) -> Namespace:
     reference.write_text(">ref\nACGT\n", encoding="utf-8")
     defaults = {
         "input": str(tmp_path),
+        "output": str(tmp_path / "output"),
         "platform": "nanopore",
         "reference": str(reference),
         "primers": "NONE",
@@ -587,6 +588,13 @@ def test_print_missing_asset_warning_sheet_present_does_not_exit(tmp_path: Path)
     args = _build_args(tmp_path)
 
     parser_obj._print_missing_asset_warning(args, sheet_present=True)
+
+
+def test_print_missing_asset_warning_no_sheet_accepts_genbank_without_features(tmp_path: Path) -> None:
+    """Test that GenBank references do not require explicit features in CLI mode."""
+    parser_obj = CLIparser.__new__(CLIparser)
+    args = _build_args(tmp_path, reference=str(tmp_path / "ref.gbk"), features=None)
+    parser_obj._print_missing_asset_warning(args, sheet_present=False)
 
 
 def test_make_samples_dict_exits_when_no_valid_input_files(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -1365,10 +1373,53 @@ def test_make_samples_dict_handles_genbank_and_applies_user_intent_defaults(tmp_
     assert result["sample1"]["PRESET"] == "DEFAULT"
     assert result["sample1"]["PRESET_SCORE"] == pytest.approx(0.0)
     assert result["sample1"]["FRAGMENT-LOOKAROUND-SIZE"] is None
-    assert split_call["output_directory"] == Path(args.output)
+    assert split_call["output_directory"] == Path(args.output) / "data" / "genbank_products" / "sample1"
     # Invalid DISABLE-PRESETS values should fall back to CLI behavior.
     assert preset_calls
     assert preset_calls[0] is False
+
+
+def test_make_samples_dict_writes_genbank_splits_per_sample(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test per-sample output isolation for GenBank splitting in samplesheet mode."""
+    parser_obj = CLIparser.__new__(CLIparser)
+    parser_obj.flags = Namespace(presets=True)
+
+    input_dir = tmp_path / "input"
+    input_dir.mkdir()
+    args = _build_args(tmp_path, input=str(input_dir), output=str(tmp_path / "workdir"))
+
+    df = pd.DataFrame(
+        {
+            "SAMPLE": ["sample1", "sample2"],
+            "VIRUS": ["virus1", "virus2"],
+            "REFERENCE": [str(tmp_path / "sample1.gbk"), str(tmp_path / "sample2.gbk")],
+            "PRIMERS": ["NONE", "NONE"],
+            "FEATURES": [None, None],
+            "PRESET": ["DEFAULT", "DEFAULT"],
+            "PRESET_SCORE": [0.0, 0.0],
+        }
+    )
+
+    monkeypatch.setattr("ViroConstrictor.parser.CheckInputFiles", lambda _indir: True)
+    monkeypatch.setattr("ViroConstrictor.parser.GenBank.is_genbank", lambda p: str(p).endswith(".gbk"))
+
+    def _fake_split_genbank(_path: Path, emit_target: bool, output_directory: Path | None = None) -> tuple[str, str, str]:
+        assert output_directory is not None
+        return (
+            str(output_directory / "reference.fasta"),
+            str(output_directory / "features.gff"),
+            "virus",
+        )
+
+    monkeypatch.setattr("ViroConstrictor.parser.GenBank.split_genbank", _fake_split_genbank)
+    monkeypatch.setattr("ViroConstrictor.parser.match_preset_name", lambda _virus, use_presets: ("DEFAULT", 1.0 if use_presets else 0.0))
+
+    result = parser_obj._make_samples_dict(df, args, {"sample1": "r1.fastq.gz", "sample2": "r2.fastq.gz"})
+
+    assert result["sample1"]["REFERENCE"] == str(Path(args.output) / "data" / "genbank_products" / "sample1" / "reference.fasta")
+    assert result["sample2"]["REFERENCE"] == str(Path(args.output) / "data" / "genbank_products" / "sample2" / "reference.fasta")
+    assert result["sample1"]["FEATURES"] == str(Path(args.output) / "data" / "genbank_products" / "sample1" / "features.gff")
+    assert result["sample2"]["FEATURES"] == str(Path(args.output) / "data" / "genbank_products" / "sample2" / "features.gff")
 
 
 def test_make_samples_dict_fragmented_with_invalid_lookaround_uses_default(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -1506,7 +1557,7 @@ def test_parse_genbank_updates_flags(monkeypatch: pytest.MonkeyPatch) -> None:
     assert parser_obj.flags.reference == "new-ref.fasta"
     assert parser_obj.flags.features == "new-features.gff"
     assert parser_obj.flags.target == "new-target"
-    assert split_call["output_directory"] == Path("/tmp/vc_workdir")
+    assert split_call["output_directory"] == Path("/tmp/vc_workdir/data/genbank_products/run_wide")
 
 
 def test_validate_cli_args_samplesheet_missing_and_invalid_extension(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -1737,6 +1788,58 @@ def test_cli_parser_init_without_samplesheet_triggers_genbank_path(monkeypatch: 
 
     assert parse_called["value"] is True
     assert parser_obj.flags.presets is False
+
+
+def test_cli_parser_init_without_samplesheet_parses_genbank_before_missing_assets(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Test initialization order ensures GenBank parsing happens before missing-asset check."""
+    input_dir = tmp_path / "input"
+    input_dir.mkdir()
+    output_dir = tmp_path / "output"
+
+    flags = Namespace(
+        input=str(input_dir),
+        output=str(output_dir),
+        verbose=False,
+        samplesheet=None,
+        scheduler="auto",
+        dryrun=False,
+        disable_presets=False,
+        platform="nanopore",
+        reference=str(tmp_path / "ref.gbk"),
+        features=None,
+        primers="NONE",
+        target="virus",
+    )
+
+    cfg = ConfigParser()
+    cfg["COMPUTING"] = {"compmode": "local", "scheduler": "none"}
+
+    monkeypatch.setattr(CLIparser, "_get_args", lambda self, _args: flags)
+    monkeypatch.setattr("ViroConstrictor.parser.setup_logger", lambda _out: "logfile")
+    monkeypatch.setattr(CLIparser, "_validate_cli_args", lambda self: [])
+    monkeypatch.setattr("ViroConstrictor.parser.ReadConfig", lambda _path: cfg)
+    monkeypatch.setattr("ViroConstrictor.parser.Scheduler.determine_scheduler", lambda *_args: scheduler_module.Scheduler.LOCAL)
+    monkeypatch.setattr("ViroConstrictor.parser.GenBank.is_genbank", lambda _path: True)
+
+    def _fake_parse_genbank(self: CLIparser, _reference: str) -> None:
+        self.flags.features = str(output_dir / "data" / "genbank_products" / "run_wide" / "ref.gff")
+
+    def _fake_missing_asset_warning(self: CLIparser, args: Namespace, sheet_present: bool) -> None:
+        assert sheet_present is False
+        assert args.features is not None
+
+    monkeypatch.setattr(CLIparser, "parse_genbank", _fake_parse_genbank)
+    monkeypatch.setattr(CLIparser, "_print_missing_asset_warning", _fake_missing_asset_warning)
+    monkeypatch.setattr("ViroConstrictor.parser.GetSamples", lambda _inp, _plat: {"s1": "reads.fastq.gz"})
+    monkeypatch.setattr(CLIparser, "_make_samples_dict", lambda self, _df, _flags, _files: {"s1": {"REFERENCE": str(tmp_path / "r.fa")}})
+    monkeypatch.setattr(CLIparser, "_get_paths_for_workflow", lambda self, _flags: ("/in", "/out", "/cwd", "main.smk", "mr.smk"))
+    monkeypatch.setattr(CLIparser, "_check_sample_properties", lambda self, _samples: None)
+
+    parser_obj = CLIparser(["--ignored"], "~/.config.ini")
+
+    assert parser_obj.flags.features == str(output_dir / "data" / "genbank_products" / "run_wide" / "ref.gff")
 
 
 def test_cli_parser_init_exits_when_cli_errors_present(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
