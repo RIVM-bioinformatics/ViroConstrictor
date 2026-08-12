@@ -16,7 +16,7 @@ hide:
 
 ViroConstrictor is a pipeline designed to process raw FASTQ data from amplicon-based sequencing experiments and generate a biologically accurate consensus sequence of the sequenced genome.
 
-ViroConstrictor performs high-speed data quality control, data cleanup, and highly accurate removal of primer sequences from NGS reads, as well as aligning reads and generating a consensus sequence using the [TrueConsense](https://rivm-bioinformatics.github.io/TrueConsense/0.5.1/) consensus caller, which accounts for sequencing errors and alignment artefacts.
+ViroConstrictor performs high-speed data quality control, data cleanup, and highly accurate removal of primer sequences from NGS reads, as well as aligning reads and generating a consensus sequence using the [TrueConsense](https://rivm-bioinformatics.github.io/TrueConsense/latest/) consensus caller, which accounts for sequencing errors and alignment artefacts.
 
 ViroConstrictor can run on both standalone (Linux) computers and high-performance computing (HPC) infrastructures.
 
