@@ -14,9 +14,9 @@ ViroConstrictor requires the following software to be installed on your system:
 !!! tip "Installation settings"
     After installation and running ViroConstrictor for the first time, some questions will be asked via the CLI. These questions set some global settings.
     These settings will be saved to a `~/.ViroConstrictor_defaultprofile.ini` file in your home directory.
-    
-    If you set the repro_method to 'containers', Apptainer **needs** to be installed.
 
+    If you set the repro_method to 'containers', Apptainer **needs** to be installed.
+    The repro_method will automatically be set to 'containers' if it is detected that containerization is possible.
 
 
 ---
