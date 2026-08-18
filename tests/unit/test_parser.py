@@ -1422,6 +1422,127 @@ def test_make_samples_dict_writes_genbank_splits_per_sample(tmp_path: Path, monk
     assert result["sample2"]["FEATURES"] == str(Path(args.output) / "data" / "genbank_products" / "sample2" / "features.gff")
 
 
+def test_make_samples_dict_splits_default_genbank_reference(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that default GenBank references from CLI are split per sample in samplesheet mode."""
+    parser_obj = CLIparser.__new__(CLIparser)
+    parser_obj.flags = Namespace(presets=True)
+
+    input_dir = tmp_path / "input"
+    input_dir.mkdir()
+    default_gbk = tmp_path / "default_reference.gbk"
+    default_gbk.write_text("dummy genbank content", encoding="utf-8")
+
+    args = _build_args(
+        tmp_path,
+        input=str(input_dir),
+        output=str(tmp_path / "workdir"),
+        reference=str(default_gbk),
+        features=None,
+    )
+
+    # Samplesheet where samples do not specify REFERENCE or FEATURES
+    df = pd.DataFrame(
+        {
+            "SAMPLE": ["sample1", "sample2"],
+            "VIRUS": ["virus1", "virus2"],
+            "PRIMERS": ["NONE", "NONE"],
+            "PRESET": ["DEFAULT", "DEFAULT"],
+            "PRESET_SCORE": [0.0, 0.0],
+        }
+    )
+
+    split_calls: list[dict[str, Any]] = []
+
+    monkeypatch.setattr("ViroConstrictor.parser.CheckInputFiles", lambda _indir: True)
+    monkeypatch.setattr("ViroConstrictor.parser.GenBank.is_genbank", lambda p: str(p).endswith(".gbk"))
+
+    def _fake_split_genbank(path: Path, emit_target: bool, output_directory: Path | None = None) -> tuple[str, str, str]:
+        assert output_directory is not None
+        split_calls.append({"path": path, "output_directory": output_directory})
+        return (
+            str(output_directory / "reference.fasta"),
+            str(output_directory / "features.gff"),
+            "virus",
+        )
+
+    monkeypatch.setattr("ViroConstrictor.parser.GenBank.split_genbank", _fake_split_genbank)
+    monkeypatch.setattr("ViroConstrictor.parser.match_preset_name", lambda _virus, use_presets: ("DEFAULT", 1.0 if use_presets else 0.0))
+
+    result = parser_obj._make_samples_dict(df, args, {"sample1": "r1.fastq.gz", "sample2": "r2.fastq.gz"})
+
+    # Check both samples had the default GenBank reference split into per-sample directories
+    assert len(split_calls) == 2
+    assert result["sample1"]["REFERENCE"] == str(Path(args.output) / "data" / "genbank_products" / "sample1" / "reference.fasta")
+    assert result["sample2"]["REFERENCE"] == str(Path(args.output) / "data" / "genbank_products" / "sample2" / "reference.fasta")
+    assert result["sample1"]["FEATURES"] == str(Path(args.output) / "data" / "genbank_products" / "sample1" / "features.gff")
+    assert result["sample2"]["FEATURES"] == str(Path(args.output) / "data" / "genbank_products" / "sample2" / "features.gff")
+
+
+def test_make_samples_dict_mixed_explicit_and_default_references(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test GenBank splitting with a mix of explicit and default GenBank/FASTA references."""
+    parser_obj = CLIparser.__new__(CLIparser)
+    parser_obj.flags = Namespace(presets=True)
+
+    input_dir = tmp_path / "input"
+    input_dir.mkdir()
+    default_gbk = tmp_path / "default.gbk"
+    default_gbk.write_text("default gbk", encoding="utf-8")
+    sample1_gbk = tmp_path / "sample1_custom.gbk"
+    sample1_gbk.write_text("sample1 gbk", encoding="utf-8")
+    sample3_fasta = tmp_path / "sample3.fasta"
+    sample3_fasta.write_text(">s3\nACGT\n", encoding="utf-8")
+    sample3_gff = tmp_path / "sample3.gff"
+    sample3_gff.write_text("gff content", encoding="utf-8")
+
+    args = _build_args(
+        tmp_path,
+        input=str(input_dir),
+        output=str(tmp_path / "workdir"),
+        reference=str(default_gbk),
+        features=None,
+    )
+
+    df = pd.DataFrame(
+        {
+            "SAMPLE": ["sample1", "sample2", "sample3"],
+            "VIRUS": ["virus1", "virus2", "virus3"],
+            "REFERENCE": [str(sample1_gbk), None, str(sample3_fasta)],
+            "PRIMERS": ["NONE", "NONE", "NONE"],
+            "FEATURES": [None, None, str(sample3_gff)],
+            "PRESET": ["DEFAULT", "DEFAULT", "DEFAULT"],
+            "PRESET_SCORE": [0.0, 0.0, 0.0],
+        }
+    )
+
+    monkeypatch.setattr("ViroConstrictor.parser.CheckInputFiles", lambda _indir: True)
+    monkeypatch.setattr("ViroConstrictor.parser.GenBank.is_genbank", lambda p: str(p).endswith(".gbk"))
+
+    def _fake_split_genbank(path: Path, emit_target: bool, output_directory: Path | None = None) -> tuple[str, str, str]:
+        assert output_directory is not None
+        return (
+            str(output_directory / "reference.fasta"),
+            str(output_directory / "features.gff"),
+            "virus",
+        )
+
+    monkeypatch.setattr("ViroConstrictor.parser.GenBank.split_genbank", _fake_split_genbank)
+    monkeypatch.setattr("ViroConstrictor.parser.match_preset_name", lambda _virus, use_presets: ("DEFAULT", 1.0 if use_presets else 0.0))
+
+    result = parser_obj._make_samples_dict(df, args, {"sample1": "r1.fastq.gz", "sample2": "r2.fastq.gz", "sample3": "r3.fastq.gz"})
+
+    # sample1 used explicit gbk -> split to sample1 dir
+    assert result["sample1"]["REFERENCE"] == str(Path(args.output) / "data" / "genbank_products" / "sample1" / "reference.fasta")
+    assert result["sample1"]["FEATURES"] == str(Path(args.output) / "data" / "genbank_products" / "sample1" / "features.gff")
+
+    # sample2 used default gbk from CLI -> split to sample2 dir
+    assert result["sample2"]["REFERENCE"] == str(Path(args.output) / "data" / "genbank_products" / "sample2" / "reference.fasta")
+    assert result["sample2"]["FEATURES"] == str(Path(args.output) / "data" / "genbank_products" / "sample2" / "features.gff")
+
+    # sample3 used explicit fasta + gff -> preserved as-is
+    assert result["sample3"]["REFERENCE"] == str(sample3_fasta)
+    assert result["sample3"]["FEATURES"] == str(sample3_gff)
+
+
 def test_make_samples_dict_fragmented_with_invalid_lookaround_uses_default(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Test that invalid fragment lookaround value defaults to CLI value.
 

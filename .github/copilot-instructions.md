@@ -391,7 +391,7 @@ Dockerfiles follow naming: `{environment_name}.dockerfile` (e.g., `Clean.dockerf
 **GenBank Split Output Handling**:
 - Split FASTA and GFF artifacts are written to the **ViroConstrictor working directory** (`{output}/data/genbank_products/`).
 - **CLI mode** (no samplesheet): Splits written to `{output}/data/genbank_products/run_wide/`
-- **Samplesheet mode**: Per-sample splits written to `{output}/data/genbank_products/{sample_name}/` to isolate artifacts and prevent naming conflicts
+- **Samplesheet mode**: Per-sample splits written to `{output}/data/genbank_products/{sample_name}/` (for both explicit samplesheet references and CLI fallback default references) to isolate artifacts and prevent naming conflicts
 
 ### Sample Detection
 Platform-specific regex patterns in [samplesheet.py](ViroConstrictor/samplesheet.py):

@@ -633,28 +633,29 @@ class CLIparser:
 
                     # Handle REFERENCE column - must be valid path, handle genbank splitting
                     elif column == "REFERENCE":
-                        if current_value is None:
+                        if current_value is None or current_value == "" or pd.isna(current_value):
                             if properties["default"] is None:
                                 log.error(f"[bold red]Reference file must be provided for sample '{sample_name}'[/bold red]")
                                 sys.exit(1)
                             df.at[sample_name, column] = properties["default"]
-                        else:
-                            # Check if it's a genbank file and split if needed
-                            if GenBank.is_genbank(pathlib.Path(str(current_value))):
-                                split_output_dir = self._genbank_output_directory(args, sample_name=str(sample_name))
-                                split_ref, split_features, _ = GenBank.split_genbank(
-                                    pathlib.Path(str(current_value)),
-                                    emit_target=True,
-                                    output_directory=split_output_dir,
-                                )
-                                df.at[sample_name, column] = str(split_ref)
-                                # Also set features if not already set
-                                if "FEATURES" not in df.columns or pd.isna(df.at[sample_name, "FEATURES"]):
-                                    df.at[sample_name, "FEATURES"] = str(split_features)
+
+                        # Check if resulting value (explicit or default) is GenBank and split if needed
+                        final_ref_value = df.at[sample_name, column]
+                        if final_ref_value and not pd.isna(final_ref_value) and GenBank.is_genbank(pathlib.Path(str(final_ref_value))):
+                            split_output_dir = self._genbank_output_directory(args, sample_name=str(sample_name))
+                            split_ref, split_features, _ = GenBank.split_genbank(
+                                pathlib.Path(str(final_ref_value)),
+                                emit_target=True,
+                                output_directory=split_output_dir,
+                            )
+                            df.at[sample_name, column] = str(split_ref)
+                            # Also set features if not already set
+                            if "FEATURES" not in df.columns or pd.isna(df.at[sample_name, "FEATURES"]) or df.at[sample_name, "FEATURES"] is None or df.at[sample_name, "FEATURES"] == "":
+                                df.at[sample_name, "FEATURES"] = str(split_features)
 
                     # Handle PRIMERS column - must be valid path or "NONE"
                     elif column == "PRIMERS":
-                        if current_value is None or current_value == "":
+                        if current_value is None or current_value == "" or pd.isna(current_value):
                             if properties["default"] is None:
                                 log.error(f"[bold red]Primers file must be provided for sample '{sample_name}' or set to 'NONE'[/bold red]")
                                 sys.exit(1)
@@ -665,7 +666,7 @@ class CLIparser:
 
                     # Handle FEATURES column - must be valid path or "NONE", consider genbank splitting
                     elif column == "FEATURES":
-                        if current_value is None or current_value == "":
+                        if current_value is None or current_value == "" or pd.isna(current_value):
                             # Check if reference is genbank and already processed
                             ref_value = df.at[sample_name, "REFERENCE"] if "REFERENCE" in df.columns else None
                             if ref_value and GenBank.is_genbank(pathlib.Path(str(ref_value))):

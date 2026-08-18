@@ -79,7 +79,7 @@ class GenBank:
         """Parse the target organism name from GenBank records.
         
         Extracts organism annotations from all records and ensures they are
-        sufficiently similar (≥85% sequence similarity) before returning a
+        sufficiently similar (≥85% string similarity) before returning a
         unified target name.
         
         Parameters
