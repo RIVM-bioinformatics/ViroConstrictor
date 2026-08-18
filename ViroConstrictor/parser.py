@@ -76,6 +76,23 @@ class CLIparser:
         self._check_sample_properties(self.samples_dict)  # raises errors if stuff is not right
 
     def parse_genbank(self, reference: str) -> None:
+        """Split a GenBank reference file and update parser flags.
+        
+        Splits the provided GenBank file into FASTA and GFF components,
+        writing outputs to the ViroConstrictor working directory. Updates
+        the parser flags to point to the generated FASTA file, GFF features
+        file, and extracted target organism name.
+        
+        Parameters
+        ----------
+        reference : str
+            Path to the GenBank reference file (.gb or .gbk).
+        
+        Notes
+        -----
+        This method modifies self.flags.reference, self.flags.features,
+        and self.flags.target in-place to reflect the split outputs.
+        """
         split_output_dir = self._genbank_output_directory(self.flags, sample_name=None)
         self.flags.reference, self.flags.features, self.flags.target = GenBank.split_genbank(
             pathlib.Path(reference),
@@ -84,6 +101,27 @@ class CLIparser:
         )
 
     def _genbank_output_directory(self, args: argparse.Namespace, sample_name: str | None) -> pathlib.Path:
+        """Determine the output directory for GenBank split artifacts.
+        
+        Returns a directory path under the ViroConstrictor working directory's
+        data/genbank_products folder, with per-sample or run-wide isolation based
+        on the provided sample_name.
+        
+        Parameters
+        ----------
+        args : argparse.Namespace
+            Parsed command-line arguments containing the 'output' attribute.
+        sample_name : str | None
+            Sample name for per-sample output isolation. If None, returns the
+            run-wide output directory.
+        
+        Returns
+        -------
+        pathlib.Path
+            Output directory path:
+            - With sample_name: {output}/data/genbank_products/{sample_name}/
+            - Without sample_name: {output}/data/genbank_products/run_wide/
+        """
         base_output_dir = pathlib.Path(getattr(args, "output", os.getcwd())).resolve()
         genbank_products_dir = base_output_dir / "data" / "genbank_products"
         if sample_name:

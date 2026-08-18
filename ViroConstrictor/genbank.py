@@ -33,12 +33,40 @@ class GenBank:
 
     @staticmethod
     def is_genbank(file_path: Path) -> bool:
-        """Check if the file path has a GenBank extension."""
+        """Check if the file path has a GenBank extension.
+        
+        Parameters
+        ----------
+        file_path : Path
+            Path object to check for GenBank file extension.
+        
+        Returns
+        -------
+        bool
+            True if the file has a valid GenBank extension (.gb, .gbk, .genbank),
+            False otherwise.
+        """
         return any(file_path.suffix == ext for ext in GenBank.EXTENSIONS)
 
     @staticmethod
     def open_genbank(file_path: Path) -> list[SeqIO.SeqRecord]:
-        """Open a GenBank file and return its records."""
+        """Open a GenBank file and return its records.
+        
+        Parameters
+        ----------
+        file_path : Path
+            Path to the GenBank file to open.
+        
+        Returns
+        -------
+        list[SeqIO.SeqRecord]
+            List of parsed SeqIO sequence records from the GenBank file.
+        
+        Raises
+        ------
+        ValueError
+            If the file is not a GenBank file or if parsing fails.
+        """
         if not GenBank.is_genbank(file_path):
             raise ValueError(f"File {file_path} is not a GenBank file.")
         try:
@@ -48,7 +76,28 @@ class GenBank:
 
     @staticmethod
     def _parse_target(records: list[SeqIO.SeqRecord]) -> str:
-        """Parse the target organism from GenBank records."""
+        """Parse the target organism name from GenBank records.
+        
+        Extracts organism annotations from all records and ensures they are
+        sufficiently similar (≥85% sequence similarity) before returning a
+        unified target name.
+        
+        Parameters
+        ----------
+        records : list[SeqIO.SeqRecord]
+            List of SeqIO sequence records from a GenBank file.
+        
+        Returns
+        -------
+        str
+            The target organism name extracted from record annotations,
+            with spaces converted to underscores.
+        
+        Raises
+        ------
+        ValueError
+            If records have dissimilar organism annotations (similarity < 85%).
+        """
         organisms: list[str] = [record.annotations.get("organism", "") for record in records]
         organisms = [org.split("(", 1)[0].strip().replace(" ", "_") for org in organisms if org]
 
@@ -64,7 +113,32 @@ class GenBank:
 
     @staticmethod
     def split_genbank(file_path: Path, emit_target: bool = False, output_directory: Path | None = None) -> tuple[Path, Path, str]:
-        """Splits a GenBank file into a reference fasta, a features file and possibly a target file."""
+        """Splits a GenBank file into a reference FASTA, a features GFF file, and optionally a target.
+        
+        Parses the GenBank file and writes its sequences to FASTA format and genomic
+        features to GFF3 format in the specified output directory. Optionally extracts
+        the target organism name from the GenBank records.
+        
+        Parameters
+        ----------
+        file_path : Path
+            Path to the GenBank file to split.
+        emit_target : bool, optional
+            If True, extract and return the target organism name from the GenBank records.
+            Default is False.
+        output_directory : Path | None, optional
+            Directory where split FASTA and GFF files should be written.
+            If None, splits are written to the same directory as the source GenBank file.
+            Default is None (backward compatibility).
+        
+        Returns
+        -------
+        tuple[Path, Path, str]
+            A tuple containing:
+            - Path to the generated FASTA file
+            - Path to the generated GFF file
+            - Target organism name (empty string if emit_target is False)
+        """
 
         records = GenBank.open_genbank(file_path)
         output_dir = output_directory if output_directory is not None else file_path.parent
