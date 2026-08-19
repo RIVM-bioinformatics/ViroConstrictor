@@ -387,7 +387,7 @@ class TestScheduler:
         assert Scheduler.determine_scheduler("auto", make_config(scheduler="lsf"), dryrun_arg=False) is Scheduler.LSF
 
     def test_determine_scheduler_auto_in_config_falls_back_to_environment(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Test that 'AUTO' in config falls back to environment detection (known defect).
+        """Test that 'AUTO' in config falls back to environment detection.
 
         Parameters
         ----------
@@ -402,7 +402,7 @@ class TestScheduler:
         assert result is not Scheduler.AUTO
 
     def test_determine_scheduler_auto_in_config_falls_back_to_local(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Test that 'AUTO' in config falls back to LOCAL when no scheduler found (known defect).
+        """Test that 'AUTO' in config falls back to LOCAL when no scheduler found.
 
         Parameters
         ----------
@@ -460,25 +460,21 @@ class TestScheduler:
         monkeypatch.delenv("LSB_JOBID", raising=False)
         assert Scheduler.determine_scheduler("", make_config(), dryrun_arg=False) is Scheduler.SLURM
 
-    def test_determine_scheduler_without_sources_defaults_to_local(self, monkeypatch: pytest.MonkeyPatch, fake_drmaa_slurm) -> None:
+    def test_determine_scheduler_without_sources_defaults_to_local(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test that determine_scheduler defaults to LOCAL when no sources detected.
 
         Parameters
         ----------
         monkeypatch : pytest.MonkeyPatch
             Pytest fixture for mocking behavior.
-        fake_drmaa_slurm
-            Fixture providing a fake DRMAA module.
         """
         monkeypatch.setattr("shutil.which", lambda cmd: None)
         monkeypatch.delenv("SLURM_JOB_ID", raising=False)
         monkeypatch.delenv("LSB_JOBID", raising=False)
         sys.modules.pop("drmaa", None)
 
-        # Test with DRMAA
-        sys.modules["drmaa"] = fake_drmaa_slurm
         config = make_config()
-        assert Scheduler.determine_scheduler(None, config, dryrun_arg=False) == Scheduler.SLURM
+        assert Scheduler.determine_scheduler("", config, dryrun_arg=False) == Scheduler.LOCAL
 
     def test_determine_scheduler_auto_from_config_uses_environment(self, fake_drmaa_slurm):
         config = ConfigParser()
