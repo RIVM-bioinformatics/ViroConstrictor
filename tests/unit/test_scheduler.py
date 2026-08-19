@@ -7,6 +7,7 @@ environment signals, and DRMAA-backed detection.
 import sys
 import types
 from configparser import ConfigParser
+from unittest import mock
 
 import pytest
 
@@ -463,13 +464,15 @@ class TestScheduler:
         monkeypatch.delenv("LSB_JOBID", raising=False)
         assert Scheduler.determine_scheduler("", make_config(), dryrun_arg=False) is Scheduler.SLURM
 
-    def test_determine_scheduler_without_sources_defaults_to_local(self, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_determine_scheduler_without_sources_defaults_to_local(self, monkeypatch: pytest.MonkeyPatch, fake_drmaa_slurm) -> None:
         """Test that determine_scheduler defaults to LOCAL when no sources detected.
 
         Parameters
         ----------
         monkeypatch : pytest.MonkeyPatch
             Pytest fixture for mocking behavior.
+        fake_drmaa_slurm
+            Fixture providing a fake DRMAA module.
         """
         monkeypatch.setattr("shutil.which", lambda cmd: None)
         monkeypatch.delenv("SLURM_JOB_ID", raising=False)
@@ -477,10 +480,11 @@ class TestScheduler:
         sys.modules.pop("drmaa", None)
 
         # Test with DRMAA
-        sys.modules["drmaa"] = fake_drmaa
+        sys.modules["drmaa"] = fake_drmaa_slurm
+        config = make_config()
         assert Scheduler.determine_scheduler(None, config, dryrun_arg=False) == Scheduler.SLURM
 
-    def test_determine_scheduler_auto_from_config_uses_environment(self, fake_drmaa):
+    def test_determine_scheduler_auto_from_config_uses_environment(self, fake_drmaa_slurm):
         config = ConfigParser()
         config.add_section("COMPUTING")
         config.set("COMPUTING", "compmode", "grid")
@@ -498,7 +502,7 @@ class TestScheduler:
                 == Scheduler.LSF
             )
 
-        sys.modules["drmaa"] = fake_drmaa
+        sys.modules["drmaa"] = fake_drmaa_slurm
         with mock.patch.dict("os.environ", {}, clear=True):
             # shutil.which patched so we fall through past the sbatch check to DRMAA
             with mock.patch("ViroConstrictor.scheduler.shutil.which", return_value=None):
