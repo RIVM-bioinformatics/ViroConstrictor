@@ -7,6 +7,7 @@ environment signals, and DRMAA-backed detection.
 import sys
 import types
 from configparser import ConfigParser
+from unittest import mock
 
 import pytest
 
@@ -385,9 +386,8 @@ class TestScheduler:
         """Test that 'auto' argument falls back to config scheduler."""
         assert Scheduler.determine_scheduler("auto", make_config(scheduler="lsf"), dryrun_arg=False) is Scheduler.LSF
 
-    @pytest.mark.xfail(reason="Known defect: config scheduler 'AUTO' currently resolves to Scheduler.AUTO instead of falling back to environment")
     def test_determine_scheduler_auto_in_config_falls_back_to_environment(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Test that 'AUTO' in config falls back to environment detection (known defect).
+        """Test that 'AUTO' in config falls back to environment detection.
 
         Parameters
         ----------
@@ -401,11 +401,8 @@ class TestScheduler:
         assert result is Scheduler.LSF
         assert result is not Scheduler.AUTO
 
-    @pytest.mark.xfail(
-        reason="Known defect: config scheduler 'AUTO' currently resolves to Scheduler.AUTO instead of falling back to LOCAL when no scheduler is detected"
-    )
     def test_determine_scheduler_auto_in_config_falls_back_to_local(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Test that 'AUTO' in config falls back to LOCAL when no scheduler found (known defect).
+        """Test that 'AUTO' in config falls back to LOCAL when no scheduler found.
 
         Parameters
         ----------
@@ -476,11 +473,10 @@ class TestScheduler:
         monkeypatch.delenv("LSB_JOBID", raising=False)
         sys.modules.pop("drmaa", None)
 
-        # Test with DRMAA
-        sys.modules["drmaa"] = fake_drmaa
-        assert Scheduler.determine_scheduler(None, config, dryrun_arg=False) == Scheduler.SLURM
+        config = make_config()
+        assert Scheduler.determine_scheduler("", config, dryrun_arg=False) == Scheduler.LOCAL
 
-    def test_determine_scheduler_auto_from_config_uses_environment(self, fake_drmaa):
+    def test_determine_scheduler_auto_from_config_uses_environment(self, fake_drmaa_slurm):
         config = ConfigParser()
         config.add_section("COMPUTING")
         config.set("COMPUTING", "compmode", "grid")
@@ -498,7 +494,7 @@ class TestScheduler:
                 == Scheduler.LSF
             )
 
-        sys.modules["drmaa"] = fake_drmaa
+        sys.modules["drmaa"] = fake_drmaa_slurm
         with mock.patch.dict("os.environ", {}, clear=True):
             # shutil.which patched so we fall through past the sbatch check to DRMAA
             with mock.patch("ViroConstrictor.scheduler.shutil.which", return_value=None):
