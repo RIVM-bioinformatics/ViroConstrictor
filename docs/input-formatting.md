@@ -36,7 +36,7 @@ ViroConstrictor also accepts GenBank files (`.gb` or `.gbk`) as reference input.
 - **Automatic feature extraction**: ViroConstrictor automatically extracts genomic features for amino acid translation
 - **No viral target required**: When using GenBank format, you don't need to specify a viral target
 
-When using a GenBank file, simply provide it via the `--reference` parameter, and set `--features NONE` since the annotations are already included in the GenBank file.
+When using a GenBank file in CLI mode (without a samplesheet), simply provide it via the `--reference` parameter. ViroConstrictor will automatically extract the features and create the required FASTA and GFF files in the working directory.
 
 <!-- TODO: Consider adding guidance on where to find quality GenBank files (NCBI, etc.) -->
 

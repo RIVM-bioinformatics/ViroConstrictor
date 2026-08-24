@@ -181,6 +181,24 @@ def test_split_genbank_without_target_returns_empty_string(tmp_path: Path) -> No
     assert target == ""
 
 
+def test_split_genbank_writes_outputs_to_provided_directory(tmp_path: Path) -> None:
+    """Test split output location override.
+
+    Verifies that split_genbank writes split FASTA and GFF outputs in the
+    provided output_directory instead of the source GenBank file directory.
+    """
+    source = UNIT_DATA_DIR / "test_reference.gb"
+    output_dir = tmp_path / "workdir"
+
+    fasta_path, gff_path, target = GenBank.split_genbank(source, emit_target=True, output_directory=output_dir)
+
+    assert fasta_path.parent == output_dir
+    assert gff_path.parent == output_dir
+    assert fasta_path.exists()
+    assert gff_path.exists()
+    assert target
+
+
 def test_split_genbank_raises_on_invalid_genbank_file(tmp_path: Path) -> None:
     """Test that split_genbank propagates parser errors.
 

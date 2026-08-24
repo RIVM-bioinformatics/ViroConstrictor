@@ -99,7 +99,7 @@ ViroConstrictor/__main__.py
 - **[ViroConstrictor/workflow_config.py](ViroConstrictor/workflow_config.py)**: Snakemake settings configuration (OutputSettings, ResourceSettings, DeploymentSettings, etc.)
 - **[ViroConstrictor/scheduler.py](ViroConstrictor/scheduler.py)**: Multi-scheduler support (LOCAL, SLURM, LSF, DRMAA) with auto-detection
 - **[ViroConstrictor/match_ref.py](ViroConstrictor/match_ref.py)**: Match-reference workflow orchestration
-- **[ViroConstrictor/genbank.py](ViroConstrictor/genbank.py)**: GenBank file parsing and conversion to FASTA+GFF
+- **[ViroConstrictor/genbank.py](ViroConstrictor/genbank.py)**: GenBank file parsing and conversion to FASTA+GFF; splits to ViroConstrictor working directory (`data/genbank_products/`)
 - **[ViroConstrictor/samplesheet.py](ViroConstrictor/samplesheet.py)**: Sample detection patterns per platform
 - **[ViroConstrictor/runreport.py](ViroConstrictor/runreport.py)**: PDF report generation using FPDF
 
@@ -387,6 +387,11 @@ Dockerfiles follow naming: `{environment_name}.dockerfile` (e.g., `Clean.dockerf
 
 ### GenBank Support
 `GenBank` class in [genbank.py](ViroConstrictor/genbank.py) auto-splits `.gb`/`.gbk` files into `.fasta` + `.gff` for the workflow. Check with `GenBank.is_genbank(path)`.
+
+**GenBank Split Output Handling**:
+- Split FASTA and GFF artifacts are written to the **ViroConstrictor working directory** (`{output}/data/genbank_products/`).
+- **CLI mode** (no samplesheet): Splits written to `{output}/data/genbank_products/run_wide/`
+- **Samplesheet mode**: Per-sample splits written to `{output}/data/genbank_products/{sample_name}/` (for both explicit samplesheet references and CLI fallback default references) to isolate artifacts and prevent naming conflicts
 
 ### Sample Detection
 Platform-specific regex patterns in [samplesheet.py](ViroConstrictor/samplesheet.py):
