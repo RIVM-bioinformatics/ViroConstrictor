@@ -10,6 +10,16 @@ on:
 jobs:
     Upload:
         runs-on: ubuntu-latest
+        strategy:
+          fail-fast: false
+          matrix:
+            container:
+              - Alignment
+              - Clean
+              - Consensus
+              - ORF_analysis
+              - core_scripts
+              - mr_scripts
         steps:
           - uses: actions/checkout@v4
 
@@ -35,18 +45,15 @@ jobs:
             with:
               github_token: ${{ secrets.GITHUB_TOKEN }}
               workflow: build_and_test.yml
-              name: built_containers
+              name: built_container_${{ matrix.container }}
               skip_unpack: false
     
-          - name: move artifact
+          - name: stage artifacts for publish
             run: |
-              mv ./containers.tar.gz ./containers/containers.tar.gz
-    
-          - name: unzip built containers
-            run: |
-              cd ./containers/
-              tar -xzvf containers.tar.gz
-              cd ..
+              mkdir -p ./container_manager/data/containers/
+              mkdir -p ./container_manager/data/manifests/
+              cp ./*.tar ./container_manager/data/containers/
+              cp ./container-build-manifest-${{ matrix.container }}.json ./container_manager/data/manifests/
     
           - name: Setup Mamba
             uses: mamba-org/setup-micromamba@v2
@@ -68,12 +75,7 @@ jobs:
               username: ${{ github.actor }}
               password: ${{ secrets.GITHUB_TOKEN }}
           
-          - name: Add artifacted containers to docker daemon
+          - name: publish containers from manifest
             run: |
-              python containers/add_OCI_to_docker_engine.py
-            shell: micromamba-shell {0}
-          
-          - name: tag and push containers
-            run: |
-              python containers/tag_and_push_containers.py
+              python -m container_manager publish --only ${{ matrix.container }} --manifest ./container_manager/data/manifests/container-build-manifest-${{ matrix.container }}.json
             shell: micromamba-shell {0}

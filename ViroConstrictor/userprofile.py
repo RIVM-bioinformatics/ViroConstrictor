@@ -16,9 +16,9 @@ from typing import Any
 from rich import print
 from rich.console import Console
 
+from container_manager.src.sync_local_cache import containerization_installed
 from ViroConstrictor.functions import tabCompleter
 from ViroConstrictor.logging import log
-from ViroConstrictor.workflow.helpers.containers import containerization_installed
 
 
 def FileExists(file: pathlib.Path) -> bool:
@@ -164,7 +164,7 @@ Please specify whether you wish to enable the auto-update feature.""",
             fixedchoices=True,
         )
 
-    if containerization_installed is False:
+    if containerization_installed() is False:
         conf_object["REPRODUCTION"] = {
             "repro_method": "conda",
             "container_cache_path": None,

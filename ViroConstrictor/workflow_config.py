@@ -25,13 +25,13 @@ from snakemake.settings.enums import Quietness
 from snakemake_interface_executor_plugins.settings import ExecMode
 from snakemake_interface_logger_plugins.settings import LogHandlerSettingsBase
 
+from container_manager.src.sync_local_cache import download_containers
 from ViroConstrictor import __prog__
 from ViroConstrictor.logging import log
 from ViroConstrictor.parser import CLIparser
 from ViroConstrictor.scheduler import Scheduler
 from ViroConstrictor.workflow.helpers.containers import (
     construct_container_bind_args,
-    download_containers,
 )
 
 
@@ -201,6 +201,8 @@ class WorkflowConfig:
 
         self.storage_settings = StorageSettings()
 
+        container_cache_path = self.configuration["REPRODUCTION"].get("container_cache_path", Path.home() / ".viroconstrictor/containers")
+
         self.deployment_settings = DeploymentSettings(
             deployment_method=(
                 {DeploymentMethod.APPTAINER} if self.configuration["REPRODUCTION"]["repro_method"] == "containers" else {DeploymentMethod.CONDA}
@@ -208,11 +210,7 @@ class WorkflowConfig:
             conda_prefix=None,
             conda_cleanup_pkgs=None,
             conda_base_path=None,
-            apptainer_prefix=(
-                Path(self.configuration["REPRODUCTION"]["container_cache_path"])
-                if self.configuration["REPRODUCTION"]["repro_method"] == "containers"
-                else None
-            ),
+            apptainer_prefix=Path(container_cache_path) if self.configuration["REPRODUCTION"]["repro_method"] == "containers" else None,
             apptainer_args=construct_container_bind_args(self.inputs.samples_dict),
         )
 
@@ -275,18 +273,13 @@ class WorkflowConfig:
             force_incomplete=True,
         )
 
-        if self.deployment_settings.apptainer_prefix is not None:
-            if (
-                download_containers(
-                    self.deployment_settings.apptainer_prefix,
-                    self.output_settings.dryrun,
-                )
-                != 0
-            ):
-                log.error(
-                    "Failed to download containers required for workflow.\nPlease check the logs and your settings for more information and try again later."
-                )
-                sys.exit(1)
+        if self.deployment_settings.apptainer_prefix is not None and download_containers(self.deployment_settings.apptainer_prefix, self.dryrun) != 0:
+            log.error(
+                "Failed to download one or more required containers. "
+                "A common cause is that the required GHCR hash-tagged image does not exist yet for this ViroConstrictor version/config. "
+                "See the container sync error above for the exact missing GHCR reference and cache file stem."
+            )
+            sys.exit(1)
 
     def _set_cores(self, cores: int) -> int:
         available: int = multiprocessing.cpu_count()

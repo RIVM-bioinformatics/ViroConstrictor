@@ -23,9 +23,7 @@ def test_filter_best_matching_ref_add_arguments_defines_expected_flags() -> None
     parser = ArgumentParser()
     FilterBestMatchingRef.add_arguments(parser)
 
-    args = parser.parse_args(
-        ["--input", "counts.csv", "--output", "filtered.csv", "--inputref", "refs.fasta", "--filtref", "best.fasta"]
-    )
+    args = parser.parse_args(["--input", "counts.csv", "--output", "filtered.csv", "--inputref", "refs.fasta", "--filtref", "best.fasta"])
     assert args.input == "counts.csv"
     assert args.output == "filtered.csv"
     assert args.inputref == "refs.fasta"

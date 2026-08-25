@@ -1,0 +1,11 @@
+base_image: mambaorg/micromamba:git-d12544c-cuda11.7.1-ubuntu22.04
+uid_arg_name: UID
+uid_default: 10001
+user_name: appuser
+user_home: /nonexistent
+user_shell: /sbin/nologin
+registry: ghcr.io/rivm-bioinformatics
+oci_labels:
+  Author: RIVM-bioinformatics team
+  Maintainer: RIVM-bioinformatics team
+  org.opencontainers.image.authors: ids-bioinformatics@rivm.nl

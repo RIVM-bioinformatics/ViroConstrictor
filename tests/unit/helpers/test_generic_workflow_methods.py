@@ -210,7 +210,9 @@ def test_segmented_ref_groups_assigns_segments_and_drops_single_segment(tmp_path
     assert row_s3["segment"] == {"None"}
 
 
-@pytest.mark.xfail(reason="Intended behavior: malformed FASTA descriptions should be handled gracefully, e.g. by dropping invalid rows, not by raising IndexError.")
+@pytest.mark.xfail(
+    reason="Intended behavior: malformed FASTA descriptions should be handled gracefully, e.g. by dropping invalid rows, not by raising IndexError."
+)
 def test_segmented_ref_groups_handles_malformed_description_without_crash(tmp_path: Path) -> None:
     """Malformed FASTA descriptions should not crash segment extraction."""
     malformed = tmp_path / "malformed.fasta"
@@ -297,9 +299,9 @@ def test_get_rule_name_returns_closest_rule_by_lineno(monkeypatch: pytest.Monkey
     """Rule lookup should resolve to the closest decorator at or before call line."""
     code = "\n".join(
         [
-            "@workflow.rule(name=\"prepare_refs\", lineno=10)",
-            "@workflow.rule(name=\"align_reads\", lineno=40)",
-            "@workflow.rule(name=\"make_consensus\", lineno=90)",
+            '@workflow.rule(name="prepare_refs", lineno=10)',
+            '@workflow.rule(name="align_reads", lineno=40)',
+            '@workflow.rule(name="make_consensus", lineno=90)',
         ]
     )
 
@@ -316,8 +318,8 @@ def test_get_rule_name_returns_fallback_when_no_rule_matches(monkeypatch: pytest
     """If all discovered rules are after the call line, a safe fallback is expected."""
     code = "\n".join(
         [
-            "@workflow.rule(name=\"late_rule\", lineno=100)",
-            "@workflow.rule(name=\"later_rule\", lineno=150)",
+            '@workflow.rule(name="late_rule", lineno=100)',
+            '@workflow.rule(name="later_rule", lineno=150)',
         ]
     )
 

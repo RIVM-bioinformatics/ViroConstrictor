@@ -142,3 +142,6 @@ tests/unit/**/output/*
 
 test/
 
+# Generated container Dockerfiles
+container_manager/dockerfiles/*.dockerfile
+container_manager/data/manifests/container-build-manifest.json
