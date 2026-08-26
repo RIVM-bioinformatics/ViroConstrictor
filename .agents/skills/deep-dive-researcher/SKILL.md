@@ -11,11 +11,11 @@ Investigate one concrete question deeply enough to reach a decision. Read `AGENT
 
 1. Define the question, expected behavior, and the decision the investigation must support.
 2. Capture a compact reproduction brief before broad exploration:
-	- Trigger: input, command, change, or review comment that exposes the problem.
-	- Expected and observed behavior, including the exact error or incorrect result when available.
-	- Environment: relevant Python, Snakemake, container, scheduler, platform, and repository versions.
-	- Smallest reproducer, or the concrete reason reproduction is unavailable.
-	- Evidence already collected and the confidence it supports.
+    - Trigger: input, command, change, or review comment that exposes the problem.
+    - Expected and observed behavior, including the exact error or incorrect result when available.
+    - Environment: relevant Python, Snakemake, container, scheduler, platform, and repository versions.
+    - Smallest reproducer, or the concrete reason reproduction is unavailable.
+    - Evidence already collected and the confidence it supports.
 3. Find the nearest code path that computes, mutates, or controls the behavior; do not stop at a wiring layer.
 4. Gather the smallest useful evidence set from implementation, callers, tests, configuration, documentation, and version history.
 5. Compare the observed behavior with the intended behavior and distinguish confirmed facts from assumptions.
