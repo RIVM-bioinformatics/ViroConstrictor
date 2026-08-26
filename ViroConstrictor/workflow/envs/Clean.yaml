@@ -18,3 +18,4 @@ dependencies:
   - bioconda::bedtools==2.31.1
   - bioconda::minimap2==2.28
   - bioconda::ampligone==2.0.2
+  - bioconda::fastplong==0.4.1

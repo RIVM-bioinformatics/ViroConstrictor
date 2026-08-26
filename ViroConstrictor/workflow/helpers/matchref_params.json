@@ -1,0 +1,51 @@
+{
+    "DEFAULT": {
+        "alignment": {
+            "bin_by_platform": {
+                "illumina": "minimap2",
+                "iontorrent": "minimap2",
+                "nanopore": "minimap2"
+            },
+            "flags_by_platform": {
+                "illumina": "--secondary=no -ax sr",
+                "iontorrent": "--secondary=no -ax sr",
+                "nanopore": "--secondary=no -ax map-ont"
+            }
+        },
+        "alignment_filtering": {
+            "bin_by_platform": {
+                "illumina": "samtools",
+                "iontorrent": "samtools",
+                "nanopore": "samtools"
+            },
+            "flags_by_platform": {
+                "illumina": "-F 256 -F 512 -F 4 -F 2048 -q 10",
+                "iontorrent": "-F 256 -F 512 -F 4 -F 2048 -q 10",
+                "nanopore": "-F 256 -F 512 -F 4 -F 2048 -q 10"
+            }
+        }
+    },
+    "SARSCOV2": {},
+    "INFLUENZA": {
+        "alignment_filtering": {
+            "flags_by_platform": {
+                "illumina": "-F 256 -F 512 -F 4 -F 2048 -q 5",
+                "iontorrent": "-F 256 -F 512 -F 4 -F 2048 -q 5",
+                "nanopore": "-F 256 -F 512 -F 4 -F 2048 -q 5"
+            }
+        }
+    },
+    "PARAMYXOVIRIDAE": {},
+    "HEPATOVIRUS": {},
+    "PNEUMOVIRIDAE": {},
+    "ORTHOHEPADNAVIRUS": {},
+    "ENTEROVIRUS": {
+        "alignment_filtering": {
+            "flags_by_platform": {
+                "illumina": "-F 256 -F 512 -F 4 -F 2048 -q 20",
+                "iontorrent": "-F 256 -F 512 -F 4 -F 2048 -q 20",
+                "nanopore": "-F 256 -F 512 -F 4 -F 2048 -q 20"
+            }
+        }
+    }
+}

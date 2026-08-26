@@ -1,0 +1,36 @@
+R2045_B09_D4802502870-01:
+  FEATURES: /basepath/test_data/sars-cov-2/sars-cov-2_refset/Features.gff
+  INPUTFILE: /basepath/test_data/sars-cov-2/fastqs/subset/R2045_B09_D4802502870-01.fastq.gz
+  MATCH-REF: false
+  MIN-COVERAGE: 30
+  PRESET: SARSCOV2
+  PRESET_SCORE: 0.8888888888888888
+  PRIMER-MISMATCH-RATE: 0.1
+  PRIMERS: /basepath/test_data/sars-cov-2/sars-cov-2_refset/Primers.fasta
+  REFERENCE: /basepath/test_data/sars-cov-2/sars-cov-2_refset/Reference.fasta
+  SEGMENTED: false
+  VIRUS: sars
+R2045_B10_D4802502871-01:
+  FEATURES: /basepath/test_data/sars-cov-2/sars-cov-2_refset/Features.gff
+  INPUTFILE: /basepath/test_data/sars-cov-2/fastqs/subset/R2045_B10_D4802502871-01.fastq.gz
+  MATCH-REF: false
+  MIN-COVERAGE: 30
+  PRESET: SARSCOV2
+  PRESET_SCORE: 0.8888888888888888
+  PRIMER-MISMATCH-RATE: 0.1
+  PRIMERS: /basepath/test_data/sars-cov-2/sars-cov-2_refset/Primers.fasta
+  REFERENCE: /basepath/test_data/sars-cov-2/sars-cov-2_refset/Reference.fasta
+  SEGMENTED: false
+  VIRUS: sars
+R2045_B11_D4802502872-01:
+  FEATURES: /basepath/test_data/sars-cov-2/sars-cov-2_refset/Features.gff
+  INPUTFILE: /basepath/test_data/sars-cov-2/fastqs/subset/R2045_B11_D4802502872-01.fastq.gz
+  MATCH-REF: false
+  MIN-COVERAGE: 30
+  PRESET: SARSCOV2
+  PRESET_SCORE: 0.8888888888888888
+  PRIMER-MISMATCH-RATE: 0.1
+  PRIMERS: /basepath/test_data/sars-cov-2/sars-cov-2_refset/Primers.fasta
+  REFERENCE: /basepath/test_data/sars-cov-2/sars-cov-2_refset/Reference.fasta
+  SEGMENTED: false
+  VIRUS: sars
