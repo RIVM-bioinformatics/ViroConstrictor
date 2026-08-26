@@ -16,7 +16,7 @@ Scope: [optional files or subsystem]
 Output: [expected result or report shape]
 ```
 
-Client adapters may expose these templates through their native prompt feature:
+Client adapters may expose these templates through their native prompt feature. The `.github/prompts/` location is optional and is not currently present in this repository:
 
 - `.github/prompts/` for VS Code or GitHub Copilot prompt discovery.
 - `.claude/` or another client-specific prompt location when required by that client.
