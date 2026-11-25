@@ -12,13 +12,13 @@ class TestExecutorSettingsFor:
         [Scheduler.LOCAL, Scheduler.DRYRUN, Scheduler.LSF],
     )
     def test_returns_none_for_in_process_or_unhandled(self, scheduler):
-        from ViroConstrictor.workflow_executor import _executor_settings_for
+        from ViroConstrictor.workflow_config import _executor_settings_for
 
         assert _executor_settings_for(scheduler) is None
 
     def test_returns_slurm_executor_settings(self):
         slurm_module = pytest.importorskip("snakemake_executor_plugin_slurm")
-        from ViroConstrictor.workflow_executor import _executor_settings_for
+        from ViroConstrictor.workflow_config import _executor_settings_for
 
         settings = _executor_settings_for(Scheduler.SLURM)
         assert isinstance(settings, slurm_module.ExecutorSettings)
@@ -32,6 +32,10 @@ class TestWorkflowExecutorPassesSettings:
     def _run_executor(self, scheduler):
         """Run WorkflowExecutor against a mocked SnakemakeApi, return the execute_workflow call args."""
         from ViroConstrictor.workflow_executor import WorkflowExecutor
+        from ViroConstrictor.workflow_config import _executor_settings_for
+
+        workflow_config = mock.MagicMock()
+        workflow_config.executor_settings = _executor_settings_for(scheduler)
 
         with mock.patch("ViroConstrictor.workflow_executor.SnakemakeApi") as api_cls:
             api_ctx = api_cls.return_value.__enter__.return_value
@@ -39,7 +43,7 @@ class TestWorkflowExecutorPassesSettings:
 
             WorkflowExecutor(
                 parsed_input=mock.MagicMock(),
-                workflow_config=mock.MagicMock(),
+                workflow_config=workflow_config,
                 scheduler=scheduler,
             )
 

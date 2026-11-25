@@ -135,6 +135,8 @@ class WorkflowConfig:
         Settings related to job scheduling.
     workflow_settings : WorkflowSettings
         Settings related to the overall workflow.
+    executor_settings : Any
+        Settings for the selected Snakemake executor plugin.
     snakemake_base_params : dict
         Base parameters passed to Snakemake.
     workflow_configsettings : ConfigSettings
@@ -215,6 +217,8 @@ class WorkflowConfig:
             ),
             apptainer_args=construct_container_bind_args(self.inputs.samples_dict),
         )
+        
+        self.executor_settings = _executor_settings_for(self.inputs.scheduler)
 
         self.execution_settings = ExecutionSettings(
             latency_wait=60,
@@ -367,6 +371,14 @@ def _assign_resources_slurm(default_resource_setting: DefaultResources, queue: s
     # the account and the clusters are optional, leaving it unassigned for now.
     # This may be an issue if the SLURM cluster doesn't have default values for these settings configured by an admin
     return default_resource_setting
+
+
+def _executor_settings_for(scheduler: Scheduler) -> Any:
+    """Return scheduler-specific executor settings, or None when none are required."""
+    if scheduler is Scheduler.SLURM:
+        from snakemake_executor_plugin_slurm import ExecutorSettings as SlurmExecutorSettings
+        return SlurmExecutorSettings()
+    return None
 
 
 def _write_yaml(data: dict, filepath: str) -> str:
