@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.6.7](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.6.6...v1.6.7) (2026-11-26)
+
+
+### Bug Fixes
+
+* **amplicon_covs:** iterate amplicons in genomic order, not label order ([#199](https://github.com/RIVM-bioinformatics/ViroConstrictor/issues/199)) ([71e5a40](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/71e5a404a84314857bc74ddf761b29acc32d4831))
+* **amplicon_covs:** iterate amplicons in genomic order, not label order ([#214](https://github.com/RIVM-bioinformatics/ViroConstrictor/issues/214)) ([d094a1a](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/d094a1a95765ecc9b596cd08180cc859f12004e3))
+* **scheduler:** honour AUTO from user config (closes [#195](https://github.com/RIVM-bioinformatics/ViroConstrictor/issues/195)) ([#201](https://github.com/RIVM-bioinformatics/ViroConstrictor/issues/201)) ([952e197](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/952e197577183e55db5702c174f13cc2f8885c85))
+* **scheduler:** pass executor_settings when dispatching SLURM jobs ([#202](https://github.com/RIVM-bioinformatics/ViroConstrictor/issues/202)) ([a7b1623](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/a7b16238e5bf92311457122cddc3d8e31009f448))
+* update Fastp_MinReadLength_Settings_nanopore length_required setting for orthohepandavirus preset ([2abb80b](https://github.com/RIVM-bioinformatics/ViroConstrictor/commit/2abb80b04fba3532646f6de1622cb1a5fe1aa627))
+
 ## [1.6.6](https://github.com/RIVM-bioinformatics/ViroConstrictor/compare/v1.6.5...v1.6.6) (2026-03-01)
 
 
