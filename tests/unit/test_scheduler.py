@@ -8,8 +8,100 @@ import pytest
 from ViroConstrictor.scheduler import Scheduler
 
 
-class TestScheduler:
+def make_config(*, scheduler: str = "", compmode: str = "") -> ConfigParser:
+    """Build a minimal computing config for scheduler tests.
 
+    Parameters
+    ----------
+    scheduler : str, optional
+        Scheduler value written to the COMPUTING section.
+    compmode : str, optional
+        Computing mode written to the COMPUTING section.
+
+    Returns
+    -------
+    ConfigParser
+        Config parser containing the requested computing settings.
+    """
+    config = ConfigParser()
+    config.add_section("COMPUTING")
+    if scheduler:
+        config.set("COMPUTING", "scheduler", scheduler)
+    if compmode:
+        config.set("COMPUTING", "compmode", compmode)
+    return config
+
+
+@pytest.fixture
+def fake_drmaa_slurm(monkeypatch):
+    """Provide a fake DRMAA session that reports SLURM."""
+
+    class FakeDRMAASession:
+        """Mock DRMAA session simulating SLURM backend."""
+
+        def __enter__(self) -> "FakeDRMAASession":
+            """Enter context manager."""
+            return self
+
+        def __exit__(self, exc_type, exc_value, traceback) -> bool:
+            """Exit context manager."""
+            return False
+
+        @property
+        def drmsInfo(self) -> str:
+            """Return simulated DRMAA scheduler name."""
+            return "slurm"
+
+    module = types.SimpleNamespace(Session=lambda: FakeDRMAASession())
+    monkeypatch.setitem(sys.modules, "drmaa", module)
+    return module
+
+
+@pytest.fixture
+def fake_drmaa_invalid(monkeypatch):
+    """Provide a fake DRMAA session that reports an unsupported backend."""
+
+    class FakeDRMAASession:
+        """Mock DRMAA session simulating unsupported PBS backend."""
+
+        def __enter__(self) -> "FakeDRMAASession":
+            """Enter context manager."""
+            return self
+
+        def __exit__(self, exc_type, exc_value, traceback) -> bool:
+            """Exit context manager."""
+            return False
+
+        @property
+        def drmsInfo(self) -> str:
+            """Return unsupported DRMAA scheduler name."""
+            return "pbs"
+
+    module = types.SimpleNamespace(Session=lambda: FakeDRMAASession())
+    monkeypatch.setitem(sys.modules, "drmaa", module)
+    return module
+
+
+@pytest.fixture
+def fake_drmaa_runtime_error(monkeypatch):
+    """Provide a fake DRMAA session that raises when entered."""
+
+    class FailingSession:
+        """Mock DRMAA session that raises RuntimeError on entry."""
+
+        def __enter__(self) -> "FailingSession":
+            """Raise RuntimeError to simulate DRMAA initialization failure."""
+            raise RuntimeError("no drmaa backend")
+
+        def __exit__(self, exc_type, exc_value, traceback) -> bool:
+            """Exit context manager."""
+            return False
+
+    module = types.SimpleNamespace(Session=lambda: FailingSession())
+    monkeypatch.setitem(sys.modules, "drmaa", module)
+    return module
+
+class TestScheduler: 
     def test_supported_schedulers(self):
         assert Scheduler.supported_schedulers() == [
             "LOCAL",
@@ -62,9 +154,27 @@ class TestScheduler:
         config.set("COMPUTING", "scheduler", "invalid")
         assert Scheduler._scheduler_from_config(config) == Scheduler.LOCAL
 
-        # Test with no scheduler in config
-        config.remove_option("COMPUTING", "scheduler")
+    def test_scheduler_from_config_auto_falls_through(self):
+        config = ConfigParser()
+        config.add_section("COMPUTING")
+
+        config.set("COMPUTING", "scheduler", "AUTO")
         assert Scheduler._scheduler_from_config(config) is None
+
+        config.set("COMPUTING", "scheduler", "auto")
+        assert Scheduler._scheduler_from_config(config) is None
+
+        config.set("COMPUTING", "scheduler", "grid")
+        assert Scheduler._scheduler_from_config(config) is None
+
+    def test_scheduler_from_environment(self):
+        with mock.patch.dict("os.environ", {"SLURM_JOB_ID": "123"}):
+            scheduler = Scheduler._scheduler_from_environment()
+            assert scheduler == Scheduler.SLURM
+            
+    def test_scheduler_from_config_without_scheduler_returns_none(self) -> None:
+        """Test that _scheduler_from_config returns None when config has no scheduler value."""
+        assert Scheduler._scheduler_from_config(make_config()) is None
 
     def test_scheduler_from_environment(self):
         with mock.patch.dict("os.environ", {"SLURM_JOB_ID": "123"}):
@@ -109,17 +219,131 @@ class TestScheduler:
         # Test with no scheduler set
         assert Scheduler.determine_scheduler(None, config, dryrun_arg=False) is Scheduler.LOCAL
 
-        # Test with scheduler from argument
-        assert Scheduler.determine_scheduler("local", config, dryrun_arg=False) == Scheduler.LOCAL
+    def test_determine_scheduler_invalid_argument_returns_local(self) -> None:
+        """Test that invalid scheduler argument defaults to LOCAL."""
+        assert Scheduler.determine_scheduler("invalid", make_config(scheduler="SLURM"), dryrun_arg=False) is Scheduler.LOCAL
 
-        # Test with scheduler from config
-        config.set("COMPUTING", "scheduler", "SLURM")
-        assert Scheduler.determine_scheduler(None, config, dryrun_arg=False) == Scheduler.SLURM
+    def test_determine_scheduler_auto_argument_falls_back_to_config(self) -> None:
+        """Test that 'auto' argument falls back to config scheduler."""
+        assert Scheduler.determine_scheduler("auto", make_config(scheduler="lsf"), dryrun_arg=False) is Scheduler.LSF
 
-        # Test with environment variable
+    #@pytest.mark.xfail(reason="Known defect: config scheduler 'AUTO' currently resolves to Scheduler.AUTO instead of falling back to environment")
+    def test_determine_scheduler_auto_in_config_falls_back_to_environment(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test that 'AUTO' in config falls back to environment detection (known defect).
+
+        Parameters
+        ----------
+        monkeypatch : pytest.MonkeyPatch
+            Pytest fixture for mocking behavior.
+        """
+        monkeypatch.setattr("shutil.which", lambda cmd: "/usr/bin/bsub" if cmd == "bsub" else None)
+        monkeypatch.delenv("SLURM_JOB_ID", raising=False)
+        monkeypatch.delenv("LSB_JOBID", raising=False)
+        result = Scheduler.determine_scheduler("", make_config(scheduler="AUTO"), dryrun_arg=False)
+        assert result is Scheduler.LSF
+        assert result is not Scheduler.AUTO
+
+    # @pytest.mark.xfail(
+    #     reason="Known defect: config scheduler 'AUTO' currently resolves to Scheduler.AUTO instead of falling back to LOCAL when no scheduler is detected"
+    # )
+    def test_determine_scheduler_auto_in_config_falls_back_to_local(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test that 'AUTO' in config falls back to LOCAL when no scheduler found (known defect).
+
+        Parameters
+        ----------
+        monkeypatch : pytest.MonkeyPatch
+            Pytest fixture for mocking behavior.
+        """
+        monkeypatch.setattr("shutil.which", lambda cmd: None)
+        monkeypatch.delenv("SLURM_JOB_ID", raising=False)
+        monkeypatch.delenv("LSB_JOBID", raising=False)
+        sys.modules.pop("drmaa", None)
+
+        result = Scheduler.determine_scheduler("", make_config(scheduler="AUTO"), dryrun_arg=False)
+        assert result is Scheduler.LOCAL
+        assert result is not Scheduler.AUTO
+
+    def test_determine_scheduler_auto_argument_never_returns_auto(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test that 'AUTO' argument never returns Scheduler.AUTO after fallback.
+
+        Parameters
+        ----------
+        monkeypatch : pytest.MonkeyPatch
+            Pytest fixture for mocking behavior.
+        """
+        monkeypatch.setattr("shutil.which", lambda cmd: "/usr/bin/sbatch" if cmd == "sbatch" else None)
+        monkeypatch.delenv("SLURM_JOB_ID", raising=False)
+        monkeypatch.delenv("LSB_JOBID", raising=False)
+
+        result = Scheduler.determine_scheduler("AUTO", make_config(), dryrun_arg=False)
+        assert result is Scheduler.SLURM
+        assert result is not Scheduler.AUTO
+
+    def test_determine_scheduler_uses_environment_when_config_absent(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test that environment detection is used when config absent.
+
+        Parameters
+        ----------
+        monkeypatch : pytest.MonkeyPatch
+            Pytest fixture for mocking behavior.
+        """
+        monkeypatch.setattr("shutil.which", lambda cmd: "/usr/bin/sbatch" if cmd == "sbatch" else None)
+        assert Scheduler.determine_scheduler("", make_config(), dryrun_arg=False) is Scheduler.SLURM
+
+    def test_determine_scheduler_uses_drmaa_when_environment_absent(self, monkeypatch: pytest.MonkeyPatch, fake_drmaa_slurm) -> None:
+        """Test that DRMAA detection is used when environment absent.
+
+        Parameters
+        ----------
+        monkeypatch : pytest.MonkeyPatch
+            Pytest fixture for mocking behavior.
+        fake_drmaa_slurm
+            Pytest fixture providing a mock DRMAA module with SLURM backend.
+        """
+        monkeypatch.setattr("shutil.which", lambda cmd: None)
+        monkeypatch.delenv("SLURM_JOB_ID", raising=False)
+        monkeypatch.delenv("LSB_JOBID", raising=False)
+        assert Scheduler.determine_scheduler("", make_config(), dryrun_arg=False) is Scheduler.SLURM
+
+    def test_determine_scheduler_without_sources_defaults_to_local(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Test that determine_scheduler defaults to LOCAL when no sources detected.
+
+        Parameters
+        ----------
+        monkeypatch : pytest.MonkeyPatch
+            Pytest fixture for mocking behavior.
+        """
+        monkeypatch.setattr("shutil.which", lambda cmd: None)
+        monkeypatch.delenv("SLURM_JOB_ID", raising=False)
+        monkeypatch.delenv("LSB_JOBID", raising=False)
+        sys.modules.pop("drmaa", None)
+
+        config = make_config()
+        assert Scheduler.determine_scheduler("", config, dryrun_arg=False) == Scheduler.LOCAL
+
+    def test_determine_scheduler_auto_from_config_uses_environment(self, fake_drmaa_slurm):
+        config = ConfigParser()
+        config.add_section("COMPUTING")
+        config.set("COMPUTING", "compmode", "grid")
+        config.set("COMPUTING", "scheduler", "AUTO")
+
         with mock.patch.dict("os.environ", {"SLURM_JOB_ID": "123"}):
-            assert Scheduler.determine_scheduler(None, config, dryrun_arg=False) == Scheduler.SLURM
+            assert (
+                Scheduler.determine_scheduler("", config, dryrun_arg=False)
+                == Scheduler.SLURM
+            )
 
-        # Test with DRMAA
-        sys.modules["drmaa"] = fake_drmaa
-        assert Scheduler.determine_scheduler(None, config, dryrun_arg=False) == Scheduler.SLURM
+        with mock.patch.dict("os.environ", {"LSB_JOBID": "456"}, clear=True):
+            assert (
+                Scheduler.determine_scheduler("", config, dryrun_arg=False)
+                == Scheduler.LSF
+            )
+
+        sys.modules["drmaa"] = fake_drmaa_slurm
+        with mock.patch.dict("os.environ", {}, clear=True):
+            # shutil.which patched so we fall through past the sbatch check to DRMAA
+            with mock.patch("ViroConstrictor.scheduler.shutil.which", return_value=None):
+                assert (
+                    Scheduler.determine_scheduler("", config, dryrun_arg=False)
+                    == Scheduler.SLURM
+                )

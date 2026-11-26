@@ -108,6 +108,7 @@ class WorkflowExecutor:
 
             self.dag_api.execute_workflow(
                 executor=scheduler.value[0],
+                executor_settings=self.workflow_config.executor_settings,
                 execution_settings=self.workflow_config.execution_settings,
                 remote_execution_settings=self.workflow_config.remote_execution_settings,
                 scheduling_settings=self.workflow_config.scheduling_settings,

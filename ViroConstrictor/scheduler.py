@@ -69,8 +69,12 @@ class Scheduler(Enum):
             if not cls.is_valid(config_scheduler):
                 log.warning(f"Invalid scheduler in config: '{config_scheduler}', using non-grid mode")
                 return cls.LOCAL
+            scheduler = cls.from_string(config_scheduler)
+            if scheduler == cls.AUTO:
+                log.debug("Helper functionality :: Scheduler :: Scheduler set to AUTO in config, trying to determine automatically")
+                return None
             log.debug(f"Helper functionality :: Scheduler :: Scheduler determined from config: '{config_scheduler}'")
-            return cls.from_string(config_scheduler)
+            return scheduler
         return None
 
     @classmethod

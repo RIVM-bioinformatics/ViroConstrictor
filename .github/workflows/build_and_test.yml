@@ -103,7 +103,7 @@ jobs:
           cd ..
 
       - name: Setup Apptainer
-        uses: eWaterCycle/setup-apptainer@v2
+        uses: eWaterCycle/setup-apptainer@v3
 
       - name: Setup Mamba
         uses: mamba-org/setup-micromamba@v2
